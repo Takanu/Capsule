@@ -117,7 +117,7 @@ class GT_Export_Assets(Operator):
             axisForward = "-Z"
             axisUp = "Y"
             
-            if scn._scale_100x is True:
+            if scn.scale_100x is True:
                 globalScale = 100.0
                 
             else:

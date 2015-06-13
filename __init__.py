@@ -1,7 +1,7 @@
 
 #This states the metadata for the plugin
 bl_info = {
-    "name": "GEX",
+    "name": "GEX R1",
     "author": "Crocadillian/Takanu @ Polarised Games",
     "version": (0,1),
     "blender": (2, 7, 5),
