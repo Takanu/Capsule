@@ -73,17 +73,17 @@ class GX_Object_Preferences(PropertyGroup):
         description = "Decide whether the selected object is exported with modifiers applied or not",
         default = False)
     
-    export_collision = BoolProperty(
-        name = "Export Collision",
+    use_collision = BoolProperty(
+        name = "Use Collision",
         description = "Enables separate exporting of a collision mesh with the selected mesh.",
         default = False)
         
     generate_convex = BoolProperty(
-        name = "Export as Convex Hull",
-        description = "Alters the export collision to ensure it's a convex hull, as well as decimates the mesh to optimize collision geometry.",
+        name = "Convert to Convex Hull",
+        description = "Alters the export collision to ensure it's a convex hull, as well as decimates the mesh to optimize collision geometry.  Disabled for separate collision objects.",
         default = False)
     
-    collision_separate = BoolProperty(
+    separate_collision = BoolProperty(
         name = "Use Separate Collision Object",
         description = "Enables the export of a separate object to use as collision for the currently selected object.",
         default = False)
@@ -92,6 +92,11 @@ class GX_Object_Preferences(PropertyGroup):
         name="",
         description="The name of the collision object to be used.",
         default="")
+        
+    export_collision = BoolProperty(
+        name = "Export Collision As File",
+        description = "Allows the selected collision mesh to be exported as a separate file alongside the selected mesh.",
+        default = False)
         
     location_default = EnumProperty(
         name="Select Location Default",
