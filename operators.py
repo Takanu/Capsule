@@ -294,6 +294,7 @@ class GT_Export_Assets(Operator):
                 # Duplicate the object and reset its position 
                 FocusObject(object)
                 DuplicateObject(context.active_object)
+                originalLoc = object.location
                 context.active_object.location = [0.0, 0.0, 0.0]
                 
                 duplicate = context.active_object
@@ -352,8 +353,16 @@ class GT_Export_Assets(Operator):
                             
                             return {'FINISHED'}
                             
+                        bpy.context.scene.objects.active = bpy.data.objects[object.GXObj.collision_object]
+                            
                         DuplicateObject(context.active_object)
                         collision = context.active_object
+                        
+                        collisionLoc = [0.0, 0.0, 0.0]
+                        collisionLoc[0] = collision.location[0] - originalLoc[0]
+                        collisionLoc[1] = collision.location[1] - originalLoc[1]
+                        collisionLoc[2] = collision.location[2] - originalLoc[2]
+                        collision.location = collisionLoc
                         
                         
                         
@@ -367,9 +376,6 @@ class GT_Export_Assets(Operator):
                         
                     elif int(scn.engine_select) is 2:
                         collision.name = objectName + "_CX"
-                        
-                    
-                    collision.location = [0.0, 0.0, 0.0]
                     
                 # Ensure the names of both objects are in sync
                 duplicate.name = objectName
@@ -377,14 +383,13 @@ class GT_Export_Assets(Operator):
                 print("Rawr")
                 print(globalScale)
                 
-                
-                
                 # //////////// - EXPORT PROCESS - ////////////////////////////////////////////////////////
                 if object.GXObj.use_collision is True:
                     
                     if object.GXObj.export_collision is False and int(scn.engine_select) is not 2:
+                        print("UE4 Combined Collision Export")
+                        FocusObject(collision)
                         SelectObject(duplicate)
-                        ActivateObject(collision)
                         self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth)
                         
                     else:
