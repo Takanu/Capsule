@@ -32,6 +32,11 @@ class GX_Scene_Preferences(PropertyGroup):
         description="Scales every exported object by 100 times its original size in order to correct asset scales for Unreal Engine 4.7 or lower",
         default=False)
         
+    correct_rotation = BoolProperty(
+        name="Correct Rotation",
+        description="Rotates all assets 180º on the Z axis before exporting, to appear in the same orientation in Unity as it does currently.",
+        default=False)
+        
     path_defaults = CollectionProperty(type=LocationDefault)
     
     path_list_index = IntProperty()

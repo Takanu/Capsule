@@ -380,6 +380,12 @@ class GT_Export_Assets(Operator):
                 # Ensure the names of both objects are in sync
                 duplicate.name = objectName
                 
+                # //////////// - FINAL EDITS - ///////////////////////////////////////////////////////////
+                #if int(scn.engine_select) is 2 and scn.correct_rotation is True:
+                    #duplicate.rotation_euler[0]
+                    #duplicate.rotation_euler[1]
+                    #duplicate.rotation_euler[2]
+                
                 print("Rawr")
                 print(globalScale)
                 

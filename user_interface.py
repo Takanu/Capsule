@@ -36,6 +36,9 @@ class GX_Export(Panel):
         
         if scn.engine_select is '1':
             col_export.prop(scn, "scale_100x")
+            
+        #elif scn.engine_select is '2':
+            #col_export.prop(scn, "correct_rotation")
         
         col_export.separator()
         col_export.separator()
@@ -98,10 +101,6 @@ class GX_Selection(Panel):
                 col_collision.prop(obj, "collision_object", icon="OBJECT_DATA")
                 col_collision.operator("scene.gx_setcollision", text="", icon="FORWARD")
                 col_collision.operator("scene.gx_clearcollision", text="", icon="X")
-            
-        #col_export.separator()
-        #col_export.separator()
-        
         
         col_export.separator()
         col_export.separator()
