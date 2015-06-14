@@ -1,6 +1,5 @@
-#from .update import Update_VisibilityToggle, Update_ComponentToggle, Update_CompomentListType, Update_VisibilityListType, Update_FreezeList, Update_FreezeDelete, Update_FreezeView, Update_FreezeName, Update_Visibility, Update_ObjectOrigin, Update_ObjectVGOrigin, Update_AssetType, Update_ObjectType, Update_AssetName, Update_BaseName, Update_ComponentName, Update_HP_Visibility, Update_LP_Visibility, Update_CG_Visibility, Update_CG_Visibility, Update_CX_Visibility, Update_BaseVisibility, Update_ComponentVisibility, Update_FreezeVisibility, Update_DummyObject, Update_DummyPosition, Update_DummyLocation, Update_DummyOffset, Update_DummySize, Update_GroupOrigin, Update_XRay, Update_OriginSize
+from .update import Update_EnableExport, Update_ApplyModifiers, Update_UseCollision, Update_GenerateConvex, Update_SeparateCollision, Update_ExportCollision, Update_CollisionObject, Update_LocationDefault
 
-# Ensure you import update statements here
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
@@ -63,7 +62,8 @@ class GX_Object_Preferences(PropertyGroup):
     enable_export = BoolProperty(
         name = "Enable Export",
         description = "Marks the asset as available for batch exporting export using GEX.",
-        default = False)
+        default = False,
+        update = Update_EnableExport)
     
     asset_type = EnumProperty(
         name="Asset Type",
@@ -76,22 +76,26 @@ class GX_Object_Preferences(PropertyGroup):
     apply_modifiers = BoolProperty(
         name = "Apply Modifiers",
         description = "Decide whether the selected object is exported with modifiers applied or not",
-        default = False)
+        default = False,
+        update = Update_ApplyModifiers)
     
     use_collision = BoolProperty(
         name = "Use Collision",
         description = "Enables separate exporting of a collision mesh with the selected mesh.",
-        default = False)
+        default = False,
+        update=Update_UseCollision)
         
     generate_convex = BoolProperty(
         name = "Convert to Convex Hull",
         description = "Alters the export collision to ensure it's a convex hull, as well as decimates the mesh to optimize collision geometry.  Disabled for separate collision objects.",
-        default = False)
+        default = False,
+        update = Update_GenerateConvex)
     
     separate_collision = BoolProperty(
         name = "Use Separate Collision Object",
         description = "Enables the export of a separate object to use as collision for the currently selected object.",
-        default = False)
+        default = False,
+        update = Update_SeparateCollision)
         
     collision_object = StringProperty(
         name="",
@@ -101,12 +105,14 @@ class GX_Object_Preferences(PropertyGroup):
     export_collision = BoolProperty(
         name = "Export Collision As File",
         description = "Allows the selected collision mesh to be exported as a separate file alongside the selected mesh.",
-        default = False)
+        default = False,
+        update = Update_ExportCollision)
         
     location_default = EnumProperty(
         name="Select Location Default",
         description="The filepath default the selected objects will be exported to.",
-        items=GetLocationDefaults)
+        items=GetLocationDefaults,
+        update=Update_LocationDefault)
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////

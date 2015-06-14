@@ -3,7 +3,7 @@
 bl_info = {
     "name": "GEX R1",
     "author": "Crocadillian/Takanu @ Polarised Games",
-    "version": (0,1),
+    "version": (0,3),
     "blender": (2, 7, 5),
     "api": 39347,
     "location": "3D View > Object Mode > Tools > GEX",
