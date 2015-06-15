@@ -55,11 +55,25 @@ class GX_Selection(Panel):
         
         layout = self.layout
         
+        # Check we have an active object
         if context.active_object is None:
             col_export = layout.column(align=True)
             col_export.alignment = 'EXPAND'
             col_export.label(text="Select an object to change settings")
             
+        # Ensure the active object isnt an incorrect type
+        elif context.active_object.type != 'MESH':
+            if len(context.selected_objects) == 1:
+                col_export = layout.column(align=True)
+                col_export.alignment = 'EXPAND'
+                col_export.label(text="Select a mesh object to change settings")
+            else:
+                col_export = layout.column(align=True)
+                col_export.alignment = 'EXPAND'
+                col_export.label(text="Deselect the active non-mesh object")
+                col_export.label(text="to change settings")
+        
+        # Now the UI can load
         else:
             scn = context.scene.GXScn
             obj = context.object.GXObj
@@ -68,23 +82,36 @@ class GX_Selection(Panel):
             col_export = layout.column(align=True)
             col_export.alignment = 'EXPAND'
             
+            # Work out what kind of object label should be used
             if len(context.selected_objects) is 1:
                 col_export.label(text=context.object.name, icon="OBJECT_DATA")
                 
             else:
-                objectLabel = str(len(context.selected_objects)) + " objects selected"
-                col_export.label(text=objectLabel, icon="OBJECT_DATA")
+                objectCount = 0
+                objectLabel = ""
+                selected = []
+                for sel in context.selected_objects:
+                    if sel.type == 'MESH':
+                        objectCount += 1
+                        selected.append(sel)
+                
+                if objectCount == 1:
+                    col_export.label(text=selected[0].name, icon="OBJECT_DATA")
+                
+                else:
+                    objectLabel = str(objectCount) + " valid objects selected"
+                    col_export.label(text=objectLabel, icon="OBJECT_DATA")
                 
             col_export.separator()
             col_export.prop(obj, "enable_export")
             col_export.prop(obj, "apply_modifiers")
         
             col_export.separator()
-            #col_export.separator()
+            col_export.separator()
        
-            #col_export.label(text="Asset Type")
-            #col_export.separator()
-            #col_export.prop(obj, "asset_type", text="")
+            col_export.label(text="Asset Type")
+            col_export.separator()
+            col_export.prop(obj, "asset_type", text="")
 
             if scn.engine_select is '1':
                 col_export.separator()

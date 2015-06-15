@@ -179,16 +179,17 @@ class GT_Export_Assets(Operator):
         axis_forward=axisForward, 
         axis_up=axisUp, 
         bake_space_transform=bakeSpaceTransform, 
-        object_types={'EMPTY', 'ARMATURE', 'LAMP', 'CAMERA', 'MESH'}, 
+        object_types={'ARMATURE', 'MESH'}, 
         use_mesh_modifiers=applyModifiers, 
         mesh_smooth_type=meshSmooth, 
         use_mesh_edges=False,
         use_tspace=False, 
         use_armature_deform_only=False, 
-        bake_anim=False, 
-        bake_anim_use_nla_strips=False, 
+        bake_anim=True, 
+        bake_anim_use_nla_strips=True, 
         bake_anim_step=1.0, 
         bake_anim_simplify_factor=1.0, 
+        add_leaf_bones=False,
         use_anim=True, 
         use_anim_action_all=True, 
         use_default_take=True, 
@@ -197,7 +198,7 @@ class GT_Export_Assets(Operator):
         path_mode='AUTO', 
         embed_textures=False, 
         batch_mode='OFF', 
-        use_batch_own_dir=False, 
+        use_batch_own_dir=True, 
         use_metadata=False)
         
     
@@ -249,178 +250,179 @@ class GT_Export_Assets(Operator):
             
         # Cycle through the available objects
         for object in context.scene.objects:
-            if object.GXObj.enable_export is True:
+            if object.type == 'MESH':
+                if object.GXObj.enable_export is True:
                 
-                # Obtain some object-specific preferences
-                applyModifiers = object.GXObj.apply_modifiers
-                meshSmooth = 'EDGE'
+                    # Obtain some object-specific preferences
+                    applyModifiers = object.GXObj.apply_modifiers
+                    meshSmooth = 'EDGE'
                 
-                # //////////// - FILE PATH - ////////////////////////////////////////////////////////
-                # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
-                enumIndex = int(object.GXObj.location_default)
+                    # //////////// - FILE PATH - ////////////////////////////////////////////////////////
+                    # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
+                    enumIndex = int(object.GXObj.location_default)
                 
-                print(obj.location_default)
-                print(object.GXObj.location_default)
-                print(int(obj.location_default))
-                print(int(object.GXObj.location_default))
-                print(enumIndex)
+                    print(obj.location_default)
+                    print(object.GXObj.location_default)
+                    print(int(obj.location_default))
+                    print(int(object.GXObj.location_default))
+                    print(enumIndex)
                 
-                if enumIndex == 0:
-                    FocusObject(object)
-                    self.report({'WARNING'}, 'The selected object has no set file path default.  Set it plzplzplz.')
-                    return {'FINISHED'}
+                    if enumIndex == 0:
+                        FocusObject(object)
+                        self.report({'WARNING'}, 'The selected object has no set file path default.  Set it plzplzplz.')
+                        return {'FINISHED'}
                 
-                enumIndex -= 1
-                defaultFilePath = scn.path_defaults[enumIndex].path
+                    enumIndex -= 1
+                    defaultFilePath = scn.path_defaults[enumIndex].path
                 
-                print(enumIndex)
+                    print(enumIndex)
                 
-                if defaultFilePath == "":
-                    self.report({'WARNING'}, 'The currently highlighted file path default has no file path.  A file path is required to export.')
-                    return {'FINISHED'}
+                    if defaultFilePath == "":
+                        self.report({'WARNING'}, 'The currently highlighted file path default has no file path.  A file path is required to export.')
+                        return {'FINISHED'}
                     
-                if defaultFilePath.find('//') != -1:
-                    self.report({'WARNING'}, 'Relative path used for the selected path default, please tick off the Relative Path option when choosing the file path.')
-                    return {'FINISHED'}
+                    if defaultFilePath.find('//') != -1:
+                        self.report({'WARNING'}, 'Relative path used for the selected path default, please tick off the Relative Path option when choosing the file path.')
+                        return {'FINISHED'}
                     
-                objectFilePath = defaultFilePath
-                objectFilePath += object.name
-                objectFilePath += ".fbx"
+                    objectFilePath = defaultFilePath
+                    objectFilePath += object.name
+                    objectFilePath += ".fbx"
                 
-                objectName = object.name
-                object.name = objectName + "TEMP"
+                    objectName = object.name
+                    object.name = objectName + "TEMP"
                 
         
-                # Duplicate the object and reset its position 
-                FocusObject(object)
-                DuplicateObject(context.active_object)
-                originalLoc = object.location
-                context.active_object.location = [0.0, 0.0, 0.0]
+                    # Duplicate the object and reset its position 
+                    FocusObject(object)
+                    DuplicateObject(context.active_object)
+                    originalLoc = object.location
+                    context.active_object.location = [0.0, 0.0, 0.0]
                 
-                duplicate = context.active_object
-                collision = None
-                collisionFilePath = ""
+                    duplicate = context.active_object
+                    collision = None
+                    collisionFilePath = ""
                 
                 
-                # //////////// - COLLISION SETUP - ////////////////////////////////////////////////////////
-                # If collision is turned on, sort that shit out
-                if object.GXObj.use_collision is True:
+                    # //////////// - COLLISION SETUP - ////////////////////////////////////////////////////////
+                    # If collision is turned on, sort that shit out
+                    if object.GXObj.use_collision is True:
                     
-                    # Setup the collision object
-                    if object.GXObj.separate_collision is False:
-                        DuplicateObject(context.active_object)
-                        collision = context.active_object
+                        # Setup the collision object
+                        if object.GXObj.separate_collision is False:
+                            DuplicateObject(context.active_object)
+                            collision = context.active_object
                         
-                        # Ensure its collidable if the user wants us to
-                        if object.GXObj.generate_convex is True:
-                            bpy.ops.object.editmode_toggle()
-                            bpy.ops.mesh.select_all(action='SELECT')
+                            # Ensure its collidable if the user wants us to
+                            if object.GXObj.generate_convex is True:
+                                bpy.ops.object.editmode_toggle()
+                                bpy.ops.mesh.select_all(action='SELECT')
                             
-                            # From: http://www.blender.org/api/blender_python_api_2_62_1/bmesh.html#bmesh.from_edit_mesh
-                            # Get a BMesh representation
-                            collisionMesh = bpy.data.objects[collision.name].data
-                            bm = bmesh.new()   # create an empty BMesh
-                            bm.from_mesh(collisionMesh)   # fill it in from a Mesh
+                                # From: http://www.blender.org/api/blender_python_api_2_62_1/bmesh.html#bmesh.from_edit_mesh
+                                # Get a BMesh representation
+                                collisionMesh = bpy.data.objects[collision.name].data
+                                bm = bmesh.new()   # create an empty BMesh
+                                bm.from_mesh(collisionMesh)   # fill it in from a Mesh
                             
-                            verts = [v for v in bm.verts if (v.select==True and not v.hide)]
-                            edges = [e for e in bm.edges if (e.select==True and not e.hide)]
-                            faces = [f for f in bm.faces if (f.select==True and not f.hide)]
+                                verts = [v for v in bm.verts if (v.select==True and not v.hide)]
+                                edges = [e for e in bm.edges if (e.select==True and not e.hide)]
+                                faces = [f for f in bm.faces if (f.select==True and not f.hide)]
                             
-                            # Modify the BMesh, can do anything here...
-                            output = bmesh.ops.convex_hull(bm, input=(verts, edges, faces), use_existing_faces=True)
+                                # Modify the BMesh, can do anything here...
+                                output = bmesh.ops.convex_hull(bm, input=(verts, edges, faces), use_existing_faces=True)
                             
-                            # Finish up, write the bmesh back to the mesh
-                            bm.to_mesh(me)
-                            bm.free()
+                                # Finish up, write the bmesh back to the mesh
+                                bm.to_mesh(me)
+                                bm.free()
                             
-                            bpy.ops.mesh.select_all(action='DESELECT')
-                            bpy.ops.object.editmode_toggle()
+                                bpy.ops.mesh.select_all(action='DESELECT')
+                                bpy.ops.object.editmode_toggle()
                             
-                            print("Lovemesenpai.")
+                                print("Lovemesenpai.")
                         
-                    elif object.GXObj.separate_collision is True:
+                        elif object.GXObj.separate_collision is True:
                         
-                        bpy.ops.object.select_all(action='DESELECT')
-                        bpy.ops.object.select_pattern(pattern=object.GXObj.collision_object)
+                            bpy.ops.object.select_all(action='DESELECT')
+                            bpy.ops.object.select_pattern(pattern=object.GXObj.collision_object)
                         
-                        # A nice little error report if they have a bogus object name
-                        if len(context.selected_objects) == 0:
-                            self.report({'WARNING'}, 'The selected object has no defined collision object.')
+                            # A nice little error report if they have a bogus object name
+                            if len(context.selected_objects) == 0:
+                                self.report({'WARNING'}, 'The selected object has no defined collision object.')
                             
-                            DeleteObject(duplicate)
-                            object.name = objectName
-                            FocusObject(object)
+                                DeleteObject(duplicate)
+                                object.name = objectName
+                                FocusObject(object)
                             
-                            return {'FINISHED'}
+                                return {'FINISHED'}
                             
-                        bpy.context.scene.objects.active = bpy.data.objects[object.GXObj.collision_object]
+                            bpy.context.scene.objects.active = bpy.data.objects[object.GXObj.collision_object]
                             
-                        DuplicateObject(context.active_object)
-                        collision = context.active_object
+                            DuplicateObject(context.active_object)
+                            collision = context.active_object
                         
-                        collisionLoc = [0.0, 0.0, 0.0]
-                        collisionLoc[0] = collision.location[0] - originalLoc[0]
-                        collisionLoc[1] = collision.location[1] - originalLoc[1]
-                        collisionLoc[2] = collision.location[2] - originalLoc[2]
-                        collision.location = collisionLoc
+                            collisionLoc = [0.0, 0.0, 0.0]
+                            collisionLoc[0] = collision.location[0] - originalLoc[0]
+                            collisionLoc[1] = collision.location[1] - originalLoc[1]
+                            collisionLoc[2] = collision.location[2] - originalLoc[2]
+                            collision.location = collisionLoc
                         
                         
                         
-                    # If need be, setup the collision file path
-                    if object.GXObj.export_collision is True or int(scn.engine_select) is 2:
-                        collisionFilePath = defaultFilePath + objectName + "_CX" + ".fbx"
+                        # If need be, setup the collision file path
+                        if object.GXObj.export_collision is True or int(scn.engine_select) is 2:
+                            collisionFilePath = defaultFilePath + objectName + "_CX" + ".fbx"
                     
-                    # Out of formality and bug checking, name the collision object
-                    if int(scn.engine_select) is 1:
-                        collision.name = "UCX_" + objectName
+                        # Out of formality and bug checking, name the collision object
+                        if int(scn.engine_select) is 1:
+                            collision.name = "UCX_" + objectName
                         
-                    elif int(scn.engine_select) is 2:
-                        collision.name = objectName + "_CX"
+                        elif int(scn.engine_select) is 2:
+                            collision.name = objectName + "_CX"
                     
-                # Ensure the names of both objects are in sync
-                duplicate.name = objectName
+                    # Ensure the names of both objects are in sync
+                    duplicate.name = objectName
                 
-                # //////////// - FINAL EDITS - ///////////////////////////////////////////////////////////
-                #if int(scn.engine_select) is 2 and scn.correct_rotation is True:
-                    #duplicate.rotation_euler[0]
-                    #duplicate.rotation_euler[1]
-                    #duplicate.rotation_euler[2]
+                    # //////////// - FINAL EDITS - ///////////////////////////////////////////////////////////
+                    #if int(scn.engine_select) is 2 and scn.correct_rotation is True:
+                        #duplicate.rotation_euler[0]
+                        #duplicate.rotation_euler[1]
+                        #duplicate.rotation_euler[2]
                 
-                print("Rawr")
-                print(globalScale)
+                    print("Rawr")
+                    print(globalScale)
                 
-                # //////////// - EXPORT PROCESS - ////////////////////////////////////////////////////////
-                if object.GXObj.use_collision is True:
+                    # //////////// - EXPORT PROCESS - ////////////////////////////////////////////////////////
+                    if object.GXObj.use_collision is True:
                     
-                    if object.GXObj.export_collision is False and int(scn.engine_select) is not 2:
-                        print("UE4 Combined Collision Export")
-                        FocusObject(collision)
-                        SelectObject(duplicate)
-                        self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth)
+                        if object.GXObj.export_collision is False and int(scn.engine_select) is not 2:
+                            print("UE4 Combined Collision Export")
+                            FocusObject(collision)
+                            SelectObject(duplicate)
+                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth)
+                        
+                        else:
+                            FocusObject(duplicate)
+                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth)
+                        
+                            FocusObject(collision)
+                            self.ExportFBX(collisionFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth)
                         
                     else:
                         FocusObject(duplicate)
                         self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth)
-                        
-                        FocusObject(collision)
-                        self.ExportFBX(collisionFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth)
-                        
-                else:
-                    FocusObject(duplicate)
-                    self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth)
         
         
-                # Delete all the temporary objects
-                DeleteObject(duplicate)
+                    # Delete all the temporary objects
+                    DeleteObject(duplicate)
                 
-                # Re-select the previous junk
-                if collision is not None:
-                    DeleteObject(collision)
+                    # Re-select the previous junk
+                    if collision is not None:
+                        DeleteObject(collision)
                 
-                exportedObjects += 1
+                    exportedObjects += 1
                 
-                # Correct the names
-                object.name = objectName
+                    # Correct the names
+                    object.name = objectName
                 
                 
         # Re-select the objects previously selected
