@@ -81,3 +81,17 @@ def DeleteObjectByMemory(target):
         bpy.data.objects.remove(ob) 
         
     return
+    
+def MoveObject(target, context, location):
+	# This doesnt need the cursor, and will ensure nothing is animated
+	# in the process
+	
+	# Prevent auto keyframing from being active
+	autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+	context.scene.tool_settings.use_keyframe_insert_auto = False
+	
+	# Move the object
+	target.location = location
+	
+	# Restore the previous setting
+	context.scene.tool_settings.use_keyframe_insert_auto = autoKey

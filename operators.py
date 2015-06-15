@@ -1,6 +1,6 @@
 import bpy, bmesh
 from bpy.types import Operator
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DeleteObject
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DeleteObject, MoveObject
 
 class GT_Add_Path(Operator):
     """Creates a path from the menu"""
@@ -226,6 +226,8 @@ class GT_Export_Assets(Operator):
         globalScale = 1.0
         bakeSpaceTransform = False
         
+        # Generate some other system details in Blender to ensure the movement process doesn't interfere 
+        
         # //////////// - ENGINE PROPERTIES - ////////////////////////////////////////////////////////
         # Assign custom properties based on the export target
         if int(scn.engine_select) is 1:
@@ -297,7 +299,7 @@ class GT_Export_Assets(Operator):
                     FocusObject(object)
                     DuplicateObject(context.active_object)
                     originalLoc = object.location
-                    context.active_object.location = [0.0, 0.0, 0.0]
+                    MoveObject(context.active_object, context, [0.0, 0.0, 0.0])
                 
                     duplicate = context.active_object
                     collision = None
@@ -364,8 +366,7 @@ class GT_Export_Assets(Operator):
                             collisionLoc[0] = collision.location[0] - originalLoc[0]
                             collisionLoc[1] = collision.location[1] - originalLoc[1]
                             collisionLoc[2] = collision.location[2] - originalLoc[2]
-                            collision.location = collisionLoc
-                        
+                            MoveObject(collision, context, collisionLoc)
                         
                         
                         # If need be, setup the collision file path

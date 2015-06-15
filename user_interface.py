@@ -106,12 +106,12 @@ class GX_Selection(Panel):
             col_export.prop(obj, "enable_export")
             col_export.prop(obj, "apply_modifiers")
         
-            col_export.separator()
-            col_export.separator()
+            #col_export.separator()
+            #col_export.separator()
        
-            col_export.label(text="Asset Type")
-            col_export.separator()
-            col_export.prop(obj, "asset_type", text="")
+            #col_export.label(text="Asset Type")
+            #col_export.separator()
+            #col_export.prop(obj, "asset_type", text="")
 
             if scn.engine_select is '1':
                 col_export.separator()
