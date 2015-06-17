@@ -1,4 +1,4 @@
-from .update import Update_EnableExport, Update_ApplyModifiers, Update_UseCollision, Update_GenerateConvex, Update_SeparateCollision, Update_ExportCollision, Update_CollisionObject, Update_LocationDefault
+from .update import Update_EnableExport, Update_ApplyModifiers, Update_UseCollision, Update_GenerateConvex, Update_SeparateCollision, Update_ExportCollision, Update_CollisionObject, Update_LocationDefault, Update_ExportAnim, Update_ExportAnimFile, Update_ExportAnimActions
 
 
 import bpy
@@ -40,6 +40,14 @@ class GX_Scene_Preferences(PropertyGroup):
     
     path_list_index = IntProperty()
     
+    type_switch = EnumProperty(
+        name = "Selection Type Switch",
+        description = "Switches the selection editing mode between Static and Skeletal Mesh objects",
+        items=(
+        ('1', 'Static', 'Enables property editing for all selected static objects'),
+        ('2', 'Skeletal', 'Enables property editing for all selected skeletal objects')
+        ),)  
+    
 def GetLocationDefaults(scene, context):
     
     items = [
@@ -80,7 +88,7 @@ class GX_Object_Preferences(PropertyGroup):
         update = Update_ApplyModifiers)
     
     use_collision = BoolProperty(
-        name = "Use Collision",
+        name = "Export Collision",
         description = "Enables separate exporting of a collision mesh with the selected mesh.",
         default = False,
         update=Update_UseCollision)
@@ -113,6 +121,24 @@ class GX_Object_Preferences(PropertyGroup):
         description="The filepath default the selected objects will be exported to.",
         items=GetLocationDefaults,
         update=Update_LocationDefault)
+        
+    export_anim = BoolProperty(
+        name = "Export Animation",
+        description = "Enables the animations of skeletal meshes to be exported",
+        default = False,
+        update = Update_ExportAnim)
+        
+    export_anim_file = BoolProperty(
+        name = "Export Animation as File",
+        description = "Exports the animation as a separate file instead of being embedded in the same file as the skeletal mesh.",
+        default = False,
+        update = Update_ExportAnimFile)
+        
+    export_anim_actions = BoolProperty(
+        name = "Export Selected Actions",
+        description = "Enables the display of an action list, that lets you select what actions to export from the skeletal meshes selected.",
+        default = False,
+        update = Update_ExportAnimActions)
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////

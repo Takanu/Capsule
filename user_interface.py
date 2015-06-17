@@ -44,12 +44,18 @@ class GX_Export(Panel):
         col_export.operator("scene.gx_export")
         
         
-class GX_Selection(Panel):
+class GX_SelectionObject(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
     bl_label = "Selection"
     bl_category = "GEX"
+    
+    @classmethod
+    def poll(cls, context):
+        failTest = True
+    
+        return failTest
 
     def draw(self, context):
         
@@ -78,13 +84,42 @@ class GX_Selection(Panel):
             scn = context.scene.GXScn
             obj = context.object.GXObj
             ob = context.object
+            
+            # Need to figure out if only one object is selected and whather any selected objects have an armature
+            singleObject = False
+            skeletalFound = False
+            staticFound = False
+            type = 1
+            
+            if len(context.selected_objects) is 1:
+                singleObject = True
+            
+            for sel in context.selected_objects:
+                if sel.type == 'MESH':
+                    foundLocal = False
+                    
+                    for modifier in sel.modifiers: 
+                        if modifier.type == 'ARMATURE':
+                            skeletalFound = True
+                            foundLocal = True
+                            type = 2
+                        
+                    if foundLocal is False:
+                        staticFound = True
+                
+                
+            if skeletalFound is not True:
+                type = 1
         
             col_export = layout.column(align=True)
             col_export.alignment = 'EXPAND'
             
             # Work out what kind of object label should be used
             if len(context.selected_objects) is 1:
-                col_export.label(text=context.object.name, icon="OBJECT_DATA")
+                if type is 1:
+                    col_export.label(text=context.object.name, icon="OBJECT_DATA")
+                else:
+                    col_export.label(text=context.object.name, icon="OUTLINER_OB_ARMATURE")
                 
             else:
                 objectCount = 0
@@ -96,7 +131,8 @@ class GX_Selection(Panel):
                         selected.append(sel)
                 
                 if objectCount == 1:
-                    col_export.label(text=selected[0].name, icon="OBJECT_DATA")
+                    if type is 1:
+                        col_export.label(text=selected[0].name, icon="OBJECT_DATA")
                 
                 else:
                     objectLabel = str(objectCount) + " valid objects selected"
@@ -112,37 +148,53 @@ class GX_Selection(Panel):
             #col_export.label(text="Asset Type")
             #col_export.separator()
             #col_export.prop(obj, "asset_type", text="")
-
-            if scn.engine_select is '1':
-                col_export.separator()
-                col_export.separator()
-                col_export.label(text="Collision")
-                col_export.prop(obj, "use_collision")
-                col_export.prop(obj, "export_collision")
-                #col_export.prop(obj, "generate_convex")
-                col_export.prop(obj, "separate_collision")
-        
-                if obj.separate_collision is True:
-                    col_export.separator()
-                    col_collision = col_export.row(align=True)
-                    col_collision.prop(obj, "collision_object", icon="OBJECT_DATA")
-                    col_collision.operator("scene.gx_setcollision", text="", icon="FORWARD")
-                    col_collision.operator("scene.gx_clearcollision", text="", icon="X")
+            
+            col_export.separator()
+            col_export.separator()
+            
+            
                 
-            elif scn.engine_select is '2':
+            if singleObject is False and skeletalFound is True and staticFound is True:
+                col_export.row().prop(scn, "type_switch", expand=True)
                 col_export.separator()
                 col_export.separator()
-                col_export.label(text="Collision (exported as file)")
-                col_export.prop(obj, "use_collision")
-                #col_export.prop(obj, "generate_convex")
-                col_export.prop(obj, "separate_collision")
+                type = int(scn.type_switch)
+            
+            
+            if type == 1:
+                if scn.engine_select is '1':
+                    col_export.label(text="Collision")
+                    col_export.prop(obj, "use_collision")
+                    col_export.prop(obj, "export_collision")
+                    #col_export.prop(obj, "generate_convex")
+                    col_export.prop(obj, "separate_collision")
         
-                if obj.separate_collision is True:
-                    col_export.separator()
-                    col_collision = col_export.row(align=True)
-                    col_collision.prop(obj, "collision_object", icon="OBJECT_DATA")
-                    col_collision.operator("scene.gx_setcollision", text="", icon="FORWARD")
-                    col_collision.operator("scene.gx_clearcollision", text="", icon="X")
+                    if obj.separate_collision is True:
+                        col_export.separator()
+                        col_collision = col_export.row(align=True)
+                        col_collision.prop(obj, "collision_object", icon="OBJECT_DATA")
+                        col_collision.operator("scene.gx_setcollision", text="", icon="FORWARD")
+                        col_collision.operator("scene.gx_clearcollision", text="", icon="X")
+                
+                elif scn.engine_select is '2':
+                    col_export.label(text="Collision (exported as file)")
+                    col_export.prop(obj, "use_collision")
+                    #col_export.prop(obj, "generate_convex")
+                    col_export.prop(obj, "separate_collision")
+        
+                    if obj.separate_collision is True:
+                        col_export.separator()
+                        col_collision = col_export.row(align=True)
+                        col_collision.prop(obj, "collision_object", icon="OBJECT_DATA")
+                        col_collision.operator("scene.gx_setcollision", text="", icon="FORWARD")
+                        col_collision.operator("scene.gx_clearcollision", text="", icon="X")
+            
+            
+            else:
+                col_export.label(text="Animation")
+                col_export.prop(obj, "export_anim")
+                col_export.prop(obj, "export_anim_file")
+                col_export.prop(obj, "export_anim_actions")
         
             col_export.separator()
             col_export.separator()

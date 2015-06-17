@@ -170,3 +170,67 @@ def Update_LocationDefault(self, context):
             object.GXObj.location_default = value
             
     return None 
+    
+    
+def Update_ExportAnim(self, context):
+    
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.GXObj:
+    
+        # Keep a record of the selected objects to update
+        selected = []
+    
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
+    
+        # Obtain the value changed
+        value = self.export_anim
+        
+        # Run through the objects
+        for object in selected:
+            object.GXObj.export_anim = value
+            
+    return None 
+    
+def Update_ExportAnimFile(self, context):
+    
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.GXObj:
+    
+        # Keep a record of the selected objects to update
+        selected = []
+    
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
+    
+        # Obtain the value changed
+        value = self.export_anim_file
+        
+        # Run through the objects
+        for object in selected:
+            object.GXObj.export_anim_file = value
+            
+    return None 
+    
+def Update_ExportAnimActions(self, context):
+    
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.GXObj:
+    
+        # Keep a record of the selected objects to update
+        selected = []
+    
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
+    
+        # Obtain the value changed
+        value = self.export_anim_actions
+        
+        # Run through the objects
+        for object in selected:
+            object.GXObj.export_anim_actions = value
+            
+    return None 
