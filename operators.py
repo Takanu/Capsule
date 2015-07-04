@@ -1,6 +1,7 @@
 import bpy, bmesh
 from bpy.types import Operator
 from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects
+from mathutils import Vector
 
 class GT_Add_Path(Operator):
     """Creates a path from the menu"""
@@ -199,10 +200,10 @@ class GT_Export_Assets(Operator):
         bake_anim_use_all_bones=useAnim,
         bake_anim_use_nla_strips=False,
         bake_anim_use_all_actions=useAnimAction,
-        #use_anim=useAnim,
-        #use_anim_action_all=useAnimAction,
-        #use_default_take=False,
-        #use_anim_optimize=useAnimOptimise,
+        use_anim=useAnim,
+        use_anim_action_all=useAnimAction,
+        use_default_take=False,
+        use_anim_optimize=useAnimOptimise,
         anim_optimize_precision=6.0,
         path_mode='AUTO',
         embed_textures=False,
@@ -255,7 +256,7 @@ class GT_Export_Assets(Operator):
             print("Unity selected")
             axisForward = "-Z"
             axisUp = "Y"
-            globalScale = 0.1
+            globalScale = 1
             bakeSpaceTransform = True
 
 
@@ -273,20 +274,32 @@ class GT_Export_Assets(Operator):
                     armature = None
 
                     objectTypes = {'MESH'}
-                    useAnim = object.GXObj.export_anim
-                    useAnimAction = object.GXObj.export_anim
-                    useAnimOptimise = object.GXObj.export_anim
+                    useAnim = False
+                    useAnimAction = False
+                    useAnimOptimise = False
+
+                    exportAnimSeparate = False
 
                     # See if the object is an armature
                     for modifier in object.modifiers:
                         if modifier.type == 'ARMATURE':
                             isArmature = True
                             objectTypes = {'MESH', 'ARMATURE'}
-                            useAnim = True
-                            useAnimAction = True
-                            useAnimOptimise = True
+
+                            if exportAnimSeparate is True:
+                                useAnim = False
+                                useAnimAction = False
+                                useAnimOptimise = False
+
+                            else:
+                                useAnim = object.GXObj.export_anim
+                                useAnimAction = object.GXObj.export_anim
+                                useAnimOptimise = object.GXObj.export_anim
 
                             armature = modifier.object
+
+                            exportAnimSeparate = object.GXObj.export_anim_file
+
 
                     # //////////// - FILE PATH - ////////////////////////////////////////////////////////
                     # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
@@ -312,33 +325,16 @@ class GT_Export_Assets(Operator):
                     objectFilePath += object.name
                     objectFilePath += ".fbx"
 
-                    objectName = object.name
-                    object.name = objectName + "TEMP"
-
-
-                    # Duplicate the object(s) and reset its position
-                    duplicate = None
+                    # Store the objects initial position for object movement
+                    # Also set file path names
                     collision = None
                     collisionFilePath = ""
-                    armatureDuplicate = None
-                    originaLoc = (0.0, 0.0, 0.0)
+                    animationFilePath = ""
 
-                    if isArmature is True:
-                        DuplicateObjects([object, armature])
-
-                        for sel in context.selected_objects:
-                            if sel.type == 'ARMATURE':
-                                armatureDuplicate = sel
-                            else:
-                                duplicate = sel
-
-                    else:
-                        DuplicateObject(context.active_object)
-                        originalLoc = object.location
-
-                        duplicate = context.active_object
-                        collision = None
-                        collisionFilePath = ""
+                    originalLoc = Vector((0.0, 0.0, 0.0))
+                    originalLoc[0] = object.location[0]
+                    originalLoc[1] = object.location[1]
+                    originalLoc[2] = object.location[2]
 
 
                     # //////////// - COLLISION SETUP - ////////////////////////////////////////////////////////
@@ -385,9 +381,7 @@ class GT_Export_Assets(Operator):
                             # A nice little error report if they have a bogus object name
                             if len(context.selected_objects) == 0:
                                 self.report({'WARNING'}, 'The selected object has no defined collision object.')
-
-                                DeleteObject(duplicate)
-                                object.name = objectName
+                                
                                 FocusObject(object)
 
                                 return {'FINISHED'}
@@ -406,36 +400,36 @@ class GT_Export_Assets(Operator):
 
                         # If need be, setup the collision file path
                         if object.GXObj.export_collision is True or int(scn.engine_select) is 2:
-                            collisionFilePath = defaultFilePath + objectName + "_CX" + ".fbx"
+                            collisionFilePath = defaultFilePath + object.name + "_CX" + ".fbx"
 
                         # Out of formality and bug checking, name the collision object
                         if int(scn.engine_select) is 1:
-                            collision.name = "UCX_" + objectName
+                            collision.name = "UCX_" + object.name
 
                         elif int(scn.engine_select) is 2:
-                            collision.name = objectName + "_CX"
+                            collision.name = object.name + "_CX"
 
 
                     # //////////// - ANIMATION SETUP - ///////////////////////////////////////////////////////
                     if isArmature is True:
                         print("Animation is true?")
 
-                    # Ensure the names of both objects are in sync
-                    duplicate.name = objectName
+                        if exportAnimSeparate is True:
+                            animFileName = defaultFilePath + object.name + "_AM" + ".fbx"
 
 
                     # /////////// - OBJECT MOVEMENT - ////////////////////////////////////////////////////////
                     if object.GXObj.use_collision is True and isArmature is False:
                         targets = [collision]
-                        MoveObjects(duplicate, targets, context, (0.0, 0.0, 0.0))
+                        MoveObjects(object, targets, context, (0.0, 0.0, 0.0))
 
                     elif isArmature is True:
                         print("Moving Armature")
-                        targets = [armatureDuplicate]
-                        MoveObjects(duplicate, targets, context, (0.0, 0.0, 0.0))
+                        targets = [armature]
+                        MoveObjects(object, targets, context, (0.0, 0.0, 0.0))
 
                     else:
-                        MoveObject(duplicate, context, (0.0, 0.0, 0.0))
+                        MoveObject(object, context, (0.0, 0.0, 0.0))
 
 
                     print("Rawr")
@@ -446,12 +440,12 @@ class GT_Export_Assets(Operator):
 
                         if object.GXObj.export_collision is False and int(scn.engine_select) is not 2:
                             print("UE4 Combined Collision Export")
-                            FocusObject(duplicate)
+                            FocusObject(object)
                             SelectObject(collision)
                             self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
 
                         else:
-                            FocusObject(duplicate)
+                            FocusObject(object)
                             self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
 
                             FocusObject(collision)
@@ -459,39 +453,58 @@ class GT_Export_Assets(Operator):
 
                     # Animation Export
                     elif isArmature is True:
+
                         print("Armature Export")
-                        FocusObject(duplicate)
-                        SelectObject(armatureDuplicate)
-                        self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
+
+                        # If Animations need to be exported separately
+                        if exportAnimSeparate is True:
+                            objectTypes = {'MESH'}
+                            animTypes = {'ARMATURE'}
+
+                            FocusObject(object)
+                            SelectObject(armature)
+                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, False, False, False)
+
+                            self.ExportFBX(animFileName, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, animTypes, True, True, True)
+
+
+                        else:
+                            FocusObject(object)
+                            SelectObject(armature)
+                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
 
                     else:
                         print("Standard Export")
-                        FocusObject(duplicate)
+                        FocusObject(object)
                         self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
 
 
-                    # Delete all the temporary objects
-                    DeleteObject(duplicate)
-
-                    # Re-select the previous junk
-                    if collision is not None:
+                    # Delete the collision object if a duplicate has been created.
+                    if collision is not None and object.GXObj.separate_collision is False:
                         DeleteObject(collision)
 
-                    if armatureDuplicate is not None:
-                        DeleteObject(armatureDuplicate)
+                    # Otherwise move everything back to their initial positions
+                    if object.GXObj.use_collision is True and isArmature is False:
+                        targets = [collision]
+                        MoveObjects(object, targets, context, originalLoc)
 
+                    elif isArmature is True:
+                        print("Moving Armature")
+                        targets = [armature]
+                        MoveObjects(object, targets, context, originalLoc)
+
+                    else:
+                        MoveObject(object, context, originalLoc)
+
+                    # Count up exported objects
                     exportedObjects += 1
-
-                    # Correct the names
-                    object.name = objectName
 
 
         # Re-select the objects previously selected
+        FocusObject(active)
+
         for sel in selected:
             SelectObject(sel)
-
-        SelectObject(active)
-        ActivateObject(active)
 
         text1 = "Finished exporting "
         text2Single = " object."

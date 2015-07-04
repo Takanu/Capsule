@@ -12,7 +12,7 @@ bl_info = {
     "tracker_url": "",
     "category": "Import-Export"
 }
-
+    
 # Start importing all the addon files
 # The init file just gets things started, no code needs to be placed here.
 
@@ -46,3 +46,4 @@ def unregister():
 
 if __name__ == "__main__":
     register()
+
