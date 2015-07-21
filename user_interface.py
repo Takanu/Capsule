@@ -142,6 +142,12 @@ class GX_SelectionObject(Panel):
             col_export.prop(obj, "enable_export")
             col_export.prop(obj, "apply_modifiers")
 
+<<<<<<< Updated upstream
+=======
+            if obj.apply_modifiers is True:
+                col_export.prop(obj, "triangulate")
+
+>>>>>>> Stashed changes
             #col_export.separator()
             #col_export.separator()
 
@@ -194,7 +200,11 @@ class GX_SelectionObject(Panel):
                 col_export.label(text="Animation")
                 col_export.prop(obj, "export_anim")
                 col_export.prop(obj, "export_anim_file")
+<<<<<<< Updated upstream
                 col_export.prop(obj, "export_anim_actions")
+=======
+                #col_export.prop(obj, "export_anim_actions")
+>>>>>>> Stashed changes
 
             col_export.separator()
             col_export.separator()

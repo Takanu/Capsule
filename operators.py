@@ -211,6 +211,34 @@ class GT_Export_Assets(Operator):
         use_batch_own_dir=False,
         use_metadata=False)
 
+<<<<<<< Updated upstream
+=======
+    def AddTriangulate(self, object):
+
+        modType = {'TRIANGULATE'}
+
+        for modifier in object.modifiers:
+            if modifier.type in modType:
+                return True
+
+        bpy.ops.object.modifier_add(type='TRIANGULATE')
+
+        for modifier in object.modifiers:
+            if modifier.type in modType:
+                print("Triangulation Found")
+                modifier.quad_method = 'FIXED_ALTERNATE'
+                modifier.ngon_method = 'CLIP'
+                return False
+
+    def RemoveTriangulate(self, object):
+
+        modType = {'TRIANGULATE'}
+
+        for modifier in object.modifiers:
+            if modifier.type in modType:
+                bpy.ops.object.modifier_remove(modifier=modifier.name)
+
+>>>>>>> Stashed changes
 
     def execute(self, context):
         print("Self = ")
@@ -260,6 +288,15 @@ class GT_Export_Assets(Operator):
             bakeSpaceTransform = True
 
 
+<<<<<<< Updated upstream
+=======
+
+        # OBJECT CYCLE
+        ###############################################################
+        ###############################################################
+
+
+>>>>>>> Stashed changes
         # Cycle through the available objects
         for object in context.scene.objects:
             if object.type == 'MESH':
@@ -269,6 +306,8 @@ class GT_Export_Assets(Operator):
 
                     # Obtain some object-specific preferences
                     applyModifiers = object.GXObj.apply_modifiers
+                    useTriangulate = object.GXObj.triangulate
+                    hasTriangulate = False
                     meshSmooth = 'EDGE'
                     isArmature = False
                     armature = None
@@ -302,6 +341,8 @@ class GT_Export_Assets(Operator):
 
 
                     # //////////// - FILE PATH - ////////////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
                     # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
                     enumIndex = int(object.GXObj.location_default)
 
@@ -338,6 +379,9 @@ class GT_Export_Assets(Operator):
 
 
                     # //////////// - COLLISION SETUP - ////////////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+
                     # If collision is turned on, sort that shit out
                     if object.GXObj.use_collision is True and isArmature is False:
 
@@ -381,7 +425,11 @@ class GT_Export_Assets(Operator):
                             # A nice little error report if they have a bogus object name
                             if len(context.selected_objects) == 0:
                                 self.report({'WARNING'}, 'The selected object has no defined collision object.')
+<<<<<<< Updated upstream
                                 
+=======
+
+>>>>>>> Stashed changes
                                 FocusObject(object)
 
                                 return {'FINISHED'}
@@ -411,6 +459,7 @@ class GT_Export_Assets(Operator):
 
 
                     # //////////// - ANIMATION SETUP - ///////////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
                     if isArmature is True:
                         print("Animation is true?")
 
@@ -418,7 +467,18 @@ class GT_Export_Assets(Operator):
                             animFileName = defaultFilePath + object.name + "_AM" + ".fbx"
 
 
+<<<<<<< Updated upstream
+=======
+
+                    # //////////// - MODIFIER SETUP - ///////////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+                    if useTriangulate is True and applyModifiers is True:
+                        hasTriangulate = self.AddTriangulate(object)
+
+
+>>>>>>> Stashed changes
                     # /////////// - OBJECT MOVEMENT - ////////////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
                     if object.GXObj.use_collision is True and isArmature is False:
                         targets = [collision]
                         MoveObjects(object, targets, context, (0.0, 0.0, 0.0))
@@ -436,6 +496,7 @@ class GT_Export_Assets(Operator):
                     print(globalScale)
 
                     # //////////// - EXPORT PROCESS - ////////////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
                     if object.GXObj.use_collision is True and isArmature is False:
 
                         if object.GXObj.export_collision is False and int(scn.engine_select) is not 2:
@@ -496,6 +557,13 @@ class GT_Export_Assets(Operator):
                     else:
                         MoveObject(object, context, originalLoc)
 
+<<<<<<< Updated upstream
+=======
+                    # Remove any triangulation modifiers
+                    if useTriangulate is True and applyModifiers is True and hasTriangulate is False:
+                        self.RemoveTriangulate(object)
+
+>>>>>>> Stashed changes
                     # Count up exported objects
                     exportedObjects += 1
 

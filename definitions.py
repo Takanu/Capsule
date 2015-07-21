@@ -5,180 +5,178 @@ from mathutils import Vector
 #//////////////////// - BASIC DEFINITIONS - ///////////////////////
 
 def FocusObject(target):
-    
+
     # If the target isnt visible, MAKE IT FUCKING VISIBLE.
     if target.hide is True:
         target.hide = False
-        
+
     if target.hide_select is True:
         target.hide_select = False
-    
+
     #### Select and make target active
-    bpy.ops.object.select_all(action='DESELECT')  
-    bpy.context.scene.objects.active = bpy.data.objects[target.name]
-    bpy.ops.object.select_pattern(pattern=target.name) 
-    
-def SelectObject(target):
-    
-    # If the target isnt visible, MAKE IT FUCKING VISIBLE.
-    if target.hide is True:
-        target.hide = False
-        
-    if target.hide_select is True:
-        target.hide_select = False
-    
-    target.select = True
-    
-def ActivateObject(target):
-    
-    # If the target isnt visible, MAKE IT FUCKING VISIBLE.
-    if target.hide is True:
-        target.hide = False
-        
-    if target.hide_select is True:
-        target.hide_select = False
-    
-    bpy.context.scene.objects.active = bpy.data.objects[target.name]
-    
-def DuplicateObject(target):
-    
-    #### Select and make target active
-    bpy.ops.object.select_all(action='DESELECT')  
+    bpy.ops.object.select_all(action='DESELECT')
     bpy.context.scene.objects.active = bpy.data.objects[target.name]
     bpy.ops.object.select_pattern(pattern=target.name)
-    
+
+def SelectObject(target):
+
+    # If the target isnt visible, MAKE IT FUCKING VISIBLE.
+    if target.hide is True:
+        target.hide = False
+
+    if target.hide_select is True:
+        target.hide_select = False
+
+    target.select = True
+
+def ActivateObject(target):
+
+    # If the target isnt visible, MAKE IT FUCKING VISIBLE.
+    if target.hide is True:
+        target.hide = False
+
+    if target.hide_select is True:
+        target.hide_select = False
+
+    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+
+def DuplicateObject(target):
+
+    #### Select and make target active
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    bpy.ops.object.select_pattern(pattern=target.name)
+
     # Duplicate the object
     bpy.ops.object.duplicate_move()
-    
+
     # Now switch the active object to the duplicate
     duplicate = bpy.context.active_object
-    
+
     # Now set the transform details
     duplicate.rotation_euler = target.rotation_euler
     duplicate.rotation_axis_angle = target.rotation_axis_angle
-    
+
     # To preserve the scale, it has to be applied.  Sorreh!
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    
+
 def DuplicateObjects(targets):
-    
+
     #### Select and make target active
-    bpy.ops.object.select_all(action='DESELECT')  
-    
+    bpy.ops.object.select_all(action='DESELECT')
+
     for target in targets:
         bpy.context.scene.objects.active = bpy.data.objects[target.name]
         bpy.ops.object.select_pattern(pattern=target.name)
-    
+
     # Duplicate the object
     bpy.ops.object.duplicate_move()
-    
+
     # Now switch the active object to the duplicate
     duplicate = bpy.context.active_object
-    
+
     # Now set the transform details
     duplicate.rotation_euler = target.rotation_euler
     duplicate.rotation_axis_angle = target.rotation_axis_angle
-    
+
     # To preserve the scale, it has to be applied.  Sorreh!
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    
+
 def DeleteObject(target):
-    
+
     # This needs proper data deletion, and all delete operations need to use this
     FocusObject(target)
     bpy.ops.object.delete()
-    
+
     # Currently removing just in case...
-    DeleteObjectByMemory(target)  
-    
+    DeleteObjectByMemory(target)
+
 def DeleteObjectByMemory(target):
-    
+
     try:
         ob = bpy.data.objects[target.name]
-    
+
     except:
         ob = None
-    
+
     if ob != None:
         ob.user_clear()
-        bpy.data.objects.remove(ob) 
-        
+        bpy.data.objects.remove(ob)
+
     return
-    
+
 def MoveObject(target, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
-    
+
     print("Moving Object")
-	
+
     # Prevent auto keyframing from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
     lockTransform = target.lock_location
-    
+
     context.scene.tool_settings.use_keyframe_insert_auto = False
     target.lock_location = (False, False, False)
-    
+
     # Move the object
     FocusObject(target)
     target.location = location
-    
+
     # Preserving the objects location has to happen again, e_e
     cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
-    
+
     # Move the cursor to the location
     bpy.data.scenes[bpy.context.scene.name].cursor_location = location
-    
+
     # Focus the object
     FocusObject(target)
-    
+
     # SNAP IT
     bpy.ops.view3D.snap_selected_to_cursor()
-    
+
     # Restore the location
     bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
-    
+
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     target.lock_location = lockTransform
-    
-    
+
+
 def MoveObjects(targetLead, targets, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
-    
+
     print("Moving Object")
-	
+
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
     lockTransform = targetLead.lock_location
-    
+
     context.scene.tool_settings.use_keyframe_insert_auto = False
     targetLead.lock_location = (False, False, False)
-    
+
     # Calculate the movement difference
     locationDiff = Vector((0.0, 0.0, 0.0))
     locationVec = Vector(location)
     locationDiff = locationVec - targetLead.location
-    
+
     # Move the first object
     FocusObject(targetLead)
     targetLead.location = location
-    
+
     # Move every other object by the differential
     bpy.ops.object.select_all(action='DESELECT')
     for object in targets:
         lockTransformSel = object.lock_location
         object.lock_location = (False, False, False)
-        
+
         FocusObject(object)
         bpy.ops.transform.translate(value=locationDiff)
-        
+
         object.lock_location = lockTransformSel
-        
-    
+
+
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     targetLead.lock_location = lockTransform
-    
-    
