@@ -111,6 +111,8 @@ class GT_Set_Collision_Object(Operator):
         # Add a timer to enable a search for a selected object
         self._timer = context.window_manager.event_timer_add(0.05, context.window)
 
+        bpy.ops.object.select_all(action='DESELECT')
+
         # Set the header text with USEFUL INSTRUCTIONS :O
         context.area.header_text_set(
             "Select the object you want to use as a collision object.  " +
@@ -128,12 +130,12 @@ class GT_Set_Collision_Object(Operator):
             return{'FINISHED'}
 
         # When an object is selected, set it as a child to the object, and finish.
-        elif event.type == 'TIMER':
+        elif event.type == 'RIGHTMOUSE':
             print('TIMER')
 
             # ALSO, check its not a dummy or origin object
-            if context.scene.objects.active.name != self.object.name:
-                self.object.GXObj.collision_object = context.scene.objects.active.name
+            if context.selected_objects != None and len(context.selected_objects) == 1:
+                self.object.GXObj.collision_object = context.selected_objects[0].name
                 FocusObject(self.object)
 
                 self.finish()
@@ -164,6 +166,186 @@ class GT_Clear_Collision_Object(Operator):
 
         return {'FINISHED'}
 
+
+class GT_Refresh_Groups(Operator):
+    """Generates a list of groups to browse"""
+
+    bl_idname = "scene.gx_refgroups"
+    bl_label = "Refresh"
+
+    def execute(self, context):
+        print(self)
+
+        scn = context.scene.GXScn
+        obj = context.active_object.GXObj
+
+        scn.group_list.clear()
+
+        for group in bpy.data.groups:
+            groupEntry = scn.group_list.add()
+            groupEntry.name = group.name
+
+
+        return {'FINISHED'}
+
+class GT_Set_Root_Object(Operator):
+    """Lets you click on another object to set it as the root object for the group."""
+
+    bl_idname = "scene.gx_setroot"
+    bl_label = "Remove"
+
+    def finish(self):
+        # This def helps us tidy the shit we started
+        # Restore the active area's header to its initial state.
+        bpy.context.area.header_text_set()
+
+
+    def execute(self, context):
+        print("invoke!")
+        print("Is this new?")
+
+        scn = context.scene.GXScn
+        obj = context.active_object.GXObj
+
+        # Deselect all objects, then go into the modal loop
+        self.object = context.scene.objects.active
+
+        # Add the modal handler and LETS GO!
+        context.window_manager.modal_handler_add(self)
+
+        # Add a timer to enable a search for a selected object
+        self._timer = context.window_manager.event_timer_add(0.05, context.window)
+
+        bpy.ops.object.select_all(action='DESELECT')
+
+        # Set the header text with USEFUL INSTRUCTIONS :O
+        context.area.header_text_set(
+            "Select the object you want to use as a root object.  " +
+            "RMB: Select Collision Object, Esc: Exit"
+        )
+
+        return {'RUNNING_MODAL'}
+
+    def modal(self,context,event):
+        # If escape is pressed, exit
+        if event.type in {'ESC'}:
+            self.finish()
+
+            # This return statement has to be within the same definition (cant defer to finish())
+            return{'FINISHED'}
+
+        # When an object is selected, set it as a child to the object, and finish.
+        elif event.type == 'RIGHTMOUSE':
+            print('TIMER')
+
+            # ALSO, check its not a dummy or origin object
+            if context.selected_objects != None and len(context.selected_objects) == 1:
+
+                entry = context.scene.GXScn.group_list[context.scene.GXScn.group_list_index]
+                for group in bpy.data.groups:
+                    if group.name == entry.name:
+
+                        for object in group.objects:
+                            if object.name == context.selected_objects[0].name:
+                                if object.name.find("_LP") != -1:
+                                    group.GXGrp.root_object = context.selected_objects[0].name
+
+                                    FocusObject(self.object)
+                                    self.finish()
+                                    return{'FINISHED'}
+
+                                else:
+                                    self.report({'WARNING'}, 'The object selected is not a low-poly object, PAY ATTENTION OmO')
+
+                                    FocusObject(self.object)
+                                    self.finish()
+                                    return{'FINISHED'}
+
+
+
+                        self.report({'WARNING'}, 'The object selected is not in the same group, TRY AGAIN O_O')
+
+                        FocusObject(self.object)
+                        self.finish()
+                        return{'FINISHED'}
+
+        return {'PASS_THROUGH'}
+
+    def cancel(self, context):
+        context.window_manager.event_timer_remove(self._timer)
+        return {'FINISHED'}
+
+class GT_Clear_Root_Object(Operator):
+    """Clears the currently chosen root object."""
+
+    bl_idname = "scene.gx_clearroot"
+    bl_label = "Remove"
+
+    def execute(self, context):
+        print(self)
+
+        scn = context.scene.GXScn
+        obj = context.active_object.GXObj
+
+        entry = context.scene.GXScn.group_list[context.scene.GXScn.group_list_index]
+        for group in bpy.data.groups:
+            if group.name == entry.name:
+                group.GXGrp.root_object = ""
+                return{'FINISHED'}
+
+        return {'FINISHED'}
+
+
+class GT_Reset_Scene(Operator):
+    """Resets all object and group variables in the file."""
+
+    bl_idname = "scene.gx_resetscene"
+    bl_label = "Reset Scene"
+
+    def execute(self, context):
+        print(self)
+
+        exportedObjects = 0
+
+        # Keep a record of the selected and active objects to restore later
+        active = None
+        selected = []
+
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
+
+        active = context.active_object
+
+        for group in bpy.data.groups:
+            group.GXGrp.export_group = False
+            group.GXGrp.auto_assign = False
+            group.GXGrp.location_default = '0'
+
+        for object in bpy.data.objects:
+            obj = object.GXObj
+            FocusObject(object)
+
+            obj.enable_export = False
+            obj.apply_modifiers = False
+            obj.triangulate = False
+            obj.use_collision = False
+            obj.generate_convex = False
+            obj.separate_collision = False
+            obj.collision_object = ""
+            obj.export_collision = False
+            obj.location_default = '0'
+            obj.export_anim = False
+            obj.export_anim_file = False
+            obj.export_anim_actions = False
+
+        # Re-select the objects previously selected
+        FocusObject(active)
+
+        for sel in selected:
+            SelectObject(sel)
+
+        return {'FINISHED'}
 
 
 class GT_Export_Assets(Operator):
@@ -211,8 +393,6 @@ class GT_Export_Assets(Operator):
         use_batch_own_dir=False,
         use_metadata=False)
 
-<<<<<<< Updated upstream
-=======
     def AddTriangulate(self, object):
 
         modType = {'TRIANGULATE'}
@@ -238,7 +418,32 @@ class GT_Export_Assets(Operator):
             if modifier.type in modType:
                 bpy.ops.object.modifier_remove(modifier=modifier.name)
 
->>>>>>> Stashed changes
+
+    def GetObjectFilePath(self, scn, locationEnum, fileName):
+        # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
+        enumIndex = int(locationEnum)
+        objectFilePath = ""
+
+        if enumIndex == 0:
+            return {'1'}
+
+        print("Are we still going for some reason?")
+        enumIndex -= 1
+        defaultFilePath = scn.path_defaults[enumIndex].path
+
+        if defaultFilePath == "":
+            return {'2'}
+
+        if defaultFilePath.find('//') != -1:
+            return {'3'}
+
+        objectFilePath = defaultFilePath
+        objectFilePath += fileName
+        objectFilePath += ".fbx"
+
+        return objectFilePath
+
+
 
     def execute(self, context):
         print("Self = ")
@@ -248,6 +453,7 @@ class GT_Export_Assets(Operator):
         obj = context.active_object.GXObj
 
         exportedObjects = 0
+        exportedGroups = 0
 
         # Keep a record of the selected and active objects to restore later
         active = None
@@ -288,15 +494,12 @@ class GT_Export_Assets(Operator):
             bakeSpaceTransform = True
 
 
-<<<<<<< Updated upstream
-=======
 
         # OBJECT CYCLE
         ###############################################################
         ###############################################################
 
 
->>>>>>> Stashed changes
         # Cycle through the available objects
         for object in context.scene.objects:
             if object.type == 'MESH':
@@ -343,28 +546,26 @@ class GT_Export_Assets(Operator):
                     # //////////// - FILE PATH - ////////////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
-                    # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
-                    enumIndex = int(object.GXObj.location_default)
+                    objectFilePath = ""
+                    objectFilePath = self.GetObjectFilePath(scn, object.GXObj.location_default, object.name)
 
-                    if enumIndex == 0:
-                        FocusObject(object)
+                    if objectFilePath == "":
+                        self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
+                        return {'CANCELLED'}
+
+                    if objectFilePath == {'1'}:
                         self.report({'WARNING'}, 'The selected object has no set file path default.  Set it plzplzplz.')
-                        return {'FINISHED'}
+                        return {'CANCELLED'}
 
-                    enumIndex -= 1
-                    defaultFilePath = scn.path_defaults[enumIndex].path
+                    if objectFilePath == {'2'}:
+                        self.report({'WARNING'}, 'The selected objects file path default has no file path.  A file path is required to export.')
+                        return {'CANCELLED'}
 
-                    if defaultFilePath == "":
-                        self.report({'WARNING'}, 'The currently highlighted file path default has no file path.  A file path is required to export.')
-                        return {'FINISHED'}
+                    if objectFilePath == {'3'}:
+                        self.report({'WARNING'}, 'The selected objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
+                        return {'CANCELLED'}
 
-                    if defaultFilePath.find('//') != -1:
-                        self.report({'WARNING'}, 'Relative path used for the selected path default, please tick off the Relative Path option when choosing the file path.')
-                        return {'FINISHED'}
-
-                    objectFilePath = defaultFilePath
-                    objectFilePath += object.name
-                    objectFilePath += ".fbx"
+                    print(objectFilePath)
 
                     # Store the objects initial position for object movement
                     # Also set file path names
@@ -390,7 +591,7 @@ class GT_Export_Assets(Operator):
                             DuplicateObject(context.active_object)
                             collision = context.active_object
 
-                            # Ensure its collidable if the user wants us to
+                            # Generate collision on request
                             if object.GXObj.generate_convex is True:
                                 bpy.ops.object.editmode_toggle()
                                 bpy.ops.mesh.select_all(action='SELECT')
@@ -425,11 +626,7 @@ class GT_Export_Assets(Operator):
                             # A nice little error report if they have a bogus object name
                             if len(context.selected_objects) == 0:
                                 self.report({'WARNING'}, 'The selected object has no defined collision object.')
-<<<<<<< Updated upstream
-                                
-=======
 
->>>>>>> Stashed changes
                                 FocusObject(object)
 
                                 return {'FINISHED'}
@@ -466,17 +663,12 @@ class GT_Export_Assets(Operator):
                         if exportAnimSeparate is True:
                             animFileName = defaultFilePath + object.name + "_AM" + ".fbx"
 
-
-<<<<<<< Updated upstream
-=======
-
                     # //////////// - MODIFIER SETUP - ///////////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     if useTriangulate is True and applyModifiers is True:
                         hasTriangulate = self.AddTriangulate(object)
 
 
->>>>>>> Stashed changes
                     # /////////// - OBJECT MOVEMENT - ////////////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     if object.GXObj.use_collision is True and isArmature is False:
@@ -557,15 +749,175 @@ class GT_Export_Assets(Operator):
                     else:
                         MoveObject(object, context, originalLoc)
 
-<<<<<<< Updated upstream
-=======
                     # Remove any triangulation modifiers
                     if useTriangulate is True and applyModifiers is True and hasTriangulate is False:
                         self.RemoveTriangulate(object)
 
->>>>>>> Stashed changes
                     # Count up exported objects
                     exportedObjects += 1
+
+
+        # Now hold up, its group time!
+        for group in bpy.data.groups:
+            if group.GXGrp.export_group is True:
+
+                # Before we do anything, check that a root object exists
+                hasRootObject = True
+                rootObject = None
+                rootObjectLocation = Vector((0.0, 0.0, 0.0))
+
+                if group.GXGrp.root_object == "":
+                    hasRootObject = False
+
+                for object in group.objects:
+                    if object.name == group.GXGrp.root_object:
+                        hasRootObject = True
+                        rootObject = object
+                        rootObjectLocation[0] = object.location[0]
+                        rootObjectLocation[1] = object.location[1]
+                        rootObjectLocation[2] = object.location[2]
+
+                if rootObject == None:
+                    hasRootObject = False
+
+                if hasRootObject is False:
+                    statement = "The group object " + group.name + " has no valid root object.  No root object, no exporting omo"
+                    self.report({'WARNING'}, statement)
+                    return {'FINISHED'}
+
+                staticList = []
+                collisionList = []
+                armatureList = []
+
+                # Obtain some object-specific preferences
+                applyModifiers = True
+                meshSmooth = 'OFF'
+                objectTypes = {'MESH', 'ARMATURE'}
+                useAnim = False
+                useAnimAction = False
+                useAnimOptimise = False
+
+                exportAnimSeparate = False
+
+                #/////////////////// - FILE NAME - /////////////////////////////////////////////////
+                objectFilePath = ""
+                objectFilePath = self.GetObjectFilePath(scn, group.GXGrp.location_default, group.name)
+
+                if objectFilePath == "":
+                    self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
+                    return {'CANCELLED'}
+
+                if objectFilePath == {'1'}:
+                    self.report({'WARNING'}, 'One of the groups has no set file path default.  Set it plzplzplz.')
+                    return {'CANCELLED'}
+
+                if objectFilePath == {'2'}:
+                    self.report({'WARNING'}, 'One of the groups file path default has no file path.  A file path is required to export.')
+                    return {'CANCELLED'}
+
+                if objectFilePath == {'3'}:
+                    self.report({'WARNING'}, 'One of the groups file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
+                    return {'CANCELLED'}
+
+                #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
+                # First we have to find all objects in the group that are of type MESHHH
+                # If auto-assignment is on, use the names to filter into lists, otherwise forget it.
+                if group.GXGrp.auto_assign is False:
+                    for object in group.objects:
+                        if object != rootObject:
+                            if object.type == 'MESH':
+                                staticList.append(object)
+                            elif object.type == 'ARMATURE':
+                                armatureList.append(object)
+
+                else:
+                    for object in group.objects:
+                        if object != rootObject:
+                            #print("Object not root, looking...")
+                            #print(object.name)
+                            #print(str(object.name.find("_LP")))
+                            #print(str(object.name.find("_CX")))
+
+                            # Sorts based on name suffix
+                            if object.name.find("_LP") != -1 and object.type == 'MESH':
+                                staticList.append(object)
+
+                            # Collision objects are only added if it can find a name match with a static mesh
+                            elif object.name.find("_CX") != -1 and object.type == 'MESH':
+                                collisionName = object.name
+                                collisionName = collisionName.replace("_CX", "")
+
+                                print("Collision Object Found")
+                                print(object.name)
+                                print(collisionName)
+
+                                for staticObject in group.objects:
+
+                                    if staticObject != object:
+                                        if staticObject.name.find(collisionName + "_LP") != -1 and staticObject.type == 'MESH':
+
+                                            print("Collision Confirmed")
+                                            collisionList.append(object)
+
+                            elif object.type == 'ARMATURE':
+                                armatureList.append(object)
+
+                print("Object search report")
+                print("Statics Found:")
+                print(len(staticList))
+                print("Collisions Found:")
+                print(len(collisionList))
+                print("Armatures Found:")
+                print(len(armatureList))
+
+                # Now we know what objects are up for export, we just need to prepare them
+                # If collision is turned on, sort that shit out
+                if len(collisionList) > 0 and len(armatureList) == 0:
+                    for object in collisionList:
+
+                        # Give the collision object the right name, we will change it back afterwards
+                        if int(scn.engine_select) is 1:
+                            tempName = object.name.replace("_CX", "")
+                            object.name = "UCX_" + tempName + "_LP"
+
+
+                # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
+                # ///////////////////////////////////////////////////////////////////////////////////
+                moveCenter = staticList + collisionList + armatureList
+                MoveObjects(rootObject, moveCenter, context, (0.0, 0.0, 0.0))
+
+                # /////////// - EXPORT - ///////////////////////////////////////////////////
+                # ///////////////////////////////////////////////////////////////////////////////////
+
+                FocusObject(rootObject)
+
+                for object in staticList:
+                    SelectObject(object)
+
+                if len(armatureList) == 0:
+                    for object in collisionList:
+                        SelectObject(object)
+
+                for object in armatureList:
+                    SelectObject(object)
+
+                self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, True, True, True)
+
+
+                # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
+                # ///////////////////////////////////////////////////////////////////////////////////
+                if len(armatureList) == 0:
+                    for object in collisionList:
+                        tempName = object.name.replace("UCX_", "")
+                        tempName2 = tempName.replace("_LP", "")
+                        print(tempName2)
+                        object.name = tempName2 + "_CX"
+
+                moveBack = staticList + collisionList + armatureList
+                MoveObjects(rootObject, moveBack, context, rootObjectLocation)
+
+                exportedGroups += 1
+
 
 
         # Re-select the objects previously selected
@@ -574,22 +926,33 @@ class GT_Export_Assets(Operator):
         for sel in selected:
             SelectObject(sel)
 
-        text1 = "Finished exporting "
-        text2Single = " object."
-        text2Multiple = " objects."
+        textGroupSingle = " group"
+        textGroupMultiple = " groups"
+        dot = "."
 
-        outputTextSingle = text1 + str(exportedObjects) + text2Single
-        outputTextMultiple = text1 + str(exportedObjects) + text2Multiple
+        output = "Finished exporting "
+
+        if exportedObjects > 1:
+            output += str(exportedObjects) + " objects"
+        elif exportedObjects == 1:
+            output += str(exportedObjects) + " object"
+
+        if exportedObjects > 0 and exportedGroups > 0:
+            output += " and "
+
+        if exportedGroups > 1:
+            output += str(exportedGroups) + " groups"
+        elif exportedGroups == 1:
+            output += str(exportedGroups) + " group"
+
+        output += "."
 
         # Output a nice report
-        if exportedObjects == 0:
+        if exportedObjects == 0 and exportedGroups == 0:
             self.report({'WARNING'}, 'No objects were exported.  Ensure any objects tagged for exporting are enabled.')
 
-        elif exportedObjects == 1:
-            self.report({'INFO'}, outputTextSingle)
-
         else:
-            self.report({'INFO'}, outputTextMultiple)
+            self.report({'INFO'}, output)
 
 
         return {'FINISHED'}

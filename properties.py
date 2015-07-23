@@ -16,6 +16,13 @@ class LocationDefault(PropertyGroup):
         default="",
         subtype="FILE_PATH")
 
+
+class GroupItem(PropertyGroup):
+    name = StringProperty(
+        name="",
+        description="The name of the file path default.")
+
+
 class GX_Scene_Preferences(PropertyGroup):
 
     engine_select = EnumProperty(
@@ -23,7 +30,6 @@ class GX_Scene_Preferences(PropertyGroup):
         items=(
         ('1', 'Unreal Engine 4', 'Configures export and export options for Unreal Engine 4'),
         ('2', 'Unity 5', 'Configures export and export options for Unity'),
-        ('3', 'OpenGEX', 'Configures export and export options for the OpenGEX format.')
         ),)
 
     scale_100x = BoolProperty(
@@ -39,6 +45,18 @@ class GX_Scene_Preferences(PropertyGroup):
     path_defaults = CollectionProperty(type=LocationDefault)
 
     path_list_index = IntProperty()
+
+    group_list = CollectionProperty(type=GroupItem)
+
+    group_list_index = IntProperty()
+
+    object_switch = EnumProperty(
+        name = "Object Type Switch",
+        description = "Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
+        items=(
+        ('1', 'Individual', 'Enables property editing for all selected static objects'),
+        ('2', 'Group', 'Enables property editing for all selected skeletal objects')
+        ),)
 
     type_switch = EnumProperty(
         name = "Selection Type Switch",
@@ -65,21 +83,14 @@ def GetLocationDefaults(scene, context):
 
     return items
 
+
 class GX_Object_Preferences(PropertyGroup):
 
     enable_export = BoolProperty(
         name = "Enable Export",
-        description = "Marks the asset as available for batch exporting export using GEX.",
+        description = "Marks the asset as available for batch exporting using GEX.",
         default = False,
         update = Update_EnableExport)
-
-    asset_type = EnumProperty(
-        name="Asset Type",
-        items=(
-        ('1', 'Static', 'Used for objects with no animation properties.'),
-        ('2', 'Skeletal', 'Used for objects with animation properties through the use of an Armature.'),
-        ('3', 'Animation', 'Used to export the animations of a selected armature exclusively.'),
-        ),)
 
     apply_modifiers = BoolProperty(
         name = "Apply Modifiers",
@@ -146,12 +157,35 @@ class GX_Object_Preferences(PropertyGroup):
         default = False,
         update = Update_ExportAnimActions)
 
+class GX_Group_Preferences(PropertyGroup):
+
+    export_group = BoolProperty(
+        name = "Export Group",
+        description = "Enables all objects within the group to be exported as a single FBX file.",
+        default = False)
+
+    auto_assign = BoolProperty(
+        name = "Auto Assign Objects",
+        description = "Uses naming conventions of objects within a group to automatically assign collision meshes and filter objects for export.",
+        default = False)
+
+    root_object = StringProperty(
+        name = "Root Object",
+        description = "Defines the object that the origin will be fixed to.",
+        default = ""
+    )
+    location_default = EnumProperty(
+        name="Select Location Default",
+        description="The filepath default the selected group will be exported to.",
+        items=GetLocationDefaults)
+
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (LocationDefault, GX_Scene_Preferences, GX_Object_Preferences)
+classes = (LocationDefault, GroupItem, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences)
 
 for cls in classes:
     bpy.utils.register_class(cls)
 
 bpy.types.Scene.GXScn = PointerProperty(type=GX_Scene_Preferences)
 bpy.types.Object.GXObj = PointerProperty(type=GX_Object_Preferences)
+bpy.types.Group.GXGrp = PointerProperty(type=GX_Group_Preferences)
