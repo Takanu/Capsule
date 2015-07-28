@@ -60,8 +60,7 @@ class GX_SelectionObject(Panel):
     def draw(self, context):
 
         scn = context.scene.GXScn
-        obj = context.object.GXObj
-        ob = context.object
+        ui = context.scene.GXUI
 
         layout = self.layout
         obType = int(scn.object_switch)
@@ -72,6 +71,8 @@ class GX_SelectionObject(Panel):
         #/////////////////////////////////////////////////////////////////
 
         if obType == 1:
+            obj = context.object.GXObj
+            ob = context.object
 
             # Check we have an active object
             if context.active_object is None:
@@ -216,8 +217,12 @@ class GX_SelectionObject(Panel):
             col_location = layout.row(align=True)
             col_location.template_list("Path_Default_List", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
 
+            col_location.separator()
+
             row_location = col_location.column(align=True)
             row_location.operator("scene.gx_refgroups", text="", icon="FILE_REFRESH")
+
+            layout.separator()
 
             #Get the group so we can obtain preference data from it
             if len(scn.group_list) > 0:
@@ -227,25 +232,77 @@ class GX_SelectionObject(Panel):
                     if group.name == entry.name:
                         grp = group.GXGrp
 
-                        groupPrefs = layout.column(align=True)
-                        groupPrefs.separator()
-                        groupPrefs.prop(grp, "export_group")
-                        groupPrefs.prop(grp, "auto_assign")
+                        setTable = layout.column_flow(columns=2, align=True)
 
-                        groupPrefs.separator()
-                        groupPrefs.separator()
-                        groupPrefs.label(text="Root Object")
-                        groupPrefs.separator()
-                        rootObject = groupPrefs.row(align=True)
-                        rootObject.prop(grp, "root_object", icon="OBJECT_DATA", text="")
-                        rootObject.operator("scene.gx_setroot", text="", icon="EYEDROPPER")
-                        rootObject.operator("scene.gx_clearroot", text="", icon="X")
+                        rowRoot = setTable.row(align=True)
+                        #rowRoot.alignment = 'LEFT'
+                        rowRoot.label(text="Root Object:")
+                        #rowRootSplit = rowRoot.split(percentage=2, align=True)
 
-                        groupPrefs.separator()
+                        rowLoc = setTable.row(align=True)
+                        rowLoc.label(text="Location:")
 
-                        groupPrefs.label(text="Location")
-                        groupPrefs.separator()
-                        groupPrefs.prop(grp, "location_default", text="")
+                        rowRootButtons = setTable.row(align=True)
+                        rowRootButtons.prop(grp, "root_object", icon="OBJECT_DATA", text="")
+                        rowRootButtons.operator("scene.gx_setroot", text="", icon="EYEDROPPER")
+                        rowRootButtons.operator("scene.gx_clearroot", text="", icon="X")
+
+                        rowRootButtons = setTable.row(align=True)
+                        rowRootButtons.prop(grp, "location_default", icon="FILESEL", text="")
+                        layout.separator()
+
+
+                        exportOptions = layout.row(align=True)
+
+
+                        if ui.group_options_dropdown is False:
+                            exportOptions.operator("scene.gx_grpoptions", text="", icon="TRIA_RIGHT")
+                            exportOptions.label(text="Export Options")
+
+
+                        else:
+                            exportOptions.operator("scene.gx_grpoptions", text="", icon="TRIA_DOWN")
+                            exportOptions.label(text="Export Options")
+
+                            exportOptionsPanel = layout.column(align=True)
+
+                            exportOptionsGroup = exportOptionsPanel.row(align=True)
+                            exportOptionsGroup.prop(grp, "export_group")
+
+                            exportOptionsAssign = exportOptionsPanel.row(align=True)
+                            exportOptionsAssign.prop(grp, "auto_assign")
+
+                            exportOptionsPanel.separator()
+                            exportOptionsPanel.separator()
+
+
+                        exportSeparate = layout.row(align=True)
+
+                        if grp.auto_assign is True:
+                            exportSeparate.enabled = True
+                        else:
+                            exportSeparate.enabled = False
+
+
+
+
+                        if ui.group_separate_dropdown is False or grp.auto_assign is False:
+                            exportSeparate.operator("scene.gx_grpseparate", text="", icon="TRIA_RIGHT")
+                            exportSeparate.label(text="Separate Export Slots")
+
+                        else:
+                            exportSeparate.operator("scene.gx_grpseparate", text="", icon="TRIA_DOWN")
+                            exportSeparate.label(text="Separate Export Slots")
+
+                            exportSeparatePanel = layout.column(align=True)
+                            exportSeparatePanel.prop(grp, "export_lp", text="Separate Low-Poly")
+                            exportSeparatePanel.prop(grp, "export_hp", text="Separate High-Poly")
+                            exportSeparatePanel.prop(grp, "export_cg", text="Separate Cage")
+                            exportSeparatePanel.prop(grp, "export_cx", text="Separate Collision")
+
+
+
+
 
             else:
                 groupPrefs = layout.column(align=True)

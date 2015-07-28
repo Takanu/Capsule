@@ -179,9 +179,41 @@ class GX_Group_Preferences(PropertyGroup):
         description="The filepath default the selected group will be exported to.",
         items=GetLocationDefaults)
 
+    export_lp = BoolProperty(
+        name = "Low-Poly",
+        description = "Export all low-poly objects as a separate FBX file.",
+        default = False)
+
+    export_hp = BoolProperty(
+        name = "High-Poly",
+        description = "Export all high-poly objects as a separate FBX file.",
+        default = False)
+
+    export_cg = BoolProperty(
+        name = "Cage",
+        description = "Export all cage objects as a separate FBX file.",
+        default = False)
+
+    export_cx = BoolProperty(
+        name = "Collision",
+        description = "Export all collision objects as a separate FBX file.",
+        default = False)
+
+class GX_UI_Preferences(PropertyGroup):
+
+    group_separate_dropdown = BoolProperty(
+        name = "",
+        description = "",
+        default = False)
+
+    group_options_dropdown = BoolProperty(
+        name = "",
+        description = "",
+        default = False)
+
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (LocationDefault, GroupItem, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences)
+classes = (LocationDefault, GroupItem, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences, GX_UI_Preferences)
 
 for cls in classes:
     bpy.utils.register_class(cls)
@@ -189,3 +221,4 @@ for cls in classes:
 bpy.types.Scene.GXScn = PointerProperty(type=GX_Scene_Preferences)
 bpy.types.Object.GXObj = PointerProperty(type=GX_Object_Preferences)
 bpy.types.Group.GXGrp = PointerProperty(type=GX_Group_Preferences)
+bpy.types.Scene.GXUI = PointerProperty(type=GX_UI_Preferences)

@@ -347,7 +347,6 @@ class GT_Reset_Scene(Operator):
 
         return {'FINISHED'}
 
-
 class GT_Export_Assets(Operator):
     """Updates the origin point based on the option selected, for all selected objects"""
 
@@ -419,10 +418,10 @@ class GT_Export_Assets(Operator):
                 bpy.ops.object.modifier_remove(modifier=modifier.name)
 
 
-    def GetObjectFilePath(self, scn, locationEnum, fileName):
+    def GetfilePath(self, scn, locationEnum, fileName):
         # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
         enumIndex = int(locationEnum)
-        objectFilePath = ""
+        filePath = ""
 
         if enumIndex == 0:
             return {'1'}
@@ -437,11 +436,10 @@ class GT_Export_Assets(Operator):
         if defaultFilePath.find('//') != -1:
             return {'3'}
 
-        objectFilePath = defaultFilePath
-        objectFilePath += fileName
-        objectFilePath += ".fbx"
+        filePath = defaultFilePath
+        filePath += fileName
 
-        return objectFilePath
+        return filePath
 
 
 
@@ -546,26 +544,27 @@ class GT_Export_Assets(Operator):
                     # //////////// - FILE PATH - ////////////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
-                    objectFilePath = ""
-                    objectFilePath = self.GetObjectFilePath(scn, object.GXObj.location_default, object.name)
+                    filePath = ""
+                    filePath = self.GetfilePath(scn, object.GXObj.location_default, object.name)
+                    filePath += ".fbx"
 
-                    if objectFilePath == "":
+                    if filePath == "":
                         self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
                         return {'CANCELLED'}
 
-                    if objectFilePath == {'1'}:
+                    if filePath == {'1'}:
                         self.report({'WARNING'}, 'The selected object has no set file path default.  Set it plzplzplz.')
                         return {'CANCELLED'}
 
-                    if objectFilePath == {'2'}:
+                    if filePath == {'2'}:
                         self.report({'WARNING'}, 'The selected objects file path default has no file path.  A file path is required to export.')
                         return {'CANCELLED'}
 
-                    if objectFilePath == {'3'}:
+                    if filePath == {'3'}:
                         self.report({'WARNING'}, 'The selected objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
                         return {'CANCELLED'}
 
-                    print(objectFilePath)
+                    print(filePath)
 
                     # Store the objects initial position for object movement
                     # Also set file path names
@@ -695,11 +694,11 @@ class GT_Export_Assets(Operator):
                             print("UE4 Combined Collision Export")
                             FocusObject(object)
                             SelectObject(collision)
-                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
+                            self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
 
                         else:
                             FocusObject(object)
-                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
+                            self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
 
                             FocusObject(collision)
                             self.ExportFBX(collisionFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
@@ -716,7 +715,7 @@ class GT_Export_Assets(Operator):
 
                             FocusObject(object)
                             SelectObject(armature)
-                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, False, False, False)
+                            self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, False, False, False)
 
                             self.ExportFBX(animFileName, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, animTypes, True, True, True)
 
@@ -724,12 +723,12 @@ class GT_Export_Assets(Operator):
                         else:
                             FocusObject(object)
                             SelectObject(armature)
-                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
+                            self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
 
                     else:
                         print("Standard Export")
                         FocusObject(object)
-                        self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
+                        self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
 
 
                     # Delete the collision object if a duplicate has been created.
@@ -761,6 +760,8 @@ class GT_Export_Assets(Operator):
         for group in bpy.data.groups:
             if group.GXGrp.export_group is True:
 
+                grp = group.GXGrp
+
                 # Before we do anything, check that a root object exists
                 hasRootObject = True
                 rootObject = None
@@ -786,11 +787,14 @@ class GT_Export_Assets(Operator):
                     return {'FINISHED'}
 
                 staticList = []
+                highPolyList = []
+                cageList = []
                 collisionList = []
                 armatureList = []
 
                 # Obtain some object-specific preferences
                 applyModifiers = True
+                useTriangulate = True
                 meshSmooth = 'OFF'
                 objectTypes = {'MESH', 'ARMATURE'}
                 useAnim = False
@@ -800,22 +804,22 @@ class GT_Export_Assets(Operator):
                 exportAnimSeparate = False
 
                 #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                objectFilePath = ""
-                objectFilePath = self.GetObjectFilePath(scn, group.GXGrp.location_default, group.name)
+                filePath = ""
+                filePath = self.GetfilePath(scn, group.GXGrp.location_default, group.name)
 
-                if objectFilePath == "":
+                if filePath == "":
                     self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
                     return {'CANCELLED'}
 
-                if objectFilePath == {'1'}:
+                if filePath == {'1'}:
                     self.report({'WARNING'}, 'One of the groups has no set file path default.  Set it plzplzplz.')
                     return {'CANCELLED'}
 
-                if objectFilePath == {'2'}:
+                if filePath == {'2'}:
                     self.report({'WARNING'}, 'One of the groups file path default has no file path.  A file path is required to export.')
                     return {'CANCELLED'}
 
-                if objectFilePath == {'3'}:
+                if filePath == {'3'}:
                     self.report({'WARNING'}, 'One of the groups file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
                     return {'CANCELLED'}
 
@@ -841,6 +845,14 @@ class GT_Export_Assets(Operator):
                             # Sorts based on name suffix
                             if object.name.find("_LP") != -1 and object.type == 'MESH':
                                 staticList.append(object)
+
+                            # Sorts based on name suffix
+                            elif object.name.find("_HP") != -1 and object.type == 'MESH':
+                                highPolyList.append(object)
+
+                            # Sorts based on name suffix
+                            elif object.name.find("_CG") != -1 and object.type == 'MESH':
+                                cageList.append(object)
 
                             # Collision objects are only added if it can find a name match with a static mesh
                             elif object.name.find("_CX") != -1 and object.type == 'MESH':
@@ -872,10 +884,10 @@ class GT_Export_Assets(Operator):
 
                 # Now we know what objects are up for export, we just need to prepare them
                 # If collision is turned on, sort that shit out
-                if len(collisionList) > 0 and len(armatureList) == 0:
+                if len(collisionList) > 0:
                     for object in collisionList:
 
-                        # Give the collision object the right name, we will change it back afterwards
+                        # Give the collision object the right name, we will change it back   afterwards
                         if int(scn.engine_select) is 1:
                             tempName = object.name.replace("_CX", "")
                             object.name = "UCX_" + tempName + "_LP"
@@ -883,8 +895,24 @@ class GT_Export_Assets(Operator):
 
                 # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                 # ///////////////////////////////////////////////////////////////////////////////////
-                moveCenter = staticList + collisionList + armatureList
-                MoveObjects(rootObject, moveCenter, context, (0.0, 0.0, 0.0))
+                exportMoveList = staticList + armatureList
+
+                if grp.export_hp is True:
+                    exportMoveList += highPolyList
+
+                if grp.export_cg is True:
+                    exportMoveList += cageList
+
+                if grp.export_cx is True or scn.engine_select is '1':
+                    exportMoveList += collisionList
+
+                MoveObjects(rootObject, exportMoveList, context, (0.0, 0.0, 0.0))
+
+                # /////////// - MODIFIERS - ///////////////////////////////////////////////////
+                # ///////////////////////////////////////////////////////////////////////////////////
+                if useTriangulate is True and applyModifiers is True:
+                    for object in exportMoveList:
+                        hasTriangulate = self.AddTriangulate(object)
 
                 # /////////// - EXPORT - ///////////////////////////////////////////////////
                 # ///////////////////////////////////////////////////////////////////////////////////
@@ -894,27 +922,76 @@ class GT_Export_Assets(Operator):
                 for object in staticList:
                     SelectObject(object)
 
-                if len(armatureList) == 0:
+                if scn.engine_select is '1':
                     for object in collisionList:
                         SelectObject(object)
 
                 for object in armatureList:
                     SelectObject(object)
 
+                objectFilePath = filePath + ".fbx"
+
                 self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, True, True, True)
+
+
+
+                if grp.export_lp is True and len(staticList) != 0:
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for object in staticList:
+                        SelectObject(object)
+
+                    SelectObject(rootObject)
+
+                    lpFilePath = filePath + "_LP.fbx"
+
+                    self.ExportFBX(lpFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
+
+
+                if grp.export_hp is True and len(highPolyList) != 0:
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for object in highPolyList:
+                        SelectObject(object)
+
+                    hpFilePath = filePath + "_HP.fbx"
+
+                    self.ExportFBX(hpFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
+
+
+                if grp.export_cg is True and len(cageList) != 0:
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for object in cageList:
+                        SelectObject(object)
+
+                    cgFilePath = filePath + "_CG.fbx"
+
+                    self.ExportFBX(cgFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
+
+
+                if grp.export_cx is True and len(collisionList) != 0:
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for object in collisionList:
+                        SelectObject(object)
+
+                    cxFilePath = filePath + "_CX.fbx"
+
+                    self.ExportFBX(cxFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
+
 
 
                 # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
                 # ///////////////////////////////////////////////////////////////////////////////////
-                if len(armatureList) == 0:
+                if scn.engine_select is '1':
                     for object in collisionList:
                         tempName = object.name.replace("UCX_", "")
                         tempName2 = tempName.replace("_LP", "")
                         print(tempName2)
                         object.name = tempName2 + "_CX"
+                        
+                # Remove any triangulation modifiers
+                if useTriangulate is True and applyModifiers is True and hasTriangulate is False:
+                    self.RemoveTriangulate(object)
 
-                moveBack = staticList + collisionList + armatureList
-                MoveObjects(rootObject, moveBack, context, rootObjectLocation)
+                MoveObjects(rootObject, exportMoveList, context, rootObjectLocation)
 
                 exportedGroups += 1
 
@@ -954,5 +1031,44 @@ class GT_Export_Assets(Operator):
         else:
             self.report({'INFO'}, output)
 
+
+        return {'FINISHED'}
+
+
+class GT_UI_Group_Separate(Operator):
+    """Toggles the drop-down menu for separate group export options"""
+
+    bl_idname = "scene.gx_grpseparate"
+    bl_label = ""
+
+    def execute(self, context):
+        print(self)
+
+        scn = context.scene.GXScn
+        ui = context.scene.GXUI
+
+        if ui.group_separate_dropdown is True:
+            ui.group_separate_dropdown = False
+        else:
+            ui.group_separate_dropdown = True
+
+        return {'FINISHED'}
+
+class GT_UI_Group_Options(Operator):
+    """Toggles the drop-down menu for separate group export options"""
+
+    bl_idname = "scene.gx_grpoptions"
+    bl_label = ""
+
+    def execute(self, context):
+        print(self)
+
+        scn = context.scene.GXScn
+        ui = context.scene.GXUI
+
+        if ui.group_options_dropdown is True:
+            ui.group_options_dropdown = False
+        else:
+            ui.group_options_dropdown = True
 
         return {'FINISHED'}
