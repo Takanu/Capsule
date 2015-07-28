@@ -397,9 +397,12 @@ class GT_Export_Assets(Operator):
         modType = {'TRIANGULATE'}
 
         for modifier in object.modifiers:
+            print("Looking for modifier...")
             if modifier.type in modType:
+                print("Already found triangulation.")
                 return True
 
+        FocusObject(object)
         bpy.ops.object.modifier_add(type='TRIANGULATE')
 
         for modifier in object.modifiers:
@@ -409,9 +412,12 @@ class GT_Export_Assets(Operator):
                 modifier.ngon_method = 'CLIP'
                 return False
 
+        print("No modifier found, triangulation failed.")
+
     def RemoveTriangulate(self, object):
 
         modType = {'TRIANGULATE'}
+        FocusObject(object)
 
         for modifier in object.modifiers:
             if modifier.type in modType:
@@ -793,7 +799,7 @@ class GT_Export_Assets(Operator):
                 armatureList = []
 
                 # Obtain some object-specific preferences
-                applyModifiers = True
+                applyModifiers = grp.apply_modifiers
                 useTriangulate = True
                 meshSmooth = 'OFF'
                 objectTypes = {'MESH', 'ARMATURE'}
@@ -910,9 +916,15 @@ class GT_Export_Assets(Operator):
 
                 # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                 # ///////////////////////////////////////////////////////////////////////////////////
+                triangulateList = staticList + highPolyList + cageList + collisionList
+                triangulateList.append(rootObject)
+
                 if useTriangulate is True and applyModifiers is True:
-                    for object in exportMoveList:
+                    for object in triangulateList:
+                        stm = object.GXStm
+                        hasTriangulate = False
                         hasTriangulate = self.AddTriangulate(object)
+                        stm.has_triangulate = hasTriangulate
 
                 # /////////// - EXPORT - ///////////////////////////////////////////////////
                 # ///////////////////////////////////////////////////////////////////////////////////
@@ -986,10 +998,13 @@ class GT_Export_Assets(Operator):
                         tempName2 = tempName.replace("_LP", "")
                         print(tempName2)
                         object.name = tempName2 + "_CX"
-                        
+
                 # Remove any triangulation modifiers
-                if useTriangulate is True and applyModifiers is True and hasTriangulate is False:
-                    self.RemoveTriangulate(object)
+                if useTriangulate is True and applyModifiers is True:
+                    for object in triangulateList:
+                        if object.GXStm.has_triangulate is False:
+                            print("Object has created triangulation, remove it.")
+                            self.RemoveTriangulate(object)
 
                 MoveObjects(rootObject, exportMoveList, context, rootObjectLocation)
 

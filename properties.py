@@ -169,6 +169,16 @@ class GX_Group_Preferences(PropertyGroup):
         description = "Uses naming conventions of objects within a group to automatically assign collision meshes and filter objects for export.",
         default = False)
 
+    apply_modifiers = BoolProperty(
+        name = "Apply Modifiers",
+        description = "Apply all modifiers for all exportable objects on export.",
+        default = False)
+
+    triangulate = BoolProperty(
+        name = "Triangulate Export",
+        description = "Enable automatic asset triangulation, using a Fixed Alternate Quad conversion method with a Clip N-Gon conversion method for all exportable objects in the group.",
+        default = False)
+
     root_object = StringProperty(
         name = "Root Object",
         description = "Defines the object that the origin will be fixed to.",
@@ -211,9 +221,15 @@ class GX_UI_Preferences(PropertyGroup):
         description = "",
         default = False)
 
+class GX_Object_StateMachine(PropertyGroup):
+
+    has_triangulate = BoolProperty(
+        name = "Has Triangulation Modifier",
+        description = "Internal variable used to monitor whether or not the object has a Triangulation modifier, when triangulating the mesh ",
+        default = False)
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (LocationDefault, GroupItem, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences, GX_UI_Preferences)
+classes = (LocationDefault, GroupItem, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences, GX_UI_Preferences, GX_Object_StateMachine)
 
 for cls in classes:
     bpy.utils.register_class(cls)
@@ -222,3 +238,4 @@ bpy.types.Scene.GXScn = PointerProperty(type=GX_Scene_Preferences)
 bpy.types.Object.GXObj = PointerProperty(type=GX_Object_Preferences)
 bpy.types.Group.GXGrp = PointerProperty(type=GX_Group_Preferences)
 bpy.types.Scene.GXUI = PointerProperty(type=GX_UI_Preferences)
+bpy.types.Object.GXStm = PointerProperty(type=GX_Object_StateMachine)

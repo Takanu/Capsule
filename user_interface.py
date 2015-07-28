@@ -265,12 +265,18 @@ class GX_SelectionObject(Panel):
                             exportOptions.label(text="Export Options")
 
                             exportOptionsPanel = layout.column(align=True)
+                            exportOptionsPanel.prop(grp, "export_group")
+                            exportOptionsPanel.prop(grp, "auto_assign")
+                            exportOptionsPanel.prop(grp, "apply_modifiers")
 
-                            exportOptionsGroup = exportOptionsPanel.row(align=True)
-                            exportOptionsGroup.prop(grp, "export_group")
+                            exportOptionsModifier = exportOptionsPanel.column(align=True)
 
-                            exportOptionsAssign = exportOptionsPanel.row(align=True)
-                            exportOptionsAssign.prop(grp, "auto_assign")
+                            if grp.apply_modifiers is True:
+                                exportOptionsModifier.enabled = True
+                            else:
+                                exportOptionsModifier.enabled = False
+
+                            exportOptionsModifier.prop(grp, "triangulate")
 
                             exportOptionsPanel.separator()
                             exportOptionsPanel.separator()
