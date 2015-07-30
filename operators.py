@@ -177,7 +177,6 @@ class GT_Refresh_Groups(Operator):
         print(self)
 
         scn = context.scene.GXScn
-        obj = context.active_object.GXObj
 
         scn.group_list.clear()
 
@@ -248,6 +247,13 @@ class GT_Set_Root_Object(Operator):
                         for object in group.objects:
                             if object.name == context.selected_objects[0].name:
                                 if object.name.find("_LP") != -1:
+                                    group.GXGrp.root_object = context.selected_objects[0].name
+
+                                    FocusObject(self.object)
+                                    self.finish()
+                                    return{'FINISHED'}
+
+                                elif group.GXGrp.auto_assign is False:
                                     group.GXGrp.root_object = context.selected_objects[0].name
 
                                     FocusObject(self.object)
@@ -789,6 +795,11 @@ class GT_Export_Assets(Operator):
 
                 if hasRootObject is False:
                     statement = "The group object " + group.name + " has no valid root object.  No root object, no exporting omo"
+                    self.report({'WARNING'}, statement)
+                    return {'FINISHED'}
+
+                elif rootObject.name.find("_LP") == -1 and grp.auto_assign is True:
+                    statement = "The group object " + group.name + " has no low-poly root object.  Ensure it has the right suffix or change the object used."
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
