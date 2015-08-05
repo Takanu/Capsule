@@ -135,8 +135,16 @@ class GT_Set_Collision_Object(Operator):
 
             # ALSO, check its not a dummy or origin object
             if context.selected_objects != None and len(context.selected_objects) == 1:
-                self.object.GXObj.collision_object = context.selected_objects[0].name
-                FocusObject(self.object)
+                if context.active_object != self.object:
+                    self.object.GXObj.collision_object = context.selected_objects[0].name
+                    FocusObject(self.object)
+
+                else:
+                    self.report({'WARNING'}, 'The collision object selected is the same object, pick a different object.')
+
+                    FocusObject(self.object)
+                    self.finish()
+                    return{'FINISHED'}
 
                 self.finish()
                 return{'FINISHED'}
@@ -526,15 +534,33 @@ class GT_Export_Assets(Operator):
                     armature = None
 
                     objectTypes = {'MESH'}
+
+                    # Also set file path names
+                    collision = None
+                    exportCollision = False
+                    collisionNameBackup = ""
+                    collisionFilePath = ""
+                    animationFilePath = ""
+
+                    if object.GXObj.export_collision is True:
+                        exportCollision = True
+
+                    elif int(scn.engine_select) is 2 and object.GXObj.use_collision is True:
+                        exportCollision = True
+
+
                     useAnim = False
                     useAnimAction = False
                     useAnimOptimise = False
 
+                    exportAnim = object.GXObj.export_anim
                     exportAnimSeparate = False
 
                     # See if the object is an armature
+                    # Should I allow multiple armatures for one object?  Do i make a menu element
+                    # to select between potential target armatures?  I just don't know...
                     for modifier in object.modifiers:
-                        if modifier.type == 'ARMATURE':
+                        if modifier.type == 'ARMATURE' and exportAnim is True:
                             isArmature = True
                             objectTypes = {'MESH', 'ARMATURE'}
 
@@ -553,84 +579,93 @@ class GT_Export_Assets(Operator):
                             exportAnimSeparate = object.GXObj.export_anim_file
 
 
-                    # //////////// - FILE PATH - ////////////////////////////////////////////////////////
-                    # ///////////////////////////////////////////////////////////////////////////////////
-                    # ///////////////////////////////////////////////////////////////////////////////////
+
+
+
+                    # //////////// - FILE PATH - //////////////////////////////////////////////
+                    # /////////////////////////////////////////////////////////////////////
+                    # //////////////////////////////////////////////////////////////////////
+                    # Same as the group export, keep :D
+
                     filePath = ""
                     filePath = self.GetfilePath(scn, object.GXObj.location_default, object.name)
-                    filePath += ".fbx"
+
 
                     if filePath == "":
                         self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
                         return {'CANCELLED'}
 
                     if filePath == {'1'}:
+                        FocusObject(object)
                         self.report({'WARNING'}, 'The selected object has no set file path default.  Set it plzplzplz.')
                         return {'CANCELLED'}
 
                     if filePath == {'2'}:
-                        self.report({'WARNING'}, 'The selected objects file path default has no file path.  A file path is required to export.')
+                        FocusObject(object)
+                        self.report({'WARNING'}, 'The selected object file path default has no file path.  A file path is required to export.')
                         return {'CANCELLED'}
 
                     if filePath == {'3'}:
-                        self.report({'WARNING'}, 'The selected objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
+                        FocusObject(object)
+                        self.report({'WARNING'}, 'The selected object file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
                         return {'CANCELLED'}
 
                     print(filePath)
 
+                    objectFilePath = filePath + ".fbx"
+
                     # Store the objects initial position for object movement
-                    # Also set file path names
-                    collision = None
-                    collisionFilePath = ""
-                    animationFilePath = ""
 
                     originalLoc = Vector((0.0, 0.0, 0.0))
                     originalLoc[0] = object.location[0]
                     originalLoc[1] = object.location[1]
                     originalLoc[2] = object.location[2]
 
+                    print("Object Location:")
+                    print(originalLoc)
 
-                    # //////////// - COLLISION SETUP - ////////////////////////////////////////////////////////
-                    # ///////////////////////////////////////////////////////////////////////////////////
-                    # ///////////////////////////////////////////////////////////////////////////////////
+
+                    # //////////// - COLLISION SETUP - /////////////////////////////////////
+                    # ////////////////////////////////////////////////////////////
+                    # //////////////////////////////////////////////////////////////////////
+                    # This needs re-writing at the moment, collision doesn't require duplication,
+                    # just re-naming and intelligent management
+
 
                     # If collision is turned on, sort that shit out
                     if object.GXObj.use_collision is True and isArmature is False:
 
-                        # Setup the collision object
-                        if object.GXObj.separate_collision is False:
-                            DuplicateObject(context.active_object)
-                            collision = context.active_object
+                        # Generate collision on request
+                        if object.GXObj.generate_convex is True:
+                            bpy.ops.object.editmode_toggle()
+                            bpy.ops.mesh.select_all(action='SELECT')
 
-                            # Generate collision on request
-                            if object.GXObj.generate_convex is True:
-                                bpy.ops.object.editmode_toggle()
-                                bpy.ops.mesh.select_all(action='SELECT')
+                            # From: http://www.blender.org/api/blender_python_api_2_62_1/bmesh.html#bmesh.from_edit_mesh
+                            # This currently doesn't work, D:
 
-                                # From: http://www.blender.org/api/blender_python_api_2_62_1/bmesh.html#bmesh.from_edit_mesh
-                                # Get a BMesh representation
-                                collisionMesh = bpy.data.objects[collision.name].data
-                                bm = bmesh.new()   # create an empty BMesh
-                                bm.from_mesh(collisionMesh)   # fill it in from a Mesh
+                            # Get a BMesh representation
+                            collisionMesh = bpy.data.objects[collision.name].data
+                            bm = bmesh.new()   # create an empty BMesh
+                            bm.from_mesh(collisionMesh)   # fill it in from a Mesh
 
-                                verts = [v for v in bm.verts if (v.select==True and not v.hide)]
-                                edges = [e for e in bm.edges if (e.select==True and not e.hide)]
-                                faces = [f for f in bm.faces if (f.select==True and not f.hide)]
+                            verts = [v for v in bm.verts if (v.select==True and not v.hide)]
+                            edges = [e for e in bm.edges if (e.select==True and not e.hide)]
+                            faces = [f for f in bm.faces if (f.select==True and not f.hide)]
 
-                                # Modify the BMesh, can do anything here...
-                                output = bmesh.ops.convex_hull(bm, input=(verts, edges, faces), use_existing_faces=True)
+                            # Modify the BMesh, can do anything here...
+                            output = bmesh.ops.convex_hull(bm, input=(verts, edges, faces), use_existing_faces=True)
 
-                                # Finish up, write the bmesh back to the mesh
-                                bm.to_mesh(me)
-                                bm.free()
+                            # Finish up, write the bmesh back to the mesh
+                            bm.to_mesh(me)
+                            bm.free()
 
-                                bpy.ops.mesh.select_all(action='DESELECT')
-                                bpy.ops.object.editmode_toggle()
+                            bpy.ops.mesh.select_all(action='DESELECT')
+                            bpy.ops.object.editmode_toggle()
 
-                                print("Lovemesenpai.")
+                            print("Lovemesenpai.")
 
                         elif object.GXObj.separate_collision is True:
-
+                            # Try to select the collision object
                             bpy.ops.object.select_all(action='DESELECT')
                             bpy.ops.object.select_pattern(pattern=object.GXObj.collision_object)
 
@@ -642,119 +677,81 @@ class GT_Export_Assets(Operator):
 
                                 return {'FINISHED'}
 
-                            bpy.context.scene.objects.active = bpy.data.objects[object.GXObj.collision_object]
-
-                            DuplicateObject(context.active_object)
-                            collision = context.active_object
-
-                            collisionLoc = (0, 0, 0)
-                            collisionLoc[0] = collision.location[0] - originalLoc[0]
-                            collisionLoc[1] = collision.location[1] - originalLoc[1]
-                            collisionLoc[2] = collision.location[2] - originalLoc[2]
-                            MoveObject(collision, context, collisionLoc)
-
+                            collision = context.selected_objects[0]
+                            FocusObject(collision)
 
                         # If need be, setup the collision file path
-                        if object.GXObj.export_collision is True or int(scn.engine_select) is 2:
-                            collisionFilePath = defaultFilePath + object.name + "_CX" + ".fbx"
+                        if exportCollision is True:
+                            collisionFilePath = filePath + "_CX" + ".fbx"
 
-                        # Out of formality and bug checking, name the collision object
-                        if int(scn.engine_select) is 1:
+                        # If were using UE4 export, name the
+                        elif int(scn.engine_select) is 1:
+                            collisionNameBackup = collision.name
                             collision.name = "UCX_" + object.name
 
-                        elif int(scn.engine_select) is 2:
-                            collision.name = object.name + "_CX"
 
 
-                    # //////////// - ANIMATION SETUP - ///////////////////////////////////////////////////////
-                    # ///////////////////////////////////////////////////////////////////////////////////
+                    # //////////// - ANIMATION SETUP - ////////////////////////////////////////
+                    # /////////////////////////////////////////////////////////////////////////
                     if isArmature is True:
                         print("Animation is true?")
 
                         if exportAnimSeparate is True:
-                            animFileName = defaultFilePath + object.name + "_AM" + ".fbx"
+                            animFileName = filePath + "_AM" + ".fbx"
 
-                    # //////////// - MODIFIER SETUP - ///////////////////////////////////////////////////////
-                    # ///////////////////////////////////////////////////////////////////////////////////
+                    # //////////// - MODIFIER SETUP - ////////////////////////////////////////
+                    # ////////////////////////////////////////////////////////////////////////
                     if useTriangulate is True and applyModifiers is True:
                         hasTriangulate = self.AddTriangulate(object)
 
 
-                    # /////////// - OBJECT MOVEMENT - ////////////////////////////////////////////////////////
-                    # ///////////////////////////////////////////////////////////////////////////////////
-                    if object.GXObj.use_collision is True and isArmature is False:
-                        targets = [collision]
-                        MoveObjects(object, targets, context, (0.0, 0.0, 0.0))
+                    # /////////// - OBJECT MOVEMENT - ////////////////////////////////////////
+                    # ////////////////////////////////////////////////////////////////////////
+                    # All exportable objects should be moved together, no duplication of any kind
+                    targets = []
 
-                    elif isArmature is True:
-                        print("Moving Armature")
-                        targets = [armature]
+                    if collision is not None:
+                        targets.append(collision)
+
+                    if armature is not None:
+                        targets.append(armature)
+
+                    if len(targets) > 0:
                         MoveObjects(object, targets, context, (0.0, 0.0, 0.0))
 
                     else:
                         MoveObject(object, context, (0.0, 0.0, 0.0))
 
 
-                    print("Rawr")
-                    print(globalScale)
-
-                    # //////////// - EXPORT PROCESS - ////////////////////////////////////////////////////////
-                    # ///////////////////////////////////////////////////////////////////////////////////
-                    if object.GXObj.use_collision is True and isArmature is False:
-
-                        if object.GXObj.export_collision is False and int(scn.engine_select) is not 2:
-                            print("UE4 Combined Collision Export")
-                            FocusObject(object)
-                            SelectObject(collision)
-                            self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
-
-                        else:
-                            FocusObject(object)
-                            self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
-
-                            FocusObject(collision)
-                            self.ExportFBX(collisionFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
-
-                    # Animation Export
-                    elif isArmature is True:
-
-                        print("Armature Export")
-
-                        # If Animations need to be exported separately
-                        if exportAnimSeparate is True:
-                            objectTypes = {'MESH'}
-                            animTypes = {'ARMATURE'}
-
-                            FocusObject(object)
-                            SelectObject(armature)
-                            self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, False, False, False)
-
-                            self.ExportFBX(animFileName, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, animTypes, True, True, True)
 
 
-                        else:
-                            FocusObject(object)
-                            SelectObject(armature)
-                            self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
+                    # //////////// - EXPORT PROCESS - ///////////////////////////////////////////
+                    # A separate FBX export function call for every corner case isnt actually necessary
+                    FocusObject(object)
 
-                    else:
-                        print("Standard Export")
-                        FocusObject(object)
-                        self.ExportFBX(filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise)
+                    if collision is not None and exportCollision is False:
+                        SelectObject(collision)
+
+                    if armature is not None:
+                        SelectObject(armature)
+
+                    self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, useAnim, useAnimAction, useAnimOptimise)
+
+                    if exportCollision is True:
+                        FocusObject(collision)
+
+                        self.ExportFBX(collisionFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, False, False, False)
 
 
-                    # Delete the collision object if a duplicate has been created.
-                    if collision is not None and object.GXObj.separate_collision is False:
-                        DeleteObject(collision)
+
+                    # ////////////////// - WRAP UP - //////////////////////////////////////
+                    # Rename objects
+                    if collision is not None and exportCollision is False:
+                        collision.name = collisionNameBackup
 
                     # Otherwise move everything back to their initial positions
-                    if object.GXObj.use_collision is True and isArmature is False:
-                        targets = [collision]
-                        MoveObjects(object, targets, context, originalLoc)
-
-                    elif isArmature is True:
-                        print("Moving Armature")
-                        targets = [armature]
+                    if len(targets) > 0:
+                        print(">>> Moving Objects")
                         MoveObjects(object, targets, context, originalLoc)
 
                     else:
@@ -766,6 +763,7 @@ class GT_Export_Assets(Operator):
 
                     # Count up exported objects
                     exportedObjects += 1
+
 
 
         # Now hold up, its group time!
@@ -794,11 +792,11 @@ class GT_Export_Assets(Operator):
                     hasRootObject = False
 
                 if hasRootObject is False:
-                    statement = "The group object " + group.name + " has no valid root object.  No root object, no exporting omo"
+                    statement = "The group object " + group.name + " has no valid root object.  Ensure the root object exists in the group."
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
-                elif rootObject.name.find("_LP") == -1 and grp.auto_assign is True:
+                if rootObject.name.find("_LP") == -1 and grp.auto_assign is True:
                     statement = "The group object " + group.name + " has no low-poly root object.  Ensure it has the right suffix or change the object used."
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
