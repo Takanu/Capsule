@@ -1,4 +1,4 @@
-from .update import Update_EnableExport, Update_ApplyModifiers, Update_Triangulate, Update_UseCollision, Update_GenerateConvex, Update_SeparateCollision, Update_ExportCollision, Update_CollisionObject, Update_LocationDefault, Update_ExportAnim, Update_ExportAnimFile, Update_ExportAnimActions
+from .update import Update_EnableExport, Update_ApplyModifiers, Update_Triangulate, Update_UseCollision, Update_GenerateConvex, Update_SeparateCollision, Update_ExportCollision, Update_CollisionObject, Update_LocationDefault, Update_ExportAnim, Update_ExportAnimFile, Update_ExportAnimActions, Update_GroupItemName
 
 
 import bpy
@@ -20,7 +20,12 @@ class LocationDefault(PropertyGroup):
 class GroupItem(PropertyGroup):
     name = StringProperty(
         name="",
-        description="The name of the file path default.")
+        description="The name of the file path default.",
+        update=Update_GroupItemName)
+
+    prev_name = StringProperty(
+        name="",
+        description="Internal only, used for tracking group name updates.")
 
 
 class GX_Scene_Preferences(PropertyGroup):

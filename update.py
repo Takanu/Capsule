@@ -255,3 +255,20 @@ def Update_ExportAnimActions(self, context):
             object.GXObj.export_anim_actions = value
 
     return None
+
+def Update_GroupItemName(self, context):
+
+    # Set the name of the item to the group name
+    for group in bpy.data.groups:
+        print("Finding group name to replace")
+        if group.name == self.prev_name:
+
+            print("Found group name ", group.name)
+            group.name = self.name
+            self.prev_name = group.name
+
+            print("Group Name = ", group.name)
+            print("List Name = ", self.name)
+            print("Prev Name = ", self.prev_name)
+
+    return None

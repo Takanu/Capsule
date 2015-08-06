@@ -7,7 +7,14 @@ from rna_prop_ui import PropertyPanel
 class Path_Default_List(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
+        groupData = None
+
+        for group in bpy.data.groups:
+            if group.name == item.name:
+                groupData = group
+
         layout.prop(item, "name", text="", emboss=False)
+        layout.prop(groupData.GXGrp, "export_group", text="")
         layout.separator()
 
 #//////////////////////// - USER INTERFACE - ////////////////////////

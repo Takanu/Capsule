@@ -191,6 +191,7 @@ class GT_Refresh_Groups(Operator):
         for group in bpy.data.groups:
             groupEntry = scn.group_list.add()
             groupEntry.name = group.name
+            groupEntry.prev_name = group.name
 
 
         return {'FINISHED'}
