@@ -214,13 +214,11 @@ class GT_Set_Root_Object(Operator):
         scn = context.scene.GXScn
         obj = context.active_object.GXObj
 
-        # Deselect all objects, then go into the modal loop
+        user_preferences = context.user_preferences
+        self.addon_prefs = user_preferences.addons["GEX"].preferences
+
         self.object = context.scene.objects.active
-
-        # Add the modal handler and LETS GO!
         context.window_manager.modal_handler_add(self)
-
-        # Add a timer to enable a search for a selected object
         self._timer = context.window_manager.event_timer_add(0.05, context.window)
 
         bpy.ops.object.select_all(action='DESELECT')
@@ -254,7 +252,7 @@ class GT_Set_Root_Object(Operator):
 
                         for object in group.objects:
                             if object.name == context.selected_objects[0].name:
-                                if object.name.find("_LP") != -1:
+                                if object.name.find(self.addon_prefs.lp_tag) != -1:
                                     group.GXGrp.root_object = context.selected_objects[0].name
 
                                     FocusObject(self.object)
@@ -469,6 +467,9 @@ class GT_Export_Assets(Operator):
 
         scn = context.scene.GXScn
         obj = context.active_object.GXObj
+
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons["GEX"].preferences
 
         exportedObjects = 0
         exportedGroups = 0
@@ -796,7 +797,7 @@ class GT_Export_Assets(Operator):
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
-                if rootObject.name.find("_LP") == -1 and grp.auto_assign is True:
+                if rootObject.name.find(addon_prefs.lp_tag) == -1 and grp.auto_assign is True:
                     statement = "The group object " + group.name + " has no low-poly root object.  Ensure it has the right suffix or change the object used."
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
@@ -858,21 +859,21 @@ class GT_Export_Assets(Operator):
                             #print(str(object.name.find("_CX")))
 
                             # Sorts based on name suffix
-                            if object.name.find("_LP") != -1 and object.type == 'MESH':
+                            if object.name.find(addon_prefs.lp_tag) != -1 and object.type == 'MESH':
                                 staticList.append(object)
 
                             # Sorts based on name suffix
-                            elif object.name.find("_HP") != -1 and object.type == 'MESH':
+                            elif object.name.find(addon_prefs.hp_tag) != -1 and object.type == 'MESH':
                                 highPolyList.append(object)
 
                             # Sorts based on name suffix
-                            elif object.name.find("_CG") != -1 and object.type == 'MESH':
+                            elif object.name.find(addon_prefs.cg_tag) != -1 and object.type == 'MESH':
                                 cageList.append(object)
 
                             # Collision objects are only added if it can find a name match with a static mesh
-                            elif object.name.find("_CX") != -1 and object.type == 'MESH':
+                            elif object.name.find(addon_prefs.cx_tag) != -1 and object.type == 'MESH':
                                 collisionName = object.name
-                                collisionName = collisionName.replace("_CX", "")
+                                collisionName = collisionName.replace(addon_prefs.cx_tag, "")
 
                                 print("Collision Object Found")
                                 print(object.name)
@@ -881,7 +882,7 @@ class GT_Export_Assets(Operator):
                                 for staticObject in group.objects:
 
                                     if staticObject != object:
-                                        if staticObject.name.find(collisionName + "_LP") != -1 and staticObject.type == 'MESH':
+                                        if staticObject.name.find(collisionName + addon_prefs.lp_tag) != -1 and staticObject.type == 'MESH':
 
                                             print("Collision Confirmed")
                                             collisionList.append(object)
@@ -904,8 +905,8 @@ class GT_Export_Assets(Operator):
 
                         # Give the collision object the right name, we will change it back   afterwards
                         if int(scn.engine_select) is 1:
-                            tempName = object.name.replace("_CX", "")
-                            object.name = "UCX_" + tempName + "_LP"
+                            tempName = object.name.replace(addon_prefs.cx_tag, "")
+                            object.name = "UCX_" + tempName + addon_prefs.lp_tag
 
 
                 # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
@@ -963,7 +964,7 @@ class GT_Export_Assets(Operator):
 
                     SelectObject(rootObject)
 
-                    lpFilePath = filePath + "_LP.fbx"
+                    lpFilePath = filePath + addon_prefs.lp_tag + ".fbx"
 
                     self.ExportFBX(lpFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
 
@@ -973,7 +974,7 @@ class GT_Export_Assets(Operator):
                     for object in highPolyList:
                         SelectObject(object)
 
-                    hpFilePath = filePath + "_HP.fbx"
+                    hpFilePath = filePath + addon_prefs.hp_tag + ".fbx"
 
                     self.ExportFBX(hpFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
 
@@ -983,7 +984,7 @@ class GT_Export_Assets(Operator):
                     for object in cageList:
                         SelectObject(object)
 
-                    cgFilePath = filePath + "_CG.fbx"
+                    cgFilePath = filePath + addon_prefs.cg_tag + ".fbx"
 
                     self.ExportFBX(cgFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
 
@@ -993,7 +994,7 @@ class GT_Export_Assets(Operator):
                     for object in collisionList:
                         SelectObject(object)
 
-                    cxFilePath = filePath + "_CX.fbx"
+                    cxFilePath = filePath + addon_prefs.cx_tag + ".fbx"
 
                     self.ExportFBX(cxFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
 
@@ -1004,9 +1005,9 @@ class GT_Export_Assets(Operator):
                 if scn.engine_select is '1':
                     for object in collisionList:
                         tempName = object.name.replace("UCX_", "")
-                        tempName2 = tempName.replace("_LP", "")
+                        tempName2 = tempName.replace(addon_prefs.lp_tag, "")
                         print(tempName2)
-                        object.name = tempName2 + "_CX"
+                        object.name = tempName2 + addon_prefs.cx_tag
 
                 # Remove any triangulation modifiers
                 if useTriangulate is True and applyModifiers is True:

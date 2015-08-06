@@ -23,10 +23,17 @@ class GX_Export(Panel):
     def draw(self, context):
         layout = self.layout
 
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons["GEX"].preferences
+
         scn = context.scene.GXScn
         ob = context.object
 
-        layout.label(text="Target")
+        col_export = layout.column(align=True)
+        col_export.operator("scene.gx_export")
+        col_export.separator()
+
+        #layout.label(text="Target")
 
         col_export = layout.column(align=True)
         col_export.alignment = 'EXPAND'
@@ -39,9 +46,8 @@ class GX_Export(Panel):
         #elif scn.engine_select is '2':
             #col_export.prop(scn, "correct_rotation")
 
-        col_export.separator()
-        col_export.separator()
-        col_export.operator("scene.gx_export")
+
+
 
 
 class GX_SelectionObject(Panel):
@@ -53,9 +59,7 @@ class GX_SelectionObject(Panel):
 
     @classmethod
     def poll(cls, context):
-        failTest = True
-
-        return failTest
+        return True
 
     def draw(self, context):
 
@@ -69,16 +73,14 @@ class GX_SelectionObject(Panel):
 
         #/////////////// OBJECT SELECTION UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
-
         if obType == 1:
-            obj = context.object.GXObj
-            ob = context.object
 
             # Check we have an active object
-            if context.active_object is None:
+            if context.active_object is None or len(context.selected_objects) :
                 col_export = layout.column(align=True)
                 col_export.alignment = 'EXPAND'
                 col_export.label(text="Select an object to change settings")
+                return
 
             # Ensure the active object isnt an incorrect type
             elif context.active_object.type != 'MESH':
@@ -94,6 +96,8 @@ class GX_SelectionObject(Panel):
 
             # Now the UI can load
             else:
+                obj = context.object.GXObj
+                ob = context.object
 
                 # Need to figure out if only one object is selected and whather any selected objects have an armature
                 singleObject = False
@@ -312,7 +316,6 @@ class GX_SelectionObject(Panel):
 
             else:
                 groupPrefs = layout.column(align=True)
-                groupPrefs.separator()
                 groupPrefs.label(text="No groups found, press refresh to find new groups.")
 
             layout.separator()
