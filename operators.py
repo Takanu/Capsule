@@ -231,6 +231,20 @@ class GT_Set_Root_Object(Operator):
 
         return {'RUNNING_MODAL'}
 
+    def CheckForChild(self, group, target):
+
+        # Figure out if it is a child of any object in the group.
+        print("Searching through children...")
+        for altObject in group.objects:
+            for child in altObject.children:
+                print("Checking child ", child.name)
+                if child.name == target.name:
+                    self.report({'WARNING'}, 'The object selected is a child of another object in the group, and cant be used as a root object.')
+
+                    FocusObject(self.object)
+                    self.finish()
+                    return{'FINISHED'}
+
     def modal(self,context,event):
         # If escape is pressed, exit
         if event.type in {'ESC'}:
@@ -241,7 +255,6 @@ class GT_Set_Root_Object(Operator):
 
         # When an object is selected, set it as a child to the object, and finish.
         elif event.type == 'RIGHTMOUSE':
-            print('TIMER')
 
             # ALSO, check its not a dummy or origin object
             if context.selected_objects != None and len(context.selected_objects) == 1:
@@ -250,18 +263,24 @@ class GT_Set_Root_Object(Operator):
                 for group in bpy.data.groups:
                     if group.name == entry.name:
 
+                        print("Found Group: ", group.name)
                         for object in group.objects:
                             if object.name == context.selected_objects[0].name:
                                 if object.name.find(self.addon_prefs.lp_tag) != -1:
-                                    group.GXGrp.root_object = context.selected_objects[0].name
+                                    print("Object Passed Main Check", object.name)
 
+                                    self.CheckForChild(group, object)
+
+                                    group.GXGrp.root_object = context.selected_objects[0].name
                                     FocusObject(self.object)
                                     self.finish()
                                     return{'FINISHED'}
 
                                 elif group.GXGrp.auto_assign is False:
-                                    group.GXGrp.root_object = context.selected_objects[0].name
 
+                                    self.CheckForChild(group, object)
+
+                                    group.GXGrp.root_object = context.selected_objects[0].name
                                     FocusObject(self.object)
                                     self.finish()
                                     return{'FINISHED'}

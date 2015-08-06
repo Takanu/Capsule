@@ -76,7 +76,7 @@ class GX_SelectionObject(Panel):
         if obType == 1:
 
             # Check we have an active object
-            if context.active_object is None or len(context.selected_objects) :
+            if context.active_object is None or len(context.selected_objects) is 0:
                 col_export = layout.column(align=True)
                 col_export.alignment = 'EXPAND'
                 col_export.label(text="Select an object to change settings")

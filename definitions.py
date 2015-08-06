@@ -161,6 +161,28 @@ def MoveObjects(targetLead, targets, context, location):
     locationVec = Vector(location)
     locationDiff = locationVec - targetLead.location
 
+    targetsToRemove = []
+
+    # Check if any targets are children of any other object
+    for child in targetLead.children:
+        print("Checking TargetLead for Children...")
+        for target in targets:
+            if child.name == target.name:
+                print("Removing Target", target.name)
+                targetsToRemove.append(target)
+
+    for target in targets:
+        print("Checking Targets for Children...")
+        for child in target.children:
+            print("Found Child ", child.name)
+            for otherTarget in targets:
+                if child.name == otherTarget.name:
+                    print("Removing Target", child.name)
+                    targetsToRemove.append(child)
+
+    for target in targetsToRemove:
+        targets.remove(target)
+
     # Move the first object
     FocusObject(targetLead)
     targetLead.location = location
