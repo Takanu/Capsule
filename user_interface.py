@@ -1,12 +1,14 @@
 import bpy
+from .definitions import GetPluginDefaults
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty
 from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
 
 
-class Path_Default_List(UIList):
+class Group_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
+        scn = context.scene.GXScn
         groupData = None
 
         for group in bpy.data.groups:
@@ -16,6 +18,29 @@ class Path_Default_List(UIList):
         layout.prop(item, "name", text="", emboss=False)
         layout.prop(groupData.GXGrp, "export_group", text="")
         layout.separator()
+
+
+class Path_Default_UIList(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+
+        scn = context.scene.GXScn
+        layout.prop(item, "name", text="", emboss=False)
+        layout.separator()
+
+class Export_Default_UIList(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+
+        scn = context.scene.GXScn
+        layout.prop(item, "name", text="", emboss=False)
+        layout.separator()
+
+class Pass_Default_UIList(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+
+        scn = context.scene.GXScn
+        layout.prop(item, "name", text="", emboss=False)
+        layout.separator()
+
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
 
@@ -30,9 +55,7 @@ class GX_Export(Panel):
     def draw(self, context):
         layout = self.layout
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
-
+        defaults = GetPluginDefaults()
         scn = context.scene.GXScn
         ob = context.object
 
@@ -55,13 +78,11 @@ class GX_Export(Panel):
 
 
 
-
-
 class GX_SelectionObject(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
-    bl_label = "Options"
+    bl_label = "Selection"
     bl_category = "GEX"
 
     @classmethod
@@ -70,6 +91,7 @@ class GX_SelectionObject(Panel):
 
     def draw(self, context):
 
+        defaults = GetPluginDefaults()
         scn = context.scene.GXScn
         ui = context.scene.GXUI
 
@@ -161,64 +183,13 @@ class GX_SelectionObject(Panel):
 
                 col_export.separator()
                 col_export.prop(obj, "enable_export")
-                col_export.prop(obj, "apply_modifiers")
-
-                if obj.apply_modifiers is True:
-                    col_export.prop(obj, "triangulate")
-
+                col_export.prop(obj, "auto_assign")
                 col_export.separator()
                 col_export.separator()
-
-
-
-                if singleObject is False and skeletalFound is True and staticFound is True:
-                    col_export.row().prop(scn, "type_switch", expand=True)
-                    col_export.separator()
-                    col_export.separator()
-                    type = int(scn.type_switch)
-
-
-                if type == 1:
-                    if scn.engine_select is '1':
-                        col_export.label(text="Collision")
-                        col_export.prop(obj, "use_collision")
-                        col_export.prop(obj, "export_collision")
-                        #col_export.prop(obj, "generate_convex")
-                        col_export.prop(obj, "separate_collision")
-
-                        if obj.separate_collision is True:
-                            col_export.separator()
-                            col_collision = col_export.row(align=True)
-                            col_collision.prop(obj, "collision_object", icon="OBJECT_DATA")
-                            col_collision.operator("scene.gx_setcollision", text="", icon="EYEDROPPER")
-                            col_collision.operator("scene.gx_clearcollision", text="", icon="X")
-
-                    elif scn.engine_select is '2':
-                        col_export.label(text="Collision (exported as file)")
-                        col_export.prop(obj, "use_collision")
-                        #col_export.prop(obj, "generate_convex")
-                        col_export.prop(obj, "separate_collision")
-
-                        if obj.separate_collision is True:
-                            col_export.separator()
-                            col_collision = col_export.row(align=True)
-                            col_collision.prop(obj, "collision_object", icon="OBJECT_DATA")
-                            col_collision.operator("scene.gx_setcollision", text="", icon="EYEDROPPER")
-                            col_collision.operator("scene.gx_clearcollision", text="", icon="X")
-
-
-                else:
-                    col_export.label(text="Animation")
-                    col_export.prop(obj, "export_anim")
-                    col_export.prop(obj, "export_anim_file")
-                    #col_export.prop(obj, "export_anim_actions")
-
+                col_export.prop(obj, "location_default", icon="FILESEL", text="Location ")
                 col_export.separator()
+                col_export.prop(obj, "export_default", text="Export ")
                 col_export.separator()
-                col_export.label(text="Location")
-                col_export.separator()
-                col_export.prop(obj, "location_default", text="")
-
 
 
         #////////////////////////// GROUP UI /////////////////////////////
@@ -226,7 +197,7 @@ class GX_SelectionObject(Panel):
 
         else:
             col_location = layout.row(align=True)
-            col_location.template_list("Path_Default_List", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
+            col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
 
             col_location.separator()
 
@@ -243,84 +214,20 @@ class GX_SelectionObject(Panel):
                     if group.name == entry.name:
                         grp = group.GXGrp
 
-                        setTable = layout.column_flow(columns=2, align=True)
+                        rawr = layout.column(align=True)
+                        rawr.prop(grp, "export_group")
+                        rawr.prop(grp, "auto_assign")
+                        rawr.separator()
 
-                        rowRoot = setTable.row(align=True)
-                        #rowRoot.alignment = 'LEFT'
-                        rowRoot.label(text="Root Object:")
-                        #rowRootSplit = rowRoot.split(percentage=2, align=True)
+                        rawr_row = layout.row(align=True)
+                        rawr_row.prop(grp, "root_object", icon="OBJECT_DATA", text="Root Object")
+                        rawr_row.operator("scene.gx_setroot", text="", icon="EYEDROPPER")
+                        rawr_row.operator("scene.gx_clearroot", text="", icon="X")
 
-                        rowLoc = setTable.row(align=True)
-                        rowLoc.label(text="Location:")
-
-                        rowRootButtons = setTable.row(align=True)
-                        rowRootButtons.prop(grp, "root_object", icon="OBJECT_DATA", text="")
-                        rowRootButtons.operator("scene.gx_setroot", text="", icon="EYEDROPPER")
-                        rowRootButtons.operator("scene.gx_clearroot", text="", icon="X")
-
-                        rowRootButtons = setTable.row(align=True)
-                        rowRootButtons.prop(grp, "location_default", icon="FILESEL", text="")
-                        layout.separator()
-
-
-                        exportOptions = layout.row(align=True)
-
-
-                        if ui.group_options_dropdown is False:
-                            exportOptions.operator("scene.gx_grpoptions", text="", icon="TRIA_RIGHT")
-                            exportOptions.label(text="Export Options")
-
-
-                        else:
-                            exportOptions.operator("scene.gx_grpoptions", text="", icon="TRIA_DOWN")
-                            exportOptions.label(text="Export Options")
-
-                            exportOptionsPanel = layout.column(align=True)
-                            exportOptionsPanel.prop(grp, "export_group")
-                            exportOptionsPanel.prop(grp, "auto_assign")
-                            exportOptionsPanel.prop(grp, "apply_modifiers")
-
-                            exportOptionsModifier = exportOptionsPanel.column(align=True)
-
-                            if grp.apply_modifiers is True:
-                                exportOptionsModifier.enabled = True
-                            else:
-                                exportOptionsModifier.enabled = False
-
-                            exportOptionsModifier.prop(grp, "triangulate")
-
-                            exportOptionsPanel.separator()
-                            exportOptionsPanel.separator()
-
-
-                        exportSeparate = layout.row(align=True)
-
-                        if grp.auto_assign is True:
-                            exportSeparate.enabled = True
-                        else:
-                            exportSeparate.enabled = False
-
-
-
-
-                        if ui.group_separate_dropdown is False or grp.auto_assign is False:
-                            exportSeparate.operator("scene.gx_grpseparate", text="", icon="TRIA_RIGHT")
-                            exportSeparate.label(text="Separate Export Slots")
-
-                        else:
-                            exportSeparate.operator("scene.gx_grpseparate", text="", icon="TRIA_DOWN")
-                            exportSeparate.label(text="Separate Export Slots")
-
-                            exportSeparatePanel = layout.column(align=True)
-                            exportSeparatePanel.prop(grp, "export_lp", text="Separate Low-Poly")
-                            exportSeparatePanel.prop(grp, "export_hp", text="Separate High-Poly")
-                            exportSeparatePanel.prop(grp, "export_cg", text="Separate Cage")
-                            exportSeparatePanel.prop(grp, "export_cx", text="Separate Collision")
-
-
-
-
-
+                        rawr_other = layout.column(align=True)
+                        rawr_other.prop(grp, "location_default", icon="FILESEL", text="Location")
+                        rawr_other.separator()
+                        rawr_other.prop(grp, "export_default", text="Export")
             else:
                 groupPrefs = layout.column(align=True)
                 groupPrefs.label(text="No groups found, press refresh to find new groups.")
@@ -339,11 +246,14 @@ class GX_Location(Panel):
     def draw(self, context):
         layout = self.layout
 
+        defaults = GetPluginDefaults()
         scn = context.scene.GXScn
         ob = context.object
 
         col_location = layout.row(align=True)
-        col_location.template_list("Path_Default_List", "default", scn, "path_defaults", scn, "path_list_index", rows=3, maxrows=6)
+        col_location.template_list("Path_Default_UIList", "default", defaults, "location_defaults", defaults, "location_defaults_index", rows=3, maxrows=6)
+
+        col_location.separator()
 
         row_location = col_location.column(align=True)
         row_location.operator("scene.gx_addpath", text="", icon="ZOOMIN")
@@ -351,16 +261,110 @@ class GX_Location(Panel):
         #row_location.operator("scene.gx_shiftup", text="", icon="TRIA_UP")
         #row_location.operator("scene.gx_shiftdown", text="", icon="TRIA_DOWN")
 
-        col_list = layout.column(align=True)
+        file = layout.row(align=True)
+        file.alignment = 'EXPAND'
 
         count = 0
-        for i, item in enumerate(scn.path_defaults, 1):
+        for i, item in enumerate(defaults.location_defaults, 1):
             count += 1
 
-        if scn.path_list_index > -1 and scn.path_list_index < count:
-            col_list.label(text="Location")
-            col_list.separator()
-            col_list.prop(scn.path_defaults[scn.path_list_index], "path")
+        if defaults.location_defaults_index > -1 and defaults.location_defaults_index < count:
+            file.prop(defaults.location_defaults[defaults.location_defaults_index], "path", text="Location")
+
+class GX_ExportDefaults(Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "TOOLS"
+    bl_context = "objectmode"
+    bl_label = "Export Defaults"
+    bl_category = "GEX"
+
+    def draw(self, context):
+        layout = self.layout
+
+        defaults = GetPluginDefaults()
+        scn = context.scene.GXScn
+        ob = context.object
+        ui = context.scene.GXUI
+
+        # Export UI
+        col_export = layout.row(align=True)
+        col_export.template_list("Export_Default_UIList", "default", defaults, "export_defaults", defaults, "export_defaults_index", rows=3, maxrows=6)
+
+        col_export.separator()
+
+        row_export = col_export.column(align=True)
+        row_export.operator("scene.gx_addexport", text="", icon="ZOOMIN")
+        row_export.operator("scene.gx_deleteexport", text="", icon="ZOOMOUT")
+
+        if len(defaults.export_defaults) > 0:
+
+            currentExp = defaults.export_defaults[defaults.export_defaults_index]
+
+            # Pass UI
+            passUI = layout.column(align=True)
+            passUI.separator()
+            passUI.label(text="Passes")
+            row_passes = passUI.row(align=True)
+            row_passes.template_list("Pass_Default_UIList", "default", currentExp, "passes", currentExp, "passes_index", rows=3, maxrows=6)
+
+            row_passes.separator()
+
+            col_passes = row_passes.column(align=True)
+            col_passes.operator("scene.gx_addpass", text="", icon="ZOOMIN")
+            col_passes.operator("scene.gx_deletepass", text="", icon="ZOOMOUT")
+            col_passes.separator()
+
+            if len(currentExp.passes) > 0:
+
+                # Pass Options UI
+                currentPass = currentExp.passes[currentExp.passes_index]
+
+                pass_settings = layout.column(align=True)
+                pass_settings.separator()
+                pass_settings.prop(currentPass, "file_suffix")
+                pass_settings.separator()
+                pass_settings.separator()
+
+                if ui.component_dropdown is False:
+                    component_ui = pass_settings.row(align=True)
+                    component_ui.prop(ui, "component_dropdown", icon="TRIA_RIGHT")
+                    component_ui.label(text="Export Components")
+
+                else:
+                    component_ui = pass_settings.row(align=True)
+                    component_ui.prop(ui, "component_dropdown", icon="TRIA_DOWN")
+                    component_ui.label(text="Export Components")
+
+                    component_list = pass_settings.column(align=True)
+                    component_list.separator()
+                    component_list.prop(currentPass, "export_lp")
+                    component_list.prop(currentPass, "export_hp")
+                    component_list.prop(currentPass, "export_cg")
+                    component_list.prop(currentPass, "export_cx")
+                    component_list.prop(currentPass, "export_ar")
+                    component_list.prop(currentPass, "export_am")
+                    component_list.separator()
+
+                pass_settings.separator()
+
+                if ui.options_dropdown is False:
+                    options_ui = pass_settings.row(align=True)
+                    options_ui.prop(ui, "options_dropdown", icon="TRIA_RIGHT")
+                    options_ui.label(text="Export Options")
+
+                else:
+                    options_ui = pass_settings.row(align=True)
+                    options_ui.prop(ui, "options_dropdown", icon="TRIA_DOWN")
+                    options_ui.label(text="Export Options")
+
+                    options_list = pass_settings.column(align=True)
+                    options_list.separator()
+                    options_list.prop(currentPass, "export_individual")
+                    options_list.prop(currentPass, "apply_modifiers")
+                    options_list.prop(currentPass, "triangulate")
+
+        layout.separator()
+
 
 
 class GX_Settings(Panel):
@@ -378,3 +382,4 @@ class GX_Settings(Panel):
 
         col_settings = layout.column(align=True)
         col_settings.operator("scene.gx_resetscene", text="Reset Scene")
+        col_settings.operator("scene.gx_resetprefs", text="Reset Defaults")

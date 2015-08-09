@@ -1,6 +1,6 @@
 import bpy, bmesh
 from bpy.types import Operator
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, GetPluginDefaults
 from mathutils import Vector
 
 class GT_Add_Path(Operator):
@@ -12,11 +12,9 @@ class GT_Add_Path(Operator):
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
-        obj = context.active_object.GXObj
-
-        newPath = scn.path_defaults.add()
-        newPath.name = "New Path"
+        defaults = GetPluginDefaults()
+        newPath = defaults.location_defaults.add()
+        newPath.name = "Location " + str(len(defaults.location_defaults))
         newPath.path = ""
 
         # Position the index to the current location of the
@@ -40,12 +38,72 @@ class GT_Delete_Path(Operator):
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
-        obj = context.active_object.GXObj
+        defaults = GetPluginDefaults()
+        defaults.location_defaults.remove(defaults.location_defaults_index)
 
-        print(scn.path_list_index)
+        return {'FINISHED'}
 
-        scn.path_defaults.remove(scn.path_list_index)
+class GT_Add_Export(Operator):
+    """Creates a path from the menu"""
+
+    bl_idname = "scene.gx_addexport"
+    bl_label = "Add"
+
+    def execute(self, context):
+        print(self)
+
+        defaults = GetPluginDefaults()
+        newDefault = defaults.export_defaults.add()
+        newDefault.name = "Export " + str(len(defaults.export_defaults))
+        newDefault.path = ""
+
+        return {'FINISHED'}
+
+class GT_Delete_Export(Operator):
+    """Deletes the selected path from the menu"""
+
+    bl_idname = "scene.gx_deleteexport"
+    bl_label = "Remove"
+
+    def execute(self, context):
+        print(self)
+
+        defaults = GetPluginDefaults()
+        defaults.export_defaults.remove(defaults.export_defaults_index)
+
+        return {'FINISHED'}
+
+class GT_Add_Pass(Operator):
+    """Creates a path from the menu"""
+
+    bl_idname = "scene.gx_addpass"
+    bl_label = "Add"
+
+    def execute(self, context):
+        print(self)
+
+        defaults = GetPluginDefaults()
+        export = defaults.export_defaults[defaults.export_defaults_index]
+        newPass = export.passes.add()
+        newPass.name = "Pass " + str(len(export.passes))
+        newPass.path = ""
+
+        return {'FINISHED'}
+
+class GT_Delete_Pass(Operator):
+    """Deletes the selected path from the menu"""
+
+    bl_idname = "scene.gx_deletepass"
+    bl_label = "Remove"
+
+    def execute(self, context):
+        print(self)
+
+        defaults = GetPluginDefaults()
+        export = defaults.export_defaults[defaults.export_defaults_index]
+        export.passes.remove(export.passes_index)
+
+        export.passes_index -= 1
 
         return {'FINISHED'}
 
@@ -307,6 +365,7 @@ class GT_Set_Root_Object(Operator):
         context.window_manager.event_timer_remove(self._timer)
         return {'FINISHED'}
 
+
 class GT_Clear_Root_Object(Operator):
     """Clears the currently chosen root object."""
 
@@ -376,6 +435,41 @@ class GT_Reset_Scene(Operator):
 
         for sel in selected:
             SelectObject(sel)
+
+        return {'FINISHED'}
+
+class GT_Reset_Scene(Operator):
+    """Resets all location and export defaults in the file"""
+
+    bl_idname = "scene.gx_resetprefs"
+    bl_label = "Reset Scene"
+
+    def execute(self, context):
+        print(self)
+
+        user_preferences = bpy.context.user_preferences
+        addon_prefs = user_preferences.addons["GEX"].preferences
+
+        if addon_prefs == None:
+            print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")
+            return
+
+        # Figure out if an object already exists, if yes, DELETE IT
+        for object in bpy.data.objects:
+            print(object)
+            if object.name == addon_prefs.default_datablock:
+                DeleteObject(object)
+
+        # Otherwise create the object using the addon preference data
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+
+        defaultDatablock = bpy.context.scene.objects.active
+        defaultDatablock.name = addon_prefs.default_datablock
+        defaultDatablock.hide = True
+        defaultDatablock.hide_render = True
+        defaultDatablock.hide_select = True
+
 
         return {'FINISHED'}
 
@@ -456,8 +550,9 @@ class GT_Export_Assets(Operator):
                 bpy.ops.object.modifier_remove(modifier=modifier.name)
 
 
-    def GetfilePath(self, scn, locationEnum, fileName):
+    def GetfilePath(self, locationEnum, fileName):
         # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
+        defaults = GetPluginDefaults()
         enumIndex = int(locationEnum)
         filePath = ""
 
@@ -466,7 +561,7 @@ class GT_Export_Assets(Operator):
 
         print("Are we still going for some reason?")
         enumIndex -= 1
-        defaultFilePath = scn.path_defaults[enumIndex].path
+        defaultFilePath = defaults.location_defaults[enumIndex].path
 
         if defaultFilePath == "":
             return {'2'}
@@ -487,22 +582,22 @@ class GT_Export_Assets(Operator):
 
         scn = context.scene.GXScn
         obj = context.active_object.GXObj
-
+        defaults = GetPluginDefaults()
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons["GEX"].preferences
 
         exportedObjects = 0
         exportedGroups = 0
+        exportedPasses = 0
 
         # Keep a record of the selected and active objects to restore later
         active = None
         selected = []
-
         for sel in context.selected_objects:
             if sel.name != context.active_object.name:
                 selected.append(sel)
-
         active = context.active_object
+
 
         # Generate export details based on the export type selected
         axisForward = "-Z"
@@ -510,7 +605,6 @@ class GT_Export_Assets(Operator):
         globalScale = 1.0
         bakeSpaceTransform = False
 
-        # Generate some other system details in Blender to ensure the movement process doesn't interfere
 
         # //////////// - ENGINE PROPERTIES - ////////////////////////////////////////////////////////
         # Assign custom properties based on the export target
@@ -537,261 +631,224 @@ class GT_Export_Assets(Operator):
         # OBJECT CYCLE
         ###############################################################
         ###############################################################
-
-
         # Cycle through the available objects
         for object in context.scene.objects:
             if object.type == 'MESH':
                 if object.GXObj.enable_export is True:
 
+                    break
+
+                    #Get the export default for the object
                     FocusObject(object)
+                    exportDefault = object.GXObj.export_default
 
-                    # Obtain some object-specific preferences
-                    applyModifiers = object.GXObj.apply_modifiers
-                    useTriangulate = object.GXObj.triangulate
-                    hasTriangulate = False
-                    meshSmooth = 'EDGE'
-                    isArmature = False
-                    armature = None
+                    for objPass in exportDefault.passes:
 
-                    objectTypes = {'MESH'}
+                        # Obtain some object-specific preferences
+                        applyModifiers = objPass.apply_modifiers
+                        useTriangulate = objPass.triangulate
+                        hasTriangulation = False
+                        meshSmooth = 'FACE'
+                        isArmature = False
+                        armature = None
 
-                    # Also set file path names
-                    collision = None
-                    exportCollision = False
-                    collisionNameBackup = ""
-                    collisionFilePath = ""
-                    animationFilePath = ""
+                        # Obtain Object Component Information
+                        expLP = objPass.export_lp
+                        expHP = objPass.export_hp
+                        expCG = objPass.export_cg
+                        expCX = objPass.export_cx
+                        expAR = objPass.export_ar
+                        expAM = objPass.export_am
 
-                    if object.GXObj.export_collision is True:
-                        exportCollision = True
+                        # Also set file path names
+                        filePath = ""
+                        objectFilePath = ""
 
-                    elif int(scn.engine_select) is 2 and object.GXObj.use_collision is True:
-                        exportCollision = True
+                        # !!!!!!
+                        # Need to figure out whether auto-assign is even a good idea, and if not
+                        # how to handle object naming intelligently
+
+                        # //////////// - FILE PATH - //////////////////////////////////////////////
+                        # /////////////////////////////////////////////////////////////////////
+                        # //////////////////////////////////////////////////////////////////////
+                        # Same as the group export, keep :D
+
+                        filePath = ""
+                        filePath = self.GetfilePath(scn, object.GXObj.location_default, object.name)
 
 
-                    useAnim = False
-                    useAnimAction = False
-                    useAnimOptimise = False
+                        if filePath == "":
+                            self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
+                            return {'CANCELLED'}
 
-                    exportAnim = object.GXObj.export_anim
-                    exportAnimSeparate = False
+                        if filePath == {'1'}:
+                            FocusObject(object)
+                            self.report({'WARNING'}, 'The selected object has no set file path default.  Set it plzplzplz.')
+                            return {'CANCELLED'}
 
-                    # See if the object is an armature
-                    # Should I allow multiple armatures for one object?  Do i make a menu element
-                    # to select between potential target armatures?  I just don't know...
-                    for modifier in object.modifiers:
-                        if modifier.type == 'ARMATURE' and exportAnim is True:
-                            isArmature = True
-                            objectTypes = {'MESH', 'ARMATURE'}
+                        if filePath == {'2'}:
+                            FocusObject(object)
+                            self.report({'WARNING'}, 'The selected object file path default has no file path.  A file path is required to export.')
+                            return {'CANCELLED'}
+
+                        if filePath == {'3'}:
+                            FocusObject(object)
+                            self.report({'WARNING'}, 'The selected object file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
+                            return {'CANCELLED'}
+
+                        print(filePath)
+
+                        objectFilePath = filePath + ".fbx"
+
+                        # Store the objects initial position for object movement
+
+                        originalLoc = Vector((0.0, 0.0, 0.0))
+                        originalLoc[0] = object.location[0]
+                        originalLoc[1] = object.location[1]
+                        originalLoc[2] = object.location[2]
+
+                        print("Object Location:")
+                        print(originalLoc)
+
+
+                        # //////////// - COLLISION SETUP - /////////////////////////////////////
+                        # ////////////////////////////////////////////////////////////
+                        # //////////////////////////////////////////////////////////////////////
+                        # This needs re-writing at the moment, collision doesn't require duplication,
+                        # just re-naming and intelligent management
+
+
+                        # If collision is turned on, sort that shit out
+                        if object.GXObj.use_collision is True and isArmature is False:
+
+                            # Generate collision on request
+                            if object.GXObj.generate_convex is True:
+                                bpy.ops.object.editmode_toggle()
+                                bpy.ops.mesh.select_all(action='SELECT')
+
+                                # From: http://www.blender.org/api/blender_python_api_2_62_1/bmesh.html#bmesh.from_edit_mesh
+                                # This currently doesn't work, D:
+
+                                # Get a BMesh representation
+                                collisionMesh = bpy.data.objects[collision.name].data
+                                bm = bmesh.new()   # create an empty BMesh
+                                bm.from_mesh(collisionMesh)   # fill it in from a Mesh
+
+                                verts = [v for v in bm.verts if (v.select==True and not v.hide)]
+                                edges = [e for e in bm.edges if (e.select==True and not e.hide)]
+                                faces = [f for f in bm.faces if (f.select==True and not f.hide)]
+
+                                # Modify the BMesh, can do anything here...
+                                output = bmesh.ops.convex_hull(bm, input=(verts, edges, faces), use_existing_faces=True)
+
+                                # Finish up, write the bmesh back to the mesh
+                                bm.to_mesh(me)
+                                bm.free()
+
+                                bpy.ops.mesh.select_all(action='DESELECT')
+                                bpy.ops.object.editmode_toggle()
+
+                                print("Lovemesenpai.")
+
+                            elif object.GXObj.separate_collision is True:
+                                # Try to select the collision object
+                                bpy.ops.object.select_all(action='DESELECT')
+                                bpy.ops.object.select_pattern(pattern=object.GXObj.collision_object)
+
+                                # A nice little error report if they have a bogus object name
+                                if len(context.selected_objects) == 0:
+                                    self.report({'WARNING'}, 'The selected object has no defined collision object.')
+
+                                    FocusObject(object)
+
+                                    return {'FINISHED'}
+
+                                collision = context.selected_objects[0]
+                                FocusObject(collision)
+
+                            # If need be, setup the collision file path
+                            if exportCollision is True:
+                                collisionFilePath = filePath + "_CX" + ".fbx"
+
+                            # If were using UE4 export, name the
+                            elif int(scn.engine_select) is 1:
+                                collisionNameBackup = collision.name
+                                collision.name = "UCX_" + object.name
+
+
+
+                        # //////////// - ANIMATION SETUP - ////////////////////////////////////////
+                        # /////////////////////////////////////////////////////////////////////////
+                        if isArmature is True:
+                            print("Animation is true?")
 
                             if exportAnimSeparate is True:
-                                useAnim = False
-                                useAnimAction = False
-                                useAnimOptimise = False
+                                animFileName = filePath + "_AM" + ".fbx"
 
-                            else:
-                                useAnim = object.GXObj.export_anim
-                                useAnimAction = object.GXObj.export_anim
-                                useAnimOptimise = object.GXObj.export_anim
-
-                            armature = modifier.object
-
-                            exportAnimSeparate = object.GXObj.export_anim_file
+                        # //////////// - MODIFIER SETUP - ////////////////////////////////////////
+                        # ////////////////////////////////////////////////////////////////////////
+                        if useTriangulate is True and applyModifiers is True:
+                            hasTriangulation = self.AddTriangulate(object)
 
 
+                        # /////////// - OBJECT MOVEMENT - ////////////////////////////////////////
+                        # ////////////////////////////////////////////////////////////////////////
+                        # All exportable objects should be moved together, no duplication of any kind
+                        targets = []
+
+                        if collision is not None:
+                            targets.append(collision)
+
+                        if armature is not None:
+                            targets.append(armature)
+
+                        if len(targets) > 0:
+                            MoveObjects(object, targets, context, (0.0, 0.0, 0.0))
+
+                        else:
+                            MoveObject(object, context, (0.0, 0.0, 0.0))
 
 
 
-                    # //////////// - FILE PATH - //////////////////////////////////////////////
-                    # /////////////////////////////////////////////////////////////////////
-                    # //////////////////////////////////////////////////////////////////////
-                    # Same as the group export, keep :D
 
-                    filePath = ""
-                    filePath = self.GetfilePath(scn, object.GXObj.location_default, object.name)
-
-
-                    if filePath == "":
-                        self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
-                        return {'CANCELLED'}
-
-                    if filePath == {'1'}:
+                        # //////////// - EXPORT PROCESS - ///////////////////////////////////////////
+                        # A separate FBX export function call for every corner case isnt actually necessary
                         FocusObject(object)
-                        self.report({'WARNING'}, 'The selected object has no set file path default.  Set it plzplzplz.')
-                        return {'CANCELLED'}
 
-                    if filePath == {'2'}:
-                        FocusObject(object)
-                        self.report({'WARNING'}, 'The selected object file path default has no file path.  A file path is required to export.')
-                        return {'CANCELLED'}
+                        if collision is not None and exportCollision is False:
+                            SelectObject(collision)
 
-                    if filePath == {'3'}:
-                        FocusObject(object)
-                        self.report({'WARNING'}, 'The selected object file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
-                        return {'CANCELLED'}
+                        if armature is not None:
+                            SelectObject(armature)
 
-                    print(filePath)
-
-                    objectFilePath = filePath + ".fbx"
-
-                    # Store the objects initial position for object movement
-
-                    originalLoc = Vector((0.0, 0.0, 0.0))
-                    originalLoc[0] = object.location[0]
-                    originalLoc[1] = object.location[1]
-                    originalLoc[2] = object.location[2]
-
-                    print("Object Location:")
-                    print(originalLoc)
+                        self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, useAnim, useAnimAction, useAnimOptimise)
 
 
-                    # //////////// - COLLISION SETUP - /////////////////////////////////////
-                    # ////////////////////////////////////////////////////////////
-                    # //////////////////////////////////////////////////////////////////////
-                    # This needs re-writing at the moment, collision doesn't require duplication,
-                    # just re-naming and intelligent management
+                        # ////////////////// - WRAP UP - //////////////////////////////////////
+                        # Rename objects
+                        if collision is not None and exportCollision is False:
+                            collision.name = collisionNameBackup
 
+                        # Otherwise move everything back to their initial positions
+                        if len(targets) > 0:
+                            print(">>> Moving Objects")
+                            MoveObjects(object, targets, context, originalLoc)
 
-                    # If collision is turned on, sort that shit out
-                    if object.GXObj.use_collision is True and isArmature is False:
+                        else:
+                            MoveObject(object, context, originalLoc)
 
-                        # Generate collision on request
-                        if object.GXObj.generate_convex is True:
-                            bpy.ops.object.editmode_toggle()
-                            bpy.ops.mesh.select_all(action='SELECT')
+                        # Remove any triangulation modifiers
+                        if useTriangulate is True and applyModifiers is True and hasTriangulation is False:
+                            self.RemoveTriangulate(object)
 
-                            # From: http://www.blender.org/api/blender_python_api_2_62_1/bmesh.html#bmesh.from_edit_mesh
-                            # This currently doesn't work, D:
-
-                            # Get a BMesh representation
-                            collisionMesh = bpy.data.objects[collision.name].data
-                            bm = bmesh.new()   # create an empty BMesh
-                            bm.from_mesh(collisionMesh)   # fill it in from a Mesh
-
-                            verts = [v for v in bm.verts if (v.select==True and not v.hide)]
-                            edges = [e for e in bm.edges if (e.select==True and not e.hide)]
-                            faces = [f for f in bm.faces if (f.select==True and not f.hide)]
-
-                            # Modify the BMesh, can do anything here...
-                            output = bmesh.ops.convex_hull(bm, input=(verts, edges, faces), use_existing_faces=True)
-
-                            # Finish up, write the bmesh back to the mesh
-                            bm.to_mesh(me)
-                            bm.free()
-
-                            bpy.ops.mesh.select_all(action='DESELECT')
-                            bpy.ops.object.editmode_toggle()
-
-                            print("Lovemesenpai.")
-
-                        elif object.GXObj.separate_collision is True:
-                            # Try to select the collision object
-                            bpy.ops.object.select_all(action='DESELECT')
-                            bpy.ops.object.select_pattern(pattern=object.GXObj.collision_object)
-
-                            # A nice little error report if they have a bogus object name
-                            if len(context.selected_objects) == 0:
-                                self.report({'WARNING'}, 'The selected object has no defined collision object.')
-
-                                FocusObject(object)
-
-                                return {'FINISHED'}
-
-                            collision = context.selected_objects[0]
-                            FocusObject(collision)
-
-                        # If need be, setup the collision file path
-                        if exportCollision is True:
-                            collisionFilePath = filePath + "_CX" + ".fbx"
-
-                        # If were using UE4 export, name the
-                        elif int(scn.engine_select) is 1:
-                            collisionNameBackup = collision.name
-                            collision.name = "UCX_" + object.name
-
-
-
-                    # //////////// - ANIMATION SETUP - ////////////////////////////////////////
-                    # /////////////////////////////////////////////////////////////////////////
-                    if isArmature is True:
-                        print("Animation is true?")
-
-                        if exportAnimSeparate is True:
-                            animFileName = filePath + "_AM" + ".fbx"
-
-                    # //////////// - MODIFIER SETUP - ////////////////////////////////////////
-                    # ////////////////////////////////////////////////////////////////////////
-                    if useTriangulate is True and applyModifiers is True:
-                        hasTriangulate = self.AddTriangulate(object)
-
-
-                    # /////////// - OBJECT MOVEMENT - ////////////////////////////////////////
-                    # ////////////////////////////////////////////////////////////////////////
-                    # All exportable objects should be moved together, no duplication of any kind
-                    targets = []
-
-                    if collision is not None:
-                        targets.append(collision)
-
-                    if armature is not None:
-                        targets.append(armature)
-
-                    if len(targets) > 0:
-                        MoveObjects(object, targets, context, (0.0, 0.0, 0.0))
-
-                    else:
-                        MoveObject(object, context, (0.0, 0.0, 0.0))
-
-
-
-
-                    # //////////// - EXPORT PROCESS - ///////////////////////////////////////////
-                    # A separate FBX export function call for every corner case isnt actually necessary
-                    FocusObject(object)
-
-                    if collision is not None and exportCollision is False:
-                        SelectObject(collision)
-
-                    if armature is not None:
-                        SelectObject(armature)
-
-                    self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, useAnim, useAnimAction, useAnimOptimise)
-
-                    if exportCollision is True:
-                        FocusObject(collision)
-
-                        self.ExportFBX(collisionFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, False, False, False)
-
-
-
-                    # ////////////////// - WRAP UP - //////////////////////////////////////
-                    # Rename objects
-                    if collision is not None and exportCollision is False:
-                        collision.name = collisionNameBackup
-
-                    # Otherwise move everything back to their initial positions
-                    if len(targets) > 0:
-                        print(">>> Moving Objects")
-                        MoveObjects(object, targets, context, originalLoc)
-
-                    else:
-                        MoveObject(object, context, originalLoc)
-
-                    # Remove any triangulation modifiers
-                    if useTriangulate is True and applyModifiers is True and hasTriangulate is False:
-                        self.RemoveTriangulate(object)
-
-                    # Count up exported objects
-                    exportedObjects += 1
+                        # Count up exported objects
+                        exportedObjects += 1
 
 
 
         # Now hold up, its group time!
         for group in bpy.data.groups:
             if group.GXGrp.export_group is True:
-
-                grp = group.GXGrp
 
                 # Before we do anything, check that a root object exists
                 hasRootObject = True
@@ -809,6 +866,8 @@ class GT_Export_Assets(Operator):
                         rootObjectLocation[1] = object.location[1]
                         rootObjectLocation[2] = object.location[2]
 
+                print("Checking root position... ", rootObjectLocation)
+
                 if rootObject == None:
                     hasRootObject = False
 
@@ -817,226 +876,257 @@ class GT_Export_Assets(Operator):
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
-                if rootObject.name.find(addon_prefs.lp_tag) == -1 and grp.auto_assign is True:
+                if rootObject.name.find(addon_prefs.lp_tag) == -1 and group.GXGrp.auto_assign is True:
                     statement = "The group object " + group.name + " has no low-poly root object.  Ensure it has the right suffix or change the object used."
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
-                staticList = []
-                highPolyList = []
-                cageList = []
-                collisionList = []
-                armatureList = []
 
-                # Obtain some object-specific preferences
-                applyModifiers = grp.apply_modifiers
-                useTriangulate = True
-                meshSmooth = 'OFF'
-                objectTypes = {'MESH', 'ARMATURE'}
-                useAnim = False
-                useAnimAction = False
-                useAnimOptimise = False
+                #Get the export default for the object
+                expKey = int(group.GXGrp.export_default) - 1
+                exportDefault = defaults.export_defaults[expKey]
 
-                exportAnimSeparate = False
+                for objPass in exportDefault.passes:
 
-                #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                filePath = ""
-                filePath = self.GetfilePath(scn, group.GXGrp.location_default, group.name)
+                    print("Group Exporting... ", group.name)
+                    print("Export Default used...", exportDefault.name)
+                    print("Pass processing...", objPass.name)
 
-                if filePath == "":
-                    self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
-                    return {'CANCELLED'}
+                    completeList = []
+                    lowPolyList = []
+                    highPolyList = []
+                    cageList = []
+                    collisionList = []
+                    animationList = []
+                    armatureList = []
 
-                if filePath == {'1'}:
-                    self.report({'WARNING'}, 'One of the groups has no set file path default.  Set it plzplzplz.')
-                    return {'CANCELLED'}
+                    # Obtain some object-specific preferences
+                    applyModifiers = objPass.apply_modifiers
+                    useTriangulate = objPass.triangulate
+                    exportIndividual = objPass.export_individual
+                    hasTriangulation = False
+                    meshSmooth = 'FACE'
 
-                if filePath == {'2'}:
-                    self.report({'WARNING'}, 'One of the groups file path default has no file path.  A file path is required to export.')
-                    return {'CANCELLED'}
+                    # Obtain Object Component Information
+                    expLP = objPass.export_lp
+                    expHP = objPass.export_hp
+                    expCG = objPass.export_cg
+                    expCX = objPass.export_cx
+                    expAR = objPass.export_ar
+                    expAM = objPass.export_am
 
-                if filePath == {'3'}:
-                    self.report({'WARNING'}, 'One of the groups file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
-                    return {'CANCELLED'}
+                    # Also set file path name
+                    path = ""
+                    filePath = ""
+                    objectFilePath = ""
+                    suffix = objPass.file_suffix
 
-                #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
-                # First we have to find all objects in the group that are of type MESHHH
-                # If auto-assignment is on, use the names to filter into lists, otherwise forget it.
-                if group.GXGrp.auto_assign is False:
-                    for object in group.objects:
-                        if object != rootObject:
-                            if object.type == 'MESH':
-                                staticList.append(object)
-                            elif object.type == 'ARMATURE':
-                                armatureList.append(object)
+                    auto_assign = group.GXGrp.auto_assign
 
-                else:
-                    for object in group.objects:
-                        if object != rootObject:
-                            #print("Object not root, looking...")
-                            #print(object.name)
-                            #print(str(object.name.find("_LP")))
-                            #print(str(object.name.find("_CX")))
+                    #/////////////////// - FILE NAME - /////////////////////////////////////////////////
+                    print("Obtaining File...")
+                    print("File Enumerator = ", group.GXGrp.location_default)
+                    filePath = ""
+                    filePath = self.GetfilePath(group.GXGrp.location_default, group.name)
 
-                            # Sorts based on name suffix
-                            if object.name.find(addon_prefs.lp_tag) != -1 and object.type == 'MESH':
-                                staticList.append(object)
 
-                            # Sorts based on name suffix
-                            elif object.name.find(addon_prefs.hp_tag) != -1 and object.type == 'MESH':
-                                highPolyList.append(object)
+                    if filePath == "":
+                        self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
+                        return {'CANCELLED'}
 
-                            # Sorts based on name suffix
-                            elif object.name.find(addon_prefs.cg_tag) != -1 and object.type == 'MESH':
-                                cageList.append(object)
+                    if filePath == {'1'}:
+                        self.report({'WARNING'}, 'One of the groups has no set file path default.  Set it plzplzplz.')
+                        return {'CANCELLED'}
 
-                            # Collision objects are only added if it can find a name match with a static mesh
-                            elif object.name.find(addon_prefs.cx_tag) != -1 and object.type == 'MESH':
-                                collisionName = object.name
-                                collisionName = collisionName.replace(addon_prefs.cx_tag, "")
+                    if filePath == {'2'}:
+                        self.report({'WARNING'}, 'One of the groups file path default has no file path.  A file path is required to export.')
+                        return {'CANCELLED'}
 
-                                print("Collision Object Found")
-                                print(object.name)
-                                print(collisionName)
+                    if filePath == {'3'}:
+                        self.report({'WARNING'}, 'One of the groups file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
+                        return {'CANCELLED'}
 
-                                for staticObject in group.objects:
+                    path = filePath.replace(group.name, "")
 
-                                    if staticObject != object:
-                                        if staticObject.name.find(collisionName + addon_prefs.lp_tag) != -1 and staticObject.type == 'MESH':
+                    #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
+                    # First we have to find all objects in the group that are of type MESHHH
+                    # If auto-assignment is on, use the names to filter into lists, otherwise forget it.
 
-                                            print("Collision Confirmed")
-                                            collisionList.append(object)
+                    print(">>>> Collecting Objects <<<<")
 
-                            elif object.type == 'ARMATURE':
-                                armatureList.append(object)
+                    if auto_assign is False:
+                        print("Auto Assign off, collecting all group objects....")
+                        for object in group.objects:
+                            if object.name != rootObject.name:
+                                if object.type == 'MESH' or object.type == 'ARMATURE':
+                                    print("Collected", object.name, "...")
+                                    completeList.append(object)
 
-                print("Object search report")
-                print("Statics Found:")
-                print(len(staticList))
-                print("Collisions Found:")
-                print(len(collisionList))
-                print("Armatures Found:")
-                print(len(armatureList))
+                        print("Collected", len(completeList), "objects.")
 
-                # Now we know what objects are up for export, we just need to prepare them
-                # If collision is turned on, sort that shit out
-                if len(collisionList) > 0:
-                    for object in collisionList:
+                    else:
+                        for object in group.objects:
+                            if object != rootObject:
+                                if object.type == 'MESH':
 
-                        # Give the collision object the right name, we will change it back   afterwards
-                        if int(scn.engine_select) is 1:
+                                    # Sorts based on name suffix
+                                    if object.name.find(addon_prefs.lp_tag) != -1 and expLP is True:
+                                        if object.name != rootObject.name:
+                                            lowPolyList.append(object)
+
+                                    elif object.name.find(addon_prefs.hp_tag) != -1 and expHP is True:
+                                        highPolyList.append(object)
+
+                                    elif object.name.find(addon_prefs.cg_tag) != -1 and expCG is True:
+                                        cageList.append(object)
+
+                                    # Collision objects are only added if it can find a name match with a static mesh
+                                    elif object.name.find(addon_prefs.cx_tag) != -1 and expCX is True:
+                                        collisionName = object.name
+                                        collisionName = collisionName.replace(addon_prefs.cx_tag, "")
+
+                                        print("Collision Object Found")
+                                        print(object.name)
+                                        print(collisionName)
+
+                                        for staticObject in group.objects:
+
+                                            if staticObject != object:
+                                                if staticObject.name.find(collisionName + addon_prefs.lp_tag) != -1 and staticObject.type == 'MESH':
+
+                                                    print("Collision Confirmed")
+                                                    collisionList.append(object)
+
+                                elif object.type == 'ARMATURE' and expAR is True:
+                                    armatureList.append(object)
+
+
+                    # Need to obtain animations (if applicable)
+
+
+
+
+                    # Now we know what objects are up for export, we just need to prepare them
+                    # If collision is turned on, sort that shit out
+                    if expCX is True and int(scn.engine_select) is 1:
+                        for object in collisionList:
                             tempName = object.name.replace(addon_prefs.cx_tag, "")
                             object.name = "UCX_" + tempName + addon_prefs.lp_tag
 
 
-                # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
-                # ///////////////////////////////////////////////////////////////////////////////////
-                exportMoveList = staticList + armatureList
+                    # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+                    exportList = []
+                    if auto_assign is True:
+                        if expLP is True:
+                            exportList += lowPolyList
 
-                if grp.export_hp is True:
-                    exportMoveList += highPolyList
+                        if expHP is True:
+                            exportList += highPolyList
 
-                if grp.export_cg is True:
-                    exportMoveList += cageList
+                        if expCG is True:
+                            exportList += cageList
 
-                if grp.export_cx is True or scn.engine_select is '1':
-                    exportMoveList += collisionList
+                        if expCX is True:
+                            exportList += collisionList
 
-                MoveObjects(rootObject, exportMoveList, context, (0.0, 0.0, 0.0))
+                        if expAR is True:
+                            exportList += armatureList
 
-                # /////////// - MODIFIERS - ///////////////////////////////////////////////////
-                # ///////////////////////////////////////////////////////////////////////////////////
-                triangulateList = staticList + highPolyList + cageList + collisionList
-                triangulateList.append(rootObject)
+                    else:
+                        exportList += completeList
 
-                if useTriangulate is True and applyModifiers is True:
-                    for object in triangulateList:
-                        stm = object.GXStm
-                        hasTriangulate = False
-                        hasTriangulate = self.AddTriangulate(object)
-                        stm.has_triangulate = hasTriangulate
-
-                # /////////// - EXPORT - ///////////////////////////////////////////////////
-                # ///////////////////////////////////////////////////////////////////////////////////
-
-                FocusObject(rootObject)
-
-                for object in staticList:
-                    SelectObject(object)
-
-                if scn.engine_select is '1':
-                    for object in collisionList:
-                        SelectObject(object)
-
-                for object in armatureList:
-                    SelectObject(object)
-
-                objectFilePath = filePath + ".fbx"
-
-                self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, True, True, True)
+                    MoveObjects(rootObject, exportList, context, (0.0, 0.0, 0.0))
 
 
 
-                if grp.export_lp is True and len(staticList) != 0:
+                    # /////////// - MODIFIERS - ///////////////////////////////////////////////////
+                    # ////////////////////////////////////////////////////////////////////////////
+                    triangulateList = []
+                    triangulateList += exportList
+
+                    if expLP is True:
+                        triangulateList.append(rootObject)
+
+                    if useTriangulate is True and applyModifiers is True:
+                        for object in triangulateList:
+                            stm = object.GXStm
+                            hasTriangulation = False
+                            hasTriangulation = self.AddTriangulate(object)
+                            stm.has_triangulate = hasTriangulation
+
+
+                    # /////////// - EXPORT - ///////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+                    print(">>>> Exporting Objects <<<<")
                     bpy.ops.object.select_all(action='DESELECT')
-                    for object in staticList:
-                        SelectObject(object)
-
-                    SelectObject(rootObject)
-
-                    lpFilePath = filePath + addon_prefs.lp_tag + ".fbx"
-
-                    self.ExportFBX(lpFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
-
-
-                if grp.export_hp is True and len(highPolyList) != 0:
-                    bpy.ops.object.select_all(action='DESELECT')
-                    for object in highPolyList:
-                        SelectObject(object)
-
-                    hpFilePath = filePath + addon_prefs.hp_tag + ".fbx"
-
-                    self.ExportFBX(hpFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
-
-
-                if grp.export_cg is True and len(cageList) != 0:
-                    bpy.ops.object.select_all(action='DESELECT')
-                    for object in cageList:
-                        SelectObject(object)
-
-                    cgFilePath = filePath + addon_prefs.cg_tag + ".fbx"
-
-                    self.ExportFBX(cgFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
-
-
-                if grp.export_cx is True and len(collisionList) != 0:
-                    bpy.ops.object.select_all(action='DESELECT')
-                    for object in collisionList:
-                        SelectObject(object)
-
-                    cxFilePath = filePath + addon_prefs.cx_tag + ".fbx"
-
-                    self.ExportFBX(cxFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH'}, False, False, False)
 
 
 
-                # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
-                # ///////////////////////////////////////////////////////////////////////////////////
-                if scn.engine_select is '1':
-                    for object in collisionList:
-                        tempName = object.name.replace("UCX_", "")
-                        tempName2 = tempName.replace(addon_prefs.lp_tag, "")
-                        print(tempName2)
-                        object.name = tempName2 + addon_prefs.cx_tag
+                    if exportIndividual is True:
+                        print("Individual Pass, exporting....")
+                        for object in exportList:
 
-                # Remove any triangulation modifiers
-                if useTriangulate is True and applyModifiers is True:
-                    for object in triangulateList:
-                        if object.GXStm.has_triangulate is False:
-                            print("Object has created triangulation, remove it.")
-                            self.RemoveTriangulate(object)
+                            # Get some information first
+                            bpy.ops.object.select_all(action='DESELECT')
+                            SelectObject(object)
+                            individualFilePath = path + object.name + suffix + ".fbx"
 
-                MoveObjects(rootObject, exportMoveList, context, rootObjectLocation)
+                            # For the time being, manually move the object back and forth to
+                            # the world origin point.
+                            backupLoc = Vector((0.0, 0.0, 0.0))
+                            backupLoc[0] = object.location[0]
+                            backupLoc[1] = object.location[1]
+                            backupLoc[2] = object.location[2]
+                            MoveObject(object, context, (0.0, 0.0, 0.0))
+
+                            self.ExportFBX(individualFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, True, True, True)
+
+                            MoveObject(object, context, backupLoc)
+
+                        if expLP is True:
+                            bpy.ops.object.select_all(action='DESELECT')
+                            FocusObject(rootObject)
+                            individualFilePath = path + rootObject.name + suffix + ".fbx"
+
+                            self.ExportFBX(individualFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, True, True, True)
+
+                    else:
+                        print("Combined Pass, exporting....")
+                        for object in exportList:
+                            SelectObject(object)
+
+                        if expLP is True:
+                            SelectObject(rootObject)
+
+                        objectFilePath = filePath + suffix + ".fbx"
+
+                        self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, {'MESH', 'ARMATURE'}, True, True, True)
+
+
+                    # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+                    if expCX is True and scn.engine_select is '1':
+                        for object in collisionList:
+                            tempName = object.name.replace("UCX_", "")
+                            tempName2 = tempName.replace(addon_prefs.lp_tag, "")
+                            print(tempName2)
+                            object.name = tempName2 + addon_prefs.cx_tag
+
+                    # Remove any triangulation modifiers
+                    if useTriangulate is True and applyModifiers is True:
+                        for object in triangulateList:
+                            if object.GXStm.has_triangulate is False:
+                                print("Object has created triangulation, remove it.")
+                                self.RemoveTriangulate(object)
+
+                    for object in exportList:
+                        print("Checking ", object.name)
+                        print("Checking object position... ", object.location)
+
+                    MoveObjects(rootObject, exportList, context, rootObjectLocation)
+
+                    exportedPasses += 1
 
                 exportedGroups += 1
 
@@ -1067,7 +1157,14 @@ class GT_Export_Assets(Operator):
         elif exportedGroups == 1:
             output += str(exportedGroups) + " group"
 
-        output += "."
+        output += ".  "
+
+        output += "Total of "
+
+        if exportedPasses > 1:
+            output += str(exportedPasses) + " passes."
+        elif exportedPasses == 1:
+            output += str(exportedPasses) + " pass."
 
         # Output a nice report
         if exportedObjects == 0 and exportedGroups == 0:

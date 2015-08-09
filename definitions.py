@@ -147,7 +147,7 @@ def MoveObjects(targetLead, targets, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
-    print("Moving Object")
+    print(">>>> Moving Objects <<<<")
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
@@ -183,15 +183,24 @@ def MoveObjects(targetLead, targets, context, location):
     for target in targetsToRemove:
         targets.remove(target)
 
+    print("Child Check Complete.")
+
+    bpy.ops.object.select_all(action='DESELECT')
+
     # Move the first object
     FocusObject(targetLead)
     targetLead.location = location
+
+    print("Root Object", targetLead.name, "Moved... ", targetLead.location)
+    print("Moving Secondary Objects...")
 
     # Move every other object by the differential
     bpy.ops.object.select_all(action='DESELECT')
     for object in targets:
         lockTransformSel = object.lock_location
         object.lock_location = (False, False, False)
+
+        print("Object", object.name, "moved.... ", object.location)
 
         FocusObject(object)
         bpy.ops.transform.translate(value=locationDiff)
@@ -202,3 +211,9 @@ def MoveObjects(targetLead, targets, context, location):
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     targetLead.lock_location = lockTransform
+
+def GetPluginDefaults():
+    user_preferences = bpy.context.user_preferences
+    addon_prefs = user_preferences.addons["GEX"].preferences
+    defaults = bpy.data.objects[addon_prefs.default_datablock].GXDefaults
+    return defaults

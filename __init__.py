@@ -18,6 +18,7 @@ bl_info = {
 
 if "bpy" in locals():
     import imp
+    print("Reloading Plugin"*20)
     if "definitions" in locals():
         imp.reload(definitions)
     if "properties" in locals():
@@ -29,21 +30,27 @@ if "bpy" in locals():
     if "update" in locals():
         imp.reload(update)
 
+
+print("Beginning Import"*20)
+
 import bpy
 from . import definitions
 from . import properties
 from . import user_interface
 from . import operators
 from . import update
-from bpy.props import IntProperty, BoolProperty, StringProperty
+from bpy.props import IntProperty, BoolProperty, StringProperty, PointerProperty
 from bpy.types import AddonPreferences
+
+print("End of import")
 
 class GEXAddonPreferences(AddonPreferences):
     bl_idname = __name__
 
-    test_prop = IntProperty(
-    name = "TESTPROP",
-    default = 6
+    default_datablock = StringProperty(
+    name = "Dummy Datablock Name",
+    description = "The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
+    default = ">GEX Preference Data<"
     )
 
     lp_tag = StringProperty(
@@ -82,7 +89,6 @@ class GEXAddonPreferences(AddonPreferences):
         row.prop(self, "cg_tag")
         row.separator()
         row.prop(self, "cx_tag")
-
 
 
 def register():
