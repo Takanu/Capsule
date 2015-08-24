@@ -227,7 +227,6 @@ class GX_SelectionObject(Panel):
 
                         rawr = layout.column(align=True)
                         rawr.prop(grp, "export_group")
-                        rawr.prop(grp, "auto_assign")
                         rawr.separator()
                         rawr.label(text="Root Object:")
 

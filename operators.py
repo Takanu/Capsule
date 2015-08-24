@@ -667,6 +667,10 @@ class GT_Export_Assets(Operator):
 
                     print("Auto Assign is", auto_assign)
 
+                    rootObjectLocation = Vector((0.0, 0.0, 0.0))
+                    rootObjectLocation[0] = object.location[0]
+                    rootObjectLocation[1] = object.location[1]
+                    rootObjectLocation[2] = object.location[2]
 
                     for objPass in exportDefault.passes:
 
@@ -674,13 +678,6 @@ class GT_Export_Assets(Operator):
                         print("NEW PASS", "-"*50)
                         print("-"*59)
                         print("Export pass", objPass.name, "being used on object", object.name)
-
-
-
-                        rootObjectLocation = Vector((0.0, 0.0, 0.0))
-                        rootObjectLocation[0] = object.location[0]
-                        rootObjectLocation[1] = object.location[1]
-                        rootObjectLocation[2] = object.location[2]
 
                         lowPoly = None
                         highPoly = None
@@ -974,47 +971,73 @@ class GT_Export_Assets(Operator):
         for group in bpy.data.groups:
             if group.GXGrp.export_group is True:
 
+                print("-"*59)
+                print("NEW JOB", "-"*50)
+                print("-"*59)
+
                 # Before we do anything, check that a root object exists
                 hasRootObject = True
                 rootObject = None
-                rootObjectLocation = Vector((0.0, 0.0, 0.0))
+                rootType = 0
 
                 if group.GXGrp.root_object == "":
-                    hasRootObject = False
+                    statement = "No name has been given to the " + group.name + " group object, please give it a name."
+                    self.report({'WARNING'}, statement)
+                    return {'FINISHED'}
 
                 for object in group.objects:
                     if object.name == group.GXGrp.root_object:
                         hasRootObject = True
                         rootObject = object
-                        rootObjectLocation[0] = object.location[0]
-                        rootObjectLocation[1] = object.location[1]
-                        rootObjectLocation[2] = object.location[2]
-
-                print("Checking root position... ", rootObjectLocation)
 
                 if rootObject == None:
                     hasRootObject = False
 
-                if hasRootObject is False:
+                if rootObject == None:
                     statement = "The group object " + group.name + " has no valid root object.  Ensure the root object exists in the group."
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
-                if rootObject.name.find(addon_prefs.lp_tag) == -1 and group.GXGrp.auto_assign is True:
-                    statement = "The group object " + group.name + " has no low-poly root object.  Ensure it has the right suffix or change the object used."
+                #Get the export default for the object
+                expKey = int(group.GXGrp.export_default) - 1
+
+                if expKey == -1:
+                    statement = "The group object " + group.name + " has no export default selected.  Please define!"
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
-
-                #Get the export default for the object
-                expKey = int(group.GXGrp.export_default) - 1
                 exportDefault = defaults.export_defaults[expKey]
+                print("Using Export Default...", exportDefault.name, ".  Export Key", expKey)
+
+                # Figure out whether the object needs automatic assigning
+                auto_assign = False
+
+                if object.name.find(addon_prefs.lp_tag) != -1:
+                    auto_assign = True
+                    rootType = 1
+                elif object.name.find(addon_prefs.hp_tag) != -1:
+                    auto_assign = True
+                    rootType = 2
+                elif object.name.find(addon_prefs.cg_tag) != -1:
+                    auto_assign = True
+                    rootType = 3
+                elif object.name.find(addon_prefs.cx_tag) != -1:
+                    auto_assign = True
+                    rootType = 4
+
+                print("Auto Assign is", auto_assign)
+
+                rootObjectLocation = Vector((0.0, 0.0, 0.0))
+                rootObjectLocation[0] = object.location[0]
+                rootObjectLocation[1] = object.location[1]
+                rootObjectLocation[2] = object.location[2]
 
                 for objPass in exportDefault.passes:
 
-                    print("Group Exporting... ", group.name)
-                    print("Export Default used...", exportDefault.name)
-                    print("Pass processing...", objPass.name)
+                    print("-"*59)
+                    print("NEW PASS", "-"*50)
+                    print("-"*59)
+                    print("Export pass", objPass.name, "being used on object", object.name)
 
                     completeList = []
                     lowPolyList = []
@@ -1039,6 +1062,7 @@ class GT_Export_Assets(Operator):
                     expCX = objPass.export_cx
                     expAR = objPass.export_ar
                     expAM = objPass.export_am
+                    expRoot = False
 
                     export_anim = False
                     export_anim_actions = False
@@ -1050,7 +1074,31 @@ class GT_Export_Assets(Operator):
                     objectFilePath = ""
                     suffix = objPass.file_suffix
 
-                    auto_assign = group.GXGrp.auto_assign
+                    # Lets see if the root object can be exported...
+                    if expLP is True and rootType == 1:
+                        expRoot = True
+                    if expHP is True and rootType == 2:
+                        expRoot = True
+                    if expCG is True and rootType == 3:
+                        expRoot = True
+                    if expCX is True and rootType == 4:
+                        expRoot = True
+
+                    # If its a collision object...
+                    if expRoot == 3:
+                        collisionName = rootObject.name
+                        collisionName = collisionName.replace(addon_prefs.cx_tag, "")
+                        foundMatch = False
+
+                        for item in group.objects:
+                            if item.name == collisionName + addon_prefs.lp_tag:
+                                foundMatch = True
+
+                        if foundMatch is False:
+                            self.report({'WARNING'}, "Collision object used as root does not have a corresponding low-poly object, abort!")
+                            FocusObject(rootObject)
+                            return {'CANCELLED'}
+
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
                     print("Obtaining File...")
@@ -1102,14 +1150,19 @@ class GT_Export_Assets(Operator):
 
                                     # Sorts based on name suffix
                                     if object.name.find(addon_prefs.lp_tag) != -1 and expLP is True:
-                                        if object.name != rootObject.name:
+                                        if object.name != rootObject.name or rootType != 1:
+                                            print("LP Found...", object.name)
                                             lowPolyList.append(object)
 
                                     elif object.name.find(addon_prefs.hp_tag) != -1 and expHP is True:
-                                        highPolyList.append(object)
+                                        if object.name != rootObject.name or rootType != 2:
+                                            print("HP Found...", object.name)
+                                            highPolyList.append(object)
 
                                     elif object.name.find(addon_prefs.cg_tag) != -1 and expCG is True:
-                                        cageList.append(object)
+                                        if object.name != rootObject.name or rootType != 3:
+                                            print("CG Found...", object.name)
+                                            cageList.append(object)
 
                                     # Collision objects are only added if it can find a name match with a static mesh
                                     elif object.name.find(addon_prefs.cx_tag) != -1 and expCX is True:
@@ -1117,22 +1170,23 @@ class GT_Export_Assets(Operator):
                                         collisionName = collisionName.replace(addon_prefs.cx_tag, "")
 
                                         for staticObject in group.objects:
-
                                             if staticObject != object:
-                                                if staticObject.name.find(collisionName + addon_prefs.lp_tag) != -1 and staticObject.type == 'MESH':
+                                                if object.name != rootObject.name or rootType != 3:
+                                                    if staticObject.name.find(collisionName + addon_prefs.lp_tag) != -1 and staticObject.type == 'MESH':
 
-                                                    print("Collision Confirmed")
-                                                    collisionList.append(object)
+                                                        print("CX Found...", object.name)
+                                                        collisionList.append(object)
 
                                 elif object.type == 'ARMATURE' and expAR is True:
                                     print("Collected armature,", object.name, "...")
                                     armatureList.append(object)
 
-                    print("Total armatures....", len(armatureList))
 
-
-                    # Need to obtain animations (if applicable)
-
+                    print("Total low_poly....", len(lowPolyList))
+                    print("Total high_poly...", len(highPolyList))
+                    print("Total cage........", len(cageList))
+                    print("Total collision...", len(collisionList))
+                    print("Total armatures...", len(armatureList))
 
 
                     # Now we know what objects are up for export, we just need to prepare them
@@ -1145,21 +1199,28 @@ class GT_Export_Assets(Operator):
 
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
+                    print(">>> Appending Found Objects <<<")
+
                     exportList = []
                     if auto_assign is True:
                         if expLP is True:
+                            print("Appending LP...")
                             exportList += lowPolyList
 
                         if expHP is True:
+                            print("Appending HP...")
                             exportList += highPolyList
 
                         if expCG is True:
+                            print("Appending CG...")
                             exportList += cageList
 
                         if expCX is True:
+                            print("Appending CX...")
                             exportList += collisionList
 
                         if expAR is True:
+                            print("Appending AM...")
                             exportList += armatureList
 
                     else:
@@ -1191,9 +1252,13 @@ class GT_Export_Assets(Operator):
                     print(">>>> Exporting Objects <<<<")
                     bpy.ops.object.select_all(action='DESELECT')
 
+                    canExport = True
 
+                    if len(exportList) == 0 and expRoot is False:
+                        print("No objects found in pass, stopping export...")
+                        canExport = False
 
-                    if exportIndividual is True:
+                    if exportIndividual is True and canExport is True:
                         print("Individual Pass, exporting....")
                         for object in exportList:
 
@@ -1214,7 +1279,7 @@ class GT_Export_Assets(Operator):
 
                             MoveObject(object, context, backupLoc)
 
-                        if expLP is True:
+                        if expRoot is True:
                             bpy.ops.object.select_all(action='DESELECT')
                             FocusObject(rootObject)
                             individualFilePath = path + rootObject.name + suffix + ".fbx"
@@ -1225,12 +1290,12 @@ class GT_Export_Assets(Operator):
                             print("Exporting separate animation files...")
 
 
-                    else:
+                    elif canExport is True:
                         print("Combined Pass, exporting....")
                         for object in exportList:
                             SelectObject(object)
 
-                        if expLP is True:
+                        if expRoot is True:
                             SelectObject(rootObject)
 
                         objectFilePath = filePath + suffix + ".fbx"

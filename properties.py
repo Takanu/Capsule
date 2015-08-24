@@ -216,12 +216,6 @@ class GX_Object_Preferences(PropertyGroup):
         default = False,
         update = Update_EnableExport)
 
-    auto_assign = BoolProperty(
-        name = "Auto Assign Objects",
-        description = "Uses naming conventions of objects within a group to automatically assign collision meshes and filter objects for export.",
-        default = False,
-        update = Update_AutoAssign)
-
     location_default = EnumProperty(
         name="Select Location Default",
         description="The filepath default the selected objects will be exported to.",
@@ -239,13 +233,6 @@ class GX_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
         name = "Export Group",
         description = "Enables all objects within the group to be exported as a single FBX file.",
-        default = False)
-
-    # Should Auto-Assign be a default option?
-
-    auto_assign = BoolProperty(
-        name = "Auto Assign Objects",
-        description = "Uses naming conventions of objects within a group to automatically assign collision meshes and filter objects for export.",
         default = False)
 
     root_object = StringProperty(
@@ -281,7 +268,7 @@ class GX_UI_Preferences(PropertyGroup):
         name = "",
         description = "",
         default = False)
-        
+
 class GX_Object_StateMachine(PropertyGroup):
 
     has_triangulate = BoolProperty(
