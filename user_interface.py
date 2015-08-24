@@ -91,6 +91,8 @@ class GX_SelectionObject(Panel):
 
     def draw(self, context):
 
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons["GEX"].preferences
         defaults = GetPluginDefaults()
         scn = context.scene.GXScn
         ui = context.scene.GXUI
@@ -122,6 +124,11 @@ class GX_SelectionObject(Panel):
                     col_export.alignment = 'EXPAND'
                     col_export.label(text="Deselect the active non-mesh object")
                     col_export.label(text="to change settings")
+
+            #elif context.active_object.name.find(addon_prefs.lp_tag) == -1:
+                #col_export = layout.column(align=True)
+                #col_export.alignment = 'EXPAND'
+                #col_export.label(text="Select a low-poly object.")
 
             # Now the UI can load
             else:
@@ -183,12 +190,16 @@ class GX_SelectionObject(Panel):
 
                 col_export.separator()
                 col_export.prop(obj, "enable_export")
-                col_export.prop(obj, "auto_assign")
+                #col_export.prop(obj, "auto_assign")
                 col_export.separator()
                 col_export.separator()
-                col_export.prop(obj, "location_default", icon="FILESEL", text="Location ")
+                col_export.label(text="Location")
                 col_export.separator()
-                col_export.prop(obj, "export_default", text="Export ")
+                col_export.prop(obj, "location_default", icon="FILESEL", text="")
+                col_export.separator()
+                col_export.label(text="Export Settings:")
+                col_export.separator()
+                col_export.prop(obj, "export_default", text="")
                 col_export.separator()
 
 
@@ -218,16 +229,21 @@ class GX_SelectionObject(Panel):
                         rawr.prop(grp, "export_group")
                         rawr.prop(grp, "auto_assign")
                         rawr.separator()
+                        rawr.label(text="Root Object:")
 
                         rawr_row = layout.row(align=True)
-                        rawr_row.prop(grp, "root_object", icon="OBJECT_DATA", text="Root Object")
+                        rawr_row.prop(grp, "root_object", icon="OBJECT_DATA", text="")
                         rawr_row.operator("scene.gx_setroot", text="", icon="EYEDROPPER")
                         rawr_row.operator("scene.gx_clearroot", text="", icon="X")
 
                         rawr_other = layout.column(align=True)
-                        rawr_other.prop(grp, "location_default", icon="FILESEL", text="Location")
+                        rawr_other.label(text="Location:")
                         rawr_other.separator()
-                        rawr_other.prop(grp, "export_default", text="Export")
+                        rawr_other.prop(grp, "location_default", icon="FILESEL", text="")
+                        rawr_other.separator()
+                        rawr_other.label(text="Export Settings:")
+                        rawr_other.separator()
+                        rawr_other.prop(grp, "export_default", text="")
             else:
                 groupPrefs = layout.column(align=True)
                 groupPrefs.label(text="No groups found, press refresh to find new groups.")

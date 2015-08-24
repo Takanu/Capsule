@@ -4,6 +4,9 @@ from math import *
 
 def Update_EnableExport(self, context):
 
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons["GEX"].preferences
+
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
 
@@ -19,11 +22,16 @@ def Update_EnableExport(self, context):
 
         # Run through the objects
         for object in selected:
-            object.GXObj.enable_export = enableExport
+            if object.name.find(addon_prefs.lp_tag) != -1:
+                object.GXObj.enable_export = enableExport
 
     return None
 
-def Update_ApplyModifiers(self, context):
+
+def Update_AutoAssign(self, context):
+
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons["GEX"].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
@@ -36,142 +44,20 @@ def Update_ApplyModifiers(self, context):
                 selected.append(sel)
 
         # Obtain the value changed
-        value = self.apply_modifiers
+        autoAssign = self.auto_assign
 
         # Run through the objects
         for object in selected:
-            object.GXObj.apply_modifiers = value
+            if object.name.find(addon_prefs.lp_tag) != -1:
+                object.GXObj.auto_assign = autoAssign
 
     return None
 
-def Update_Triangulate(self, context):
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.triangulate
-
-        # Run through the objects
-        for object in selected:
-            object.GXObj.triangulate = value
-
-    return None
-
-def Update_UseCollision(self, context):
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.use_collision
-
-        # Run through the objects
-        for object in selected:
-            object.GXObj.use_collision = value
-
-    return None
-
-def Update_GenerateConvex(self, context):
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.generate_convex
-
-        # Run through the objects
-        for object in selected:
-            object.GXObj.generate_convex = value
-
-
-    return None
-
-def Update_SeparateCollision(self, context):
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.separate_collision
-
-        # Run through the objects
-        for object in selected:
-            object.GXObj.separate_collision = value
-
-    return None
-
-def Update_ExportCollision(self, context):
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.export_collision
-
-        # Run through the objects
-        for object in selected:
-            object.GXObj.export_collision = value
-
-    return None
-
-def Update_CollisionObject(self, context):
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.collision_object
-
-        # Run through the objects
-        for object in selected:
-            object.GXObj.collision_object = value
-
-    return None
 
 def Update_LocationDefault(self, context):
+
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons["GEX"].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
@@ -188,12 +74,15 @@ def Update_LocationDefault(self, context):
 
         # Run through the objects
         for object in selected:
-            object.GXObj.location_default = value
+            if object.name.find(addon_prefs.lp_tag) != -1:
+                object.GXObj.location_default = value
 
     return None
 
+def Update_ExportDefault(self, context):
 
-def Update_ExportAnim(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons["GEX"].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
@@ -206,55 +95,16 @@ def Update_ExportAnim(self, context):
                 selected.append(sel)
 
         # Obtain the value changed
-        value = self.export_anim
+        value = self.export_default
 
         # Run through the objects
         for object in selected:
-            object.GXObj.export_anim = value
+            if object.name.find(addon_prefs.lp_tag) != -1:
+                object.GXObj.export_default = value
 
     return None
 
-def Update_ExportAnimFile(self, context):
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.export_anim_file
-
-        # Run through the objects
-        for object in selected:
-            object.GXObj.export_anim_file = value
-
-    return None
-
-def Update_ExportAnimActions(self, context):
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.export_anim_actions
-
-        # Run through the objects
-        for object in selected:
-            object.GXObj.export_anim_actions = value
-
-    return None
 
 def Update_GroupItemName(self, context):
 

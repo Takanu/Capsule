@@ -1,4 +1,4 @@
-from .update import Update_EnableExport, Update_ApplyModifiers, Update_Triangulate, Update_UseCollision, Update_GenerateConvex, Update_SeparateCollision, Update_ExportCollision, Update_CollisionObject, Update_LocationDefault, Update_ExportAnim, Update_ExportAnimFile, Update_ExportAnimActions, Update_GroupItemName
+from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_GroupItemName
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
@@ -19,12 +19,25 @@ class LocationDefault(PropertyGroup):
 class GroupItem(PropertyGroup):
     name = StringProperty(
         name="",
-        description="The name of the file path default.",
-        update=Update_GroupItemName)
+        description="The name of the group.",
+        update=Update_GroupItemName
+    )
 
     prev_name = StringProperty(
         name="",
-        description="Internal only, used for tracking group name updates.")
+        description="Internal only, used for tracking name updates."
+    )
+
+class ActionItem(PropertyGroup):
+    name = StringProperty(
+        name="",
+        description="The name of the action."
+    )
+
+    prev_name = StringProperty(
+        name="",
+        description="Internal only, used for tracking name updates."
+    )
 
 
 class ExportPass(PropertyGroup):
@@ -206,7 +219,8 @@ class GX_Object_Preferences(PropertyGroup):
     auto_assign = BoolProperty(
         name = "Auto Assign Objects",
         description = "Uses naming conventions of objects within a group to automatically assign collision meshes and filter objects for export.",
-        default = False)
+        default = False,
+        update = Update_AutoAssign)
 
     location_default = EnumProperty(
         name="Select Location Default",
@@ -218,7 +232,7 @@ class GX_Object_Preferences(PropertyGroup):
         name = "Select Export Default",
         description = "Defines the export setting sets used on this object.",
         items=GetExportDefaults,
-    )
+        update=Update_ExportDefault)
 
 class GX_Group_Preferences(PropertyGroup):
 
@@ -237,8 +251,8 @@ class GX_Group_Preferences(PropertyGroup):
     root_object = StringProperty(
         name = "Root Object",
         description = "Defines the object that the origin will be fixed to.",
-        default = ""
-    )
+        default = "")
+
     location_default = EnumProperty(
         name="Select Location Default",
         description="The filepath default the selected group will be exported to.",
@@ -247,7 +261,13 @@ class GX_Group_Preferences(PropertyGroup):
     export_default = EnumProperty(
         name = "Select Export Default",
         description = "Defines the export setting sets used on this object.",
-        items=GetExportDefaults,
+        items=GetExportDefaults)
+
+class GX_Action_Preferences(PropertyGroup):
+    export = BoolProperty(
+        name = "Export Action",
+        description="Allows the action to be exported through GEX.",
+        default=True
     )
 
 class GX_UI_Preferences(PropertyGroup):
@@ -261,7 +281,7 @@ class GX_UI_Preferences(PropertyGroup):
         name = "",
         description = "",
         default = False)
-
+        
 class GX_Object_StateMachine(PropertyGroup):
 
     has_triangulate = BoolProperty(
@@ -280,6 +300,7 @@ for cls in classes:
 bpy.types.Scene.GXScn = PointerProperty(type=GX_Scene_Preferences)
 bpy.types.Object.GXObj = PointerProperty(type=GX_Object_Preferences)
 bpy.types.Group.GXGrp = PointerProperty(type=GX_Group_Preferences)
+#bpy.types.Action.GXAcn = PointerProperty(type=GX_Action_Preferences)
 bpy.types.Scene.GXUI = PointerProperty(type=GX_UI_Preferences)
 bpy.types.Object.GXStm = PointerProperty(type=GX_Object_StateMachine)
 bpy.types.Object.GXDefaults = PointerProperty(type=GX_Export_Storage)
@@ -290,7 +311,7 @@ def CreateDefaultData(scene):
 
     user_preferences = bpy.context.user_preferences
 
-    if user_preferences.type == 'NoneType':
+    if user_preferences == None:
         print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")
         return
 
