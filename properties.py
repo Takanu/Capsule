@@ -1,19 +1,9 @@
-from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_GroupItemName
+from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_GroupItemName, Update_ActionItemName
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
 from bpy.app.handlers import persistent
-
-class LocationDefault(PropertyGroup):
-    name = StringProperty(
-        name="",
-        description="The name of the file path default.")
-
-    path = StringProperty(name="",
-        description="The file path to export the object to.",
-        default="",
-        subtype="FILE_PATH")
 
 
 class GroupItem(PropertyGroup):
@@ -31,7 +21,8 @@ class GroupItem(PropertyGroup):
 class ActionItem(PropertyGroup):
     name = StringProperty(
         name="",
-        description="The name of the action."
+        description="The name of the action.",
+        update=Update_ActionItemName
     )
 
     prev_name = StringProperty(
@@ -39,97 +30,25 @@ class ActionItem(PropertyGroup):
         description="Internal only, used for tracking name updates."
     )
 
+    anim_type = EnumProperty(
+        name = "Animation Data Type",
+        description = "Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
+        items=(
+        ('1', 'Action Object', ''),
+        ('2', 'NLA Object', ''),
+        ('3', 'Action Armature', ''),
+        ('4', 'NLA Armature', ''),
+        ),)
 
-class ExportPass(PropertyGroup):
-
+class LocationDefault(PropertyGroup):
     name = StringProperty(
-        name="Pass Name",
-        description="The name of the selected pass."
-    )
+        name="",
+        description="The name of the file path default.")
 
-    file_suffix = StringProperty(
-        name="File Suffix",
-        description="The suffix added on the exported file created from this pass."
-    )
-
-    sub_directory = StringProperty(
-        name="Sub-Directory",
-        description="Export the pass to a new folder inside the chosen location default."
-    )
-
-    # Sub-directory?
-
-    export_lp = BoolProperty(
-        name="Export Low_Poly",
-        description="Selects all low-poly objects available for export.",
-        default=False
-    )
-
-    export_hp = BoolProperty(
-        name="Export High_Poly",
-        description="Selects all high-poly objects available for export.",
-        default=False
-    )
-
-    export_cg = BoolProperty(
-        name="Export Cage",
-        description="Selects all cage objects available for export.",
-        default=False
-    )
-
-    export_cx = BoolProperty(
-        name="Export Collision",
-        description="Selects all collision objects available for export.",
-        default=False
-    )
-
-    export_ar = BoolProperty(
-        name="Export Armature",
-        description="Selects all armature objects available for export.",
-        default=False
-    )
-
-    export_am = BoolProperty(
-        name="Export Animation",
-        description="Selects all animation objects available for export.",
-        default=False
-    )
-
-    export_individual = BoolProperty(
-        name="Export Individual",
-        description="Exports every object in the pass as an individual object.",
-        default=False
-    )
-
-    apply_modifiers = BoolProperty(
-        name="Apply Modifiers",
-        description="Applies all modifiers on every object in the pass",
-        default=False
-    )
-
-    triangulate = BoolProperty(
-        name="Triangulate Export",
-        description="Triangulate objects in the pass on export using optimal triangulation settings.",
-        default=False
-    )
-
-
-class ExportDefault(PropertyGroup):
-    name = StringProperty(
-        name = "Default Name",
-        description="The name of the export default, whoda thunk :OO",
-        default=""
-    )
-
-    passes = CollectionProperty(type=ExportPass)
-    passes_index = IntProperty(default=0)
-
-class GX_Export_Storage(PropertyGroup):
-    location_defaults = CollectionProperty(type=LocationDefault)
-    location_defaults_index = IntProperty(default=0)
-
-    export_defaults = CollectionProperty(type=ExportDefault)
-    export_defaults_index = IntProperty(default=0)
+    path = StringProperty(name="",
+        description="The file path to export the object to.",
+        default="",
+        subtype="FILE_PATH")
 
 
 class GX_Scene_Preferences(PropertyGroup):
@@ -152,8 +71,10 @@ class GX_Scene_Preferences(PropertyGroup):
         default=False)
 
     group_list = CollectionProperty(type=GroupItem)
-
     group_list_index = IntProperty()
+
+    location_defaults = CollectionProperty(type=LocationDefault)
+    location_defaults_index = IntProperty(default=0)
 
     object_switch = EnumProperty(
         name = "Object Type Switch",
@@ -163,27 +84,17 @@ class GX_Scene_Preferences(PropertyGroup):
         ('2', 'Group', 'Enables property editing for all selected skeletal objects')
         ),)
 
-    type_switch = EnumProperty(
-        name = "Selection Type Switch",
-        description = "Switches the selection editing mode between Static and Skeletal Mesh objects",
-        items=(
-        ('1', 'Static', 'Enables property editing for all selected static objects'),
-        ('2', 'Skeletal', 'Enables property editing for all selected skeletal objects')
-        ),)
-
 def GetLocationDefaults(scene, context):
 
     items = [
         ("0", "None",  "", 0),
     ]
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
-    defaults = bpy.data.objects[addon_prefs.default_datablock].GXDefaults.location_defaults
+    scn = context.scene.GXScn
 
     u = 1
 
-    for i,x in enumerate(defaults):
+    for i,x in enumerate(scn.location_defaults):
 
         items.append((str(i+1), x.name, x.name, i+1))
 
@@ -197,11 +108,10 @@ def GetExportDefaults(scene, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons["GEX"].preferences
-    defaults = bpy.data.objects[addon_prefs.default_datablock].GXDefaults.export_defaults
 
     u = 1
 
-    for i,x in enumerate(defaults):
+    for i,x in enumerate(addon_prefs.export_defaults):
 
         items.append((str(i+1), x.name, x.name, i+1))
 
@@ -209,7 +119,6 @@ def GetExportDefaults(scene, context):
 
 
 class GX_Object_Preferences(PropertyGroup):
-
     enable_export = BoolProperty(
         name = "Enable Export",
         description = "Marks the asset as available for batch exporting using GEX.",
@@ -228,8 +137,8 @@ class GX_Object_Preferences(PropertyGroup):
         items=GetExportDefaults,
         update=Update_ExportDefault)
 
-class GX_Group_Preferences(PropertyGroup):
 
+class GX_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
         name = "Export Group",
         description = "Enables all objects within the group to be exported as a single FBX file.",
@@ -250,15 +159,7 @@ class GX_Group_Preferences(PropertyGroup):
         description = "Defines the export setting sets used on this object.",
         items=GetExportDefaults)
 
-class GX_Action_Preferences(PropertyGroup):
-    export = BoolProperty(
-        name = "Export Action",
-        description="Allows the action to be exported through GEX.",
-        default=True
-    )
-
 class GX_UI_Preferences(PropertyGroup):
-
     component_dropdown = BoolProperty(
         name = "",
         description = "",
@@ -269,6 +170,10 @@ class GX_UI_Preferences(PropertyGroup):
         description = "",
         default = False)
 
+    action_list = CollectionProperty(type=ActionItem)
+
+    action_list_index = IntProperty()
+
 class GX_Object_StateMachine(PropertyGroup):
 
     has_triangulate = BoolProperty(
@@ -276,10 +181,15 @@ class GX_Object_StateMachine(PropertyGroup):
         description = "Internal variable used to monitor whether or not the object has a Triangulation modifier, when triangulating the mesh ",
         default = False)
 
+class GX_Action_Preferences(PropertyGroup):
+    export = BoolProperty(
+        name = "Export",
+        description = "Determines whether the action can be exported or not.",
+        default = True)
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (LocationDefault, ExportPass, ExportDefault, GroupItem, GX_Export_Storage, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences, GX_UI_Preferences, GX_Object_StateMachine)
+classes = (GroupItem, ActionItem, LocationDefault, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences, GX_UI_Preferences, GX_Object_StateMachine, GX_Action_Preferences)
 
 for cls in classes:
     bpy.utils.register_class(cls)
@@ -287,41 +197,6 @@ for cls in classes:
 bpy.types.Scene.GXScn = PointerProperty(type=GX_Scene_Preferences)
 bpy.types.Object.GXObj = PointerProperty(type=GX_Object_Preferences)
 bpy.types.Group.GXGrp = PointerProperty(type=GX_Group_Preferences)
-#bpy.types.Action.GXAcn = PointerProperty(type=GX_Action_Preferences)
+bpy.types.Action.GXAcn = PointerProperty(type=GX_Action_Preferences)
 bpy.types.Scene.GXUI = PointerProperty(type=GX_UI_Preferences)
 bpy.types.Object.GXStm = PointerProperty(type=GX_Object_StateMachine)
-bpy.types.Object.GXDefaults = PointerProperty(type=GX_Export_Storage)
-
-
-@persistent
-def CreateDefaultData(scene):
-
-    user_preferences = bpy.context.user_preferences
-
-    if user_preferences == None:
-        print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")
-        return
-
-    addon_prefs = user_preferences.addons["GEX"].preferences
-
-    if addon_prefs == None:
-        print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")
-        return
-
-    # Figure out if an object already exists, if yes do nothing
-    for object in bpy.data.objects:
-        print(object)
-        if object.name == addon_prefs.default_datablock:
-            return
-
-    # Otherwise create the object using the addon preference data
-    bpy.ops.object.select_all(action='DESELECT')
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-
-    defaultDatablock = bpy.context.scene.objects.active
-    defaultDatablock.name = addon_prefs.default_datablock
-    defaultDatablock.hide = True
-    defaultDatablock.hide_render = True
-    defaultDatablock.hide_select = True
-
-bpy.app.handlers.load_post.append(CreateDefaultData)

@@ -39,19 +39,100 @@ from . import properties
 from . import user_interface
 from . import operators
 from . import update
-from bpy.props import IntProperty, BoolProperty, StringProperty, PointerProperty
-from bpy.types import AddonPreferences
+from bpy.props import IntProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty
+from bpy.types import AddonPreferences, PropertyGroup
 
 print("End of import")
+
+class ExportPass(PropertyGroup):
+
+    name = StringProperty(
+        name="Pass Name",
+        description="The name of the selected pass."
+    )
+
+    file_suffix = StringProperty(
+        name="File Suffix",
+        description="The suffix added on the exported file created from this pass."
+    )
+
+    sub_directory = StringProperty(
+        name="Sub-Directory",
+        description="Export the pass to a new folder inside the chosen location default."
+    )
+
+    # Sub-directory?
+
+    export_lp = BoolProperty(
+        name="Export Low_Poly",
+        description="Selects all low-poly objects available for export.",
+        default=False
+    )
+
+    export_hp = BoolProperty(
+        name="Export High_Poly",
+        description="Selects all high-poly objects available for export.",
+        default=False
+    )
+
+    export_cg = BoolProperty(
+        name="Export Cage",
+        description="Selects all cage objects available for export.",
+        default=False
+    )
+
+    export_cx = BoolProperty(
+        name="Export Collision",
+        description="Selects all collision objects available for export.",
+        default=False
+    )
+
+    export_ar = BoolProperty(
+        name="Export Armature",
+        description="Selects all armature objects available for export.",
+        default=False
+    )
+
+    export_am = BoolProperty(
+        name="Export Animation",
+        description="Selects all animation objects available for export.",
+        default=False
+    )
+
+    export_individual = BoolProperty(
+        name="Export Individual",
+        description="Exports every object in the pass as an individual object.",
+        default=False
+    )
+
+    apply_modifiers = BoolProperty(
+        name="Apply Modifiers",
+        description="Applies all modifiers on every object in the pass",
+        default=False
+    )
+
+    triangulate = BoolProperty(
+        name="Triangulate Export",
+        description="Triangulate objects in the pass on export using optimal triangulation settings.",
+        default=False
+    )
+
+
+class ExportDefault(PropertyGroup):
+    name = StringProperty(
+        name = "Default Name",
+        description="The name of the export default, whoda thunk :OO",
+        default=""
+    )
+
+    passes = CollectionProperty(type=ExportPass)
+    passes_index = IntProperty(default=0)
 
 class GEXAddonPreferences(AddonPreferences):
     bl_idname = __name__
 
-    default_datablock = StringProperty(
-    name = "Dummy Datablock Name",
-    description = "The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
-    default = ">GEX Preference Data<"
-    )
+    export_defaults = CollectionProperty(type=ExportDefault)
+    export_defaults_index = IntProperty(default=0)
 
     lp_tag = StringProperty(
     name = "Low-Poly Tag",
@@ -92,7 +173,8 @@ class GEXAddonPreferences(AddonPreferences):
 
 
 def register():
-    bpy.utils.register_class(GEXAddonPreferences)
+    bpy.utils.register_class(ExportPass)
+    bpy.utils.register_class(ExportDefault)
     bpy.utils.register_module(__name__)
 
 

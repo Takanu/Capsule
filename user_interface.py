@@ -1,5 +1,4 @@
 import bpy
-from .definitions import GetPluginDefaults
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty
 from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
@@ -41,6 +40,24 @@ class Pass_Default_UIList(UIList):
         layout.prop(item, "name", text="", emboss=False)
         layout.separator()
 
+class Action_UIList(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+
+        scn = context.scene.GXScn
+        active = context.active_object
+
+        icon = "OBJECT_DATA"
+
+        if item.anim_type == '2':
+            icon = "OBJECT_DATA"
+
+        elif item.anim_type == '4':
+            icon = "OUTLINER_OB_ARMATURE"
+
+        layout.prop(item, "name", text="", icon=icon, emboss=False)
+
+        layout.separator()
+
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
 
@@ -55,7 +72,6 @@ class GX_Export(Panel):
     def draw(self, context):
         layout = self.layout
 
-        defaults = GetPluginDefaults()
         scn = context.scene.GXScn
         ob = context.object
 
@@ -93,7 +109,6 @@ class GX_SelectionObject(Panel):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons["GEX"].preferences
-        defaults = GetPluginDefaults()
         scn = context.scene.GXScn
         ui = context.scene.GXUI
 
@@ -250,6 +265,21 @@ class GX_SelectionObject(Panel):
             layout.separator()
 
 
+        #////////////////////////// ANIMATION UI /////////////////////////
+        #/////////////////////////////////////////////////////////////////
+
+        #col_location = layout.row(align=True)
+        #col_location.template_list("Action_UIList", "rawr", ui, "action_list", ui, "action_list_index", rows=3, maxrows=10)
+
+        #col_location.separator()
+
+        #row_location = col_location.column(align=True)
+        #row_location.operator("scene.gx_refactions", text="", icon="FILE_REFRESH")
+
+        #layout.separator()
+
+
+
 
 class GX_Location(Panel):
     bl_space_type = "VIEW_3D"
@@ -261,12 +291,11 @@ class GX_Location(Panel):
     def draw(self, context):
         layout = self.layout
 
-        defaults = GetPluginDefaults()
         scn = context.scene.GXScn
         ob = context.object
 
         col_location = layout.row(align=True)
-        col_location.template_list("Path_Default_UIList", "default", defaults, "location_defaults", defaults, "location_defaults_index", rows=3, maxrows=6)
+        col_location.template_list("Path_Default_UIList", "default", scn, "location_defaults", scn, "location_defaults_index", rows=3, maxrows=6)
 
         col_location.separator()
 
@@ -280,11 +309,15 @@ class GX_Location(Panel):
         file.alignment = 'EXPAND'
 
         count = 0
-        for i, item in enumerate(defaults.location_defaults, 1):
+        for i, item in enumerate(scn.location_defaults, 1):
             count += 1
 
-        if defaults.location_defaults_index > -1 and defaults.location_defaults_index < count:
-            file.prop(defaults.location_defaults[defaults.location_defaults_index], "path", text="Location")
+        if scn.location_defaults_index > -1 and scn.location_defaults_index < count:
+            file.prop(scn.location_defaults[scn.location_defaults_index], "path", text="Location")
+
+
+
+
 
 class GX_ExportDefaults(Panel):
     bl_space_type = "VIEW_3D"
@@ -296,14 +329,15 @@ class GX_ExportDefaults(Panel):
     def draw(self, context):
         layout = self.layout
 
-        defaults = GetPluginDefaults()
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons["GEX"].preferences
         scn = context.scene.GXScn
         ob = context.object
         ui = context.scene.GXUI
 
         # Export UI
         col_export = layout.row(align=True)
-        col_export.template_list("Export_Default_UIList", "default", defaults, "export_defaults", defaults, "export_defaults_index", rows=3, maxrows=6)
+        col_export.template_list("Export_Default_UIList", "default", addon_prefs, "export_defaults", addon_prefs, "export_defaults_index", rows=3, maxrows=6)
 
         col_export.separator()
 
@@ -311,9 +345,9 @@ class GX_ExportDefaults(Panel):
         row_export.operator("scene.gx_addexport", text="", icon="ZOOMIN")
         row_export.operator("scene.gx_deleteexport", text="", icon="ZOOMOUT")
 
-        if len(defaults.export_defaults) > 0:
+        if len(addon_prefs.export_defaults) > 0:
 
-            currentExp = defaults.export_defaults[defaults.export_defaults_index]
+            currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
 
             # Pass UI
             passUI = layout.column(align=True)
@@ -379,6 +413,7 @@ class GX_ExportDefaults(Panel):
                     options_list.prop(currentPass, "triangulate")
 
         layout.separator()
+
 
 
 

@@ -109,7 +109,7 @@ def MoveObject(target, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
-    print("Moving Object")
+    print(">>> Moving Object <<<")
 
     # Prevent auto keyframing from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
@@ -118,25 +118,31 @@ def MoveObject(target, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = False
     target.lock_location = (False, False, False)
 
+    # This line is actually super-important, not sure why though...
+    # FocusObject should fill the role of deselection...
+    bpy.ops.object.select_all(action='DESELECT')
+
     # Move the object
     FocusObject(target)
     target.location = location
 
     # Preserving the objects location has to happen again, e_e
-    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
-    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+    #cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    #previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # Move the cursor to the location
-    bpy.data.scenes[bpy.context.scene.name].cursor_location = location
+    #bpy.data.scenes[bpy.context.scene.name].cursor_location = location
 
     # Focus the object
-    FocusObject(target)
+    #FocusObject(target)
 
     # SNAP IT
-    bpy.ops.view3D.snap_selected_to_cursor()
+    #bpy.ops.view3D.snap_selected_to_cursor()
+
+    print("Object", target.name, "moved.... ", target.location)
 
     # Restore the location
-    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+    #bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
@@ -200,10 +206,10 @@ def MoveObjects(targetLead, targets, context, location):
         lockTransformSel = object.lock_location
         object.lock_location = (False, False, False)
 
-        print("Object", object.name, "moved.... ", object.location)
-
         FocusObject(object)
         bpy.ops.transform.translate(value=locationDiff)
+
+        print("Object", object.name, "moved.... ", object.location)
 
         object.lock_location = lockTransformSel
 
@@ -211,9 +217,3 @@ def MoveObjects(targetLead, targets, context, location):
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     targetLead.lock_location = lockTransform
-
-def GetPluginDefaults():
-    user_preferences = bpy.context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
-    defaults = bpy.data.objects[addon_prefs.default_datablock].GXDefaults
-    return defaults
