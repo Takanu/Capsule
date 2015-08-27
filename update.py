@@ -105,6 +105,37 @@ def Update_ExportDefault(self, context):
     return None
 
 
+def Update_ObjectItemName(self, context):
+
+    print("Finding object name to replace")
+
+    # Set the name of the item to the group name
+    for object in context.scene.objects:
+        if object.name == self.prev_name:
+
+            print("Found object name ", object.name)
+            object.name = self.name
+            self.prev_name = object.name
+
+            print("object Name = ", object.name)
+            print("List Name = ", self.name)
+            print("Prev Name = ", self.prev_name)
+
+    return None
+
+def Update_ObjectItemExport(self, context):
+
+    print("Finding object name to replace")
+
+    # Set the name of the item to the group name
+    for object in context.scene.objects:
+        if object.name == self.name:
+
+            print("Found object name ", object.name)
+            object.GXObj.enable_export = self.enable_export
+
+
+    return None
 
 def Update_GroupItemName(self, context):
 

@@ -1,10 +1,27 @@
-from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_GroupItemName, Update_ActionItemName
+from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
-from bpy.app.handlers import persistent
 
+class ObjectItem(PropertyGroup):
+    name = StringProperty(
+        name="",
+        description="The name of the group.",
+        update=Update_ObjectItemName
+    )
+
+    prev_name = StringProperty(
+        name="",
+        description="Internal only, used for tracking name updates."
+    )
+
+    enable_export = BoolProperty(
+        name="",
+        description="",
+        default=False,
+        update=Update_ObjectItemExport
+    )
 
 class GroupItem(PropertyGroup):
     name = StringProperty(
@@ -72,6 +89,9 @@ class GX_Scene_Preferences(PropertyGroup):
 
     group_list = CollectionProperty(type=GroupItem)
     group_list_index = IntProperty()
+
+    object_list = CollectionProperty(type=ObjectItem)
+    object_list_index = IntProperty()
 
     location_defaults = CollectionProperty(type=LocationDefault)
     location_defaults_index = IntProperty(default=0)
@@ -189,7 +209,7 @@ class GX_Action_Preferences(PropertyGroup):
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (GroupItem, ActionItem, LocationDefault, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences, GX_UI_Preferences, GX_Object_StateMachine, GX_Action_Preferences)
+classes = (ObjectItem, GroupItem, ActionItem, LocationDefault, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences, GX_UI_Preferences, GX_Object_StateMachine, GX_Action_Preferences)
 
 for cls in classes:
     bpy.utils.register_class(cls)

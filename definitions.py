@@ -217,3 +217,24 @@ def MoveObjects(targetLead, targets, context, location):
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     targetLead.lock_location = lockTransform
+
+
+def CheckSuffix(string, suffix):
+
+    strLength = len(string)
+    suffixLength = len(suffix)
+    diff = strLength - suffixLength
+    index = string.rfind(suffix)
+
+    #print("String Length...", strLength)
+    #print("Suffix Length...", suffixLength)
+    #print("Diff............", diff)
+    #print("Index...........", index)
+
+    if index == diff:
+        #print("Suffix is True")
+        return True
+
+    else:
+        #print("Suffix is False")
+        return False

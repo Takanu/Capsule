@@ -25,8 +25,10 @@ if "bpy" in locals():
         imp.reload(properties)
     if "user_interface" in locals():
         imp.reload(user_interface)
-    if "operators" in locals():
-        imp.reload(operators)
+    if "export_operators" in locals():
+        imp.reload(export_operators)
+    if "ui_operators" in locals():
+        imp.reload(ui_operators)
     if "update" in locals():
         imp.reload(update)
 
@@ -37,7 +39,8 @@ import bpy
 from . import definitions
 from . import properties
 from . import user_interface
-from . import operators
+from . import export_operators
+from . import ui_operators
 from . import update
 from bpy.props import IntProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty
 from bpy.types import AddonPreferences, PropertyGroup

@@ -3,6 +3,15 @@ from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, Po
 from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
 
+class Object_UIList(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+
+        scn = context.scene.GXScn
+
+        layout.prop(item, "name", text="", emboss=False)
+        layout.prop(item, "enable_export", text="")
+        layout.separator()
+
 
 class Group_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -57,7 +66,6 @@ class Action_UIList(UIList):
         layout.prop(item, "name", text="", icon=icon, emboss=False)
 
         layout.separator()
-
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
 
@@ -120,6 +128,16 @@ class GX_SelectionObject(Panel):
         #/////////////// OBJECT SELECTION UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
         if obType == 1:
+
+            col_location = layout.row(align=True)
+            col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
+
+            col_location.separator()
+
+            row_location = col_location.column(align=True)
+            row_location.operator("scene.gx_refobjects", text="", icon="FILE_REFRESH")
+
+            layout.separator()
 
             # Check we have an active object
             if context.active_object is None or len(context.selected_objects) is 0:
@@ -340,7 +358,6 @@ class GX_ExportDefaults(Panel):
         col_export.template_list("Export_Default_UIList", "default", addon_prefs, "export_defaults", addon_prefs, "export_defaults_index", rows=3, maxrows=6)
 
         col_export.separator()
-
         row_export = col_export.column(align=True)
         row_export.operator("scene.gx_addexport", text="", icon="ZOOMIN")
         row_export.operator("scene.gx_deleteexport", text="", icon="ZOOMOUT")
@@ -371,6 +388,7 @@ class GX_ExportDefaults(Panel):
                 pass_settings = layout.column(align=True)
                 pass_settings.separator()
                 pass_settings.prop(currentPass, "file_suffix")
+                pass_settings.prop(currentPass, "sub_directory")
                 pass_settings.separator()
                 pass_settings.separator()
 
@@ -431,5 +449,6 @@ class GX_Settings(Panel):
         ob = context.object
 
         col_settings = layout.column(align=True)
-        col_settings.operator("scene.gx_resetscene", text="Reset Scene")
+        col_settings.operator("scene.gx_resetsceneprops", text="Reset Scene")
         col_settings.operator("scene.gx_resetprefs", text="Reset Defaults")
+        col_settings.operator("scene.gx_teststuff", text="TEST ME")
