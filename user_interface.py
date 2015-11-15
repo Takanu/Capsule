@@ -116,7 +116,7 @@ class GX_SelectionObject(Panel):
     def draw(self, context):
 
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
         scn = context.scene.GXScn
         ui = context.scene.GXUI
 
@@ -348,7 +348,7 @@ class GX_ExportDefaults(Panel):
         layout = self.layout
 
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
         scn = context.scene.GXScn
         ob = context.object
         ui = context.scene.GXUI

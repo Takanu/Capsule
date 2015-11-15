@@ -59,7 +59,7 @@ class GX_Add_Export(Operator):
         print(self)
 
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
         newDefault = addon_prefs.export_defaults.add()
         newDefault.name = "Export " + str(len(addon_prefs.export_defaults))
         newDefault.path = ""
@@ -76,7 +76,7 @@ class GX_Delete_Export(Operator):
         print(self)
 
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
         addon_prefs.export_defaults.remove(addon_prefs.export_defaults_index)
 
         return {'FINISHED'}
@@ -91,7 +91,7 @@ class GX_Add_Pass(Operator):
         print(self)
 
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
         export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
         newPass = export.passes.add()
         newPass.name = "Pass " + str(len(export.passes))
@@ -109,7 +109,7 @@ class GX_Delete_Pass(Operator):
         print(self)
 
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
         export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
         export.passes.remove(export.passes_index)
 
@@ -220,7 +220,7 @@ class GX_Set_Root_Object(Operator):
         obj = context.active_object.GXObj
 
         user_preferences = context.user_preferences
-        self.addon_prefs = user_preferences.addons["GEX"].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
 
         self.object = context.scene.objects.active
         context.window_manager.modal_handler_add(self)
@@ -393,8 +393,8 @@ class GX_Reset_Scene(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = bpy.context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
 
         if addon_prefs == None:
             print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")

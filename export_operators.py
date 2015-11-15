@@ -105,7 +105,7 @@ class GT_Export_Assets(Operator):
 
         scn = context.scene.GXScn
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons["GEX"].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
 
         exportedObjects = 0
         exportedGroups = 0

@@ -5,7 +5,7 @@ from math import *
 def Update_EnableExport(self, context):
 
     user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
@@ -34,7 +34,7 @@ def Update_EnableExport(self, context):
 def Update_AutoAssign(self, context):
 
     user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
@@ -63,7 +63,7 @@ def Update_AutoAssign(self, context):
 def Update_LocationDefault(self, context):
 
     user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
@@ -95,7 +95,7 @@ def Update_LocationDefault(self, context):
 def Update_ExportDefault(self, context):
 
     user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:

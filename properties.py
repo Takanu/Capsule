@@ -127,7 +127,7 @@ def GetExportDefaults(scene, context):
     ]
 
     user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
     u = 1
 

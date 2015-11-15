@@ -244,7 +244,7 @@ def CheckForTags(context, string):
 
     scn = context.scene.GXScn
     user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
     hasLP = CheckSuffix(string, addon_prefs.lp_tag)
     hasHP = CheckSuffix(string, addon_prefs.hp_tag)
@@ -261,7 +261,7 @@ def RemoveTags(context, string):
 
     scn = context.scene.GXScn
     user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["GEX"].preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
     if CheckSuffix(string, addon_prefs.lp_tag) is True:
         string.replace(addon_prefs.lp_tag, "")
