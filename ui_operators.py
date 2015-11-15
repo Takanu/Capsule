@@ -1,6 +1,6 @@
 import bpy, bmesh
 from bpy.types import Operator
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckForTags
 from mathutils import Vector
 
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
@@ -271,7 +271,7 @@ class GX_Set_Root_Object(Operator):
                         print("Found Group: ", group.name)
                         for object in group.objects:
                             if object.name == context.selected_objects[0].name:
-                                if object.name.find(self.addon_prefs.lp_tag) != -1:
+                                if CheckForTags(context, object.name) is False:
                                     print("Object Passed Main Check", object.name)
 
                                     self.CheckForChild(group, object)
@@ -281,7 +281,7 @@ class GX_Set_Root_Object(Operator):
                                     self.finish()
                                     return{'FINISHED'}
 
-                                elif group.GXGrp.auto_assign is False:
+                                elif CheckSuffix(object.name, self.addon_prefs.lp_tag) is True:
 
                                     self.CheckForChild(group, object)
 

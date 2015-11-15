@@ -1,6 +1,6 @@
 import bpy, bmesh, os
 from bpy.types import Operator
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckForTags, RemoveTags
 from mathutils import Vector
 
 class GT_Export_Assets(Operator):
@@ -94,7 +94,6 @@ class GT_Export_Assets(Operator):
             return {'3'}
 
         filePath = defaultFilePath
-        filePath += fileName
 
         return filePath
 
@@ -158,7 +157,6 @@ class GT_Export_Assets(Operator):
         for object in context.scene.objects:
             if object.type == 'MESH':
                 print("Object", object.name, "found.")
-                print("Enable export for", object.name, "is false.")
 
                 if object.GXObj.enable_export is True:
 
@@ -180,6 +178,7 @@ class GT_Export_Assets(Operator):
                     # Figure out whether the object needs automatic assigning
                     auto_assign = False
                     rootType = 0
+
                     rootObject = object
 
                     if CheckSuffix(object.name, addon_prefs.lp_tag) is True:
@@ -207,6 +206,7 @@ class GT_Export_Assets(Operator):
                     hiddenObjectList = []
                     objectName = rootObject.name.replace(addon_prefs.lp_tag, "")
 
+                    # I actually don't know what this does...
                     if bpy.data.objects.find(objectName + addon_prefs.lp_tag) != -1:
                         hiddenObjectList.append(bpy.data.objects[objectName + addon_prefs.lp_tag])
                         isHidden = (bpy.data.objects[objectName + addon_prefs.lp_tag].hide)
@@ -227,14 +227,15 @@ class GT_Export_Assets(Operator):
                         isHidden = (bpy.data.objects[objectName + addon_prefs.cx_tag].hide)
                         hiddenList.append(isHidden)
 
+                    # Also need to figure out what the Proxy does
                     armatureProxy = None
                     modType = {'ARMATURE'}
 
                     if rootType == 1:
                         armatureProxy = rootObject
 
-                    elif lowPoly is not None:
-                        armatureProxy = lowPoly
+                    #elif lowPoly is not None:
+                        #armatureProxy = lowPoly
 
                     if armatureProxy is not None:
                         FocusObject(armatureProxy)
@@ -283,12 +284,11 @@ class GT_Export_Assets(Operator):
                         export_anim_optimise = False
 
                         # Also set file path name
-                        path = ""
-                        filePath = ""
-                        objectFilePath = ""
-                        suffix = objPass.file_suffix
-                        sub_directory = objPass.sub_directory
-                        objectName = ""
+                        path = ""                                # Path given from the location default
+                        fileName = ""                            # File name for the object (without tag suffixes)
+                        suffix = objPass.file_suffix             # Additional file name suffix
+                        sub_directory = objPass.sub_directory    # Whether a sub-directory needs to be created
+                        objectName = ""                          # The object name, duh
 
                         # Lets see if the root object can be exported...
                         if expLP is True and rootType == 1:
@@ -303,28 +303,27 @@ class GT_Export_Assets(Operator):
                         #/////////////////// - FILE NAME - /////////////////////////////////////////////////
                         print("Obtaining File...")
                         print("File Enumerator = ", rootObject.GXObj.location_default)
-                        filePath = ""
-                        filePath = self.GetFilePath(context, rootObject.GXObj.location_default, rootObject.name)
+                        path = self.GetFilePath(context, rootObject.GXObj.location_default, rootObject.name)
 
-
-                        if filePath == "":
-                            self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
+                        if path == "":
+                            self.report({'WARNING'}, "Welp, something went wrong.  Contact Crocadillian! D:.")
                             return {'CANCELLED'}
 
-                        if filePath == {'1'}:
+                        if path == {'1'}:
                             self.report({'WARNING'}, 'One of the objects has no set file path default.  Set it plzplzplz.')
                             return {'CANCELLED'}
 
-                        if filePath == {'2'}:
+                        if path == {'2'}:
                             self.report({'WARNING'}, 'One of the objects file path default has no file path.  A file path is required to export.')
                             return {'CANCELLED'}
 
-                        if filePath == {'3'}:
+                        if path == {'3'}:
                             self.report({'WARNING'}, 'One of the objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
                             return {'CANCELLED'}
 
-                        path = filePath.replace(rootObject.name, "")
                         objectName = rootObject.name.replace(addon_prefs.lp_tag, "")
+
+                        print("Current Path: ", path)
 
                         # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
                         # Need to extract the information from the pass name to see
@@ -332,10 +331,14 @@ class GT_Export_Assets(Operator):
                         if sub_directory != "":
                             newPath = path + sub_directory + "/"
 
+                            print(">>> Sub-Directory found, appending...")
+
                             if not os.path.exists(newPath):
                                 os.makedirs(newPath)
 
+                            print("Old Path: ", path)
                             path = path + sub_directory + "/"
+                            print("New Path: ", path)
 
                         #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
                         # First we have to find all objects in the group that are of type MESHHH
@@ -536,7 +539,8 @@ class GT_Export_Assets(Operator):
                             if expRoot is True:
                                 SelectObject(rootObject)
 
-                            objectFilePath = path + objectName + suffix + ".fbx"
+                            nameTagless = RemoveTags(context, objectName)
+                            objectFilePath = path + nameTagless + suffix + ".fbx"
 
                             if expAM is True:
                                 print("Exporting animations...")
@@ -740,28 +744,26 @@ class GT_Export_Assets(Operator):
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
                     print("Obtaining File...")
-                    print("File Enumerator = ", group.GXGrp.location_default)
-                    filePath = ""
-                    filePath = self.GetFilePath(context, group.GXGrp.location_default, group.name)
+                    print("File Enumerator = ", rootObject.GXObj.location_default)
+                    path = self.GetFilePath(context, rootObject.GXObj.location_default, rootObject.name)
 
-
-                    if filePath == "":
-                        self.report({'WARNING'}, "Welp, something went wrong.  Contact the developer.")
+                    if path == "":
+                        self.report({'WARNING'}, "Welp, something went wrong.  Contact Crocadillian! D:.")
                         return {'CANCELLED'}
 
-                    if filePath == {'1'}:
-                        self.report({'WARNING'}, 'One of the groups has no set file path default.  Set it plzplzplz.')
+                    if path == {'1'}:
+                        self.report({'WARNING'}, 'One of the objects has no set file path default.  Set it plzplzplz.')
                         return {'CANCELLED'}
 
-                    if filePath == {'2'}:
-                        self.report({'WARNING'}, 'One of the groups file path default has no file path.  A file path is required to export.')
+                    if path == {'2'}:
+                        self.report({'WARNING'}, 'One of the objects file path default has no file path.  A file path is required to export.')
                         return {'CANCELLED'}
 
-                    if filePath == {'3'}:
-                        self.report({'WARNING'}, 'One of the groups file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
+                    if path == {'3'}:
+                        self.report({'WARNING'}, 'One of the objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
                         return {'CANCELLED'}
 
-                    path = filePath.replace(group.name, "")
+                    objectName = rootObject.name.replace(addon_prefs.lp_tag, "")
 
                     # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
                     # Need to extract the information from the pass name to see
@@ -769,10 +771,14 @@ class GT_Export_Assets(Operator):
                     if sub_directory != "":
                         newPath = path + sub_directory + "/"
 
+                        print(">>> Sub-Directory found, appending...")
+
                         if not os.path.exists(newPath):
                             os.makedirs(newPath)
 
+                        print("Old Path: ", path)
                         path = path + sub_directory + "/"
+                        print("New Path: ", path)
 
                     #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
                     # First we have to find all objects in the group that are of type MESHHH
@@ -965,7 +971,7 @@ class GT_Export_Assets(Operator):
                         if expRoot is True:
                             SelectObject(rootObject)
 
-                        objectFilePath = filePath + suffix + ".fbx"
+                        objectFilePath = path + group.name + suffix + ".fbx"
 
                         if expAM is True:
                             print("Exporting animations...")

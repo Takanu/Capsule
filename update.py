@@ -1,5 +1,5 @@
 import bpy, bmesh, time
-from .definitions import SelectObject, FocusObject, ActivateObject
+from .definitions import SelectObject, FocusObject, ActivateObject, CheckSuffix, CheckForTags
 from math import *
 
 def Update_EnableExport(self, context):
@@ -22,7 +22,10 @@ def Update_EnableExport(self, context):
 
         # Run through the objects
         for object in selected:
-            if object.name.find(addon_prefs.lp_tag) != -1:
+            if CheckForTags(context, object.name) is False:
+                object.GXObj.enable_export = enableExport
+
+            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
                 object.GXObj.enable_export = enableExport
 
     return None
@@ -48,7 +51,10 @@ def Update_AutoAssign(self, context):
 
         # Run through the objects
         for object in selected:
-            if object.name.find(addon_prefs.lp_tag) != -1:
+            if CheckForTags(context, object.name) is False:
+                object.GXObj.auto_assign = autoAssign
+
+            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
                 object.GXObj.auto_assign = autoAssign
 
     return None
@@ -61,6 +67,7 @@ def Update_LocationDefault(self, context):
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
+        print(context.active_object.name)
 
         # Keep a record of the selected objects to update
         selected = []
@@ -74,7 +81,13 @@ def Update_LocationDefault(self, context):
 
         # Run through the objects
         for object in selected:
-            if object.name.find(addon_prefs.lp_tag) != -1:
+            print(object.name)
+            if CheckForTags(context, object.name) is False:
+                print("Passing down object variable")
+                object.GXObj.location_default = value
+
+            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
+                print("Passing down object variable")
                 object.GXObj.location_default = value
 
     return None
@@ -99,7 +112,10 @@ def Update_ExportDefault(self, context):
 
         # Run through the objects
         for object in selected:
-            if object.name.find(addon_prefs.lp_tag) != -1:
+            if CheckForTags(context, object.name) is False:
+                object.GXObj.export_default = value
+
+            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
                 object.GXObj.export_default = value
 
     return None

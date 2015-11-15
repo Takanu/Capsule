@@ -238,3 +238,41 @@ def CheckSuffix(string, suffix):
     else:
         #print("Suffix is False")
         return False
+
+
+def CheckForTags(context, string):
+
+    scn = context.scene.GXScn
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons["GEX"].preferences
+
+    hasLP = CheckSuffix(string, addon_prefs.lp_tag)
+    hasHP = CheckSuffix(string, addon_prefs.hp_tag)
+    hasCG = CheckSuffix(string, addon_prefs.cg_tag)
+    hasCX = CheckSuffix(string, addon_prefs.cx_tag)
+
+    if hasLP is False and hasHP is False and hasCG is False and hasCX is False:
+        return False
+
+    else:
+        return True
+
+def RemoveTags(context, string):
+
+    scn = context.scene.GXScn
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons["GEX"].preferences
+
+    if CheckSuffix(string, addon_prefs.lp_tag) is True:
+        string.replace(addon_prefs.lp_tag, "")
+
+    elif CheckSuffix(string, addon_prefs.hp_tag) is True:
+        string.replace(addon_prefs.hp_tag, "")
+
+    elif CheckSuffix(string, addon_prefs.cg_tag) is True:
+        string.replace(addon_prefs.cx_tag, "")
+
+    elif CheckSuffix(string, addon_prefs.cx_tag) is True:
+        string.replace(addon_prefs.cx_tag, "")
+
+    return string

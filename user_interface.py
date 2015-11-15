@@ -451,4 +451,3 @@ class GX_Settings(Panel):
         col_settings = layout.column(align=True)
         col_settings.operator("scene.gx_resetsceneprops", text="Reset Scene")
         col_settings.operator("scene.gx_resetprefs", text="Reset Defaults")
-        col_settings.operator("scene.gx_teststuff", text="TEST ME")
