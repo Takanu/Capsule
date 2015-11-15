@@ -206,7 +206,7 @@ class GT_Export_Assets(Operator):
                     hiddenObjectList = []
                     objectName = rootObject.name.replace(addon_prefs.lp_tag, "")
 
-                    # I actually don't know what this does...
+                    # The following code finds relevant object components to the one being exported
                     if bpy.data.objects.find(objectName + addon_prefs.lp_tag) != -1:
                         hiddenObjectList.append(bpy.data.objects[objectName + addon_prefs.lp_tag])
                         isHidden = (bpy.data.objects[objectName + addon_prefs.lp_tag].hide)
@@ -227,20 +227,21 @@ class GT_Export_Assets(Operator):
                         isHidden = (bpy.data.objects[objectName + addon_prefs.cx_tag].hide)
                         hiddenList.append(isHidden)
 
-                    # Also need to figure out what the Proxy does
-                    armatureProxy = None
+                    # ////////  FINDING ARMATURE ////////
+                    armatureTarget = None
                     modType = {'ARMATURE'}
 
+                    # If the root object is the low-poly object, we can export the armature with it.
                     if rootType == 1:
-                        armatureProxy = rootObject
+                        armatureTarget = rootObject
 
                     #elif lowPoly is not None:
-                        #armatureProxy = lowPoly
+                        #armatureTarget = lowPoly
 
-                    if armatureProxy is not None:
-                        FocusObject(armatureProxy)
+                    if armatureTarget is not None:
+                        FocusObject(armatureTarget)
 
-                        for modifier in armatureProxy.modifiers:
+                        for modifier in armatureTarget.modifiers:
                             if modifier.type in modType:
                                 armature = modifier.object
                                 hiddenObjectList.append(armature)
