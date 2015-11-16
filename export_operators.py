@@ -81,11 +81,9 @@ class GT_Export_Assets(Operator):
         enumIndex = int(locationEnum)
         filePath = ""
 
-        if enumIndex == 0:
-            return {'1'}
-
         enumIndex -= 1
         defaultFilePath = scn.location_defaults[enumIndex].path
+        print("Obtained location default: ", scn.location_defaults[enumIndex].path)
 
         if defaultFilePath == "":
             return {'2'}
@@ -235,14 +233,18 @@ class GT_Export_Assets(Operator):
                     if rootType == 1:
                         armatureTarget = rootObject
 
-                    #elif lowPoly is not None:
-                        #armatureTarget = lowPoly
+                    elif CheckForTags(context, rootObject.name) is False and auto_assign is False:
+                        armatureTarget = rootObject
+
+                    print(">>> Armature Target is..")
+                    print(armatureTarget)
 
                     if armatureTarget is not None:
                         FocusObject(armatureTarget)
 
                         for modifier in armatureTarget.modifiers:
                             if modifier.type in modType:
+                                print(">>> Armature found...")
                                 armature = modifier.object
                                 hiddenObjectList.append(armature)
                                 isHidden = armature.hide
@@ -400,6 +402,10 @@ class GT_Export_Assets(Operator):
 
                             elif lowPoly is not None:
                                 item = lowPoly
+
+                            elif CheckForTags(context, rootObject.name) is False and auto_assign is False:
+                                print("RAAAAWWWWRRRR")
+                                item = rootObject
 
                             if item is not None:
                                 FocusObject(item)
@@ -727,8 +733,11 @@ class GT_Export_Assets(Operator):
                     if expCX is True and rootType == 4:
                         expRoot = True
 
+                    elif auto_assign is False:
+                        expRoot = True
+
                     # If its a collision object...
-                    if expRoot == 3:
+                    if expCG is True and rootType == 3:
                         collisionName = rootObject.name
                         collisionName = collisionName.replace(addon_prefs.cx_tag, "")
                         foundMatch = False
@@ -745,8 +754,10 @@ class GT_Export_Assets(Operator):
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
                     print("Obtaining File...")
-                    print("File Enumerator = ", rootObject.GXObj.location_default)
-                    path = self.GetFilePath(context, rootObject.GXObj.location_default, rootObject.name)
+                    print("File Enumerator = ", group.GXGrp.location_default)
+                    path = self.GetFilePath(context, group.GXGrp.location_default, rootObject.name)
+
+                    print(path)
 
                     if path == "":
                         self.report({'WARNING'}, "Welp, something went wrong.  Contact Crocadillian! D:.")
@@ -766,6 +777,8 @@ class GT_Export_Assets(Operator):
 
                     objectName = rootObject.name.replace(addon_prefs.lp_tag, "")
 
+                    print("Current Path: ", path)
+
                     # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
                     # Need to extract the information from the pass name to see
                     # if a sub-directory needs creating in the location default
@@ -780,7 +793,6 @@ class GT_Export_Assets(Operator):
                         print("Old Path: ", path)
                         path = path + sub_directory + "/"
                         print("New Path: ", path)
-
                     #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
                     # First we have to find all objects in the group that are of type MESHHH
                     # If auto-assignment is on, use the names to filter into lists, otherwise forget it.
@@ -967,9 +979,11 @@ class GT_Export_Assets(Operator):
                     elif exportIndividual is False and canExport is True:
                         print("Combined Pass, exporting....")
                         for object in exportList:
+                            print("Exporting: ", object.name)
                             SelectObject(object)
 
                         if expRoot is True:
+                            print("Exporting: ", rootObject.name)
                             SelectObject(rootObject)
 
                         objectFilePath = path + group.name + suffix + ".fbx"
