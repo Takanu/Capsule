@@ -94,10 +94,7 @@ class GX_Export(Panel):
         col_export.prop(scn, "engine_select", text="", icon = "LOGIC")
         col_export.separator()
 
-        if scn.engine_select is '1':
-            col_export.prop(scn, "scale_100x")
-
-        elif scn.engine_select is '2':
+        if scn.engine_select is '2':
             col_export.prop(scn, "merge_export")
 
 

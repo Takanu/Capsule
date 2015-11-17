@@ -77,11 +77,6 @@ class GX_Scene_Preferences(PropertyGroup):
         ('2', 'Unity 5', 'Configures export and export options for Unity'),
         ),)
 
-    scale_100x = BoolProperty(
-        name="Scale 100x",
-        description="Scales every exported object by 100 times its original size in order to correct asset scales for Unreal Engine 4.7 or lower",
-        default=False)
-
     merge_export = BoolProperty(
         name="Merge Export",
         description="(Unity Only) For groups, all sub-objects will be merged so when imported in Unity, the group will display as a single object.  WARNING - If you have animations applied to any mesh object, it may duplicate the animation data.",

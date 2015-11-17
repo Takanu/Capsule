@@ -254,12 +254,7 @@ class GT_Export_Assets(Operator):
             print("UE4 selected")
             self.axisForward = "-Z"
             self.axisUp = "Y"
-
-            if scn.scale_100x is True:
-                self.globalScale = 100.0
-
-            else:
-                self.globalScale = 1.0
+            self.globalScale = 1.0
 
         elif int(scn.engine_select) is 2:
             print("Unity selected")
@@ -309,29 +304,9 @@ class GT_Export_Assets(Operator):
 
                     # Collect hidden defaults to restore afterwards.
                     hiddenList = []
+                    selectList = []
                     hiddenObjectList = []
                     objectName = rootObject.name.replace(self.addon_prefs.lp_tag, "")
-
-                    # Find the objects and store data that may get changed during the export process to restore afterwards.
-                    if bpy.data.objects.find(objectName + self.addon_prefs.lp_tag) != -1:
-                        hiddenObjectList.append(bpy.data.objects[objectName + self.addon_prefs.lp_tag])
-                        isHidden = (bpy.data.objects[objectName + self.addon_prefs.lp_tag].hide)
-                        hiddenList.append(isHidden)
-
-                    if bpy.data.objects.find(objectName + self.addon_prefs.hp_tag) != -1:
-                        hiddenObjectList.append(bpy.data.objects[objectName + self.addon_prefs.hp_tag])
-                        isHidden = (bpy.data.objects[objectName + self.addon_prefs.hp_tag].hide)
-                        hiddenList.append(isHidden)
-
-                    if bpy.data.objects.find(objectName + self.addon_prefs.cg_tag) != -1:
-                        hiddenObjectList.append(bpy.data.objects[objectName + self.addon_prefs.cg_tag])
-                        isHidden = (bpy.data.objects[objectName + self.addon_prefs.cg_tag].hide)
-                        hiddenList.append(isHidden)
-
-                    if bpy.data.objects.find(objectName + self.addon_prefs.cx_tag) != -1:
-                        hiddenObjectList.append(bpy.data.objects[objectName + self.addon_prefs.cx_tag])
-                        isHidden = (bpy.data.objects[objectName + self.addon_prefs.cx_tag].hide)
-                        hiddenList.append(isHidden)
 
                     # ////////  FINDING ARMATURE ////////
                     armatureTarget = None
@@ -354,10 +329,6 @@ class GT_Export_Assets(Operator):
                             if modifier.type in modType:
                                 print(">>> Armature found...")
                                 armature = modifier.object
-                                hiddenObjectList.append(armature)
-                                isHidden = armature.hide
-                                hiddenList.append(isHidden)
-
 
                     for objPass in exportDefault.passes:
 
@@ -438,8 +409,11 @@ class GT_Export_Assets(Operator):
                                     if item != rootObject or rootType != 1:
                                         print("LP Found...", item.name)
                                         lowPoly = item
+                                        hiddenObjectList.append(item)
                                         isHidden = item.hide
                                         hiddenList.append(isHidden)
+                                        isSelectable = item.hide_select
+                                        selectList.append(isSelectable)
 
 
                             if bpy.data.objects.find(objectName + self.addon_prefs.hp_tag) != -1 and expHP is True:
@@ -449,8 +423,11 @@ class GT_Export_Assets(Operator):
                                     if item != rootObject or rootType != 2:
                                         print("HP Found...", item.name)
                                         highPoly = item
+                                        hiddenObjectList.append(item)
                                         isHidden = item.hide
                                         hiddenList.append(isHidden)
+                                        isSelectable = item.hide_select
+                                        selectList.append(isSelectable)
 
                             if bpy.data.objects.find(objectName + self.addon_prefs.cg_tag) != -1 and expCG is True:
                                 item = bpy.data.objects[objectName + self.addon_prefs.cg_tag]
@@ -459,8 +436,11 @@ class GT_Export_Assets(Operator):
                                     if item != rootObject or rootType != 3:
                                         print("CG Found...", item.name)
                                         cage = item
+                                        hiddenObjectList.append(item)
                                         isHidden = item.hide
                                         hiddenList.append(isHidden)
+                                        isSelectable = item.hide_select
+                                        selectList.append(isSelectable)
 
                             if bpy.data.objects.find(objectName + self.addon_prefs.cx_tag) != -1 and expCX is True:
                                 item = bpy.data.objects[objectName + self.addon_prefs.cx_tag]
@@ -469,8 +449,11 @@ class GT_Export_Assets(Operator):
                                     if item != rootObject or rootType != 4:
                                         print("CX Found...", item.name)
                                         collision = item
+                                        hiddenObjectList.append(item)
                                         isHidden = item.hide
                                         hiddenList.append(isHidden)
+                                        isSelectable = item.hide_select
+                                        selectList.append(isSelectable)
 
 
                         # We have to collect the armature from the modifier stack
@@ -492,8 +475,13 @@ class GT_Export_Assets(Operator):
                                 for modifier in item.modifiers:
                                     if modifier.type in modType:
                                         armature = modifier.object
+
+                                        hiddenObjectList.append(item)
                                         isHidden = armature.hide
                                         hiddenList.append(isHidden)
+                                        isSelectable = armature.hide_select
+                                        selectList.append(isSelectable)
+
 
                                         # Ensure all armatures are in Object Mode for following code
                                         bpy.ops.object.select_all(action='DESELECT')
@@ -633,8 +621,13 @@ class GT_Export_Assets(Operator):
 
                     # Restore visibility defaults
                     i = 0
+
+                    print("hiddenList...", len(hiddenList))
+                    print("selectList...", len(selectList))
+
                     for item in hiddenObjectList:
                         item.hide = hiddenList[i]
+                        item.hide_select = selectList[i]
                         i += 1
 
                     # Count up exported objects
@@ -702,9 +695,13 @@ class GT_Export_Assets(Operator):
 
                 # Collect hidden defaults to restore afterwards.
                 hiddenList = []
+                selectList = []
                 for item in group.objects:
                     isHidden = item.hide
                     hiddenList.append(isHidden)
+
+                    isSelectable = item.hide_select
+                    selectList.append(isSelectable)
 
                 for objPass in exportDefault.passes:
 
@@ -970,7 +967,10 @@ class GT_Export_Assets(Operator):
                 i = 0
                 for item in group.objects:
                     item.hide = hiddenList[i]
+                    item.hide_select = selectList[i]
                     i += 1
+
+                i = 0
 
                 exportedGroups += 1
                 print(">>> Group Export Complete <<<")
