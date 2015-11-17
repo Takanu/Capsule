@@ -210,6 +210,15 @@ class GT_Export_Assets(Operator):
 
         return rootType
 
+    def GetNormals(self, enum):
+
+        if enum == '1':
+            return 'EDGE'
+        if enum == '2':
+            return 'FACE'
+        if enum == '3':
+            return 'NORMALS'
+
 
     def execute(self, context):
         print("Self = ")
@@ -369,7 +378,7 @@ class GT_Export_Assets(Operator):
                         useTriangulate = objPass.triangulate
                         exportIndividual = objPass.export_individual
                         hasTriangulation = False
-                        meshSmooth = 'FACE'
+                        meshSmooth = self.GetNormals(rootObject.GXObj.normals)
                         exportTypes = {'MESH', 'ARMATURE'}
 
                         # Obtain Object Component Information
@@ -718,7 +727,7 @@ class GT_Export_Assets(Operator):
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
                     hasTriangulation = False
-                    meshSmooth = 'FACE'
+                    meshSmooth = self.GetNormals(rootObject.GXObj.normals)
                     exportTypes = {'MESH', 'ARMATURE'}
 
                     # Obtain Object Component Information

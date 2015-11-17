@@ -1,4 +1,4 @@
-from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName
+from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
@@ -162,6 +162,16 @@ class GX_Object_Preferences(PropertyGroup):
         items=GetExportDefaults,
         update=Update_ExportDefault)
 
+    normals = EnumProperty(
+        name = "Normal Export Type",
+        description = "Defines how the mesh normals are exported.",
+        items=(
+        ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
+        ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
+        ('3', 'Normals Only', 'Exports the current custom normals of the model.')
+        ),
+        update=Update_Normals)
+
 
 class GX_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
@@ -183,6 +193,15 @@ class GX_Group_Preferences(PropertyGroup):
         name = "Select Export Default",
         description = "Defines the export setting sets used on this object.",
         items=GetExportDefaults)
+
+    normals = EnumProperty(
+        name = "Normal Export Type",
+        description = "Defines how the mesh normals are exported.",
+        items=(
+        ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
+        ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
+        ('3', 'Normals Only', 'Exports the current custom normals of the model.')
+        ),)
 
 class GX_UI_Preferences(PropertyGroup):
     component_dropdown = BoolProperty(

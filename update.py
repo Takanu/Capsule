@@ -120,6 +120,34 @@ def Update_ExportDefault(self, context):
 
     return None
 
+def Update_Normals(self, context):
+
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.GXObj:
+
+        # Keep a record of the selected objects to update
+        selected = []
+
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
+
+        # Obtain the value changed
+        value = self.normals
+
+        # Run through the objects
+        for object in selected:
+            if CheckForTags(context, object.name) is False:
+                object.GXObj.normals = value
+
+            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
+                object.GXObj.normals = value
+
+    return None
+
 
 def Update_ObjectItemName(self, context):
 

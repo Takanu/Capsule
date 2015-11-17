@@ -234,6 +234,10 @@ class GX_SelectionObject(Panel):
                 col_export.separator()
                 col_export.prop(obj, "export_default", text="")
                 col_export.separator()
+                col_export.label(text="Mesh Normal Export:")
+                col_export.separator()
+                col_export.prop(obj, "normals", text="")
+                col_export.separator()
 
 
         #////////////////////////// GROUP UI /////////////////////////////
@@ -276,6 +280,10 @@ class GX_SelectionObject(Panel):
                         rawr_other.label(text="Export Settings:")
                         rawr_other.separator()
                         rawr_other.prop(grp, "export_default", text="")
+                        rawr_other.separator()
+                        rawr_other.label(text="Mesh Normal Export:")
+                        rawr_other.separator()
+                        rawr_other.prop(grp, "normals", text="")
             else:
                 groupPrefs = layout.column(align=True)
                 groupPrefs.label(text="No groups found, press refresh to find new groups.")
