@@ -218,7 +218,6 @@ def MoveObjects(targetLead, targets, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     targetLead.lock_location = lockTransform
 
-
 def CheckSuffix(string, suffix):
 
     strLength = len(string)

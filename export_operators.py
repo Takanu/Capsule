@@ -9,7 +9,7 @@ class GT_Export_Assets(Operator):
     bl_idname = "scene.gx_export"
     bl_label = "Export"
 
-    def ExportFBX(self, filePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise):
+    def ExportFBX(self, filePath, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise):
 
         print("Exporting", "*"*70)
         bpy.ops.export_scene.fbx(check_existing=False,
@@ -17,10 +17,10 @@ class GT_Export_Assets(Operator):
         filter_glob="*.fbx",
         version='BIN7400',
         use_selection=True,
-        global_scale=globalScale,
-        axis_forward=axisForward,
-        axis_up=axisUp,
-        bake_space_transform=bakeSpaceTransform,
+        global_scale=self.globalScale,
+        axis_forward=self.axisForward,
+        axis_up=self.axisUp,
+        bake_space_transform=self.bakeSpaceTransform,
         object_types=objectTypes,
         use_mesh_modifiers=applyModifiers,
         mesh_smooth_type=meshSmooth,
@@ -42,6 +42,78 @@ class GT_Export_Assets(Operator):
         batch_mode='OFF',
         use_batch_own_dir=False,
         use_metadata=False)
+
+    def PrepareExportIndividual(self, targets, path, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim):
+        print(">>> Individual Pass <<<")
+        for item in targets:
+            print("-"*70)
+            print("Exporting...... ", item.name)
+            individualFilePath = path + item.name + suffix + ".fbx"
+
+            # For the time being, manually move the object back and forth to
+            # the world origin point.
+            tempLoc = Vector((0.0, 0.0, 0.0))
+            tempLoc[0] = item.location[0]
+            tempLoc[1] = item.location[1]
+            tempLoc[2] = item.location[2]
+            print("Moving location to centre...")
+            MoveObject(item, context, (0.0, 0.0, 0.0))
+
+            bpy.ops.object.select_all(action='DESELECT')
+            FocusObject(item)
+
+            self.ExportFBX(individualFilePath, applyModifiers, meshSmooth, exportTypes, True, True, True)
+
+            print("Moving location back to root-orientated centre...")
+            MoveObject(item, context, tempLoc)
+            print("Location..........", item.location)
+
+        #if expRoot is True:
+            #print("-"*70)
+            #print("Exporting.......... ", rootObject.name)
+            #print("Current Location...", rootObject.location)
+
+            #FocusObject(rootObject)
+            #MoveObject(rootObject, context, (0.0, 0.0, 0.0))
+            #individualFilePath = path + rootObject.name + suffix + ".fbx"
+
+            #self.ExportFBX(individualFilePath, applyModifiers, meshSmooth, exportTypes, True, True, True)
+
+            #MoveObject(rootObject, context, (0.0, 0.0, 0.0))
+
+            #print("Location..........", rootObject.location)
+
+        if expAM is True:
+            print("Exporting separate animation files...")
+
+    def PrepareExportCombined(self, targets, path, exportName, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim):
+        print(">>> Exporting Combined Pass <<<")
+        print("Checking export preferences...")
+
+        bpy.ops.object.select_all(action='DESELECT')
+
+        for item in targets:
+            print("Exporting: ", item.name)
+            print(item.name, "has export set to", item.GXObj.enable_export)
+            SelectObject(item)
+
+        objectFilePath = path + exportName + suffix + ".fbx"
+
+        export_anim = False
+        export_anim_actions = False
+        export_anim_optimise = False
+
+        if exportAnim is True:
+            print("Exporting animations...")
+            export_anim = True
+            export_anim_actions = True
+            export_anim_optimise = True
+
+            #if expLP is False and expHP is False and expCG is False and expCX is False:
+                #if expAR is True:
+                    #exportTypes = {'ARMATURE'}
+
+        self.ExportFBX(objectFilePath, applyModifiers, meshSmooth, exportTypes, export_anim, export_anim_actions, export_anim_optimise)
 
     def AddTriangulate(self, object):
 
@@ -96,6 +168,63 @@ class GT_Export_Assets(Operator):
         return filePath
 
 
+    def CalculateFilePath(self, context, locationDefault, rootObject, sub_directory):
+
+        # Does the proper calculation and error handling for the file path, in conjunction with GetFilePath()
+        print("Obtaining File...")
+        print("File Enumerator = ", locationDefault)
+        path = self.GetFilePath(context, locationDefault, rootObject.name)
+
+        if path == "":
+            self.report({'WARNING'}, "Welp, something went wrong.  Contact Crocadillian! D:.")
+            return {'CANCELLED'}
+
+        if path == {'1'}:
+            self.report({'WARNING'}, 'One of the objects has no set file path default.  Set it plzplzplz.')
+            return {'CANCELLED'}
+
+        if path == {'2'}:
+            self.report({'WARNING'}, 'One of the objects file path default has no file path.  A file path is required to export.')
+            return {'CANCELLED'}
+
+        if path == {'3'}:
+            self.report({'WARNING'}, 'One of the objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
+            return {'CANCELLED'}
+
+        print("Current Path: ", path)
+
+        # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
+        # Need to extract the information from the pass name to see
+        # if a sub-directory needs creating in the location default
+        if sub_directory != "":
+            newPath = path + sub_directory + "/"
+
+            print(">>> Sub-Directory found, appending...")
+
+            if not os.path.exists(newPath):
+                os.makedirs(newPath)
+
+            print("Old Path: ", path)
+            path = path + sub_directory + "/"
+            print("New Path: ", path)
+
+        return path
+
+    def IdentifyTag(self, context, target):
+
+        rootType = 0
+
+        if CheckSuffix(target.name, self.addon_prefs.lp_tag) is True:
+            rootType = 1
+        elif CheckSuffix(target.name, self.addon_prefs.hp_tag) is True:
+            rootType = 2
+        elif CheckSuffix(target.name, self.addon_prefs.cg_tag) is True:
+            rootType = 3
+        elif CheckSuffix(target.name, self.addon_prefs.cx_tag) is True:
+            rootType = 4
+
+        return rootType
+
 
     def execute(self, context):
         print("Self = ")
@@ -103,7 +232,7 @@ class GT_Export_Assets(Operator):
 
         scn = context.scene.GXScn
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        self.addon_prefs = user_preferences.addons[__package__].preferences
 
         exportedObjects = 0
         exportedGroups = 0
@@ -119,31 +248,31 @@ class GT_Export_Assets(Operator):
 
 
         # Generate export details based on the export type selected
-        axisForward = "-Z"
-        axisUp = "Y"
-        globalScale = 1.0
-        bakeSpaceTransform = False
+        self.axisForward = "-Z"
+        self.axisUp = "Y"
+        self.globalScale = 1.0
+        self.bakeSpaceTransform = False
 
 
         # //////////// - ENGINE PROPERTIES - ////////////////////////////////////////////////////////
         # Assign custom properties based on the export target
         if int(scn.engine_select) is 1:
             print("UE4 selected")
-            axisForward = "-Z"
-            axisUp = "Y"
+            self.axisForward = "-Z"
+            self.axisUp = "Y"
 
             if scn.scale_100x is True:
-                globalScale = 100.0
+                self.globalScale = 100.0
 
             else:
-                globalScale = 1.0
+                self.globalScale = 1.0
 
         elif int(scn.engine_select) is 2:
             print("Unity selected")
-            axisForward = "-Z"
-            axisUp = "Y"
-            globalScale = 1
-            bakeSpaceTransform = True
+            self.axisForward = "-Z"
+            self.axisUp = "Y"
+            self.globalScale = 1
+            self.bakeSpaceTransform = True
 
 
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -171,28 +300,13 @@ class GT_Export_Assets(Operator):
                         self.report({'WARNING'}, statement)
                         return {'FINISHED'}
 
-                    exportDefault = addon_prefs.export_defaults[expKey]
 
-                    # Figure out whether the object needs automatic assigning
-                    auto_assign = False
-                    rootType = 0
-
+                    exportDefault = self.addon_prefs.export_defaults[expKey]
                     rootObject = object
+                    rootType = self.IdentifyTag(context, rootObject)
 
-                    if CheckSuffix(object.name, addon_prefs.lp_tag) is True:
-                        auto_assign = True
-                        rootType = 1
-                    elif CheckSuffix(object.name, addon_prefs.hp_tag) is True:
-                        auto_assign = True
-                        rootType = 2
-                    elif CheckSuffix(object.name, addon_prefs.cg_tag) is True:
-                        auto_assign = True
-                        rootType = 3
-                    elif CheckSuffix(object.name, addon_prefs.cx_tag) is True:
-                        auto_assign = True
-                        rootType = 4
 
-                    print("Auto Assign is", auto_assign)
+                    print("Root Type is...", rootType)
 
                     rootObjectLocation = Vector((0.0, 0.0, 0.0))
                     rootObjectLocation[0] = object.location[0]
@@ -202,27 +316,27 @@ class GT_Export_Assets(Operator):
                     # Collect hidden defaults to restore afterwards.
                     hiddenList = []
                     hiddenObjectList = []
-                    objectName = rootObject.name.replace(addon_prefs.lp_tag, "")
+                    objectName = rootObject.name.replace(self.addon_prefs.lp_tag, "")
 
-                    # The following code finds relevant object components to the one being exported
-                    if bpy.data.objects.find(objectName + addon_prefs.lp_tag) != -1:
-                        hiddenObjectList.append(bpy.data.objects[objectName + addon_prefs.lp_tag])
-                        isHidden = (bpy.data.objects[objectName + addon_prefs.lp_tag].hide)
+                    # Find the objects and store data that may get changed during the export process to restore afterwards.
+                    if bpy.data.objects.find(objectName + self.addon_prefs.lp_tag) != -1:
+                        hiddenObjectList.append(bpy.data.objects[objectName + self.addon_prefs.lp_tag])
+                        isHidden = (bpy.data.objects[objectName + self.addon_prefs.lp_tag].hide)
                         hiddenList.append(isHidden)
 
-                    if bpy.data.objects.find(objectName + addon_prefs.hp_tag) != -1:
-                        hiddenObjectList.append(bpy.data.objects[objectName + addon_prefs.hp_tag])
-                        isHidden = (bpy.data.objects[objectName + addon_prefs.hp_tag].hide)
+                    if bpy.data.objects.find(objectName + self.addon_prefs.hp_tag) != -1:
+                        hiddenObjectList.append(bpy.data.objects[objectName + self.addon_prefs.hp_tag])
+                        isHidden = (bpy.data.objects[objectName + self.addon_prefs.hp_tag].hide)
                         hiddenList.append(isHidden)
 
-                    if bpy.data.objects.find(objectName + addon_prefs.cg_tag) != -1:
-                        hiddenObjectList.append(bpy.data.objects[objectName + addon_prefs.cg_tag])
-                        isHidden = (bpy.data.objects[objectName + addon_prefs.cg_tag].hide)
+                    if bpy.data.objects.find(objectName + self.addon_prefs.cg_tag) != -1:
+                        hiddenObjectList.append(bpy.data.objects[objectName + self.addon_prefs.cg_tag])
+                        isHidden = (bpy.data.objects[objectName + self.addon_prefs.cg_tag].hide)
                         hiddenList.append(isHidden)
 
-                    if bpy.data.objects.find(objectName + addon_prefs.cx_tag) != -1:
-                        hiddenObjectList.append(bpy.data.objects[objectName + addon_prefs.cx_tag])
-                        isHidden = (bpy.data.objects[objectName + addon_prefs.cx_tag].hide)
+                    if bpy.data.objects.find(objectName + self.addon_prefs.cx_tag) != -1:
+                        hiddenObjectList.append(bpy.data.objects[objectName + self.addon_prefs.cx_tag])
+                        isHidden = (bpy.data.objects[objectName + self.addon_prefs.cx_tag].hide)
                         hiddenList.append(isHidden)
 
                     # ////////  FINDING ARMATURE ////////
@@ -233,7 +347,7 @@ class GT_Export_Assets(Operator):
                     if rootType == 1:
                         armatureTarget = rootObject
 
-                    elif CheckForTags(context, rootObject.name) is False and auto_assign is False:
+                    elif CheckForTags(context, rootObject.name) is False and rootType == 0:
                         armatureTarget = rootObject
 
                     print(">>> Armature Target is..")
@@ -294,54 +408,26 @@ class GT_Export_Assets(Operator):
                         objectName = ""                          # The object name, duh
 
                         # Lets see if the root object can be exported...
-                        if expLP is True and rootType == 1:
+                        if rootType == 0:
                             expRoot = True
-                        if expHP is True and rootType == 2:
+                        elif expLP is True and rootType == 1:
                             expRoot = True
-                        if expCG is True and rootType == 3:
+                        elif expHP is True and rootType == 2:
                             expRoot = True
-                        if expCX is True and rootType == 4:
+                        elif expCG is True and rootType == 3:
                             expRoot = True
+                        elif expCX is True and rootType == 4:
+                            expRoot = True
+
+
 
                         #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                        print("Obtaining File...")
-                        print("File Enumerator = ", rootObject.GXObj.location_default)
-                        path = self.GetFilePath(context, rootObject.GXObj.location_default, rootObject.name)
+                        path = self.CalculateFilePath(context, rootObject.GXObj.location_default, rootObject, sub_directory)
 
-                        if path == "":
-                            self.report({'WARNING'}, "Welp, something went wrong.  Contact Crocadillian! D:.")
-                            return {'CANCELLED'}
+                        objectName = rootObject.name.replace(self.addon_prefs.lp_tag, "")
 
-                        if path == {'1'}:
-                            self.report({'WARNING'}, 'One of the objects has no set file path default.  Set it plzplzplz.')
-                            return {'CANCELLED'}
 
-                        if path == {'2'}:
-                            self.report({'WARNING'}, 'One of the objects file path default has no file path.  A file path is required to export.')
-                            return {'CANCELLED'}
 
-                        if path == {'3'}:
-                            self.report({'WARNING'}, 'One of the objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
-                            return {'CANCELLED'}
-
-                        objectName = rootObject.name.replace(addon_prefs.lp_tag, "")
-
-                        print("Current Path: ", path)
-
-                        # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
-                        # Need to extract the information from the pass name to see
-                        # if a sub-directory needs creating in the location default
-                        if sub_directory != "":
-                            newPath = path + sub_directory + "/"
-
-                            print(">>> Sub-Directory found, appending...")
-
-                            if not os.path.exists(newPath):
-                                os.makedirs(newPath)
-
-                            print("Old Path: ", path)
-                            path = path + sub_directory + "/"
-                            print("New Path: ", path)
 
                         #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
                         # First we have to find all objects in the group that are of type MESHHH
@@ -349,63 +435,62 @@ class GT_Export_Assets(Operator):
 
                         print(">>>> Collecting Objects <<<<")
 
-                        if bpy.data.objects.find(objectName + addon_prefs.lp_tag) != -1 and expLP is True:
-                            item = bpy.data.objects[objectName + addon_prefs.lp_tag]
+                        # If the root type is 0, no associating objects should be searchable
+                        if rootType != 0:
+                            if bpy.data.objects.find(objectName + self.addon_prefs.lp_tag) != -1 and expLP is True:
+                                item = bpy.data.objects[objectName + self.addon_prefs.lp_tag]
 
-                            if item.type == 'MESH':
-                                if item != rootObject or rootType != 1:
-                                    print("LP Found...", item.name)
-                                    lowPoly = item
-                                    isHidden = item.hide
-                                    hiddenList.append(isHidden)
+                                if item.type == 'MESH':
+                                    if item != rootObject or rootType != 1:
+                                        print("LP Found...", item.name)
+                                        lowPoly = item
+                                        isHidden = item.hide
+                                        hiddenList.append(isHidden)
 
 
-                        if bpy.data.objects.find(objectName + addon_prefs.hp_tag) != -1 and expHP is True:
-                            item = bpy.data.objects[objectName + addon_prefs.hp_tag]
+                            if bpy.data.objects.find(objectName + self.addon_prefs.hp_tag) != -1 and expHP is True:
+                                item = bpy.data.objects[objectName + self.addon_prefs.hp_tag]
 
-                            if item.type == 'MESH':
-                                if item != rootObject or rootType != 2:
-                                    print("HP Found...", item.name)
-                                    highPoly = item
-                                    isHidden = item.hide
-                                    hiddenList.append(isHidden)
+                                if item.type == 'MESH':
+                                    if item != rootObject or rootType != 2:
+                                        print("HP Found...", item.name)
+                                        highPoly = item
+                                        isHidden = item.hide
+                                        hiddenList.append(isHidden)
 
-                        if bpy.data.objects.find(objectName + addon_prefs.cg_tag) != -1 and expCG is True:
-                            item = bpy.data.objects[objectName + addon_prefs.cg_tag]
+                            if bpy.data.objects.find(objectName + self.addon_prefs.cg_tag) != -1 and expCG is True:
+                                item = bpy.data.objects[objectName + self.addon_prefs.cg_tag]
 
-                            if item.type == 'MESH':
-                                if item != rootObject or rootType != 3:
-                                    print("CG Found...", item.name)
-                                    cage = item
-                                    isHidden = item.hide
-                                    hiddenList.append(isHidden)
+                                if item.type == 'MESH':
+                                    if item != rootObject or rootType != 3:
+                                        print("CG Found...", item.name)
+                                        cage = item
+                                        isHidden = item.hide
+                                        hiddenList.append(isHidden)
 
-                        if bpy.data.objects.find(objectName + addon_prefs.cx_tag) != -1 and expCX is True:
-                            item = bpy.data.objects[objectName + addon_prefs.cx_tag]
+                            if bpy.data.objects.find(objectName + self.addon_prefs.cx_tag) != -1 and expCX is True:
+                                item = bpy.data.objects[objectName + self.addon_prefs.cx_tag]
 
-                            if item.type == 'MESH':
-                                if item != rootObject or rootType != 4:
-                                    print("CX Found...", item.name)
-                                    collision = item
-                                    isHidden = item.hide
-                                    hiddenList.append(isHidden)
+                                if item.type == 'MESH':
+                                    if item != rootObject or rootType != 4:
+                                        print("CX Found...", item.name)
+                                        collision = item
+                                        isHidden = item.hide
+                                        hiddenList.append(isHidden)
 
 
                         # We have to collect the armature from the modifier stack
+                        # This is the only component that can be searched for if the rootType has no tags
                         modType = {'ARMATURE'}
 
                         if expAR is True:
                             item = None
 
-                            if rootType == 1:
+                            if rootType == 1 or rootType == 0:
                                 item = rootObject
 
                             elif lowPoly is not None:
                                 item = lowPoly
-
-                            elif CheckForTags(context, rootObject.name) is False and auto_assign is False:
-                                print("RAAAAWWWWRRRR")
-                                item = rootObject
 
                             if item is not None:
                                 FocusObject(item)
@@ -422,6 +507,8 @@ class GT_Export_Assets(Operator):
                                         bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
                                         bpy.ops.object.select_all(action='DESELECT')
 
+
+                        # Debug check for found objects
                         print("Checking found objects...")
                         if expLP is True:
                             print("LP...", rootObject)
@@ -434,17 +521,16 @@ class GT_Export_Assets(Operator):
                         if expAR is True:
                             print("AR...", armature)
 
+
                         # //////////// - COLLISION SETUP - /////////////////////////////////////
                         # ////////////////////////////////////////////////////////////
                         # //////////////////////////////////////////////////////////////////////
-                        # This needs re-writing at the moment, collision doesn't require duplication,
-                        # just re-naming and intelligent management
                         # Now we know what objects are up for export, we just need to prepare them
-                        # If collision is turned on, sort that shit out
+                        # If UE4 is used and we have collision, bundle the collision with the export
                         if expCX is True and int(scn.engine_select) is 1:
                             if collision is not None:
-                                tempName = collision.name.replace(addon_prefs.cx_tag, "")
-                                collision.name = "UCX_" + tempName + addon_prefs.lp_tag
+                                tempName = collision.name.replace(self.addon_prefs.cx_tag, "")
+                                collision.name = "UCX_" + tempName + self.addon_prefs.lp_tag
 
 
                         # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
@@ -452,10 +538,10 @@ class GT_Export_Assets(Operator):
                         print(">>> Collecting Found Objects <<<")
                         exportList = []
 
-                        if auto_assign is True:
+                        if rootType != 0:
                             print("Auto Assign on, searching...")
 
-                            if expHP is True and lowPoly is not None and rootType != 1:
+                            if expLP is True and lowPoly is not None and rootType != 1:
                                 print("Appending LP")
                                 exportList.append(lowPoly)
 
@@ -501,65 +587,22 @@ class GT_Export_Assets(Operator):
                                     hasTriangulation = self.AddTriangulate(item)
                                     stm.has_triangulate = hasTriangulation
 
+
                         # //////////// - EXPORT PROCESS - ///////////////////////////////////////////
                         # A separate FBX export function call for every corner case isnt actually necessary
+                        finalExportList = []
+                        finalExportList += exportList
+
+                        if expRoot is True:
+                            finalExportList.append(rootObject)
+
                         if exportIndividual is True:
-                            print(">>> Exporting Individual Pass <<<")
-                            for item in exportList:
-
-                                # Get some information first
-                                bpy.ops.object.select_all(action='DESELECT')
-                                SelectObject(item)
-                                individualFilePath = path + item.name + suffix + ".fbx"
-
-                                # For the time being, manually move the object back and forth to
-                                # the world origin point.
-                                backupLoc = Vector((0.0, 0.0, 0.0))
-                                backupLoc[0] = item.location[0]
-                                backupLoc[1] = item.location[1]
-                                backupLoc[2] = item.location[2]
-                                MoveObject(item, context, (0.0, 0.0, 0.0))
-
-                                self.ExportFBX(individualFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, exportTypes, True, True, True)
-
-                                MoveObject(item, context, backupLoc)
-
-                            if expRoot is True:
-                                bpy.ops.object.select_all(action='DESELECT')
-                                FocusObject(rootObject)
-                                individualFilePath = path + rootObject.name + suffix + ".fbx"
-
-                                self.ExportFBX(individualFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, exportTypes, True, True, True)
-
-                            if expAM is True:
-                                print("Exporting separate animation files...")
-
+                            self.PrepareExportIndividual(finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes)
 
                         else:
-                            print(">>> Exporting Combined Pass <<<")
-                            print("Checking export preferences...")
-
-                            for item in exportList:
-                                print(item.name, "has export set to", item.GXObj.enable_export)
-                                SelectObject(item)
-
-                            if expRoot is True:
-                                SelectObject(rootObject)
-
                             nameTagless = RemoveTags(context, objectName)
-                            objectFilePath = path + nameTagless + suffix + ".fbx"
 
-                            if expAM is True:
-                                print("Exporting animations...")
-                                export_anim = True
-                                export_anim_actions = True
-                                export_anim_optimise = True
-
-                                if expLP is False and expHP is False and expCG is False and expCX is False:
-                                    if expAR is True:
-                                        exportTypes = {'ARMATURE'}
-
-                            self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, exportTypes, export_anim, export_anim_actions, export_anim_optimise)
+                            self.PrepareExportCombined(finalExportList, path, suffix, nameTagless, applyModifiers, meshSmooth, exportTypes, expAM)
 
 
                         # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
@@ -567,9 +610,9 @@ class GT_Export_Assets(Operator):
                         if expCX is True and scn.engine_select is '1':
                             if collision is not None:
                                 tempName = collision.name.replace("UCX_", "")
-                                tempName2 = tempName.replace(addon_prefs.lp_tag, "")
+                                tempName2 = tempName.replace(self.addon_prefs.lp_tag, "")
                                 print(tempName2)
-                                collision.name = tempName2 + addon_prefs.cx_tag
+                                collision.name = tempName2 + self.addon_prefs.cx_tag
 
                         # Remove any triangulation modifiers
                         if useTriangulate is True and applyModifiers is True:
@@ -579,18 +622,18 @@ class GT_Export_Assets(Operator):
                                         print("Object has created triangulation, remove it.")
                                         self.RemoveTriangulate(item)
 
+                        # Reset and move objects
                         for item in exportList:
                             print("Checking ", item.name)
                             print("Checking object position... ", item.location)
 
-                        if auto_assign is True:
+                        if rootType != 0:
                             MoveObjects(rootObject, exportList, context, rootObjectLocation)
 
                         else:
                             MoveObject(rootObject, context, rootObjectLocation)
 
                         exportedPasses += 1
-
                         print(">>> Pass Complete <<<")
 
 
@@ -600,11 +643,11 @@ class GT_Export_Assets(Operator):
                         item.hide = hiddenList[i]
                         i += 1
 
-
-                    print(">>> Object Export Complete <<<")
-
                     # Count up exported objects
                     exportedObjects += 1
+                    print(">>> Object Export Complete <<<")
+
+
 
 
 
@@ -639,6 +682,7 @@ class GT_Export_Assets(Operator):
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
+
                 #Get the export default for the object
                 expKey = int(group.GXGrp.export_default) - 1
 
@@ -647,31 +691,20 @@ class GT_Export_Assets(Operator):
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
-                exportDefault = addon_prefs.export_defaults[expKey]
+                exportDefault = self.addon_prefs.export_defaults[expKey]
                 print("Using Export Default...", exportDefault.name, ".  Export Key", expKey)
 
-                # Figure out whether the object needs automatic assigning
-                auto_assign = False
 
-                if CheckSuffix(object.name, addon_prefs.lp_tag) is True:
-                    auto_assign = True
-                    rootType = 1
-                elif CheckSuffix(object.name, addon_prefs.hp_tag) is True:
-                    auto_assign = True
-                    rootType = 2
-                elif CheckSuffix(object.name, addon_prefs.cg_tag) is True:
-                    auto_assign = True
-                    rootType = 3
-                elif CheckSuffix(object.name, addon_prefs.cx_tag) is True:
-                    auto_assign = True
-                    rootType = 4
+                # Identify what tag the root object has
+                rootType = self.IdentifyTag(context, rootObject)
+                print("Root type is...", rootType)
 
-                print("Auto Assign is", auto_assign)
 
                 rootObjectLocation = Vector((0.0, 0.0, 0.0))
                 rootObjectLocation[0] = rootObject.location[0]
                 rootObjectLocation[1] = rootObject.location[1]
                 rootObjectLocation[2] = rootObject.location[2]
+
 
                 # Collect hidden defaults to restore afterwards.
                 hiddenList = []
@@ -732,18 +765,17 @@ class GT_Export_Assets(Operator):
                         expRoot = True
                     if expCX is True and rootType == 4:
                         expRoot = True
-
-                    elif auto_assign is False:
+                    if rootType == 0:
                         expRoot = True
 
                     # If its a collision object...
                     if expCG is True and rootType == 3:
                         collisionName = rootObject.name
-                        collisionName = collisionName.replace(addon_prefs.cx_tag, "")
+                        collisionName = collisionName.replace(self.addon_prefs.cx_tag, "")
                         foundMatch = False
 
                         for item in group.objects:
-                            if item.name == collisionName + addon_prefs.lp_tag:
+                            if item.name == collisionName + self.addon_prefs.lp_tag:
                                 foundMatch = True
 
                         if foundMatch is False:
@@ -752,54 +784,22 @@ class GT_Export_Assets(Operator):
                             return {'CANCELLED'}
 
 
+
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    print("Obtaining File...")
-                    print("File Enumerator = ", group.GXGrp.location_default)
-                    path = self.GetFilePath(context, group.GXGrp.location_default, rootObject.name)
+                    path = self.CalculateFilePath(context, group.GXGrp.location_default, rootObject, sub_directory)
 
-                    print(path)
+                    objectName = rootObject.name.replace(self.addon_prefs.lp_tag, "")
 
-                    if path == "":
-                        self.report({'WARNING'}, "Welp, something went wrong.  Contact Crocadillian! D:.")
-                        return {'CANCELLED'}
 
-                    if path == {'1'}:
-                        self.report({'WARNING'}, 'One of the objects has no set file path default.  Set it plzplzplz.')
-                        return {'CANCELLED'}
 
-                    if path == {'2'}:
-                        self.report({'WARNING'}, 'One of the objects file path default has no file path.  A file path is required to export.')
-                        return {'CANCELLED'}
 
-                    if path == {'3'}:
-                        self.report({'WARNING'}, 'One of the objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
-                        return {'CANCELLED'}
-
-                    objectName = rootObject.name.replace(addon_prefs.lp_tag, "")
-
-                    print("Current Path: ", path)
-
-                    # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
-                    # Need to extract the information from the pass name to see
-                    # if a sub-directory needs creating in the location default
-                    if sub_directory != "":
-                        newPath = path + sub_directory + "/"
-
-                        print(">>> Sub-Directory found, appending...")
-
-                        if not os.path.exists(newPath):
-                            os.makedirs(newPath)
-
-                        print("Old Path: ", path)
-                        path = path + sub_directory + "/"
-                        print("New Path: ", path)
                     #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
                     # First we have to find all objects in the group that are of type MESHHH
                     # If auto-assignment is on, use the names to filter into lists, otherwise forget it.
 
                     print(">>>> Collecting Objects <<<<")
 
-                    if auto_assign is False:
+                    if rootType == 0:
                         print("Auto Assign off, collecting all group objects....")
                         for object in group.objects:
                             if object.name != rootObject.name:
@@ -817,30 +817,30 @@ class GT_Export_Assets(Operator):
                                 if object.type == 'MESH':
 
                                     # Sorts based on name suffix
-                                    if CheckSuffix(object.name, addon_prefs.lp_tag) is True and expLP is True:
+                                    if CheckSuffix(object.name, self.addon_prefs.lp_tag) is True and expLP is True:
                                         if object.name != rootObject.name or rootType != 1:
                                             print("LP Found...", object.name)
                                             lowPolyList.append(object)
 
-                                    elif CheckSuffix(object.name, addon_prefs.hp_tag) is True and expHP is True:
+                                    elif CheckSuffix(object.name, self.addon_prefs.hp_tag) is True and expHP is True:
                                         if object.name != rootObject.name or rootType != 2:
                                             print("HP Found...", object.name)
                                             highPolyList.append(object)
 
-                                    elif CheckSuffix(object.name, addon_prefs.cg_tag) is True and expCG is True:
+                                    elif CheckSuffix(object.name, self.addon_prefs.cg_tag) is True and expCG is True:
                                         if object.name != rootObject.name or rootType != 3:
                                             print("CG Found...", object.name)
                                             cageList.append(object)
 
                                     # Collision objects are only added if it can find a name match with a static mesh
-                                    elif CheckSuffix(object.name, addon_prefs.cx_tag) is True != -1 and expCX is True:
+                                    elif CheckSuffix(object.name, self.addon_prefs.cx_tag) is True != -1 and expCX is True:
                                         collisionName = object.name
-                                        collisionName = collisionName.replace(addon_prefs.cx_tag, "")
+                                        collisionName = collisionName.replace(self.addon_prefs.cx_tag, "")
 
                                         for staticObject in group.objects:
                                             if staticObject != object:
                                                 if object.name != rootObject.name or rootType != 3:
-                                                    if staticObject.name.find(collisionName + addon_prefs.lp_tag) != -1 and staticObject.type == 'MESH':
+                                                    if staticObject.name.find(collisionName + self.addon_prefs.lp_tag) != -1 and staticObject.type == 'MESH':
 
                                                         print("CX Found...", object.name)
                                                         collisionList.append(object)
@@ -861,8 +861,8 @@ class GT_Export_Assets(Operator):
                     # If collision is turned on, sort that shit out
                     if expCX is True and int(scn.engine_select) is 1:
                         for object in collisionList:
-                            tempName = object.name.replace(addon_prefs.cx_tag, "")
-                            object.name = "UCX_" + tempName + addon_prefs.lp_tag
+                            tempName = object.name.replace(self.addon_prefs.cx_tag, "")
+                            object.name = "UCX_" + tempName + self.addon_prefs.lp_tag
 
 
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
@@ -870,7 +870,7 @@ class GT_Export_Assets(Operator):
                     print(">>> Appending Found Objects <<<")
 
                     exportList = []
-                    if auto_assign is True:
+                    if rootType != 0:
                         if expLP is True:
                             print("Appending LP...")
                             exportList += lowPolyList
@@ -904,7 +904,7 @@ class GT_Export_Assets(Operator):
                     triangulateList = []
                     triangulateList += exportList
 
-                    if expLP is True:
+                    if expLP is True or rootType == 0:
                         triangulateList.append(rootObject)
 
                     if useTriangulate is True and applyModifiers is True:
@@ -923,91 +923,35 @@ class GT_Export_Assets(Operator):
                     bpy.ops.object.select_all(action='DESELECT')
 
                     canExport = True
+                    print("Root Location...", rootObject.location)
 
                     if len(exportList) == 0 and expRoot is False:
                         print("No objects found in pass, stopping export...")
                         canExport = False
 
-                    print("Root Location...", rootObject.location)
 
-                    if exportIndividual is True and canExport is True:
-                        print(">>> Individual Pass <<<")
-                        for item in exportList:
-                            print("-"*70)
-                            print("Exporting...... ", item.name)
-                            print("Root Location...", rootObject.location)
-                            individualFilePath = path + item.name + suffix + ".fbx"
-
-                            # For the time being, manually move the object back and forth to
-                            # the world origin point.
-                            tempLoc = Vector((0.0, 0.0, 0.0))
-                            tempLoc[0] = item.location[0]
-                            tempLoc[1] = item.location[1]
-                            tempLoc[2] = item.location[2]
-                            print("Moving location to centre...")
-                            MoveObject(item, context, (0.0, 0.0, 0.0))
-                            print("Root Location...", rootObject.location)
-
-                            bpy.ops.object.select_all(action='DESELECT')
-                            FocusObject(item)
-
-                            self.ExportFBX(individualFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, exportTypes, True, True, True)
-
-                            print("Moving location back to root-orientated centre...")
-                            MoveObject(item, context, tempLoc)
-                            print("Checking Root Location...", rootObject.location)
+                    elif canExport is True:
+                        finalExportList = []
+                        finalExportList += exportList
 
                         if expRoot is True:
-                            print("-"*70)
-                            print("Exporting.......... ", rootObject.name)
-                            print("Current Location...", rootObject.location)
+                            finalExportList.append(rootObject)
 
-                            FocusObject(rootObject)
-                            #MoveObject(rootObject, context, (0.0, 0.0, 0.0))
-                            individualFilePath = path + rootObject.name + suffix + ".fbx"
+                        if exportIndividual is True:
+                            self.PrepareExportIndividual(finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes)
 
-                            self.ExportFBX(individualFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, exportTypes, True, True, True)
+                        else:
+                            self.PrepareExportCombined(finalExportList, path, suffix, group.name, applyModifiers, meshSmooth, exportTypes, expAM)
 
-                            #MoveObject(rootObject, context, (0.0, 0.0, 0.0))
-
-                            print("Location..........", rootObject.location)
-
-                        if expAM is True:
-                            print("Exporting separate animation files...")
-
-
-                    elif exportIndividual is False and canExport is True:
-                        print("Combined Pass, exporting....")
-                        for object in exportList:
-                            print("Exporting: ", object.name)
-                            SelectObject(object)
-
-                        if expRoot is True:
-                            print("Exporting: ", rootObject.name)
-                            SelectObject(rootObject)
-
-                        objectFilePath = path + group.name + suffix + ".fbx"
-
-                        if expAM is True:
-                            print("Exporting animations...")
-                            export_anim = True
-                            export_anim_actions = True
-                            export_anim_optimise = True
-
-                            if expLP is False and expHP is False and expCG is False and expCX is False:
-                                if expAR is True:
-                                    exportTypes = {'ARMATURE'}
-
-                        self.ExportFBX(objectFilePath, globalScale, axisForward, axisUp, bakeSpaceTransform, applyModifiers, meshSmooth, exportTypes, export_anim, export_anim_actions, export_anim_optimise)
 
                     # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     if expCX is True and scn.engine_select is '1':
                         for object in collisionList:
                             tempName = object.name.replace("UCX_", "")
-                            tempName2 = tempName.replace(addon_prefs.lp_tag, "")
+                            tempName2 = tempName.replace(self.addon_prefs.lp_tag, "")
                             print(tempName2)
-                            object.name = tempName2 + addon_prefs.cx_tag
+                            object.name = tempName2 + self.addon_prefs.cx_tag
 
                     # Remove any triangulation modifiers
                     if useTriangulate is True and applyModifiers is True:
@@ -1026,8 +970,7 @@ class GT_Export_Assets(Operator):
                     MoveObjects(rootObject, exportList, context, rootObjectLocation)
 
                     exportedPasses += 1
-
-                    print(""*100)
+                    print(">>> Pass Complete <<<")
 
                 # Restore visibility defaults
                 i = 0
@@ -1036,7 +979,7 @@ class GT_Export_Assets(Operator):
                     i += 1
 
                 exportedGroups += 1
-
+                print(">>> Group Export Complete <<<")
 
 
         # Re-select the objects previously selected

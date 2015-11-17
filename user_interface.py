@@ -97,8 +97,8 @@ class GX_Export(Panel):
         if scn.engine_select is '1':
             col_export.prop(scn, "scale_100x")
 
-        #elif scn.engine_select is '2':
-            #col_export.prop(scn, "correct_rotation")
+        elif scn.engine_select is '2':
+            col_export.prop(scn, "merge_export")
 
 
 

@@ -3,11 +3,11 @@
 bl_info = {
     "name": "GEX",
     "author": "Crocadillian/Takanu @ Polarised Games",
-    "version": (0,85),
+    "version": (0,87),
     "blender": (2, 7, 5),
     "api": 39347,
     "location": "3D View > Object Mode > Tools > GEX",
-    "description": "Provides tools for batch exporting assets from Blender to game engines.",
+    "description": "Provides tools for batch exporting objects from Blender using FBX.",
     "warning": "Beta",
     "tracker_url": "",
     "category": "Import-Export"

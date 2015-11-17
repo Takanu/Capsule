@@ -82,6 +82,11 @@ class GX_Scene_Preferences(PropertyGroup):
         description="Scales every exported object by 100 times its original size in order to correct asset scales for Unreal Engine 4.7 or lower",
         default=False)
 
+    merge_export = BoolProperty(
+        name="Merge Export",
+        description="(Unity Only) For groups, all sub-objects will be merged so when imported in Unity, the group will display as a single object.  WARNING - If you have animations applied to any mesh object, it may duplicate the animation data.",
+        default=False)
+
     correct_rotation = BoolProperty(
         name="Correct Rotation",
         description="Rotates all assets 180º on the Z axis before exporting, to appear in the same orientation in Unity as it does currently.",
@@ -166,7 +171,7 @@ class GX_Group_Preferences(PropertyGroup):
 
     root_object = StringProperty(
         name = "Root Object",
-        description = "Defines the object that the origin will be fixed to.",
+        description = "Defines the exported origin point of the group object.  If defined as an empty, the root will not be exported.  If not defined, the origin will be the world center.",
         default = "")
 
     location_default = EnumProperty(
