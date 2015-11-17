@@ -43,7 +43,7 @@ class GT_Export_Assets(Operator):
         use_batch_own_dir=False,
         use_metadata=False)
 
-    def PrepareExportIndividual(self, targets, path, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim):
+    def PrepareExportIndividual(self, context, targets, path, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim):
         print(">>> Individual Pass <<<")
         for item in targets:
             print("-"*70)
@@ -68,22 +68,7 @@ class GT_Export_Assets(Operator):
             MoveObject(item, context, tempLoc)
             print("Location..........", item.location)
 
-        #if expRoot is True:
-            #print("-"*70)
-            #print("Exporting.......... ", rootObject.name)
-            #print("Current Location...", rootObject.location)
-
-            #FocusObject(rootObject)
-            #MoveObject(rootObject, context, (0.0, 0.0, 0.0))
-            #individualFilePath = path + rootObject.name + suffix + ".fbx"
-
-            #self.ExportFBX(individualFilePath, applyModifiers, meshSmooth, exportTypes, True, True, True)
-
-            #MoveObject(rootObject, context, (0.0, 0.0, 0.0))
-
-            #print("Location..........", rootObject.location)
-
-        if expAM is True:
+        if exportAnim is True:
             print("Exporting separate animation files...")
 
     def PrepareExportCombined(self, targets, path, exportName, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim):
@@ -597,7 +582,7 @@ class GT_Export_Assets(Operator):
                             finalExportList.append(rootObject)
 
                         if exportIndividual is True:
-                            self.PrepareExportIndividual(finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes)
+                            self.PrepareExportIndividual(context, finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes, expAM)
 
                         else:
                             nameTagless = RemoveTags(context, objectName)
@@ -938,7 +923,7 @@ class GT_Export_Assets(Operator):
                             finalExportList.append(rootObject)
 
                         if exportIndividual is True:
-                            self.PrepareExportIndividual(finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes)
+                            self.PrepareExportIndividual(context, finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes, expAM)
 
                         else:
                             self.PrepareExportCombined(finalExportList, path, suffix, group.name, applyModifiers, meshSmooth, exportTypes, expAM)
