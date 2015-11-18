@@ -94,8 +94,8 @@ class GX_Export(Panel):
         col_export.prop(scn, "engine_select", text="", icon = "LOGIC")
         col_export.separator()
 
-        if scn.engine_select is '2':
-            col_export.prop(scn, "merge_export")
+        #if scn.engine_select is '2':
+            #col_export.prop(scn, "merge_export")
 
 
 
@@ -367,9 +367,13 @@ class GX_ExportDefaults(Panel):
         row_export.operator("scene.gx_addexport", text="", icon="ZOOMIN")
         row_export.operator("scene.gx_deleteexport", text="", icon="ZOOMOUT")
 
+
         if len(addon_prefs.export_defaults) > 0:
 
             currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+
+            col_export_settings = layout.column(align=True)
+            col_export_settings.prop(currentExp, "use_sub_directory")
 
             # Pass UI
             passUI = layout.column(align=True)
@@ -384,6 +388,7 @@ class GX_ExportDefaults(Panel):
             col_passes.operator("scene.gx_addpass", text="", icon="ZOOMIN")
             col_passes.operator("scene.gx_deletepass", text="", icon="ZOOMOUT")
             col_passes.separator()
+
 
             if len(currentExp.passes) > 0:
 

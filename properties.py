@@ -77,10 +77,10 @@ class GX_Scene_Preferences(PropertyGroup):
         ('2', 'Unity 5', 'Configures export and export options for Unity'),
         ),)
 
-    merge_export = BoolProperty(
-        name="Merge Export",
-        description="(Unity Only) For groups, all sub-objects will be merged so when imported in Unity, the group will display as a single object.  WARNING - If you have animations applied to any mesh object, it may duplicate the animation data.",
-        default=False)
+    #merge_export = BoolProperty(
+        #name="Merge Export",
+        #description="(Unity Only) For groups, all sub-objects will be merged so when imported in Unity, the group will display as a single object.  WARNING - If you have animations applied to any mesh object, it may duplicate the animation data.",
+        #default=False)
 
     correct_rotation = BoolProperty(
         name="Correct Rotation",

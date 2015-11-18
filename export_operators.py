@@ -153,12 +153,12 @@ class GT_Export_Assets(Operator):
         return filePath
 
 
-    def CalculateFilePath(self, context, locationDefault, rootObject, sub_directory):
+    def CalculateFilePath(self, context, locationDefault, objectName, sub_directory, useObjectDirectory):
 
         # Does the proper calculation and error handling for the file path, in conjunction with GetFilePath()
         print("Obtaining File...")
         print("File Enumerator = ", locationDefault)
-        path = self.GetFilePath(context, locationDefault, rootObject.name)
+        path = self.GetFilePath(context, locationDefault, objectName)
 
         if path == "":
             self.report({'WARNING'}, "Welp, something went wrong.  Contact Crocadillian! D:.")
@@ -181,8 +181,13 @@ class GT_Export_Assets(Operator):
         # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
         # Need to extract the information from the pass name to see
         # if a sub-directory needs creating in the location default
-        if sub_directory != "":
-            newPath = path + sub_directory + "/"
+        if sub_directory != "" or useObjectDirectory is True:
+
+            if useObjectDirectory is True:
+                newPath = path + objectName + "/"
+
+            if sub_directory != "":
+                newPath = newPath + sub_directory + "/"
 
             print(">>> Sub-Directory found, appending...")
 
@@ -190,7 +195,7 @@ class GT_Export_Assets(Operator):
                 os.makedirs(newPath)
 
             print("Old Path: ", path)
-            path = path + sub_directory + "/"
+            path = newPath
             print("New Path: ", path)
 
         return path
@@ -291,6 +296,8 @@ class GT_Export_Assets(Operator):
 
 
                     exportDefault = self.addon_prefs.export_defaults[expKey]
+                    useObjectDirectory = exportDefault.use_sub_directory
+
                     rootObject = object
                     rootType = self.IdentifyTag(context, rootObject)
 
@@ -306,7 +313,7 @@ class GT_Export_Assets(Operator):
                     hiddenList = []
                     selectList = []
                     hiddenObjectList = []
-                    objectName = rootObject.name.replace(self.addon_prefs.lp_tag, "")
+                    objectName = RemoveTags(context, rootObject.name)
 
                     # ////////  FINDING ARMATURE ////////
                     armatureTarget = None
@@ -387,11 +394,9 @@ class GT_Export_Assets(Operator):
 
 
                         #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                        path = self.CalculateFilePath(context, rootObject.GXObj.location_default, rootObject, sub_directory)
-
-                        objectName = rootObject.name.replace(self.addon_prefs.lp_tag, "")
-
-
+                        objectName = RemoveTags(context, rootObject.name)
+                        print("objectName = ", objectName)
+                        path = self.CalculateFilePath(context, rootObject.GXObj.location_default, objectName, sub_directory, useObjectDirectory)
 
 
                         #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
@@ -679,6 +684,7 @@ class GT_Export_Assets(Operator):
                     return {'FINISHED'}
 
                 exportDefault = self.addon_prefs.export_defaults[expKey]
+                useObjectDirectory = exportDefault.use_sub_directory
                 print("Using Export Default...", exportDefault.name, ".  Export Key", expKey)
 
 
@@ -777,9 +783,8 @@ class GT_Export_Assets(Operator):
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    path = self.CalculateFilePath(context, group.GXGrp.location_default, rootObject, sub_directory)
-
-                    objectName = rootObject.name.replace(self.addon_prefs.lp_tag, "")
+                    objectName = group.name
+                    path = self.CalculateFilePath(context, group.GXGrp.location_default, objectName, sub_directory, useObjectDirectory)
 
 
 

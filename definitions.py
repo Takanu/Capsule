@@ -261,17 +261,18 @@ def RemoveTags(context, string):
     scn = context.scene.GXScn
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
+    newString = string
 
     if CheckSuffix(string, addon_prefs.lp_tag) is True:
-        string.replace(addon_prefs.lp_tag, "")
+        newString = string.replace(addon_prefs.lp_tag, "")
 
     elif CheckSuffix(string, addon_prefs.hp_tag) is True:
-        string.replace(addon_prefs.hp_tag, "")
+        newString = string.replace(addon_prefs.hp_tag, "")
 
     elif CheckSuffix(string, addon_prefs.cg_tag) is True:
-        string.replace(addon_prefs.cx_tag, "")
+        newString = string.replace(addon_prefs.cx_tag, "")
 
     elif CheckSuffix(string, addon_prefs.cx_tag) is True:
-        string.replace(addon_prefs.cx_tag, "")
+        newString = string.replace(addon_prefs.cx_tag, "")
 
-    return string
+    return newString

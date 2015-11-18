@@ -128,6 +128,13 @@ class ExportDefault(PropertyGroup):
         default=""
     )
 
+    use_sub_directory = BoolProperty(
+        name="Add Object Directories",
+        description="If ticked, every individual or group export will be placed in it's own folder inside the target location.  Any pass sub-directories will be contained inside these folders.",
+        default=False
+    )
+
+
     passes = CollectionProperty(type=ExportPass)
     passes_index = IntProperty(default=0)
 
