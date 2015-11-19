@@ -220,7 +220,7 @@ class GX_Set_Root_Object(Operator):
         obj = context.active_object.GXObj
 
         user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        self.addon_prefs = user_preferences.addons[__package__].preferences
 
         self.object = context.scene.objects.active
         context.window_manager.modal_handler_add(self)

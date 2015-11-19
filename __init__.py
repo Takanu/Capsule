@@ -181,6 +181,11 @@ class GEXAddonPreferences(AddonPreferences):
         row.separator()
         row.prop(self, "cx_tag")
 
+        column = layout.column(align=True)
+        column.separator()
+        column.label("To use multiple collision objects per low-poly object in UE4, simply use the collision tag, ")
+        column.label("and ensure the collision object name matches that of the low-poly object it's associated with.")
+
 
 def register():
     bpy.utils.register_class(ExportPass)

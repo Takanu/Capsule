@@ -141,7 +141,7 @@ def GetExportDefaults(scene, context):
 class GX_Object_Preferences(PropertyGroup):
     enable_export = BoolProperty(
         name = "Enable Export",
-        description = "Marks the asset as available for batch exporting using GEX.",
+        description = "Enables the object and any matching, tagged objects to be exported as a single FBX file through GEX.",
         default = False,
         update = Update_EnableExport)
 
@@ -171,7 +171,7 @@ class GX_Object_Preferences(PropertyGroup):
 class GX_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
         name = "Export Group",
-        description = "Enables all objects within the group to be exported as a single FBX file.",
+        description = "Enables all objects within the group to be exported as a single FBX file through GEX.",
         default = False)
 
     root_object = StringProperty(

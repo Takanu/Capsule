@@ -308,7 +308,7 @@ class GX_Location(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
-    bl_label = "Location Defaults"
+    bl_label = "Locations"
     bl_category = "GEX"
 
     def draw(self, context):
@@ -346,7 +346,7 @@ class GX_ExportDefaults(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
-    bl_label = "Export Defaults"
+    bl_label = "Export Settings"
     bl_category = "GEX"
 
     def draw(self, context):
@@ -359,6 +359,8 @@ class GX_ExportDefaults(Panel):
         ui = context.scene.GXUI
 
         # Export UI
+        col_export_title = layout.column(align=True)
+        col_export_title.label("Export Defaults")
         col_export = layout.row(align=True)
         col_export.template_list("Export_Default_UIList", "default", addon_prefs, "export_defaults", addon_prefs, "export_defaults_index", rows=3, maxrows=6)
 

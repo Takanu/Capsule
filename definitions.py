@@ -230,13 +230,34 @@ def CheckSuffix(string, suffix):
     #print("Diff............", diff)
     #print("Index...........", index)
 
-    if index == diff:
+    if index == diff and index != -1:
         #print("Suffix is True")
         return True
 
     else:
         #print("Suffix is False")
         return False
+
+def CheckPrefix(string, prefix):
+
+    strLength = len(string)
+    prefixLength = len(prefix)
+    index = string.find(prefix)
+
+    print("String..........", string)
+    print("Prefix..........", prefix)
+    print("String Length...", strLength)
+    print("Prefix Length...", prefixLength)
+    print("Index...........", index)
+
+    if index == 0:
+        print("Suffix is True")
+        return True
+
+    else:
+        print("Suffix is False")
+        return False
+
 
 
 def CheckForTags(context, string):
