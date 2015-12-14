@@ -711,6 +711,16 @@ class GT_Export_Assets(Operator):
                 rootType = self.IdentifyTag(context, rootObject)
                 print("Root type is...", rootType)
 
+                # Search through the group and idenfity whether tag filtering is required.
+                filterTags = False
+
+                for item in group.objects:
+                    itemType = self.IdentifyTag(context, item)
+
+                    if itemType != 0:
+                        filterTags = False
+                        break
+
 
                 rootObjectLocation = Vector((0.0, 0.0, 0.0))
                 rootObjectLocation[0] = rootObject.location[0]
@@ -743,6 +753,7 @@ class GT_Export_Assets(Operator):
                     collisionList = []
                     animationList = []
                     armatureList = []
+                    otherList = []
 
                     collisionNames = []
 
@@ -786,6 +797,9 @@ class GT_Export_Assets(Operator):
                     if rootType == 0:
                         expRoot = True
 
+                    if rootObject.type != 'MESH' or rootObject.type != 'ARMATURE':
+                        expRoot = False
+
                     # If its a collision object...
                     if expCG is True and rootType == 3:
                         collisionName = rootObject.name
@@ -816,13 +830,17 @@ class GT_Export_Assets(Operator):
 
                     print(">>>> Collecting Objects <<<<")
 
-                    if rootType == 0:
+                    if filterTags is False:
                         print("Auto Assign off, collecting all group objects....")
                         for item in group.objects:
                             if item.name != rootObject.name:
                                 if item.type == 'MESH' or item.type == 'ARMATURE':
                                     print("Collected", item.name, "...")
                                     completeList.append(item)
+
+                                else:
+                                    print("Collected", item.name, "...")
+                                    otherList.append(item)
 
                         print("Collected", len(completeList), "objects.")
 
@@ -852,6 +870,10 @@ class GT_Export_Assets(Operator):
                                 elif item.type == 'ARMATURE' and expAR is True:
                                     print("Collected armature,", item.name, "...")
                                     armatureList.append(item)
+
+                                else:
+                                    print("Collected other,", item.name, "...")
+                                    otherList.append(item)
 
                         # Collision objects are only added if it can find a name match with a static mesh
                         if expCX is True:
@@ -916,6 +938,7 @@ class GT_Export_Assets(Operator):
                     print("Total cage........", len(cageList))
                     print("Total collision...", len(collisionList))
                     print("Total armatures...", len(armatureList))
+                    print("Total other.......", len(otherList))
 
 
 
@@ -924,7 +947,7 @@ class GT_Export_Assets(Operator):
                     print(">>> Appending Found Objects <<<")
 
                     exportList = []
-                    if rootType != 0:
+                    if filterTags is True:
                         if expLP is True:
                             print("Appending LP...")
                             exportList += lowPolyList
@@ -950,7 +973,13 @@ class GT_Export_Assets(Operator):
 
                     print("ExportList.....", exportList)
 
-                    MoveObjects(rootObject, exportList, context, (0.0, 0.0, 0.0))
+                    moveList = []
+                    moveList += exportList
+                    moveList += otherList
+
+                    print("MoveList.....", moveList)
+
+                    MoveObjects(rootObject, moveList, context, (0.0, 0.0, 0.0))
 
                     # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                     # ////////////////////////////////////////////////////////////////////////////
@@ -1021,7 +1050,7 @@ class GT_Export_Assets(Operator):
 
 
 
-                    MoveObjects(rootObject, exportList, context, rootObjectLocation)
+                    MoveObjects(rootObject, moveList, context, rootObjectLocation)
 
                     exportedPasses += 1
                     print(">>> Pass Complete <<<")
