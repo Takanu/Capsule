@@ -1,8 +1,9 @@
-from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName
+from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Update_GroupMultiEdit
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
+
 
 class ObjectItem(PropertyGroup):
     name = StringProperty(
@@ -67,6 +68,37 @@ class LocationDefault(PropertyGroup):
         default="",
         subtype="FILE_PATH")
 
+def GetSelectedGroups(scene, context):
+
+    items = [
+        ("0", "None",  "", 0),
+    ]
+
+    scn = context.scene.GXScn
+    scn.group_selected_list.clear()
+    groups_found = []
+
+    for item in context.selected_objects:
+        for group in item.users_group:
+            groupAdded = False
+
+            for found_group in groups_found:
+                if found_group.name == group.name:
+                    groupAdded = True
+
+            if groupAdded == False:
+                groups_found.append(group)
+
+    u = 1
+
+    for i,x in enumerate(groups_found):
+
+        items.append((str(i+1), x.name, x.name, i+1))
+        newGroup = scn.group_selected_list.add()
+        newGroup.name = x.name
+
+    return items
+
 
 class GX_Scene_Preferences(PropertyGroup):
 
@@ -77,18 +109,18 @@ class GX_Scene_Preferences(PropertyGroup):
         ('2', 'Unity 5', 'Configures export and export options for Unity'),
         ),)
 
-    #merge_export = BoolProperty(
-        #name="Merge Export",
-        #description="(Unity Only) For groups, all sub-objects will be merged so when imported in Unity, the group will display as a single object.  WARNING - If you have animations applied to any mesh object, it may duplicate the animation data.",
-        #default=False)
-
     correct_rotation = BoolProperty(
         name="Correct Rotation",
         description="Rotates all assets 180º on the Z axis before exporting, to appear in the same orientation in Unity as it does currently.",
         default=False)
 
+
     group_list = CollectionProperty(type=GroupItem)
     group_list_index = IntProperty()
+
+    group_selected_list = CollectionProperty(type=GroupItem)
+    group_selected_list_enum = EnumProperty(items=GetSelectedGroups)
+    group_selected_list_index = IntProperty()
 
     object_list = CollectionProperty(type=ObjectItem)
     object_list_index = IntProperty()
@@ -103,6 +135,12 @@ class GX_Scene_Preferences(PropertyGroup):
         ('1', 'Individual', 'Enables property editing for all selected static objects'),
         ('2', 'Group', 'Enables property editing for all selected skeletal objects')
         ),)
+
+    group_multi_edit = BoolProperty(
+        name = "Group Multi-Edit Mode",
+        description = "Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
+        default=False,
+        update=Update_GroupMultiEdit)
 
 def GetLocationDefaults(scene, context):
 
@@ -198,19 +236,33 @@ class GX_Group_Preferences(PropertyGroup):
         ('3', 'Normals Only', 'Exports the current custom normals of the model.')
         ),)
 
-class GX_UI_Preferences(PropertyGroup):
-    component_dropdown = BoolProperty(
-        name = "",
-        description = "",
-        default = False)
 
-    options_dropdown = BoolProperty(
-        name = "",
-        description = "",
-        default = False)
+def GetExportPresets(scene, context):
+
+    items = []
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons["Blinkey"].preferences
+
+    u = 1
+
+    for i,x in enumerate(addon_prefs.presets):
+
+        items.append((str(i), x.name, x.name, i))
+
+    return items
+
+class GX_UI_Preferences(PropertyGroup):
+    export_presets = EnumProperty(
+        name = "Export Presets",
+        description = "List of available visibility presets.",
+        items = GetExportPresets
+    )
+
+    presets_dropdown = BoolProperty(default = False)
+    tags_dropdown = BoolProperty(default = False)
+    passes_dropdown = BoolProperty(default = False)
 
     action_list = CollectionProperty(type=ActionItem)
-
     action_list_index = IntProperty()
 
 class GX_Object_StateMachine(PropertyGroup):

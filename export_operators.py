@@ -1,6 +1,7 @@
 import bpy, bmesh, os
 from bpy.types import Operator
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckPrefix, CheckForTags, RemoveTags
+from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag
 from mathutils import Vector
 
 class GT_Export_Assets(Operator):
@@ -49,6 +50,7 @@ class GT_Export_Assets(Operator):
             print("-"*70)
             print("Exporting...... ", item.name)
             individualFilePath = path + item.name + suffix + ".fbx"
+            print("Final File Path.", individualFilePath)
 
             # For the time being, manually move the object back and forth to
             # the world origin point.
@@ -82,7 +84,12 @@ class GT_Export_Assets(Operator):
             print(item.name, "has export set to", item.GXObj.enable_export)
             SelectObject(item)
 
+        print(path)
+        print(exportName)
+        print(suffix)
+
         objectFilePath = path + exportName + suffix + ".fbx"
+        print("Final File Path.", objectFilePath)
 
         export_anim = False
         export_anim_actions = False
@@ -139,6 +146,7 @@ class GT_Export_Assets(Operator):
         filePath = ""
 
         enumIndex -= 1
+
         defaultFilePath = scn.location_defaults[enumIndex].path
         print("Obtained location default: ", scn.location_defaults[enumIndex].path)
 
@@ -158,23 +166,24 @@ class GT_Export_Assets(Operator):
         # Does the proper calculation and error handling for the file path, in conjunction with GetFilePath()
         print("Obtaining File...")
         print("File Enumerator = ", locationDefault)
+
+        if int(locationDefault) == 0:
+            return "WARNING: " + objectName + " has no location preset defined, please define one!"
+
+
         path = self.GetFilePath(context, locationDefault, objectName)
 
         if path == "":
-            self.report({'WARNING'}, "Welp, something went wrong.  Contact Crocadillian! D:.")
-            return {'CANCELLED'}
+            return "WARNING: Welp, something went wrong.  Contact Crocadillian! D:."
 
         if path == {'1'}:
-            self.report({'WARNING'}, 'One of the objects has no set file path default.  Set it plzplzplz.')
-            return {'CANCELLED'}
+            return "WARNING: " + objectName + " is not using a location preset.  Set it plzplzplz."
 
         if path == {'2'}:
-            self.report({'WARNING'}, 'One of the objects file path default has no file path.  A file path is required to export.')
-            return {'CANCELLED'}
+            return "WARNING: " + objectName + " is using an empty location preset.  A file path is required to export."
 
         if path == {'3'}:
-            self.report({'WARNING'}, 'One of the objects file path default is using a relative file path name, please tick off the Relative Path option when choosing the file path.')
-            return {'CANCELLED'}
+            return "WARNING: " + objectName + " is using a location preset with a relative file path name, please tick off the Relative Path option when choosing the file path."
 
         print("Current Path: ", path)
 
@@ -199,21 +208,6 @@ class GT_Export_Assets(Operator):
             print("New Path: ", path)
 
         return path
-
-    def IdentifyTag(self, context, target):
-
-        rootType = 0
-
-        if CheckSuffix(target.name, self.addon_prefs.lp_tag) is True:
-            rootType = 1
-        elif CheckSuffix(target.name, self.addon_prefs.hp_tag) is True:
-            rootType = 2
-        elif CheckSuffix(target.name, self.addon_prefs.cg_tag) is True:
-            rootType = 3
-        elif CheckSuffix(target.name, self.addon_prefs.cx_tag) is True:
-            rootType = 4
-
-        return rootType
 
     def GetNormals(self, enum):
 
@@ -299,8 +293,7 @@ class GT_Export_Assets(Operator):
                     useObjectDirectory = exportDefault.use_sub_directory
 
                     rootObject = object
-                    rootType = self.IdentifyTag(context, rootObject)
-
+                    rootType = IdentifyObjectTag(context, rootObject, exportDefault)
 
                     print("Root Type is...", rootType)
 
@@ -313,29 +306,36 @@ class GT_Export_Assets(Operator):
                     hiddenList = []
                     selectList = []
                     hiddenObjectList = []
-                    objectName = RemoveTags(context, rootObject.name)
+                    objectName = ""
+
+                    # Get the object's base name
+                    if rootType != -1:
+                        objectName = RemoveObjectTag(context, rootObject, exportDefault)
+                        print("objectName =", objectName)
+                    else:
+                        objectName = rootObject.name
 
                     # ////////  FINDING ARMATURE ////////
-                    armatureTarget = None
-                    modType = {'ARMATURE'}
+                    #armatureTarget = None
+                    #modType = {'ARMATURE'}
 
                     # If the root object is the low-poly object, we can export the armature with it.
-                    if rootType == 1:
-                        armatureTarget = rootObject
+                    #if rootType == 1:
+                        #armatureTarget = rootObject
 
-                    elif CheckForTags(context, rootObject.name) is False and rootType == 0:
-                        armatureTarget = rootObject
+                    #elif CheckForTags(context, rootObject.name) is False and rootType == 0:
+                        #armatureTarget = rootObject
 
-                    print(">>> Armature Target is..")
-                    print(armatureTarget)
+                    #print(">>> Armature Target is..")
+                    #print(armatureTarget)
 
-                    if armatureTarget is not None:
-                        FocusObject(armatureTarget)
+                    #if armatureTarget is not None:
+                        #FocusObject(armatureTarget)
 
-                        for modifier in armatureTarget.modifiers:
-                            if modifier.type in modType:
-                                print(">>> Armature found...")
-                                armature = modifier.object
+                        #for modifier in armatureTarget.modifiers:
+                            #if modifier.type in modType:
+                                #print(">>> Armature found...")
+                                #armature = modifier.object
 
                     for objPass in exportDefault.passes:
 
@@ -344,31 +344,27 @@ class GT_Export_Assets(Operator):
                         print("-"*109)
                         print("Export pass", objPass.name, "being used on object", object.name)
 
-                        lowPoly = None
-                        highPoly = None
-                        cage = None
-                        collision = []
-                        animation = None
-                        armature = None
+                        activeTags = []
+                        foundObjects = []
+                        i = 0
 
-                        collisionNames = []
+                        # Create a list for every tag in use
+                        print("Processing tags...")
+                        for passTag in objPass.tags:
+                            if passTag.use_tag is True:
+                                print("Active Tag Found: ", passTag.name)
+                                activeTags.append(exportDefault.tags[i])
 
-                        # Obtain some object-specific preferences
+                            i += 1
+
+                        # Obtain some pass-specific preferences
                         applyModifiers = objPass.apply_modifiers
                         useTriangulate = objPass.triangulate
                         exportIndividual = objPass.export_individual
-                        hasTriangulation = False
-                        meshSmooth = self.GetNormals(rootObject.GXObj.normals)
-                        exportTypes = {'MESH', 'ARMATURE'}
+                        exportAnim = objPass.export_animation
 
-                        # Obtain Object Component Information
-                        expLP = objPass.export_lp
-                        expHP = objPass.export_hp
-                        expCG = objPass.export_cg
-                        expCX = objPass.export_cx
-                        expAR = objPass.export_ar
-                        expAM = objPass.export_am
-                        expRoot = False
+                        meshSmooth = self.GetNormals(rootObject.GXObj.normals)
+                        exportTypes = {'EMPTY', 'CAMERA', 'LAMP', 'MESH', 'ARMATURE', 'OTHER'}
 
                         export_anim = False
                         export_anim_actions = False
@@ -379,139 +375,95 @@ class GT_Export_Assets(Operator):
                         fileName = ""                            # File name for the object (without tag suffixes)
                         suffix = objPass.file_suffix             # Additional file name suffix
                         sub_directory = objPass.sub_directory    # Whether a sub-directory needs to be created
-                        objectName = ""                          # The object name, duh
 
                         # Lets see if the root object can be exported...
-                        if rootType == 0:
-                            expRoot = True
-                        elif expLP is True and rootType == 1:
-                            expRoot = True
-                        elif expHP is True and rootType == 2:
-                            expRoot = True
-                        elif expCG is True and rootType == 3:
-                            expRoot = True
-                        elif expCX is True and rootType == 4:
+                        expRoot = False
+
+                        if rootType == -1:
+                            if len(activeTags) == 0:
+                                expRoot = True
+                        elif objPass.tags[rootType].use_tag is True:
                             expRoot = True
 
-
+                        print("Export Root = ", expRoot)
 
                         #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                        objectName = RemoveTags(context, rootObject.name)
-                        print("objectName =", objectName)
                         path = self.CalculateFilePath(context, rootObject.GXObj.location_default, objectName, sub_directory, useObjectDirectory)
 
+                        if path.find("WARNING") == 0:
+                            path = path.replace("WARNING: ", "")
+                            self.report({'WARNING'}, path)
+                            return {'CANCELLED'}
+
+                        print("Path created...", path)
+
+                        print("Path created...", path)
 
                         #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
-                        # First we have to find all objects in the group that are of type MESHHH
-                        # If auto-assignment is on, use the names to filter into lists, otherwise forget it.
+                        # In this new system, we only have to search through objects that meet the criteria using one function,
+                        # only for the tags that are active
 
                         print(">>>> Collecting Objects <<<<")
 
-                        # If the root type is 0, no associating objects should be searchable
-                        if rootType != 0:
+                        if len(activeTags) > 0:
                             print(">>>> Tags On, searching... <<<")
-                            if bpy.data.objects.find(objectName + self.addon_prefs.lp_tag) != -1 and expLP is True:
-                                item = bpy.data.objects[objectName + self.addon_prefs.lp_tag]
 
-                                if item.type == 'MESH':
-                                    if item != rootObject or rootType != 1:
-                                        print("LP Found...", item.name)
-                                        lowPoly = item
-                                        hiddenObjectList.append(item)
-                                        isHidden = item.hide
-                                        hiddenList.append(isHidden)
-                                        isSelectable = item.hide_select
-                                        selectList.append(isSelectable)
+                            # For each tag, try to search for an object that matches the tag
+                            for tag in activeTags:
+                                if FindObjectWithTag(context, objectName, tag) is not None:
+                                    item = FindObjectWithTag(context, objectName, tag)
 
+                                    if item != None:
+                                        if item.name != rootObject.name:
+                                            foundObjects.append(item)
 
-                            if bpy.data.objects.find(objectName + self.addon_prefs.hp_tag) != -1 and expHP is True:
-                                item = bpy.data.objects[objectName + self.addon_prefs.hp_tag]
-
-                                if item.type == 'MESH':
-                                    if item != rootObject or rootType != 2:
-                                        print("HP Found...", item.name)
-                                        highPoly = item
-                                        hiddenObjectList.append(item)
-                                        isHidden = item.hide
-                                        hiddenList.append(isHidden)
-                                        isSelectable = item.hide_select
-                                        selectList.append(isSelectable)
-
-                            if bpy.data.objects.find(objectName + self.addon_prefs.cg_tag) != -1 and expCG is True:
-                                item = bpy.data.objects[objectName + self.addon_prefs.cg_tag]
-
-                                if item.type == 'MESH':
-                                    if item != rootObject or rootType != 3:
-                                        print("CG Found...", item.name)
-                                        cage = item
-                                        hiddenObjectList.append(item)
-                                        isHidden = item.hide
-                                        hiddenList.append(isHidden)
-                                        isSelectable = item.hide_select
-                                        selectList.append(isSelectable)
-
-                            # As there can be multiple collision objects, a full search has to be conducted.
-                            for item in bpy.data.objects:
-                                if item.type == 'MESH':
-                                    if item != rootObject:
-                                        if CheckPrefix(item.name, objectName + self.addon_prefs.cx_tag) is True and expCX is True:
-                                            print("Cage has correct tags...")
-
-                                            print("CX Found...", item.name)
-                                            collision.append(item)
+                                            print("Tag", tag.name, "Found...", item.name)
                                             hiddenObjectList.append(item)
                                             isHidden = item.hide
                                             hiddenList.append(isHidden)
                                             isSelectable = item.hide_select
                                             selectList.append(isSelectable)
 
-
+                        # Not sure what to do with this yet, will work it out later
+                        #
                         # We have to collect the armature from the modifier stack
                         # This is the only component that can be searched for if the rootType has no tags
-                        modType = {'ARMATURE'}
-
-                        if expAR is True:
-                            item = None
-
-                            if rootType == 1 or rootType == 0:
-                                item = rootObject
-
-                            elif lowPoly is not None:
-                                item = lowPoly
-
-                            if item is not None:
-                                FocusObject(item)
-
-                                for modifier in item.modifiers:
-                                    if modifier.type in modType:
-                                        armature = modifier.object
-
-                                        hiddenObjectList.append(item)
-                                        isHidden = armature.hide
-                                        hiddenList.append(isHidden)
-                                        isSelectable = armature.hide_select
-                                        selectList.append(isSelectable)
-
-
-                                        # Ensure all armatures are in Object Mode for following code
-                                        bpy.ops.object.select_all(action='DESELECT')
-                                        FocusObject(armature)
-                                        bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-                                        bpy.ops.object.select_all(action='DESELECT')
+                        #modType = {'ARMATURE'}
+                        #
+                        #if expAR is True:
+                        #    item = None
+                        #
+                        #    if rootType == 1 or rootType == 0:
+                        #        item = rootObject
+                        #
+                        #    elif lowPoly is not None:
+                        #        item = lowPoly
+                        #
+                        #    if item is not None:
+                        #        FocusObject(item)
+                        #
+                        #        for modifier in item.modifiers:
+                        #            if modifier.type in modType:
+                        #                armature = modifier.object
+                        #
+                        #                hiddenObjectList.append(item)
+                        #                isHidden = armature.hide
+                        #                hiddenList.append(isHidden)
+                        #                isSelectable = armature.hide_select
+                        #                selectList.append(isSelectable)
+                        #
+                        #
+                        #                # Ensure all armatures are in Object Mode for following code
+                        #                bpy.ops.object.select_all(action='DESELECT')
+                        #                FocusObject(armature)
+                        #                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
+                        #                bpy.ops.object.select_all(action='DESELECT')
 
 
                         # Debug check for found objects
                         print("Checking found objects...")
-                        if expLP is True:
-                            print("LP...", rootObject)
-                        if expHP is True:
-                            print("HP...", highPoly)
-                        if expCG is True:
-                            print("CG...", cage)
-                        if expCX is True:
-                            print("CX...", collision)
-                        if expAR is True:
-                            print("AR...", armature)
+                        for item in foundObjects:
+                            print(item.name)
 
 
                         # //////////// - COLLISION SETUP - /////////////////////////////////////
@@ -519,69 +471,44 @@ class GT_Export_Assets(Operator):
                         # //////////////////////////////////////////////////////////////////////
                         # Now we know what objects are up for export, we just need to prepare them
                         # If UE4 is used and we have collision, bundle the collision with the export
-                        if expCX is True and int(scn.engine_select) is 1:
-                            print("UE4 being used, preparing collision...")
-                            if len(collision) != 0:
-
-                                print("Still here?")
-                                i = 1
-
-                                for item in collision:
-
-                                    p = "_"
-                                    if i < 10:
-                                        p = "_0"
-
-                                    collisionNames.append(item.name)
-                                    item.name = "UCX_" + rootObject.name + p + str(i)
-                                    i += 1
-
-                                    print("Collision name...", item.name)
+                        #if int(scn.engine_select) is 1:
+                        #    print("UE4 being used, preparing collision...")
+                        #    if len(collision) != 0:
+                        #
+                        #        print("Still here?")
+                        #        i = 1
+                        #
+                        #        for item in collision:
+                        #
+                        #            p = "_"
+                        #            if i < 10:
+                        #                p = "_0"
+                        #
+                        #            collisionNames.append(item.name)
+                        #            item.name = "UCX_" + rootObject.name + p + str(i)
+                        #            i += 1
+                        #
+                        #            print("Collision name...", item.name)
 
 
                         # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                         # ///////////////////////////////////////////////////////////////////////////////////
-                        print(">>> Collecting Found Objects <<<")
-                        exportList = []
 
-                        if rootType != 0:
-                            print("Auto Assign on, searching...")
-
-                            if expLP is True and lowPoly is not None and rootType != 1:
-                                print("Appending LP")
-                                exportList.append(lowPoly)
-
-                            if expHP is True and highPoly is not None and rootType != 2:
-                                print("Appending HP")
-                                exportList.append(highPoly)
-
-                            if expCG is True and cage is not None and rootType != 3:
-                                print("Appending CG")
-                                exportList.append(cage)
-
-                            if expCX is True and collision is not None and rootType != 4:
-                                print("Appending CX")
-                                exportList += collision
-
-                            if expAR is True and armature is not None:
-                                print("Appending AR")
-                                exportList.append(armature)
-
-                            MoveObjects(rootObject, exportList, context, (0.0, 0.0, 0.0))
+                        if len(foundObjects) > 0:
+                            MoveObjects(rootObject, foundObjects, context, (0.0, 0.0, 0.0))
 
                         else:
                             MoveObject(rootObject, context, (0.0, 0.0, 0.0))
 
-                        print(">>> Asset List Count...", len(exportList))
-
+                        print(">>> Asset List Count...", len(foundObjects))
 
                         # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                         # ////////////////////////////////////////////////////////////////////////////
                         print(">>> Triangulating Objects <<<")
                         triangulateList = []
-                        triangulateList += exportList
+                        triangulateList += foundObjects
 
-                        if expLP is True:
+                        if expRoot is True:
                             triangulateList.append(rootObject)
 
                         if useTriangulate is True and applyModifiers is True:
@@ -597,28 +524,27 @@ class GT_Export_Assets(Operator):
                         # //////////// - EXPORT PROCESS - ///////////////////////////////////////////
                         # A separate FBX export function call for every corner case isnt actually necessary
                         finalExportList = []
-                        finalExportList += exportList
+                        finalExportList += foundObjects
 
                         if expRoot is True:
                             finalExportList.append(rootObject)
 
                         if exportIndividual is True:
-                            self.PrepareExportIndividual(context, finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes, expAM)
+                            self.PrepareExportIndividual(context, finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim)
 
                         else:
-                            nameTagless = RemoveTags(context, objectName)
-
-                            self.PrepareExportCombined(finalExportList, path, suffix, nameTagless, applyModifiers, meshSmooth, exportTypes, expAM)
+                            self.PrepareExportCombined(finalExportList, path, objectName, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim)
 
 
                         # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
                         # ///////////////////////////////////////////////////////////////////////////////////
-                        if expCX is True and scn.engine_select is '1':
-                            if len(collision) is not 0:
-                                i = 0
-                                for item in collision:
-                                    item.name = collisionNames[i]
-                                    i += 1
+                        # Restore UE4 Collision options
+                        #if expCX is True and scn.engine_select is '1':
+                        #    if len(collision) is not 0:
+                        #        i = 0
+                        #        for item in collision:
+                        #            item.name = collisionNames[i]
+                        #            i += 1
 
                         # Remove any triangulation modifiers
                         if useTriangulate is True and applyModifiers is True:
@@ -629,12 +555,12 @@ class GT_Export_Assets(Operator):
                                         self.RemoveTriangulate(item)
 
                         # Reset and move objects
-                        for item in exportList:
+                        for item in foundObjects:
                             print("Checking ", item.name)
                             print("Checking object position... ", item.location)
 
-                        if rootType != 0:
-                            MoveObjects(rootObject, exportList, context, rootObjectLocation)
+                        if len(foundObjects) > 0:
+                            MoveObjects(rootObject, foundObjects, context, rootObjectLocation)
 
                         else:
                             MoveObject(rootObject, context, rootObjectLocation)
@@ -659,9 +585,6 @@ class GT_Export_Assets(Operator):
                     print(">>> Object Export Complete <<<")
 
 
-
-
-
         # Now hold up, its group time!
         for group in bpy.data.groups:
             if group.GXGrp.export_group is True:
@@ -676,7 +599,7 @@ class GT_Export_Assets(Operator):
                 rootType = 0
 
                 if group.GXGrp.root_object == "":
-                    statement = "No name has been given to the " + group.name + " group object, please give it a name."
+                    statement = "No root object has been defined for " + group.name + ".  Please define one!"
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
@@ -702,35 +625,38 @@ class GT_Export_Assets(Operator):
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
+
+
+                rootObjectLocation = Vector((0.0, 0.0, 0.0))
+                rootObjectLocation[0] = object.location[0]
+                rootObjectLocation[1] = object.location[1]
+                rootObjectLocation[2] = object.location[2]
+
+                # Collect hidden defaults to restore afterwards.
+                hiddenList = []
+                selectList = []
+                hiddenObjectList = []
+                objectName = group.name
+
                 exportDefault = self.addon_prefs.export_defaults[expKey]
                 useObjectDirectory = exportDefault.use_sub_directory
                 print("Using Export Default...", exportDefault.name, ".  Export Key", expKey)
 
 
                 # Identify what tag the root object has
-                rootType = self.IdentifyTag(context, rootObject)
+                rootType = IdentifyObjectTag(context, rootObject, exportDefault)
                 print("Root type is...", rootType)
 
                 # Search through the group and idenfity whether tag filtering is required.
-                filterTags = False
-
-                for item in group.objects:
-                    itemType = self.IdentifyTag(context, item)
-
-                    if itemType != 0:
-                        filterTags = False
-                        break
-
-
                 rootObjectLocation = Vector((0.0, 0.0, 0.0))
                 rootObjectLocation[0] = rootObject.location[0]
                 rootObjectLocation[1] = rootObject.location[1]
                 rootObjectLocation[2] = rootObject.location[2]
 
-
                 # Collect hidden defaults to restore afterwards.
                 hiddenList = []
                 selectList = []
+
                 for item in group.objects:
                     isHidden = item.hide
                     hiddenList.append(isHidden)
@@ -746,32 +672,30 @@ class GT_Export_Assets(Operator):
                     print("Export pass", objPass.name, "being used on the group", group.name)
                     print("Root object.....", rootObject.name)
 
-                    completeList = []
-                    lowPolyList = []
-                    highPolyList = []
-                    cageList = []
-                    collisionList = []
-                    animationList = []
-                    armatureList = []
-                    otherList = []
+                    activeTags = []
+                    taggedList = []
+                    objectList = []
+                    i = 0
 
-                    collisionNames = []
+                    # Create a list for every tag in use
+                    print("Processing tags...")
+                    for passTag in objPass.tags:
+                        if passTag.use_tag is True:
+                            print("Active Tag Found: ", passTag.name)
+                            activeTags.append(exportDefault.tags[i])
+
+                        i += 1
 
                     # Obtain some object-specific preferences
                     applyModifiers = objPass.apply_modifiers
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
+                    exportAnim = objPass.export_animation
+
                     hasTriangulation = False
                     meshSmooth = self.GetNormals(rootObject.GXObj.normals)
-                    exportTypes = {'MESH', 'ARMATURE'}
+                    exportTypes = {'EMPTY', 'CAMERA', 'LAMP', 'MESH', 'ARMATURE', 'OTHER'}
 
-                    # Obtain Object Component Information
-                    expLP = objPass.export_lp
-                    expHP = objPass.export_hp
-                    expCG = objPass.export_cg
-                    expCX = objPass.export_cx
-                    expAR = objPass.export_ar
-                    expAM = objPass.export_am
                     expRoot = False
 
                     export_anim = False
@@ -786,43 +710,23 @@ class GT_Export_Assets(Operator):
                     sub_directory = objPass.sub_directory
 
                     # Lets see if the root object can be exported...
-                    if expLP is True and rootType == 1:
+                    expRoot = False
+
+                    if rootType == -1:
+                        if len(activeTags) == 0:
+                            expRoot = True
+                    elif objPass.tags[rootType].use_tag is True:
                         expRoot = True
-                    if expHP is True and rootType == 2:
-                        expRoot = True
-                    if expCG is True and rootType == 3:
-                        expRoot = True
-                    if expCX is True and rootType == 4:
-                        expRoot = True
-                    if rootType == 0:
-                        expRoot = True
-
-                    if rootObject.type != 'MESH' or rootObject.type != 'ARMATURE':
-                        expRoot = False
-
-                    # If its a collision object...
-                    if expCG is True and rootType == 3:
-                        collisionName = rootObject.name
-                        collisionName = collisionName.replace(self.addon_prefs.cx_tag, "")
-                        foundMatch = False
-
-                        for item in group.objects:
-                            if item.name == collisionName + self.addon_prefs.lp_tag:
-                                foundMatch = True
-
-                        if foundMatch is False:
-                            self.report({'WARNING'}, "Collision object used as root does not have a corresponding low-poly object, abort!")
-                            FocusObject(rootObject)
-                            return {'CANCELLED'}
-
-
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    objectName = group.name
                     path = self.CalculateFilePath(context, group.GXGrp.location_default, objectName, sub_directory, useObjectDirectory)
 
+                    if path.find("WARNING") == 0:
+                        path = path.replace("WARNING: ", "")
+                        self.report({'WARNING'}, path)
+                        return {'CANCELLED'}
 
-
+                    print("Path created...", path)
 
                     #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
                     # First we have to find all objects in the group that are of type MESHHH
@@ -830,154 +734,48 @@ class GT_Export_Assets(Operator):
 
                     print(">>>> Collecting Objects <<<<")
 
-                    if filterTags is False:
-                        print("Auto Assign off, collecting all group objects....")
+                    # If we have any active tags in use, export only by filtering them
+                    if len(activeTags) > 0:
+                        for tag in activeTags:
+                            print("Current tag...", tag.name)
+                            list = []
+
+                            for item in group.objects:
+                                print("Found item...", item.name)
+                                checkItem = CompareObjectWithTag(context, item, tag)
+
+                                if checkItem == True:
+                                    if item.name != rootObject.name:
+                                        print("ITEM FOUND: ", item.name)
+                                        list.append(item)
+                                        objectList.append(item)
+
+                            taggedList.append(list)
+                            print("-"*10)
+
+                    # If not, export everything
+                    else:
                         for item in group.objects:
                             if item.name != rootObject.name:
-                                if item.type == 'MESH' or item.type == 'ARMATURE':
-                                    print("Collected", item.name, "...")
-                                    completeList.append(item)
+                                objectList.append(item)
 
-                                else:
-                                    print("Collected", item.name, "...")
-                                    otherList.append(item)
 
-                        print("Collected", len(completeList), "objects.")
-
+                    # Gimme some PRIIIIINTS!
+                    if len(activeTags) > 0:
+                        i = 0
+                        print("Printing tag lists...")
+                        for tag in activeTags:
+                            print(tag.name, str(len(taggedList[i])))
+                            i += 1
                     else:
-                        print("Auto Assign on, collecting group objects....")
-                        for item in group.objects:
-                            print("Group Object...", item.name)
-                            if item != rootObject:
-                                if item.type == 'MESH':
-
-                                    # Sorts based on name suffix
-                                    if CheckSuffix(item.name, self.addon_prefs.lp_tag) is True and expLP is True:
-                                        if item.name != rootObject.name or rootType != 1:
-                                            print("LP Found...", item.name)
-                                            lowPolyList.append(item)
-
-                                    elif CheckSuffix(item.name, self.addon_prefs.hp_tag) is True and expHP is True:
-                                        if item.name != rootObject.name or rootType != 2:
-                                            print("HP Found...", item.name)
-                                            highPolyList.append(item)
-
-                                    elif CheckSuffix(item.name, self.addon_prefs.cg_tag) is True and expCG is True:
-                                        if item.name != rootObject.name or rootType != 3:
-                                            print("CG Found...", item.name)
-                                            cageList.append(item)
-
-                                elif item.type == 'ARMATURE' and expAR is True:
-                                    print("Collected armature,", item.name, "...")
-                                    armatureList.append(item)
-
-                                else:
-                                    print("Collected other,", item.name, "...")
-                                    otherList.append(item)
-
-                        # Collision objects are only added if it can find a name match with a static mesh
-                        if expCX is True:
-                            i = 1
-
-                            for target in lowPolyList:
-                                if target.type == 'MESH':
-                                    searchName = RemoveTags(context, target.name)
-
-                                    for item in group.objects:
-                                        if item.name != target.name:
-                                            if item.type == 'MESH':
-                                                if CheckPrefix(item.name, searchName + self.addon_prefs.cx_tag) is True:
-                                                    print("CX found...", item.name)
-                                                    collisionList.append(item)
-
-                                                    if int(scn.engine_select) is 1:
-                                                        p = "_"
-                                                        if i < 10:
-                                                            p = "_0"
-
-                                                        collisionNames.append(item.name)
-                                                        print("item name.......,", item.name)
-                                                        tempName = RemoveTags(context, item.name)
-                                                        print("tempName.........", tempName)
-                                                        item.name = "UCX_" + target.name + p + str(i)
-                                                        i += 1
-
-                                                        print("Collision name...", item.name)
-
-
-                            if rootType == 1:
-                                searchName = RemoveTags(context, rootObject.name)
-
-                                for item in group.objects:
-                                    if item.name != rootObject.name:
-                                        if item.type == 'MESH':
-                                            if CheckPrefix(item.name, searchName + self.addon_prefs.cx_tag) is True:
-                                                print("CX found...", item.name)
-                                                collisionList.append(item)
-
-                                                # Names have to be processed here so the object names that the collision is
-                                                # associated with can be matched.
-                                                if int(scn.engine_select) is 1:
-                                                    p = "_"
-                                                    if i < 10:
-                                                        p = "_0"
-
-                                                    collisionNames.append(item.name)
-                                                    print("item name.......,", item.name)
-                                                    tempName = RemoveTags(context, item.name)
-                                                    print("tempName.........", tempName)
-                                                    item.name = "UCX_" + rootObject.name + p + str(i)
-                                                    i += 1
-
-                                                    print("Collision name...", item.name)
-
-
-
-                    print("Total low_poly....", len(lowPolyList))
-                    print("Total high_poly...", len(highPolyList))
-                    print("Total cage........", len(cageList))
-                    print("Total collision...", len(collisionList))
-                    print("Total armatures...", len(armatureList))
-                    print("Total other.......", len(otherList))
-
-
+                        print("Found", str(len(objectList)), "objects")
 
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     print(">>> Appending Found Objects <<<")
 
-                    exportList = []
-                    if filterTags is True:
-                        if expLP is True:
-                            print("Appending LP...")
-                            exportList += lowPolyList
-
-                        if expHP is True:
-                            print("Appending HP...")
-                            exportList += highPolyList
-
-                        if expCG is True:
-                            print("Appending CG...")
-                            exportList += cageList
-
-                        if expCX is True:
-                            print("Appending CX...")
-                            exportList += collisionList
-
-                        if expAR is True:
-                            print("Appending AM...")
-                            exportList += armatureList
-
-                    else:
-                        exportList += completeList
-
-                    print("ExportList.....", exportList)
-
                     moveList = []
-                    moveList += exportList
-                    moveList += otherList
-
-                    print("MoveList.....", moveList)
+                    moveList += objectList
 
                     MoveObjects(rootObject, moveList, context, (0.0, 0.0, 0.0))
 
@@ -985,9 +783,9 @@ class GT_Export_Assets(Operator):
                     # ////////////////////////////////////////////////////////////////////////////
                     print(">>> Triangulating Objects <<<")
                     triangulateList = []
-                    triangulateList += exportList
+                    triangulateList += objectList
 
-                    if expLP is True or rootType == 0:
+                    if expRoot is True:
                         triangulateList.append(rootObject)
 
                     if useTriangulate is True and applyModifiers is True:
@@ -1008,33 +806,33 @@ class GT_Export_Assets(Operator):
                     canExport = True
                     print("Root Location...", rootObject.location)
 
-                    if len(exportList) == 0 and expRoot is False:
+                    if len(objectList) == 0 and expRoot is False:
                         print("No objects found in pass, stopping export...")
                         canExport = False
 
 
                     elif canExport is True:
                         finalExportList = []
-                        finalExportList += exportList
+                        finalExportList += objectList
 
                         if expRoot is True:
                             finalExportList.append(rootObject)
 
                         if exportIndividual is True:
-                            self.PrepareExportIndividual(context, finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes, expAM)
+                            self.PrepareExportIndividual(context, finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim)
 
                         else:
-                            self.PrepareExportCombined(finalExportList, path, suffix, group.name, applyModifiers, meshSmooth, exportTypes, expAM)
+                            self.PrepareExportCombined(finalExportList, path, group.name, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim)
 
 
                     # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
-                    if expCX is True and scn.engine_select is '1':
-                        if len(collisionList) is not 0:
-                            i = 0
-                            for item in collisionList:
-                                item.name = collisionNames[i]
-                                i += 1
+                    #if expCX is True and scn.engine_select is '1':
+                        #if len(collisionList) is not 0:
+                            #i = 0
+                            #for item in collisionList:
+                                #item.name = collisionNames[i]
+                                #i += 1
 
                     # Remove any triangulation modifiers
                     if useTriangulate is True and applyModifiers is True:
@@ -1045,7 +843,7 @@ class GT_Export_Assets(Operator):
                                     self.RemoveTriangulate(object)
 
                     print("Checking", object.name, "'s position... ",rootObject.location)
-                    for object in exportList:
+                    for object in moveList:
                         print("Checking", object.name, "'s position... ", object.location)
 
 

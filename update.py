@@ -247,3 +247,46 @@ def Update_ActionItemName(self, context):
     print("No name could be changed for action", self.prev_name, ".  Oh no!")
 
     return None
+
+
+def Update_GroupRoot(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.GXObj:
+
+        groups_found = []
+
+        for item in context.selected_objects:
+            for group in item.users_group:
+                groupAdded = False
+
+                for found_group in groups_found:
+                    if found_group.name == group.name:
+                        groupAdded = True
+
+                if groupAdded == False:
+                    groups_found.append(group)
+
+        # Run through the objects
+        for object in selected:
+            if CheckForTags(context, object.name) is False:
+                object.GXObj.export_default = value
+
+            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
+                object.GXObj.export_default = value
+
+    return None
+
+def Update_GroupMultiEdit(self, context):
+
+    bpy.ops.scene.gx_group_multiedit_warning()
+
+    return None
+
+def Update_GroupSelectionEdit(self, context):
+
+    bpy.ops.scene.gx_ref_selected_groups()
+
+    return None

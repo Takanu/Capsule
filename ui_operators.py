@@ -81,6 +81,54 @@ class GX_Delete_Export(Operator):
 
         return {'FINISHED'}
 
+class GX_Add_Tag(Operator):
+    """Creates a path from the menu"""
+
+    bl_idname = "scene.gx_addtag"
+    bl_label = "Add"
+
+    def execute(self, context):
+        print(self)
+
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
+        # Add the tag into the main list
+        export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+        newTag = export.tags.add()
+        newTag.name = "Tag " + str(len(export.tags))
+
+        # Now add it for all other passes in the export
+        for expPass in export.passes:
+            newPassTag = expPass.tags.add()
+            newPassTag.name = newTag.name
+            newPassTag.index = len(export.tags) - 1
+
+        return {'FINISHED'}
+
+class GX_Delete_Tag(Operator):
+    """Deletes the selected path from the menu"""
+
+    bl_idname = "scene.gx_deletetag"
+    bl_label = "Remove"
+
+    def execute(self, context):
+        print(self)
+
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+        export.tags.remove(export.tags_index)
+
+        for expPass in export.passes:
+            expPass.tags_index -= 1
+            expPass.tags.remove(export.tags_index)
+
+        export.tags_index -= 1
+
+        return {'FINISHED'}
+
+
 class GX_Add_Pass(Operator):
     """Creates a path from the menu"""
 
@@ -93,9 +141,16 @@ class GX_Add_Pass(Operator):
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
         export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+
         newPass = export.passes.add()
         newPass.name = "Pass " + str(len(export.passes))
         newPass.path = ""
+
+        # Ensure the new pass has all the current tags
+        for tag in export.tags:
+            newPassTag = newPass.tags.add()
+            newPassTag.name = tag.name
+            newPassTag.index = len(export.tags) - 1
 
         return {'FINISHED'}
 
@@ -189,7 +244,6 @@ class GX_Refresh_Groups(Operator):
         print(self)
 
         scn = context.scene.GXScn
-
         scn.group_list.clear()
 
         for group in bpy.data.groups:
@@ -265,39 +319,22 @@ class GX_Set_Root_Object(Operator):
             if context.selected_objects != None and len(context.selected_objects) == 1:
 
                 entry = context.scene.GXScn.group_list[context.scene.GXScn.group_list_index]
+
+                # Find the group we're getting a root object for
                 for group in bpy.data.groups:
                     if group.name == entry.name:
-
                         print("Found Group: ", group.name)
-                        for object in group.objects:
-                            if object.name == context.selected_objects[0].name:
-                                if CheckForTags(context, object.name) is False:
-                                    print("Object Passed Main Check", object.name)
 
-                                    self.CheckForChild(group, object)
+                        # Make sure the root object being selected matches the groip
+                        for item in group.objects:
+                            if item.name == context.selected_objects[0].name:
 
-                                    group.GXGrp.root_object = context.selected_objects[0].name
-                                    FocusObject(self.object)
-                                    self.finish()
-                                    return{'FINISHED'}
+                                self.CheckForChild(group, item)
 
-                                elif CheckSuffix(object.name, self.addon_prefs.lp_tag) is True:
-
-                                    self.CheckForChild(group, object)
-
-                                    group.GXGrp.root_object = context.selected_objects[0].name
-                                    FocusObject(self.object)
-                                    self.finish()
-                                    return{'FINISHED'}
-
-                                else:
-                                    self.report({'WARNING'}, 'The object selected is not a low-poly object, PAY ATTENTION OmO')
-
-                                    FocusObject(self.object)
-                                    self.finish()
-                                    return{'FINISHED'}
-
-
+                                group.GXGrp.root_object = context.selected_objects[0].name
+                                FocusObject(self.object)
+                                self.finish()
+                                return{'FINISHED'}
 
                         self.report({'WARNING'}, 'The object selected is not in the same group, TRY AGAIN O_O')
 
@@ -515,6 +552,18 @@ class GX_Refresh_Actions(Operator):
 
 
         return {'FINISHED'}
+
+class GX_Group_MultiEdit_Warning(Operator):
+    """A simple warning for turning on Group MultiEdit"""
+    bl_idname = "scene.gx_group_multiedit_warning"
+    bl_label = "TEST ME"
+
+    def execute(self, context):
+        scn = context.scene.GXScn
+
+        if scn.group_multi_edit is True:
+            self.report({'WARNING'}, 'Group Multi-Edit has been turned on, be careful!')
+            return {'FINISHED'}
 
 class GX_Test_Me(Operator):
 

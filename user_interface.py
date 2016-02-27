@@ -2,6 +2,18 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty
 from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
+from .update import Update_GroupSelectionEdit
+
+class GEX_Name_UIList(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+
+            layout.prop(item, "name", text="", emboss=False)
+
+class GEX_TagFilter_UIList(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+
+            layout.prop(item, "name", text="", emboss=False)
+            layout.prop(item, "use_tag", text="")
 
 class Object_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -69,41 +81,11 @@ class Action_UIList(UIList):
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
 
-#Generates the UI panel inside the 3D view
-class GX_Export(Panel):
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOLS"
-    bl_context = "objectmode"
-    bl_label = "Export"
-    bl_category = "GEX"
-
-    def draw(self, context):
-        layout = self.layout
-
-        scn = context.scene.GXScn
-        ob = context.object
-
-        col_export = layout.column(align=True)
-        col_export.operator("scene.gx_export")
-        col_export.separator()
-
-        #layout.label(text="Target")
-
-        col_export = layout.column(align=True)
-        col_export.alignment = 'EXPAND'
-        col_export.prop(scn, "engine_select", text="", icon = "LOGIC")
-        col_export.separator()
-
-        #if scn.engine_select is '2':
-            #col_export.prop(scn, "merge_export")
-
-
-
 class GX_SelectionObject(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
-    bl_label = "Selection"
+    bl_label = "Export"
     bl_category = "GEX"
 
     @classmethod
@@ -119,7 +101,11 @@ class GX_SelectionObject(Panel):
 
         layout = self.layout
         obType = int(scn.object_switch)
-        layout.row().prop(scn, "object_switch", expand=True)
+        col_export = layout.column(align=True)
+        col_export.operator("scene.gx_export")
+        col_export.separator()
+        object_switch = layout.row(align=True)
+        object_switch.prop(scn, "object_switch", expand=True)
 
 
         #/////////////// OBJECT SELECTION UI /////////////////////////////
@@ -241,17 +227,69 @@ class GX_SelectionObject(Panel):
         #/////////////////////////////////////////////////////////////////
 
         else:
-            col_location = layout.row(align=True)
-            col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
 
-            col_location.separator()
+            if scn.group_multi_edit is False:
+                col_location = layout.row(align=True)
+                col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
 
-            row_location = col_location.column(align=True)
-            row_location.operator("scene.gx_refgroups", text="", icon="FILE_REFRESH")
+                col_location.separator()
 
-            layout.separator()
+                row_location = col_location.column(align=True)
+                row_location.operator("scene.gx_refgroups", text="", icon="FILE_REFRESH")
+                row_location.prop(scn, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
+
+                layout.separator()
+
+                selection_label = layout.column(align=True)
+
+                # If we only have single group editing enabled, the object selected is irrelevant
+                #if len(context.selected_objects) is 1:
+                    #if scn.group_multi_edit is False:
+                        #pass
+                        #selection_label.label(text=context.object.users_group[0].name, icon="OBJECT_DATA")
+
+            # Otherwise, lets figure out how many groups are being selected
+            else:
+                groups_found = []
+
+                for item in context.selected_objects:
+                    for group in item.users_group:
+                        groupAdded = False
+
+                        for found_group in groups_found:
+                            if found_group.name == group.name:
+                                groupAdded = True
+
+                        if groupAdded == False:
+                            groups_found.append(group)
+
+                if len(groups_found) == 1:
+                    groupLabel = "1 group found."
+
+                else:
+                    groupLabel = str(len(groups_found)) + " groups found."
+
+                group_selection = layout.row(align=True)
+
+                #group_selection.prop(scn, "group_selected_list_enum", text="")
+
+                group_selection.template_list("Group_UIList", "rawr", scn, "group_selected_list", scn, "group_selected_list_index", rows=3, maxrows=10)
+                group_selection.separator()
+
+                group_row = group_selection.column(align=True)
+                group_row.operator("scene.gx_refgroups", text="", icon="FILE_REFRESH")
+                group_row.prop(scn, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
+
+                group_label = layout.column(align=True)
+                group_label.separator()
+                group_label.label(text=groupLabel, icon="OBJECT_DATA")
+
+                group_label.separator()
+
+
 
             #Get the group so we can obtain preference data from it
+            #With Multi-Edit, we have to find a flexible approach to obtaining group data
             if len(scn.group_list) > 0:
                 entry = scn.group_list[scn.group_list_index]
 
@@ -260,7 +298,7 @@ class GX_SelectionObject(Panel):
                         grp = group.GXGrp
 
                         rawr = layout.column(align=True)
-                        rawr.prop(grp, "export_group")
+                        rawr.prop(grp, "export_group", text="Enable Export")
                         rawr.separator()
                         rawr.label(text="Root Object:")
 
@@ -337,114 +375,6 @@ class GX_Location(Panel):
 
         if scn.location_defaults_index > -1 and scn.location_defaults_index < count:
             file.prop(scn.location_defaults[scn.location_defaults_index], "path", text="Location")
-
-
-
-
-
-class GX_ExportDefaults(Panel):
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOLS"
-    bl_context = "objectmode"
-    bl_label = "Export Settings"
-    bl_category = "GEX"
-
-    def draw(self, context):
-        layout = self.layout
-
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
-        scn = context.scene.GXScn
-        ob = context.object
-        ui = context.scene.GXUI
-
-        # Export UI
-        col_export_title = layout.column(align=True)
-        col_export_title.label("Export Defaults")
-        col_export = layout.row(align=True)
-        col_export.template_list("Export_Default_UIList", "default", addon_prefs, "export_defaults", addon_prefs, "export_defaults_index", rows=3, maxrows=6)
-
-        col_export.separator()
-        row_export = col_export.column(align=True)
-        row_export.operator("scene.gx_addexport", text="", icon="ZOOMIN")
-        row_export.operator("scene.gx_deleteexport", text="", icon="ZOOMOUT")
-
-
-        if len(addon_prefs.export_defaults) > 0:
-
-            currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
-
-            col_export_settings = layout.column(align=True)
-            col_export_settings.prop(currentExp, "use_sub_directory")
-
-            # Pass UI
-            passUI = layout.column(align=True)
-            passUI.separator()
-            passUI.label(text="Passes")
-            row_passes = passUI.row(align=True)
-            row_passes.template_list("Pass_Default_UIList", "default", currentExp, "passes", currentExp, "passes_index", rows=3, maxrows=6)
-
-            row_passes.separator()
-
-            col_passes = row_passes.column(align=True)
-            col_passes.operator("scene.gx_addpass", text="", icon="ZOOMIN")
-            col_passes.operator("scene.gx_deletepass", text="", icon="ZOOMOUT")
-            col_passes.separator()
-
-
-            if len(currentExp.passes) > 0:
-
-                # Pass Options UI
-                currentPass = currentExp.passes[currentExp.passes_index]
-
-                pass_settings = layout.column(align=True)
-                pass_settings.separator()
-                pass_settings.prop(currentPass, "file_suffix")
-                pass_settings.prop(currentPass, "sub_directory")
-                pass_settings.separator()
-                pass_settings.separator()
-
-                if ui.component_dropdown is False:
-                    component_ui = pass_settings.row(align=True)
-                    component_ui.prop(ui, "component_dropdown", icon="TRIA_RIGHT")
-                    component_ui.label(text="Export Components")
-
-                else:
-                    component_ui = pass_settings.row(align=True)
-                    component_ui.prop(ui, "component_dropdown", icon="TRIA_DOWN")
-                    component_ui.label(text="Export Components")
-
-                    component_list = pass_settings.column(align=True)
-                    component_list.separator()
-                    component_list.prop(currentPass, "export_lp")
-                    component_list.prop(currentPass, "export_hp")
-                    component_list.prop(currentPass, "export_cg")
-                    component_list.prop(currentPass, "export_cx")
-                    component_list.prop(currentPass, "export_ar")
-                    component_list.prop(currentPass, "export_am")
-                    component_list.separator()
-
-                pass_settings.separator()
-
-                if ui.options_dropdown is False:
-                    options_ui = pass_settings.row(align=True)
-                    options_ui.prop(ui, "options_dropdown", icon="TRIA_RIGHT")
-                    options_ui.label(text="Export Options")
-
-                else:
-                    options_ui = pass_settings.row(align=True)
-                    options_ui.prop(ui, "options_dropdown", icon="TRIA_DOWN")
-                    options_ui.label(text="Export Options")
-
-                    options_list = pass_settings.column(align=True)
-                    options_list.separator()
-                    options_list.prop(currentPass, "export_individual")
-                    options_list.prop(currentPass, "apply_modifiers")
-                    options_list.prop(currentPass, "triangulate")
-
-        layout.separator()
-
-
 
 
 class GX_Settings(Panel):
