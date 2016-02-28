@@ -248,6 +248,49 @@ def Update_ActionItemName(self, context):
 
     return None
 
+def Focus_Object(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    for object in context.scene.objects:
+        if object.name == self.name:
+
+            FocusObject(object)
+
+            # As the context won't be correct when the icon is clicked
+            # We have to find the actual 3D view and override the context of the operator
+            for area in bpy.context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    for region in area.regions:
+                        if region.type == 'WINDOW':
+                            override = {'area': area, 'region': region, 'edit_object': bpy.context.edit_object}
+                            bpy.ops.view3d.view_selected(override)
+    return None
+
+
+def Focus_Group(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    for group in bpy.data.groups:
+        if group.name == self.name:
+
+            bpy.ops.object.select_all(action='DESELECT')
+
+            for object in group.objects:
+                SelectObject(object)
+
+            # As the context won't be correct when the icon is clicked
+            # We have to find the actual 3D view and override the context of the operator
+            for area in bpy.context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    for region in area.regions:
+                        if region.type == 'WINDOW':
+                            override = {'area': area, 'region': region, 'edit_object': bpy.context.edit_object}
+                            bpy.ops.view3d.view_selected(override)
+
+    return None
+
 
 def Update_GroupRoot(self, context):
     user_preferences = context.user_preferences

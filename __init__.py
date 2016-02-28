@@ -92,7 +92,7 @@ class ExportTag(PropertyGroup):
             ('2', 'Mesh', 'Applies to mesh object types only.'),
             ('3', 'Curve', 'Applies to curve object types only.'),
             ('4', 'Surface', 'Applies to surface object types only.'),
-            ('5', 'Meta', 'Applies to meta object types only.'),
+            ('5', 'Metaball', 'Applies to metaball object types only.'),
             ('6', 'Font', 'Applies to font object types only.'),
             ('7', 'Armature', 'Applies to armature object types only.'),
             ('8', 'Lattice', 'Applies to lattice object types only.'),
@@ -261,10 +261,15 @@ class GEXAddonPreferences(AddonPreferences):
         if ui.presets_dropdown is False:
             col_export_title.prop(ui, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
             col_export_title.label("Export Defaults")
+            col_export_title.operator_menu_enum("gx.custom_presets", "presets")
 
         else:
             col_export_title.prop(ui, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             col_export_title.label("Export Defaults")
+            col_export_title.operator_menu_enum("gx.custom_presets", "presets")
+
+            #custom_presets = export_box.column(align=True)
+            #custom_presets.operator_menu_enum("gx.custom_presets", "presets")
 
             col_export = export_box.row(align=True)
             col_export.template_list("Export_Default_UIList", "default", addon_prefs, "export_defaults", addon_prefs, "export_defaults_index", rows=3, maxrows=6)
@@ -274,7 +279,10 @@ class GEXAddonPreferences(AddonPreferences):
             row_export.operator("scene.gx_addexport", text="", icon="ZOOMIN")
             row_export.operator("scene.gx_deleteexport", text="", icon="ZOOMOUT")
 
-            if len(addon_prefs.export_defaults) > 0:
+            print("-----")
+            print(len(addon_prefs.export_defaults))
+            print(addon_prefs.export_defaults_index)
+            if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
 
                 currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
 
@@ -293,6 +301,11 @@ class GEXAddonPreferences(AddonPreferences):
                 export_2.prop(currentExp, "axis_forward")
                 export_2.separator()
 
+            else:
+                preset_unselected = export_box.column(align=True)
+                preset_unselected.label("Select a preset in order to view preset settings.")
+                preset_unselected.separator()
+
 
 
 
@@ -308,7 +321,7 @@ class GEXAddonPreferences(AddonPreferences):
             tag_title.prop(ui, "tags_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             tag_title.label("Tags")
 
-            if len(addon_prefs.export_defaults) > 0:
+            if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
 
                 currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
 
@@ -334,6 +347,11 @@ class GEXAddonPreferences(AddonPreferences):
                     tag_settings.prop(currentTag, "name_filter_type")
                     tag_settings.prop(currentTag, "object_type")
 
+            else:
+                unselected = tag_box.column(align=True)
+                unselected.label("Select a preset in order to view tag settings.")
+                unselected.separator()
+
         # Pass UI
         pass_box = layout.box()
         passUI = pass_box.row(align=True)
@@ -347,7 +365,7 @@ class GEXAddonPreferences(AddonPreferences):
             passUI.label("Passes")
 
 
-            if len(addon_prefs.export_defaults) > 0:
+            if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
 
                 currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
 
@@ -405,6 +423,11 @@ class GEXAddonPreferences(AddonPreferences):
                     #tag_filter.separator()
 
                     pass_settings.separator()
+
+            else:
+                unselected = pass_box.column(align=True)
+                unselected.label("Select a preset in order to view tag settings.")
+                unselected.separator()
 
 
 

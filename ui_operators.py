@@ -1,5 +1,6 @@
 import bpy, bmesh
 from bpy.types import Operator
+from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckForTags
 from mathutils import Vector
 
@@ -564,6 +565,86 @@ class GX_Group_MultiEdit_Warning(Operator):
         if scn.group_multi_edit is True:
             self.report({'WARNING'}, 'Group Multi-Edit has been turned on, be careful!')
             return {'FINISHED'}
+
+class GX_Custom_Presets(Operator):
+    """Adds a special preset that changes how objects are processed for export, making exports from Blender to other programs smoother."""
+    bl_idname = "gx.custom_presets"
+    bl_label = "Default Presets"
+
+    presets = EnumProperty(
+    name = "Custom Presets",
+    items=(
+    ('1', 'Unreal Engine 4 Standard', 'Sets up a custom preset for UE4, with support for multiple collision objects per low_poly and seamless collision importing.'),
+    ('2', 'Unity 5', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.'),
+    ('3', '3DS Max', 'Hahahaha, just kidding.')
+    ),)
+
+    def execute(self, context):
+
+        # -------------------------------------------------------------------------
+        # UE4 Standard Template
+        # -------------------------------------------------------------------------
+        if self.presets is '1':
+            scn = context.scene.GXScn
+            user_preferences = context.user_preferences
+            addon_prefs = user_preferences.addons[__package__].preferences
+
+            export = addon_prefs.export_defaults.add()
+            export.name = "UE4 Standard (Preset)"
+            export.axis_forward = "-Z"
+            export.axis_up = "Y"
+            export.global_scale = 1.0
+
+            tagLP = export.tags.add()
+            tagLP.name = "Low-Poly"
+            tagLP.name_filter = "_LP"
+            tagLP.name_filter_type = '1'
+            tagLP.x_user_deletable = False
+
+            tagHP = export.tags.add()
+            tagHP.name = "High-Poly"
+            tagHP.name_filter = "_HP"
+            tagHP.name_filter_type = '1'
+            tagHP.x_user_deletable = False
+
+            tagCG = export.tags.add()
+            tagCG.name = "Cage"
+            tagCG.name_filter = "_CG"
+            tagCG.name_filter_type = '1'
+            tagCG.x_user_deletable = False
+            tagCG.x_replace_names = True
+            tagCG.x_name_ext = "UCX_"
+            tagCG.x_name_ext_type = '2'
+
+            tagCX = export.tags.add()
+            tagCX.name = "Collision"
+            tagCX.name_filter = "_CX"
+            tagCX.name_filter_type = '1'
+            tagCX.x_user_deletable = False
+
+            tagAR = export.tags.add()
+            tagAR.name = "Armature"
+            tagAR.name_filter = "_AR"
+            tagAR.name_filter_type = '1'
+            tagAR.object_type = '7'
+            tagAR.x_user_deletable = False
+
+            passOne = export.passes.add()
+            passOne.name = "Combined Pass"
+            passOne.export_animation = True
+            passOne.apply_modifiers = True
+            passOne.triangulate = True
+
+            # Ensure the new pass has all the current tags
+            for tag in export.tags:
+                newPassTag = passOne.tags.add()
+                newPassTag.name = tag.name
+                newPassTag.index = len(export.tags) - 1
+                newPassTag.use_tag = True
+
+
+
+        return {'FINISHED'}
 
 class GX_Test_Me(Operator):
 

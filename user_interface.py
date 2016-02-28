@@ -22,6 +22,7 @@ class Object_UIList(UIList):
 
         layout.prop(item, "name", text="", emboss=False)
         layout.prop(item, "enable_export", text="")
+        layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
         layout.separator()
 
 
@@ -37,6 +38,7 @@ class Group_UIList(UIList):
 
         layout.prop(item, "name", text="", emboss=False)
         layout.prop(groupData.GXGrp, "export_group", text="")
+        layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
         layout.separator()
 
 

@@ -1,4 +1,4 @@
-from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Update_GroupMultiEdit
+from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Focus_Object, Focus_Group, Update_GroupMultiEdit
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
@@ -24,6 +24,12 @@ class ObjectItem(PropertyGroup):
         update=Update_ObjectItemExport
     )
 
+    focus = BoolProperty(
+        name = "Focus Export",
+        description = "Focuses the camera to the object",
+        default = True,
+        update = Focus_Object)
+
 class GroupItem(PropertyGroup):
     name = StringProperty(
         name="",
@@ -35,6 +41,13 @@ class GroupItem(PropertyGroup):
         name="",
         description="Internal only, used for tracking name updates."
     )
+
+    focus = BoolProperty(
+        name = "Focus Export",
+        description = "Focuses the camera to the entire group.",
+        default = True,
+        update = Focus_Group)
+
 
 class ActionItem(PropertyGroup):
     name = StringProperty(
@@ -236,7 +249,6 @@ class GX_Group_Preferences(PropertyGroup):
         ('3', 'Normals Only', 'Exports the current custom normals of the model.')
         ),)
 
-
 def GetExportPresets(scene, context):
 
     items = []
@@ -264,6 +276,15 @@ class GX_UI_Preferences(PropertyGroup):
 
     action_list = CollectionProperty(type=ActionItem)
     action_list_index = IntProperty()
+
+    custom_presets = EnumProperty(
+    name = "Custom Presets",
+    description = "Adds a special preset that changes how objects are processed for export, making exports from Blender to other programs smoother.",
+    items=(
+    ('1', 'Unreal Engine 4 Standard', 'Sets up a custom preset for UE4, with support for multiple collision objects per low_poly and seamless collision importing.'),
+    ('2', 'Unity 5', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.'),
+    ('3', '3DS Max', 'Hahahaha, just kidding.')
+    ),)
 
 class GX_Object_StateMachine(PropertyGroup):
 
