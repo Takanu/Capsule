@@ -1,7 +1,7 @@
 import bpy, bmesh, os
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies
 from mathutils import Vector
 
 class GT_Export_Assets(Operator):
@@ -308,34 +308,16 @@ class GT_Export_Assets(Operator):
                     hiddenObjectList = []
                     objectName = ""
 
+                    # Lists for the UE4 renaming feature
+                    renameNameList = []
+                    renameObjectList = []
+
                     # Get the object's base name
                     if rootType != -1:
                         objectName = RemoveObjectTag(context, rootObject, exportDefault)
                         print("objectName =", objectName)
                     else:
                         objectName = rootObject.name
-
-                    # ////////  FINDING ARMATURE ////////
-                    #armatureTarget = None
-                    #modType = {'ARMATURE'}
-
-                    # If the root object is the low-poly object, we can export the armature with it.
-                    #if rootType == 1:
-                        #armatureTarget = rootObject
-
-                    #elif CheckForTags(context, rootObject.name) is False and rootType == 0:
-                        #armatureTarget = rootObject
-
-                    #print(">>> Armature Target is..")
-                    #print(armatureTarget)
-
-                    #if armatureTarget is not None:
-                        #FocusObject(armatureTarget)
-
-                        #for modifier in armatureTarget.modifiers:
-                            #if modifier.type in modType:
-                                #print(">>> Armature found...")
-                                #armature = modifier.object
 
                     for objPass in exportDefault.passes:
 
@@ -424,40 +406,16 @@ class GT_Export_Assets(Operator):
                                             isSelectable = item.hide_select
                                             selectList.append(isSelectable)
 
-                        # Not sure what to do with this yet, will work it out later
-                        #
-                        # We have to collect the armature from the modifier stack
-                        # This is the only component that can be searched for if the rootType has no tags
-                        #modType = {'ARMATURE'}
-                        #
-                        #if expAR is True:
-                        #    item = None
-                        #
-                        #    if rootType == 1 or rootType == 0:
-                        #        item = rootObject
-                        #
-                        #    elif lowPoly is not None:
-                        #        item = lowPoly
-                        #
-                        #    if item is not None:
-                        #        FocusObject(item)
-                        #
-                        #        for modifier in item.modifiers:
-                        #            if modifier.type in modType:
-                        #                armature = modifier.object
-                        #
-                        #                hiddenObjectList.append(item)
-                        #                isHidden = armature.hide
-                        #                hiddenList.append(isHidden)
-                        #                isSelectable = armature.hide_select
-                        #                selectList.append(isSelectable)
-                        #
-                        #
-                        #                # Ensure all armatures are in Object Mode for following code
-                        #                bpy.ops.object.select_all(action='DESELECT')
-                        #                FocusObject(armature)
-                        #                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
-                        #                bpy.ops.object.select_all(action='DESELECT')
+                                            # If the active tag has the ability to replace names, do it here.
+                                            if tag.x_ue4_collision_naming is True:
+                                                print("SUPER SECRET REPLACE NAME FUNCTION USED!")
+                                                renameObjectList.append(item)
+                                                renameNameList.append(item.name)
+
+                                                item.name = item.name.replace(tag.name_filter, "")
+                                                item.name = "UCX_" + item.name + exportDefault.tags[1].name_filter
+
+                                                print("Name replaced...", item.name)
 
 
                         # Debug check for found objects
@@ -466,33 +424,22 @@ class GT_Export_Assets(Operator):
                             print(item.name)
 
 
-                        # //////////// - COLLISION SETUP - /////////////////////////////////////
-                        # ////////////////////////////////////////////////////////////
-                        # //////////////////////////////////////////////////////////////////////
-                        # Now we know what objects are up for export, we just need to prepare them
-                        # If UE4 is used and we have collision, bundle the collision with the export
-                        #if int(scn.engine_select) is 1:
-                        #    print("UE4 being used, preparing collision...")
-                        #    if len(collision) != 0:
-                        #
-                        #        print("Still here?")
-                        #        i = 1
-                        #
-                        #        for item in collision:
-                        #
-                        #            p = "_"
-                        #            if i < 10:
-                        #                p = "_0"
-                        #
-                        #            collisionNames.append(item.name)
-                        #            item.name = "UCX_" + rootObject.name + p + str(i)
-                        #            i += 1
-                        #
-                        #            print("Collision name...", item.name)
-
-
                         # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                         # ///////////////////////////////////////////////////////////////////////////////////
+                        print(">>> Appending Found Objects <<<")
+
+                        moveList = []
+                        moveList += objectList
+
+                        # We need to find any objects that are related as parents, children, modifiers and constraints
+                        # and add them to the move list.
+                        dependencyList = []
+                        dependencyList += objectList
+                        dependencyList.append(rootObject)
+                        dependencyList = GetDependencies(dependencyList)
+                        moveList += dependencyList
+
+
 
                         if len(foundObjects) > 0:
                             MoveObjects(rootObject, foundObjects, context, (0.0, 0.0, 0.0))
@@ -538,13 +485,11 @@ class GT_Export_Assets(Operator):
 
                         # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
                         # ///////////////////////////////////////////////////////////////////////////////////
-                        # Restore UE4 Collision options
-                        #if expCX is True and scn.engine_select is '1':
-                        #    if len(collision) is not 0:
-                        #        i = 0
-                        #        for item in collision:
-                        #            item.name = collisionNames[i]
-                        #            i += 1
+                        # Restore names
+                        i = 0
+                        for item in renameObjectList:
+                            item.name = renameNameList[i]
+                            i += 1
 
                         # Remove any triangulation modifiers
                         if useTriangulate is True and applyModifiers is True:
@@ -675,9 +620,13 @@ class GT_Export_Assets(Operator):
                     activeTags = []
                     taggedList = []
                     objectList = []
-                    i = 0
+
+                    # Lists for the UE4 renaming feature
+                    renameNameList = []
+                    renameObjectList = []
 
                     # Create a list for every tag in use
+                    i = 0
                     print("Processing tags...")
                     for passTag in objPass.tags:
                         if passTag.use_tag is True:
@@ -750,6 +699,16 @@ class GT_Export_Assets(Operator):
                                         list.append(item)
                                         objectList.append(item)
 
+                                        if tag.x_ue4_collision_naming is True:
+                                            print("SUPER SECRET REPLACE NAME FUNCTION USED!", item.name)
+                                            renameObjectList.append(item)
+                                            renameNameList.append(item.name)
+
+                                            item.name = item.name.replace(tag.name_filter, "")
+                                            item.name = "UCX_" + item.name + exportDefault.tags[1].name_filter
+
+                                            print("Name replaced...", item.name)
+
                             taggedList.append(list)
                             print("-"*10)
 
@@ -776,6 +735,14 @@ class GT_Export_Assets(Operator):
 
                     moveList = []
                     moveList += objectList
+
+                    # We need to find any objects that are related as parents, children, modifiers and constraints
+                    # and add them to the move list.
+                    dependencyList = []
+                    dependencyList += objectList
+                    dependencyList.append(rootObject)
+                    dependencyList = GetDependencies(dependencyList)
+                    moveList += dependencyList
 
                     MoveObjects(rootObject, moveList, context, (0.0, 0.0, 0.0))
 
@@ -827,12 +794,11 @@ class GT_Export_Assets(Operator):
 
                     # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
-                    #if expCX is True and scn.engine_select is '1':
-                        #if len(collisionList) is not 0:
-                            #i = 0
-                            #for item in collisionList:
-                                #item.name = collisionNames[i]
-                                #i += 1
+                    # Restore names
+                    i = 0
+                    for item in renameObjectList:
+                        item.name = renameNameList[i]
+                        i += 1
 
                     # Remove any triangulation modifiers
                     if useTriangulate is True and applyModifiers is True:

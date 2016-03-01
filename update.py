@@ -6,6 +6,10 @@ def Update_EnableExport(self, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
+    ui = context.scene.GXUI
+
+    if ui.enable_export_loop is True:
+        return None
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.GXObj:
@@ -22,11 +26,11 @@ def Update_EnableExport(self, context):
 
         # Run through the objects
         for object in selected:
-            if CheckForTags(context, object.name) is False:
-                object.GXObj.enable_export = enableExport
+            object.GXObj.enable_export = enableExport
 
-            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
-                object.GXObj.enable_export = enableExport
+    ui.enable_export_loop = True
+    bpy.ops.scene.gx_refobjects()
+    ui.enable_export_loop = False
 
     return None
 
@@ -51,11 +55,7 @@ def Update_AutoAssign(self, context):
 
         # Run through the objects
         for object in selected:
-            if CheckForTags(context, object.name) is False:
-                object.GXObj.auto_assign = autoAssign
-
-            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
-                object.GXObj.auto_assign = autoAssign
+            object.GXObj.auto_assign = autoAssign
 
     return None
 
@@ -81,14 +81,7 @@ def Update_LocationDefault(self, context):
 
         # Run through the objects
         for object in selected:
-            print(object.name)
-            if CheckForTags(context, object.name) is False:
-                print("Passing down object variable")
-                object.GXObj.location_default = value
-
-            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
-                print("Passing down object variable")
-                object.GXObj.location_default = value
+            object.GXObj.location_default = value
 
     return None
 
@@ -112,11 +105,7 @@ def Update_ExportDefault(self, context):
 
         # Run through the objects
         for object in selected:
-            if CheckForTags(context, object.name) is False:
-                object.GXObj.export_default = value
-
-            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
-                object.GXObj.export_default = value
+            object.GXObj.export_default = value
 
     return None
 
@@ -140,11 +129,7 @@ def Update_Normals(self, context):
 
         # Run through the objects
         for object in selected:
-            if CheckForTags(context, object.name) is False:
-                object.GXObj.normals = value
-
-            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
-                object.GXObj.normals = value
+            object.GXObj.normals = value
 
     return None
 
@@ -177,7 +162,6 @@ def Update_ObjectItemExport(self, context):
 
             print("Found object name ", object.name)
             object.GXObj.enable_export = self.enable_export
-
 
     return None
 
@@ -314,11 +298,7 @@ def Update_GroupRoot(self, context):
 
         # Run through the objects
         for object in selected:
-            if CheckForTags(context, object.name) is False:
-                object.GXObj.export_default = value
-
-            elif CheckSuffix(object.name, addon_prefs.lp_tag) is True:
-                object.GXObj.export_default = value
+            object.GXObj.export_default = value
 
     return None
 

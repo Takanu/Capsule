@@ -145,8 +145,8 @@ class GX_Scene_Preferences(PropertyGroup):
         name = "Object Type Switch",
         description = "Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
         items=(
-        ('1', 'Individual', 'Enables property editing for all selected static objects'),
-        ('2', 'Group', 'Enables property editing for all selected skeletal objects')
+        ('1', 'Objects', 'Switches to the Object menu, for editing the exports of single objects and any tags associated with them.'),
+        ('2', 'Groups', 'Switches to the Group menu, for editing the exports of groups.')
         ),)
 
     group_multi_edit = BoolProperty(
@@ -285,6 +285,8 @@ class GX_UI_Preferences(PropertyGroup):
     ('2', 'Unity 5', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.'),
     ('3', '3DS Max', 'Hahahaha, just kidding.')
     ),)
+
+    enable_export_loop = BoolProperty(default = False)
 
 class GX_Object_StateMachine(PropertyGroup):
 

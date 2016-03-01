@@ -56,6 +56,13 @@ class Export_Default_UIList(UIList):
         layout.prop(item, "name", text="", emboss=False)
         layout.separator()
 
+class Tag_Default_UIList(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+
+        scn = context.scene.GXScn
+        layout.prop(item, "name", text="", emboss=False)
+        layout.separator()
+
 class Pass_Default_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
@@ -88,7 +95,7 @@ class GX_SelectionObject(Panel):
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
     bl_label = "Export"
-    bl_category = "GEX"
+    bl_category = "Capsule"
 
     @classmethod
     def poll(cls, context):
@@ -117,10 +124,10 @@ class GX_SelectionObject(Panel):
             col_location = layout.row(align=True)
             col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
 
-            col_location.separator()
+            #col_location.separator()
 
-            row_location = col_location.column(align=True)
-            row_location.operator("scene.gx_refobjects", text="", icon="FILE_REFRESH")
+            #row_location = col_location.column(align=True)
+            #row_location.operator("scene.gx_refobjects", text="", icon="FILE_REFRESH")
 
             layout.separator()
 
@@ -349,7 +356,7 @@ class GX_Location(Panel):
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
     bl_label = "Locations"
-    bl_category = "GEX"
+    bl_category = "Capsule"
 
     def draw(self, context):
         layout = self.layout
@@ -384,7 +391,7 @@ class GX_Settings(Panel):
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
     bl_label = "Settings"
-    bl_category = "GEX"
+    bl_category = "Capsule
 
     def draw(self, context):
         layout = self.layout

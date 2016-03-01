@@ -154,6 +154,7 @@ def MoveObjects(targetLead, targets, context, location):
 	# in the process
 
     print(">>>> Moving Objects <<<<")
+    print("Objects being moved...", len(targets))
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
@@ -178,7 +179,7 @@ def MoveObjects(targetLead, targets, context, location):
                 targetsToRemove.append(target)
 
     for target in targets:
-        print("Checking Targets for Children...")
+        print("Checking Targets for Children...", target.name)
         for child in target.children:
             print("Found Child ", child.name)
             for otherTarget in targets:
@@ -187,7 +188,8 @@ def MoveObjects(targetLead, targets, context, location):
                     targetsToRemove.append(child)
 
     for target in targetsToRemove:
-        targets.remove(target)
+        if target in targets:
+            targets.remove(target)
 
     print("Child Check Complete.")
 
@@ -571,3 +573,162 @@ def FindObjectWithTag(context, object_name, tag):
                     return search_object
 
     return None
+
+
+def SearchModifiers(target, currentList):
+
+    print(">>> Searching Modifiers <<<")
+    print(target.name)
+
+    object_list = []
+
+    mod_types = {'ARRAY', 'BOOLEAN', 'MIRROR', 'SCREW', 'ARMATURE', 'CAST', 'CURVE', 'HOOK', 'LATTICE', 'MESH_DEFORM', 'SHRINKWRAP', 'SIMPLE_DEFORM', 'WARP', 'WAVE'}
+
+    # This is used to define all modifiers that share the same object location property
+    mod_normal_types = {'BOOLEAN', 'SCREW', 'ARMATURE', 'CAST', 'CURVE', 'HOOK', 'LATTICE', 'MESH_DEFORM'}
+
+    #Finds all the components in the object through modifiers that use objects
+    for modifier in target.modifiers:
+        if modifier.type in mod_types:
+            print("Modifier Found...", modifier)
+
+            #Normal Object Types
+            if modifier.type in mod_normal_types:
+                if modifier.object is not None:
+                    print("Object Found In", modifier.name, ":", modifier.object.name)
+
+                    # Find out if this object matches others in the list before adding it.
+                    if (modifier.object in currentList) == False:
+                        print("Object successfully added.")
+                        object_list.append(modifier.object)
+
+            #Array
+            elif modifier.type == 'ARRAY':
+                if modifier.start_cap is not None:
+                    print("Object Found In", modifier.name, ":", modifier.start_cap.name)
+
+                    if (modifier.start_cap in currentList) == False:
+                        print("Object successfully added.")
+                        object_list.append(modifier.start_cap)
+
+            #Mirror
+            elif modifier.type == 'MIRROR':
+                if modifier.mirror_object is not None:
+                    print("Object Found In", modifier.name, ":", modifier.mirror_object.name)
+
+                    if (modifier.mirror_object in currentList) == False:
+                        print("Object successfully added.")
+                        object_list.append(modifier.mirror_object)
+
+            #Shrinkwrap
+            elif modifier.type == 'SHRINKWRAP':
+                if modifier.target is not None:
+                    print("Object Found In", modifier.name, ":", modifier.target.name)
+
+                    if (modifier.target in currentList) == False:
+                        print("Object successfully added.")
+                        object_list.append(modifier.target)
+
+            #Simple Deform
+            elif modifier.type == 'SIMPLE_DEFORM':
+                if modifier.origin is not None:
+                    print("Object Found In", modifier.name, ":", modifier.origin.name)
+
+                    if (modifier.origin in currentList) == False:
+                        print("Object successfully added.")
+                        object_list.append(modifier.origin)
+
+            #Warp
+            elif modifier.type == 'WARP':
+                if modifier.object_from is not None:
+                    print("Object Found In", modifier.name, ":", modifier.object_from.name)
+
+                    if (modifier.object_from in currentList) == False:
+                        print("Object successfully added.")
+                        object_list.append(modifier.object_from)
+
+                if modifier.object_to is not None:
+                    print("Object Found In", modifier.name, ":", modifier.object_to.name)
+
+                    if (modifier.object_to in currentList) == False:
+                        print("Object successfully added.")
+                        object_list.append(modifier.object_to)
+
+            #Wave
+            elif modifier.type == 'WAVE':
+                if modifier.start_position_object is not None:
+                    print("Object Found In", modifier.name, ":", modifier.start_position_object.name)
+
+                    if (modifier.start_position_object in currentList) == False:
+                        print("Object successfully added.")
+                        object_list.append(modifier.start_position_object)
+
+
+    return object_list
+
+def SearchConstraints(target, currentList):
+
+    print(">>> Searching Constraints <<<")
+    print(target.name)
+
+    object_list = []
+
+    con_types_target = {'COPY_LOCATION', 'COPY_ROTATION', 'COPY_SCALE', 'COPY_TRANSFORMS', 'LIMIT_DISTANCE', 'TRANSFORM', 'CLAMP_TO', 'DAMPED_TRACK', 'LOCKED_TRACK', 'STRETCH_TO', 'TRACK_TO', 'ACTION', 'FLOOR', 'FOLLOW_PATH', 'PIVOT', 'SHRINKWRAP'}
+
+    con_types_alt = {'RAWR'}
+
+    for constraint in target.constraints:
+        #Normal Object Types
+        if constraint.type in con_types_target:
+            if constraint.target is not None:
+                print("Object Found In", constraint.name, ":", constraint.target.name)
+
+                if (constraint.target in currentList) == False:
+                    print("Object successfully added.")
+                    object_list.append(constraint.target)
+
+    return object_list
+
+def GetDependencies(objectList):
+
+    print(">>> Getting Dependencies <<<")
+
+    totalFoundList = []
+    totalFoundList += objectList
+
+    checkedList = []
+    currentList = []
+
+    for item in objectList:
+        modifierOutput = SearchModifiers(item, totalFoundList)
+        constraintOutput = SearchConstraints(item, totalFoundList)
+
+        currentList += modifierOutput
+        currentList += constraintOutput
+
+        if item.parent != None:
+            if (item.parent in totalFoundList) is False:
+                currentList.append(item.parent)
+
+        print("Current List objects...", currentList)
+
+    while len(currentList) != 0:
+        print("Checking new objects...", currentList[0])
+        item = currentList.pop()
+
+        modifierOutput = SearchModifiers(item, totalFoundList)
+        constraintOutput = SearchConstraints(item, totalFoundList)
+
+        currentList += modifierOutput
+        currentList += constraintOutput
+
+        checkedList.append(item)
+        totalFoundList.append(item)
+
+        if item.parent != None:
+            if (item.parent in totalFoundList) is False:
+                currentList.append(item.parent)
+
+    print("Total found objects...", len(checkedList))
+
+    return checkedList

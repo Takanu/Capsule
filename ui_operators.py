@@ -88,6 +88,7 @@ class GX_Add_Tag(Operator):
     bl_idname = "scene.gx_addtag"
     bl_label = "Add"
 
+
     def execute(self, context):
         print(self)
 
@@ -112,6 +113,20 @@ class GX_Delete_Tag(Operator):
 
     bl_idname = "scene.gx_deletetag"
     bl_label = "Remove"
+
+    @classmethod
+    def poll(cls, context):
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
+        export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+        currentTag = export.tags[export.tags_index]
+
+        if currentTag.x_user_deletable is True:
+            return True
+
+        else:
+            return False
 
     def execute(self, context):
         print(self)
@@ -574,17 +589,39 @@ class GX_Custom_Presets(Operator):
     presets = EnumProperty(
     name = "Custom Presets",
     items=(
-    ('1', 'Unreal Engine 4 Standard', 'Sets up a custom preset for UE4, with support for multiple collision objects per low_poly and seamless collision importing.'),
-    ('2', 'Unity 5', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.'),
-    ('3', '3DS Max', 'Hahahaha, just kidding.')
+    ('All', 'Basic Export All', 'Sets up a basic preset with no tags, and will export all content in objects and groups marked for export.'),
+    ('UE4', 'Unreal Engine 4 Standard', 'Sets up a custom preset for UE4, with support for multiple collision objects per low_poly and seamless collision importing.'),
+    ('Unity5', 'Unity 5', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.')
     ),)
 
     def execute(self, context):
 
+        print(self.presets)
+
+        # -------------------------------------------------------------------------
+        # Basic Export All
+        # -------------------------------------------------------------------------
+        if self.presets == 'All':
+            scn = context.scene.GXScn
+            user_preferences = context.user_preferences
+            addon_prefs = user_preferences.addons[__package__].preferences
+
+            export = addon_prefs.export_defaults.add()
+            export.name = "Basic Export All (Preset)"
+            export.axis_forward = "-Z"
+            export.axis_up = "Y"
+            export.global_scale = 1.0
+
+            passOne = export.passes.add()
+            passOne.name = "Combined Pass"
+            passOne.export_animation = True
+            passOne.apply_modifiers = True
+            passOne.triangulate = True
+
         # -------------------------------------------------------------------------
         # UE4 Standard Template
         # -------------------------------------------------------------------------
-        if self.presets is '1':
+        if self.presets == 'UE4':
             scn = context.scene.GXScn
             user_preferences = context.user_preferences
             addon_prefs = user_preferences.addons[__package__].preferences
@@ -594,6 +631,100 @@ class GX_Custom_Presets(Operator):
             export.axis_forward = "-Z"
             export.axis_up = "Y"
             export.global_scale = 1.0
+
+            tagHP = export.tags.add()
+            tagHP.name = "High-Poly"
+            tagHP.name_filter = "_HP"
+            tagHP.name_filter_type = '1'
+            tagHP.object_type = '2'
+            tagHP.x_user_deletable = False
+            tagHP.x_user_editable_type = True
+
+
+            tagLP = export.tags.add()
+            tagLP.name = "Low-Poly"
+            tagLP.name_filter = "_LP"
+            tagLP.name_filter_type = '1'
+            tagLP.object_type = '2'
+            tagLP.x_user_deletable = False
+            tagLP.x_user_editable_type = True
+
+            tagCG = export.tags.add()
+            tagCG.name = "Cage"
+            tagCG.name_filter = "_CG"
+            tagCG.name_filter_type = '1'
+            tagCG.object_type = '2'
+            tagCG.x_user_deletable = False
+            tagCG.x_user_editable_type = True
+
+            tagCG.x_name_ext = "UCX_"
+            tagCG.x_name_ext_type = '2'
+
+            tagCX = export.tags.add()
+            tagCX.name = "Collision"
+            tagCX.name_filter = "_CX"
+            tagCX.name_filter_type = '1'
+            tagCX.object_type = '2'
+            tagCX.x_user_deletable = False
+            tagCX.x_user_editable_type = True
+            tagCX.x_ue4_collision_naming = True
+
+            tagAR = export.tags.add()
+            tagAR.name = "Armature"
+            tagAR.name_filter = "_AR"
+            tagAR.name_filter_type = '1'
+            tagAR.object_type = '7'
+            tagAR.x_user_deletable = False
+            tagAR.x_user_editable_type = False
+
+
+
+            passOne = export.passes.add()
+            passOne.name = "Combined Pass"
+            passOne.export_animation = True
+            passOne.apply_modifiers = True
+            passOne.triangulate = True
+
+            # Ensure the new pass has all the current tags
+            for tag in export.tags:
+                newPassTag = passOne.tags.add()
+                newPassTag.name = tag.name
+                newPassTag.index = len(export.tags) - 1
+                newPassTag.use_tag = True
+
+            passTwo = export.passes.add()
+            passTwo.name = "Game-Ready Pass"
+            passTwo.export_animation = True
+            passTwo.apply_modifiers = True
+            passTwo.triangulate = True
+
+            i = 0
+
+            # Ensure the new pass has all the current tags
+            for tag in export.tags:
+                newPassTag = passTwo.tags.add()
+                newPassTag.name = tag.name
+                newPassTag.index = len(export.tags) - 1
+
+                if i != 0:
+                    newPassTag.use_tag = True
+
+                i += 1
+
+        # -------------------------------------------------------------------------
+        # UE4 Standard Template
+        # -------------------------------------------------------------------------
+        if self.presets == 'Unity5':
+            scn = context.scene.GXScn
+            user_preferences = context.user_preferences
+            addon_prefs = user_preferences.addons[__package__].preferences
+
+            export = addon_prefs.export_defaults.add()
+            export.name = "Unity 5 Standard (Preset)"
+            export.axis_forward = "-Z"
+            export.axis_up = "Y"
+            export.global_scale = 1.0
+            export.bake_space_transform = True
 
             tagLP = export.tags.add()
             tagLP.name = "Low-Poly"
@@ -612,9 +743,6 @@ class GX_Custom_Presets(Operator):
             tagCG.name_filter = "_CG"
             tagCG.name_filter_type = '1'
             tagCG.x_user_deletable = False
-            tagCG.x_replace_names = True
-            tagCG.x_name_ext = "UCX_"
-            tagCG.x_name_ext_type = '2'
 
             tagCX = export.tags.add()
             tagCX.name = "Collision"

@@ -1,7 +1,7 @@
 
 #This states the metadata for the plugin
 bl_info = {
-    "name": "GEX",
+    "name": "Capsule",
     "author": "Crocadillian/Takanu @ Polarised Games",
     "version": (1,0),
     "blender": (2, 7, 5),
@@ -106,18 +106,10 @@ class ExportTag(PropertyGroup):
 
     # Special preferences for special export presets
     x_user_deletable = BoolProperty(default=True)
-    x_user_editable = BoolProperty(default=True)
+    x_user_editable_type = BoolProperty(default=True)
 
     # Special preference to rename objects during export, to make UE4/Unity export more seamless
-    x_replace_names = BoolProperty(default=False)
-    x_name_ext = StringProperty()
-    x_name_ext_type = EnumProperty(
-        name = "Tag Type",
-        description = "Where the tag is being placed in the object name.",
-        items=(
-        ('1', 'Suffix', ''),
-        ('2', 'Prefix', ''),
-        ),)
+    x_ue4_collision_naming = BoolProperty(default=False)
 
 class ExportPassTag(PropertyGroup):
     name = StringProperty(
@@ -253,8 +245,9 @@ class GEXAddonPreferences(AddonPreferences):
         ob = context.object
         ui = context.scene.GXUI
 
-
+        #---------------------------------------------------------
         # Export UI
+        #---------------------------------------------------------
         export_box = layout.box()
         col_export_title = export_box.row(align=True)
 
@@ -279,9 +272,6 @@ class GEXAddonPreferences(AddonPreferences):
             row_export.operator("scene.gx_addexport", text="", icon="ZOOMIN")
             row_export.operator("scene.gx_deleteexport", text="", icon="ZOOMOUT")
 
-            print("-----")
-            print(len(addon_prefs.export_defaults))
-            print(addon_prefs.export_defaults_index)
             if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
 
                 currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
@@ -309,7 +299,9 @@ class GEXAddonPreferences(AddonPreferences):
 
 
 
-        # Tag UI
+        #---------------------------------------------------------
+        # Tags UI
+        #---------------------------------------------------------
         tag_box = layout.box()
         tag_title = tag_box.row(align=True)
 
@@ -326,7 +318,7 @@ class GEXAddonPreferences(AddonPreferences):
                 currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
 
                 tagUI_row = tag_box.row(align=True)
-                tagUI_row.template_list("Pass_Default_UIList", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
+                tagUI_row.template_list("Tag_Default_UIList", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
 
                 tagUI_col = tagUI_row.column(align=True)
                 tagUI_col.operator("scene.gx_addtag", text="", icon="ZOOMIN")
@@ -342,17 +334,23 @@ class GEXAddonPreferences(AddonPreferences):
 
                 else:
                     currentTag = currentExp.tags[currentExp.tags_index]
-
                     tag_settings.prop(currentTag, "name_filter")
                     tag_settings.prop(currentTag, "name_filter_type")
-                    tag_settings.prop(currentTag, "object_type")
+
+                    toggle_settings = tag_settings.column(align=True)
+                    toggle_settings.prop(currentTag, "object_type")
+
+                    if currentTag.x_user_editable_type is False:
+                        toggle_settings.enabled = False
 
             else:
                 unselected = tag_box.column(align=True)
                 unselected.label("Select a preset in order to view tag settings.")
                 unselected.separator()
 
+        #---------------------------------------------------------
         # Pass UI
+        #---------------------------------------------------------
         pass_box = layout.box()
         passUI = pass_box.row(align=True)
 
