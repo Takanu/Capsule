@@ -229,6 +229,126 @@ class ExportPreset(PropertyGroup):
             ('-Y', '-Y', ''),
             ('-Z', '-Z', '')))
 
+    apply_unit_scale = BoolProperty(
+        name="Apply Unit Scale",
+        description="Scales the Blender Units system to match the FBX unit measurement (centimetres).",
+        default=False
+    )
+
+    loose_edges = BoolProperty(
+        name="Loose Edges",
+        description="Makes any separate edges a two-verted polygon.",
+        default=False
+    )
+
+    tangent_space = BoolProperty(
+        name="Tangent Space",
+        description="blablablabla",
+        default=False
+    )
+
+    use_armature_deform_only = BoolProperty(
+        name="Only Include Deform Bones",
+        description="Makes any separate edges a two-verted polygon.",
+        default=False
+    )
+
+    add_leaf_bones = BoolProperty(
+        name="Add Leaf Bones",
+        description="Append a bone to the end of each chain...",
+        default=False
+    )
+
+    primary_bone_axis = EnumProperty(
+        name="Primary Bone Axis",
+        description="What the Forward Axis will be defined as when the model is exported.",
+        items=(
+            ('X', 'X', ''),
+            ('Y', 'Y', ''),
+            ('Z', 'Z', ''),
+            ('-X', '-X', ''),
+            ('-Y', '-Y', ''),
+            ('-Z', '-Z', '')),
+            default='Y')
+
+    secondary_bone_axis = EnumProperty(
+        name="Secondary Bone Axis",
+        description="What the Forward Axis will be defined as when the model is exported.",
+        items=(
+            ('X', 'X', ''),
+            ('Y', 'Y', ''),
+            ('Z', 'Z', ''),
+            ('-X', '-X', ''),
+            ('-Y', '-Y', ''),
+            ('-Z', '-Z', '')),
+        default='X')
+
+    armature_nodetype = EnumProperty(
+        name="FBX Armature NodeType",
+        description="What the Forward Axis will be defined as when the model is exported.",
+        items=(
+            ('Null', 'Null', ''),
+            ('Root', 'Root', ''),
+            ('LimbNode', 'LimbNode', '')))
+
+
+    bake_anim_use_all_bones = BoolProperty(
+        name="Use All Bones",
+        description="Makes any separate edges a two-verted polygon.",
+        default=False
+    )
+
+    bake_anim_use_nla_strips = BoolProperty(
+        name="Use NLA Strips",
+        description="Makes any separate edges a two-verted polygon.",
+        default=False
+    )
+
+    bake_anim_use_all_actions = BoolProperty(
+        name="Use All Actions",
+        description="Makes any separate edges a two-verted polygon.",
+        default=False
+    )
+
+    bake_anim_force_startend_keying = BoolProperty(
+        name="Start/End Keying",
+        description="Makes any separate edges a two-verted polygon.",
+        default=False
+    )
+
+    use_default_take = BoolProperty(
+        name="Use Default Take",
+        description="Rawr?",
+        default=False
+    )
+
+    optimise_keyframes = BoolProperty(
+        name="Optimise Keyframes",
+        description="Removes double keyframes.",
+        default=False
+    )
+
+
+    bake_anim_step = FloatProperty(
+        name="Sampling Rate",
+        description="Blah",
+        default = 1,
+        min = 0,
+        max = 100,
+        soft_min = 0.1,
+        soft_max = 10
+
+    )
+
+    bake_anim_simplify_factor = FloatProperty(
+        name="Simplify Factor",
+        description="Blah",
+        default = 1,
+        min = 0,
+        max = 100,
+        soft_min = 0,
+        soft_max = 10
+    )
 
 class GEXAddonPreferences(AddonPreferences):
     bl_idname = __name__
@@ -276,20 +396,67 @@ class GEXAddonPreferences(AddonPreferences):
 
                 currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
 
-                col_export_settings = export_box.row(align=True)
+                export_settings = export_box.column(align=True)
+                export_settings.separator()
+                export_tabs = export_settings.row(align=True)
+                export_tabs.prop(ui, "export_preset_options", expand=True)
 
-                export_1 = col_export_settings.column(align=True)
-                export_1.prop(currentExp, "use_sub_directory")
-                export_1.prop(currentExp, "bake_space_transform")
-                export_1.separator()
-                export_1.prop(currentExp, "global_scale")
+                export_separator = export_box.column(align=True)
+                #export_separator.separator()
 
-                col_export_settings.separator()
+                if ui.export_preset_options == 'Main':
+                    export_main = export_box.row(align=True)
+                    export_1 = export_main.column(align=True)
+                    export_1.prop(currentExp, "use_sub_directory")
+                    export_1.prop(currentExp, "bake_space_transform")
+                    export_1.separator()
 
-                export_2 = col_export_settings.column(align=True)
-                export_2.prop(currentExp, "axis_up")
-                export_2.prop(currentExp, "axis_forward")
-                export_2.separator()
+                    export_scale = export_1.row(align=True)
+                    export_scale.prop(currentExp, "global_scale")
+                    export_scale.prop(currentExp, "apply_unit_scale", text="", icon='NDOF_TRANS')
+
+                    export_main_separator = export_main.column(align=True)
+                    export_main_separator.separator()
+                    export_main_separator.separator()
+
+                    export_2 = export_main.column(align=True)
+                    export_2.prop(currentExp, "axis_up")
+                    export_2.prop(currentExp, "axis_forward")
+                    export_2.separator()
+
+                elif ui.export_preset_options == 'Geometry':
+                    export_main = export_box.row(align=True)
+                    export_1 = export_main.column(align=True)
+                    export_1.prop(currentExp, "loose_edges")
+                    export_1.prop(currentExp, "tangent_space")
+                    export_1.separator()
+
+                elif ui.export_preset_options == 'Armature':
+                    export_main = export_box.row(align=True)
+                    export_1 = export_main.column(align=True)
+                    export_1.prop(currentExp, "use_armature_deform_only")
+                    export_1.prop(currentExp, "add_leaf_bones")
+
+                    export_2 = export_main.column(align=True)
+                    export_2.prop(currentExp, "primary_bone_axis")
+                    export_2.prop(currentExp, "secondary_bone_axis")
+                    export_2.prop(currentExp, "armature_nodetype")
+                    export_2.separator()
+
+                elif ui.export_preset_options == 'Animation':
+                    export_main = export_box.row(align=True)
+                    export_1 = export_main.column(align=True)
+                    export_1.prop(currentExp, "bake_anim_use_all_bones")
+                    export_1.prop(currentExp, "bake_anim_use_nla_strips")
+                    export_1.prop(currentExp, "bake_anim_use_all_actions")
+                    export_1.prop(currentExp, "bake_anim_force_startend_keying")
+                    export_1.prop(currentExp, "optimise_keyframes")
+                    export_1.prop(currentExp, "use_default_take")
+
+                    export_2 = export_main.column(align=True)
+                    export_2.prop(currentExp, "bake_anim_step")
+                    export_2.prop(currentExp, "bake_anim_simplify_factor")
+                    export_2.separator()
 
             else:
                 preset_unselected = export_box.column(align=True)

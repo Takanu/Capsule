@@ -118,31 +118,53 @@ def MoveObject(target, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = False
     target.lock_location = (False, False, False)
 
+    # Save the current cursor location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
     # This line is actually super-important, not sure why though...
     # FocusObject should fill the role of deselection...
     bpy.ops.object.select_all(action='DESELECT')
 
-    # Move the object
+    # Calculate the translation vector using the 3D cursor
     FocusObject(target)
-    target.location = location
+    bpy.ops.view3d.snap_cursor_to_selected()
+    cursor_location = Vector((0.0, 0.0, 0.0))
 
-    # Preserving the objects location has to happen again, e_e
-    #cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
-    #previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+    print("RAWR")
 
-    # Move the cursor to the location
-    #bpy.data.scenes[bpy.context.scene.name].cursor_location = location
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            cursor_location = area.spaces[0].cursor_location
 
-    # Focus the object
-    #FocusObject(target)
+    print(cursor_location)
 
-    # SNAP IT
-    #bpy.ops.view3D.snap_selected_to_cursor()
+    # Calculate the movement difference
+    locationDiff = Vector((0.0, 0.0, 0.0))
+    locationDiff = locationDiff - cursor_location
+
+    bpy.ops.transform.translate(
+        value=locationDiff,
+        constraint_axis=(False, False, False),
+        constraint_orientation='GLOBAL',
+        mirror=False,
+        proportional='DISABLED',
+        proportional_edit_falloff='SMOOTH',
+        proportional_size=1.0,
+        snap=False,
+        snap_target='CLOSEST',
+        snap_point=(0.0, 0.0, 0.0),
+        snap_align=False,
+        snap_normal=(0.0, 0.0, 0.0),
+        gpencil_strokes=False,
+        texture_space=False,
+        remove_on_cancel=False,
+        release_confirm=False)
 
     print("Object", target.name, "moved.... ", target.location)
 
-    # Restore the location
-    #bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+    # Position the cursor back to it's original location
+    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
@@ -153,8 +175,16 @@ def MoveObjects(targetLead, targets, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
+    copyLocation = Vector((0.0, 0.0, 0.0))
+    copyLocation[0] = location[0]
+    copyLocation[1] = location[1]
+    copyLocation[2] = location[2]
+
     print(">>>> Moving Objects <<<<")
-    print("Objects being moved...", len(targets))
+    print("Objects being moved...", targets)
+    print("Total Count...", len(targets))
+
+    print("Movement Location:",copyLocation)
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
@@ -163,10 +193,31 @@ def MoveObjects(targetLead, targets, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = False
     targetLead.lock_location = (False, False, False)
 
+    # Save the current cursor location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
+    # Calculate the translation vector using the 3D cursor
+    bpy.ops.object.select_all(action='DESELECT')
+    FocusObject(targetLead)
+    bpy.ops.view3d.snap_cursor_to_selected()
+    rootLocation = Vector((0.0, 0.0, 0.0))
+
+    print("Movement Location:",copyLocation)
+
+    print("RAWR")
+
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            rootLocation = area.spaces[0].cursor_location
+
+    print("Root Location:", rootLocation)
+    print("Movement Location:",copyLocation)
+
     # Calculate the movement difference
-    locationDiff = Vector((0.0, 0.0, 0.0))
-    locationVec = Vector(location)
-    locationDiff = locationVec - targetLead.location
+    locationDiff = copyLocation - rootLocation
+
+    print("Final Movement", locationDiff)
 
     targetsToRemove = []
 
@@ -195,30 +246,112 @@ def MoveObjects(targetLead, targets, context, location):
 
     bpy.ops.object.select_all(action='DESELECT')
 
-    # Move the first object
+    # Lets try moving all the fucking objects this time
     FocusObject(targetLead)
-    targetLead.location = location
+
+    for item in targets:
+        SelectObject(item)
+
+    print("Targets to be moved...", targets)
+
+    bpy.ops.transform.translate(
+        value=locationDiff,
+        constraint_axis=(False, False, False),
+        constraint_orientation='GLOBAL',
+        mirror=False,
+        proportional='DISABLED',
+        proportional_edit_falloff='SMOOTH',
+        proportional_size=1.0,
+        snap=False,
+        snap_target='CLOSEST',
+        snap_point=(0.0, 0.0, 0.0),
+        snap_align=False,
+        snap_normal=(0.0, 0.0, 0.0),
+        gpencil_strokes=False,
+        texture_space=False,
+        remove_on_cancel=False,
+        release_confirm=False)
 
     print("Root Object", targetLead.name, "Moved... ", targetLead.location)
-    print("Moving Secondary Objects...")
+    print("Location difference found:", locationDiff)
 
-    # Move every other object by the differential
-    bpy.ops.object.select_all(action='DESELECT')
-    for object in targets:
-        lockTransformSel = object.lock_location
-        object.lock_location = (False, False, False)
-
-        FocusObject(object)
-        bpy.ops.transform.translate(value=locationDiff)
-
-        print("Object", object.name, "moved.... ", object.location)
-
-        object.lock_location = lockTransformSel
-
+    # Position the cursor back to it's original location
+    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     targetLead.lock_location = lockTransform
+
+def MoveAll(target, context, location):
+    # This doesnt need the cursor, and will ensure nothing is animated
+	# in the process
+
+    copyLocation = Vector((0.0, 0.0, 0.0))
+    copyLocation[0] = location[0]
+    copyLocation[1] = location[1]
+    copyLocation[2] = location[2]
+
+    print(">>>> Moving EVERYTHING <<<<")
+
+    # Prevent auto keyframing and location lock from being active
+    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    lockTransform = target.lock_location
+
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+    target.lock_location = (False, False, False)
+
+    # Save the current cursor location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
+    # Calculate the translation vector using the 3D cursor
+    bpy.ops.object.select_all(action='DESELECT')
+    FocusObject(target)
+    bpy.ops.view3d.snap_cursor_to_selected()
+    rootLocation = Vector((0.0, 0.0, 0.0))
+
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            print(area.spaces[0].cursor_location)
+            rootLocation = area.spaces[0].cursor_location
+
+    print("Root Location:", rootLocation)
+    print("Movement Location:",copyLocation)
+
+    # Calculate the movement difference
+    locationDiff = copyLocation - rootLocation
+    print("Final Movement", locationDiff)
+
+    bpy.ops.object.select_all(action='SELECT')
+    ActivateObject(target)
+
+    bpy.ops.transform.translate(
+        value=locationDiff,
+        constraint_axis=(False, False, False),
+        constraint_orientation='GLOBAL',
+        mirror=False,
+        proportional='DISABLED',
+        proportional_edit_falloff='SMOOTH',
+        proportional_size=1.0,
+        snap=False,
+        snap_target='CLOSEST',
+        snap_point=(0.0, 0.0, 0.0),
+        snap_align=False,
+        snap_normal=(0.0, 0.0, 0.0),
+        gpencil_strokes=False,
+        texture_space=False,
+        remove_on_cancel=False,
+        release_confirm=False)
+
+    print("Root Object", target.name, "Moved... ", rootLocation)
+
+    # Position the cursor back to it's original location
+    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+    target.lock_location = lockTransform
+
 
 def CheckSuffix(string, suffix):
 
@@ -601,6 +734,7 @@ def SearchModifiers(target, currentList):
                     if (modifier.object in currentList) == False:
                         print("Object successfully added.")
                         object_list.append(modifier.object)
+                        currentList.append(modifier.object)
 
             #Array
             elif modifier.type == 'ARRAY':
@@ -610,6 +744,7 @@ def SearchModifiers(target, currentList):
                     if (modifier.start_cap in currentList) == False:
                         print("Object successfully added.")
                         object_list.append(modifier.start_cap)
+                        currentList.append(modifier.start_cap)
 
             #Mirror
             elif modifier.type == 'MIRROR':
@@ -619,6 +754,7 @@ def SearchModifiers(target, currentList):
                     if (modifier.mirror_object in currentList) == False:
                         print("Object successfully added.")
                         object_list.append(modifier.mirror_object)
+                        currentList.append(modifier.mirror_object)
 
             #Shrinkwrap
             elif modifier.type == 'SHRINKWRAP':
@@ -628,6 +764,7 @@ def SearchModifiers(target, currentList):
                     if (modifier.target in currentList) == False:
                         print("Object successfully added.")
                         object_list.append(modifier.target)
+                        currentList.append(modifier.target)
 
             #Simple Deform
             elif modifier.type == 'SIMPLE_DEFORM':
@@ -637,6 +774,7 @@ def SearchModifiers(target, currentList):
                     if (modifier.origin in currentList) == False:
                         print("Object successfully added.")
                         object_list.append(modifier.origin)
+                        currentList.append(modifier.origin)
 
             #Warp
             elif modifier.type == 'WARP':
@@ -646,6 +784,7 @@ def SearchModifiers(target, currentList):
                     if (modifier.object_from in currentList) == False:
                         print("Object successfully added.")
                         object_list.append(modifier.object_from)
+                        currentList.append(modifier.object_from)
 
                 if modifier.object_to is not None:
                     print("Object Found In", modifier.name, ":", modifier.object_to.name)
@@ -653,6 +792,7 @@ def SearchModifiers(target, currentList):
                     if (modifier.object_to in currentList) == False:
                         print("Object successfully added.")
                         object_list.append(modifier.object_to)
+                        currentList.append(modifier.object_to)
 
             #Wave
             elif modifier.type == 'WAVE':
@@ -662,6 +802,7 @@ def SearchModifiers(target, currentList):
                     if (modifier.start_position_object in currentList) == False:
                         print("Object successfully added.")
                         object_list.append(modifier.start_position_object)
+                        currentList.append(modifier.start_position_object)
 
 
     return object_list
@@ -686,6 +827,7 @@ def SearchConstraints(target, currentList):
                 if (constraint.target in currentList) == False:
                     print("Object successfully added.")
                     object_list.append(constraint.target)
+                    currentList.append(constraint.target)
 
     return object_list
 
@@ -696,25 +838,15 @@ def GetDependencies(objectList):
     totalFoundList = []
     totalFoundList += objectList
 
+    print("objectList...", objectList)
+
     checkedList = []
     currentList = []
-
-    for item in objectList:
-        modifierOutput = SearchModifiers(item, totalFoundList)
-        constraintOutput = SearchConstraints(item, totalFoundList)
-
-        currentList += modifierOutput
-        currentList += constraintOutput
-
-        if item.parent != None:
-            if (item.parent in totalFoundList) is False:
-                currentList.append(item.parent)
-
-        print("Current List objects...", currentList)
+    currentList += objectList
 
     while len(currentList) != 0:
-        print("Checking new objects...", currentList[0])
         item = currentList.pop()
+        print("Checking new objects...", item.name)
 
         modifierOutput = SearchModifiers(item, totalFoundList)
         constraintOutput = SearchConstraints(item, totalFoundList)
@@ -725,10 +857,93 @@ def GetDependencies(objectList):
         checkedList.append(item)
         totalFoundList.append(item)
 
+        # Parents can affect the export indirectly, so it needs to be looked at.
         if item.parent != None:
             if (item.parent in totalFoundList) is False:
+                print("Parent found in", item.name, ":", item.parent.name)
                 currentList.append(item.parent)
 
     print("Total found objects...", len(checkedList))
+    print(checkedList)
 
     return checkedList
+
+# Should help me avoid the bus issue.
+def AddParent(child, parent):
+
+    # I now have to add the cursor stuff here too, just in case...
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+    FocusObject(child)
+    bpy.ops.view3D.snap_cursor_to_selected()
+
+    bpy.ops.object.select_all(action='DESELECT')
+
+    SelectObject(parent)
+    SelectObject(child)
+
+    bpy.context.scene.objects.active = parent
+
+    bpy.ops.object.parent_set()
+
+    # Now move the object
+    FocusObject(child)
+    bpy.ops.view3D.snap_selected_to_cursor()
+    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+
+
+def ClearParent(child):
+    # Prepare the 3D cursor so it can keep the object in it's current location
+    # After it stops being a component
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
+    # Save the transform matrix before de-parenting
+    matrixcopy = child.matrix_world.copy()
+
+    # Move the cursor to the selected object
+    FocusObject(child)
+    bpy.ops.view3D.snap_cursor_to_selected()
+
+    # Clear the parent
+    bpy.ops.object.select_all(action='DESELECT')
+    SelectObject(child)
+    bpy.ops.object.parent_clear()
+
+    # Now move the object
+    bpy.ops.view3D.snap_selected_to_cursor()
+
+    # Restore the original cursor location and matrix
+    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+    child.matrix_world = matrixcopy
+
+def FindWorldSpaceObjectLocation(target, context):
+
+    # Preserve the current 3D cursor
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
+    # Calculate the translation vector using the 3D cursor
+    FocusObject(target)
+    bpy.ops.view3d.snap_cursor_to_selected()
+    cursor_location = Vector((0.0, 0.0, 0.0))
+
+    print("RAWR")
+
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            cursor_location = area.spaces[0].cursor_location
+
+    # Because vectors are pointers, we need to keep regenerating them
+    print(cursor_location)
+    cursorLocCopy = Vector((0.0, 0.0, 0.0))
+    cursorLocCopy[0] = cursor_location[0]
+    cursorLocCopy[1] = cursor_location[1]
+    cursorLocCopy[2] = cursor_location[2]
+
+    # Restore the original cursor location and matrix
+    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+
+    print("Found World Space Location:", cursorLocCopy)
+
+    return cursorLocCopy

@@ -391,7 +391,7 @@ class GX_Settings(Panel):
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
     bl_label = "Settings"
-    bl_category = "Capsule
+    bl_category = "Capsule"
 
     def draw(self, context):
         layout = self.layout

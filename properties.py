@@ -288,6 +288,16 @@ class GX_UI_Preferences(PropertyGroup):
 
     enable_export_loop = BoolProperty(default = False)
 
+    export_preset_options = EnumProperty(
+        name = "Export Options",
+        description = "",
+        items=(
+        ('Main', 'Main', 'Sets up a custom preset for UE4, with support for multiple collision objects per low_poly and seamless collision importing.'),
+        ('Geometry', 'Geometry', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.'),
+        ('Armature', 'Armature', 'Hahahaha, just kidding.'),
+        ('Animation', 'Animation', 'Hahahaha, just kidding.')
+        ),)
+
 class GX_Object_StateMachine(PropertyGroup):
 
     has_triangulate = BoolProperty(

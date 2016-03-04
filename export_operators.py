@@ -1,7 +1,7 @@
 import bpy, bmesh, os
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation
 from mathutils import Vector
 
 class GT_Export_Assets(Operator):
@@ -10,7 +10,7 @@ class GT_Export_Assets(Operator):
     bl_idname = "scene.gx_export"
     bl_label = "Export"
 
-    def ExportFBX(self, filePath, applyModifiers, meshSmooth, objectTypes, useAnim, useAnimAction, useAnimOptimise):
+    def ExportFBX(self, filePath):
 
         print("Exporting", "*"*70)
         bpy.ops.export_scene.fbx(check_existing=False,
@@ -22,21 +22,24 @@ class GT_Export_Assets(Operator):
         axis_forward=self.axisForward,
         axis_up=self.axisUp,
         bake_space_transform=self.bakeSpaceTransform,
-        object_types=objectTypes,
-        use_mesh_modifiers=applyModifiers,
-        mesh_smooth_type=meshSmooth,
-        use_mesh_edges=False,
-        use_tspace=False,
-        use_armature_deform_only=True,
-        add_leaf_bones=False,
-        bake_anim=useAnim,
-        bake_anim_use_all_bones=useAnim,
-        bake_anim_use_nla_strips=False,
-        bake_anim_use_all_actions=useAnimAction,
-        use_anim=useAnim,
-        use_anim_action_all=useAnimAction,
-        use_default_take=False,
-        use_anim_optimize=useAnimOptimise,
+        object_types=self.exportTypes,
+        use_mesh_modifiers=self.applyModifiers,
+        mesh_smooth_type=self.meshSmooth,
+        use_mesh_edges=self.loose_edges,
+        use_tspace=self.tangent_space,
+        use_custom_props=False,
+        use_armature_deform_only=self.use_armature_deform_only,
+        add_leaf_bones=self.add_leaf_bones,
+        bake_anim=self.exportAnim,
+        bake_anim_use_all_bones=self.bake_anim_use_all_bones,
+        bake_anim_use_nla_strips=self.bake_anim_use_nla_strips,
+        bake_anim_use_all_actions=self.bake_anim_use_all_actions,
+        bake_anim_force_startend_keying=self.bake_anim_force_startend_keying,
+        #idk what this even is
+        use_anim=self.exportAnim,
+        use_anim_action_all=self.bake_anim_use_all_actions,
+        use_default_take=self.use_default_take,
+        use_anim_optimize=self.optimise_keyframes,
         anim_optimize_precision=6.0,
         path_mode='AUTO',
         embed_textures=False,
@@ -44,7 +47,7 @@ class GT_Export_Assets(Operator):
         use_batch_own_dir=False,
         use_metadata=False)
 
-    def PrepareExportIndividual(self, context, targets, path, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim):
+    def PrepareExportIndividual(self, context, targets, path, suffix):
         print(">>> Individual Pass <<<")
         for item in targets:
             print("-"*70)
@@ -64,7 +67,7 @@ class GT_Export_Assets(Operator):
             bpy.ops.object.select_all(action='DESELECT')
             FocusObject(item)
 
-            self.ExportFBX(individualFilePath, applyModifiers, meshSmooth, exportTypes, True, True, True)
+            self.ExportFBX(individualFilePath)
 
             print("Moving location back to root-orientated centre...")
             MoveObject(item, context, tempLoc)
@@ -73,7 +76,7 @@ class GT_Export_Assets(Operator):
         if exportAnim is True:
             print("Exporting separate animation files...")
 
-    def PrepareExportCombined(self, targets, path, exportName, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim):
+    def PrepareExportCombined(self, targets, path, exportName, suffix):
         print(">>> Exporting Combined Pass <<<")
         print("Checking export preferences...")
 
@@ -91,21 +94,7 @@ class GT_Export_Assets(Operator):
         objectFilePath = path + exportName + suffix + ".fbx"
         print("Final File Path.", objectFilePath)
 
-        export_anim = False
-        export_anim_actions = False
-        export_anim_optimise = False
-
-        if exportAnim is True:
-            print("Exporting animations...")
-            export_anim = True
-            export_anim_actions = True
-            export_anim_optimise = True
-
-            #if expLP is False and expHP is False and expCG is False and expCX is False:
-                #if expAR is True:
-                    #exportTypes = {'ARMATURE'}
-
-        self.ExportFBX(objectFilePath, applyModifiers, meshSmooth, exportTypes, export_anim, export_anim_actions, export_anim_optimise)
+        self.ExportFBX(objectFilePath)
 
     def AddTriangulate(self, object):
 
@@ -218,6 +207,31 @@ class GT_Export_Assets(Operator):
         if enum == '3':
             return 'OFF'
 
+    def GetExportInfo(self, exportDefault):
+
+        self.axisForward = exportDefault.axis_forward
+        self.axisUp = exportDefault.axis_up
+        self.globalScale = exportDefault.global_scale
+        self.bakeSpaceTransform = exportDefault.bake_space_transform
+
+        self.apply_unit_scale = exportDefault.apply_unit_scale
+        self.loose_edges = exportDefault.loose_edges
+        self.tangent_space = exportDefault.tangent_space
+
+        self.use_armature_deform_only = exportDefault.use_armature_deform_only
+        self.add_leaf_bones = exportDefault.add_leaf_bones
+        self.primary_bone_axis = exportDefault.primary_bone_axis
+        self.secondary_bone_axis = exportDefault.secondary_bone_axis
+        self.armature_nodetype = exportDefault.armature_nodetype
+
+        self.bake_anim_use_all_bones = exportDefault.bake_anim_use_all_bones
+        self.bake_anim_use_nla_strips = exportDefault.bake_anim_use_nla_strips
+        self.bake_anim_use_all_actions = exportDefault.bake_anim_use_all_actions
+        self.bake_anim_force_startend_keying = exportDefault.bake_anim_force_startend_keying
+        self.use_default_take = exportDefault.use_default_take
+        self.optimise_keyframes = exportDefault.optimise_keyframes
+        self.bake_anim_step = exportDefault.bake_anim_step
+        self.bake_anim_simplify_factor = exportDefault.bake_anim_simplify_factor
 
     def execute(self, context):
         print("Self = ")
@@ -239,31 +253,51 @@ class GT_Export_Assets(Operator):
                 selected.append(sel)
         active = context.active_object
 
-
-        # Generate export details based on the export type selected
-        self.axisForward = "-Z"
-        self.axisUp = "Y"
-        self.globalScale = 1.0
-        self.bakeSpaceTransform = False
-
-
-        # //////////// - ENGINE PROPERTIES - ////////////////////////////////////////////////////////
-        # Assign custom properties based on the export target
-        if int(scn.engine_select) is 1:
-            print("UE4 selected")
-            self.axisForward = "-Z"
-            self.axisUp = "Y"
-            self.globalScale = 1.0
-
-        elif int(scn.engine_select) is 2:
-            print("Unity selected")
-            self.axisForward = "-Z"
-            self.axisUp = "Y"
-            self.globalScale = 1
-            self.bakeSpaceTransform = True
-
-
+        # Keep a record of the current object mode
+        mode = bpy.context.mode
         bpy.ops.object.mode_set(mode='OBJECT')
+
+
+        # NOW FOR A ONCE AND FOR ALL OBJECT MOVEMENT FIX
+        hiddenList = []
+        selectList = []
+        hiddenObjectList = []
+
+        for item in context.scene.objects:
+            hiddenObjectList.append(item)
+            isHidden = item.hide
+            hiddenList.append(isHidden)
+            isSelectable = item.hide_select
+            selectList.append(isSelectable)
+
+        for item in context.scene.objects:
+            item.hide_select = False
+
+        # For each object, find certain offending constraints, and turn them off for now
+        constraintList = []
+
+        con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS'}
+
+        for item in context.scene.objects:
+            i = 0
+            for constraint in item.constraints:
+                if constraint.type in con_types_target:
+                    copyLocation = Vector((0.0, 0.0, 0.0))
+                    copyLocation[0] = item.location[0]
+
+                    entry = {'object_name': item.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
+                    constraintList.append(entry)
+
+                    constraint.mute = True
+                    constraint.influence = 0.0
+
+                i += 1
+
+        # Now we can unhide and deselect everything
+        bpy.ops.object.hide_view_clear()
+        bpy.ops.object.select_all(action='DESELECT')
+
+
 
         # OBJECT CYCLE
         ###############################################################
@@ -291,21 +325,20 @@ class GT_Export_Assets(Operator):
 
                     exportDefault = self.addon_prefs.export_defaults[expKey]
                     useObjectDirectory = exportDefault.use_sub_directory
+                    self.GetExportInfo(exportDefault)
 
                     rootObject = object
                     rootType = IdentifyObjectTag(context, rootObject, exportDefault)
 
                     print("Root Type is...", rootType)
 
-                    rootObjectLocation = Vector((0.0, 0.0, 0.0))
-                    rootObjectLocation[0] = object.location[0]
-                    rootObjectLocation[1] = object.location[1]
-                    rootObjectLocation[2] = object.location[2]
+                    tempROL = FindWorldSpaceObjectLocation(rootObject, context)
+                    #rootObjectLocation = Vector((0.0, 0.0, 0.0))
+                    #rootObjectLocation[0] = tempROL[0]
+                    #rootObjectLocation[1] = tempROL[1]
+                    #rootObjectLocation[2] = tempROL[2]
 
                     # Collect hidden defaults to restore afterwards.
-                    hiddenList = []
-                    selectList = []
-                    hiddenObjectList = []
                     objectName = ""
 
                     # Lists for the UE4 renaming feature
@@ -340,23 +373,21 @@ class GT_Export_Assets(Operator):
                             i += 1
 
                         # Obtain some pass-specific preferences
-                        applyModifiers = objPass.apply_modifiers
+                        self.applyModifiers = objPass.apply_modifiers
                         useTriangulate = objPass.triangulate
                         exportIndividual = objPass.export_individual
-                        exportAnim = objPass.export_animation
+                        self.exportAnim = objPass.export_animation
 
-                        meshSmooth = self.GetNormals(rootObject.GXObj.normals)
-                        exportTypes = {'EMPTY', 'CAMERA', 'LAMP', 'MESH', 'ARMATURE', 'OTHER'}
+                        self.meshSmooth = self.GetNormals(rootObject.GXObj.normals)
+                        self.exportTypes = {'EMPTY', 'CAMERA', 'LAMP', 'MESH', 'ARMATURE', 'OTHER'}
 
-                        export_anim = False
-                        export_anim_actions = False
-                        export_anim_optimise = False
 
                         # Also set file path name
                         path = ""                                # Path given from the location default
                         fileName = ""                            # File name for the object (without tag suffixes)
                         suffix = objPass.file_suffix             # Additional file name suffix
                         sub_directory = objPass.sub_directory    # Whether a sub-directory needs to be created
+
 
                         # Lets see if the root object can be exported...
                         expRoot = False
@@ -369,6 +400,7 @@ class GT_Export_Assets(Operator):
 
                         print("Export Root = ", expRoot)
 
+
                         #/////////////////// - FILE NAME - /////////////////////////////////////////////////
                         path = self.CalculateFilePath(context, rootObject.GXObj.location_default, objectName, sub_directory, useObjectDirectory)
 
@@ -379,7 +411,6 @@ class GT_Export_Assets(Operator):
 
                         print("Path created...", path)
 
-                        print("Path created...", path)
 
                         #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
                         # In this new system, we only have to search through objects that meet the criteria using one function,
@@ -400,11 +431,6 @@ class GT_Export_Assets(Operator):
                                             foundObjects.append(item)
 
                                             print("Tag", tag.name, "Found...", item.name)
-                                            hiddenObjectList.append(item)
-                                            isHidden = item.hide
-                                            hiddenList.append(isHidden)
-                                            isSelectable = item.hide_select
-                                            selectList.append(isSelectable)
 
                                             # If the active tag has the ability to replace names, do it here.
                                             if tag.x_ue4_collision_naming is True:
@@ -428,26 +454,30 @@ class GT_Export_Assets(Operator):
                         # ///////////////////////////////////////////////////////////////////////////////////
                         print(">>> Appending Found Objects <<<")
 
-                        moveList = []
-                        moveList += objectList
+                        #moveList = []
 
                         # We need to find any objects that are related as parents, children, modifiers and constraints
                         # and add them to the move list.
-                        dependencyList = []
-                        dependencyList += objectList
-                        dependencyList.append(rootObject)
-                        dependencyList = GetDependencies(dependencyList)
-                        moveList += dependencyList
+                        #dependencyList = []
+                        #dependencyList += foundObjects
+                        #dependencyList.append(rootObject)
+                        #dependencyList = GetDependencies(dependencyList)
 
+                        #if rootObject in dependencyList:
+                            #dependencyList.remove(rootObject)
+                        #moveList += dependencyList
 
+                        #if len(foundObjects) > 0:
+                            #MoveObjects(rootObject, foundObjects, context, Vector((0.0, 0.0, 0.0)))
 
-                        if len(foundObjects) > 0:
-                            MoveObjects(rootObject, foundObjects, context, (0.0, 0.0, 0.0))
+                        #else:
+                            #MoveObject(rootObject, context, (0.0, 0.0, 0.0))
 
-                        else:
-                            MoveObject(rootObject, context, (0.0, 0.0, 0.0))
+                        MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
                         print(">>> Asset List Count...", len(foundObjects))
+
+                        return {'FINISHED'}
 
                         # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                         # ////////////////////////////////////////////////////////////////////////////
@@ -458,7 +488,7 @@ class GT_Export_Assets(Operator):
                         if expRoot is True:
                             triangulateList.append(rootObject)
 
-                        if useTriangulate is True and applyModifiers is True:
+                        if useTriangulate is True and self.applyModifiers is True:
                             for item in triangulateList:
                                 if item.type == 'MESH':
                                     print("Triangulating Mesh...", item.name)
@@ -477,10 +507,10 @@ class GT_Export_Assets(Operator):
                             finalExportList.append(rootObject)
 
                         if exportIndividual is True:
-                            self.PrepareExportIndividual(context, finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim)
+                            self.PrepareExportIndividual(context, finalExportList, path, suffix)
 
                         else:
-                            self.PrepareExportCombined(finalExportList, path, objectName, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim)
+                            self.PrepareExportCombined(finalExportList, path, objectName, suffix)
 
 
                         # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
@@ -492,7 +522,7 @@ class GT_Export_Assets(Operator):
                             i += 1
 
                         # Remove any triangulation modifiers
-                        if useTriangulate is True and applyModifiers is True:
+                        if useTriangulate is True and self.applyModifiers is True:
                             for item in triangulateList:
                                 if item.type == 'MESH':
                                     if item.GXStm.has_triangulate is False:
@@ -512,18 +542,6 @@ class GT_Export_Assets(Operator):
 
                         exportedPasses += 1
                         print(">>> Pass Complete <<<")
-
-
-                    # Restore visibility defaults
-                    i = 0
-
-                    print("hiddenList...", len(hiddenList))
-                    print("selectList...", len(selectList))
-
-                    for item in hiddenObjectList:
-                        item.hide = hiddenList[i]
-                        item.hide_select = selectList[i]
-                        i += 1
 
                     # Count up exported objects
                     exportedObjects += 1
@@ -570,21 +588,12 @@ class GT_Export_Assets(Operator):
                     self.report({'WARNING'}, statement)
                     return {'FINISHED'}
 
-
-
-                rootObjectLocation = Vector((0.0, 0.0, 0.0))
-                rootObjectLocation[0] = object.location[0]
-                rootObjectLocation[1] = object.location[1]
-                rootObjectLocation[2] = object.location[2]
-
                 # Collect hidden defaults to restore afterwards.
-                hiddenList = []
-                selectList = []
-                hiddenObjectList = []
                 objectName = group.name
 
                 exportDefault = self.addon_prefs.export_defaults[expKey]
                 useObjectDirectory = exportDefault.use_sub_directory
+                self.GetExportInfo(exportDefault)
                 print("Using Export Default...", exportDefault.name, ".  Export Key", expKey)
 
 
@@ -592,22 +601,14 @@ class GT_Export_Assets(Operator):
                 rootType = IdentifyObjectTag(context, rootObject, exportDefault)
                 print("Root type is...", rootType)
 
-                # Search through the group and idenfity whether tag filtering is required.
+                # Get the root object location for later use
+                tempROL = FindWorldSpaceObjectLocation(rootObject, context)
                 rootObjectLocation = Vector((0.0, 0.0, 0.0))
-                rootObjectLocation[0] = rootObject.location[0]
-                rootObjectLocation[1] = rootObject.location[1]
-                rootObjectLocation[2] = rootObject.location[2]
+                rootObjectLocation[0] = tempROL[0]
+                rootObjectLocation[1] = tempROL[1]
+                rootObjectLocation[2] = tempROL[2]
 
-                # Collect hidden defaults to restore afterwards.
-                hiddenList = []
-                selectList = []
-
-                for item in group.objects:
-                    isHidden = item.hide
-                    hiddenList.append(isHidden)
-
-                    isSelectable = item.hide_select
-                    selectList.append(isSelectable)
+                print("ROOT OBJECT LOCAATTTIIIOOOOON", rootObjectLocation)
 
                 for objPass in exportDefault.passes:
 
@@ -636,20 +637,14 @@ class GT_Export_Assets(Operator):
                         i += 1
 
                     # Obtain some object-specific preferences
-                    applyModifiers = objPass.apply_modifiers
+                    self.applyModifiers = objPass.apply_modifiers
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
-                    exportAnim = objPass.export_animation
+                    self.exportAnim = objPass.export_animation
 
                     hasTriangulation = False
-                    meshSmooth = self.GetNormals(rootObject.GXObj.normals)
-                    exportTypes = {'EMPTY', 'CAMERA', 'LAMP', 'MESH', 'ARMATURE', 'OTHER'}
-
-                    expRoot = False
-
-                    export_anim = False
-                    export_anim_actions = False
-                    export_anim_optimise = False
+                    self.meshSmooth = self.GetNormals(rootObject.GXObj.normals)
+                    self.exportTypes = {'EMPTY', 'CAMERA', 'LAMP', 'MESH', 'ARMATURE', 'OTHER'}
 
                     # Also set file path name
                     path = ""
@@ -731,20 +726,30 @@ class GT_Export_Assets(Operator):
 
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
-                    print(">>> Appending Found Objects <<<")
+                    #print(">>> Appending Found Objects <<<")
 
-                    moveList = []
-                    moveList += objectList
+                    #moveList = []
 
                     # We need to find any objects that are related as parents, children, modifiers and constraints
                     # and add them to the move list.
-                    dependencyList = []
-                    dependencyList += objectList
-                    dependencyList.append(rootObject)
-                    dependencyList = GetDependencies(dependencyList)
-                    moveList += dependencyList
+                    #dependencyList = []
+                    #dependencyList += objectList
+                    #dependencyList.append(rootObject)
+                    #dependencyList = GetDependencies(dependencyList)
+                    #if rootObject in dependencyList:
+                        #dependencyList.remove(rootObject)
+                    #moveList += dependencyList
 
-                    MoveObjects(rootObject, moveList, context, (0.0, 0.0, 0.0))
+                    #rootObjectParent = None
+
+                    # If the root object has a parent, remove it.
+                    #if rootObject.parent is not None:
+                        #rootObjectParent = rootObject.parent
+                        #ClearParent(rootObject)
+
+                    #MoveObjects(rootObject, moveList, context, Vector((0.0, 0.0, 0.0)))
+
+                    MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
                     # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                     # ////////////////////////////////////////////////////////////////////////////
@@ -755,15 +760,13 @@ class GT_Export_Assets(Operator):
                     if expRoot is True:
                         triangulateList.append(rootObject)
 
-                    if useTriangulate is True and applyModifiers is True:
+                    if useTriangulate is True and self.applyModifiers is True:
                         for item in triangulateList:
                             if item.type == 'MESH':
-                                print("Triangulating Mesh...", item.name)
                                 stm = item.GXStm
                                 hasTriangulation = False
                                 hasTriangulation = self.AddTriangulate(item)
                                 stm.has_triangulate = hasTriangulation
-
 
                     # /////////// - EXPORT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
@@ -786,10 +789,10 @@ class GT_Export_Assets(Operator):
                             finalExportList.append(rootObject)
 
                         if exportIndividual is True:
-                            self.PrepareExportIndividual(context, finalExportList, path, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim)
+                            self.PrepareExportIndividual(context, finalExportList, path, suffix)
 
                         else:
-                            self.PrepareExportCombined(finalExportList, path, group.name, suffix, applyModifiers, meshSmooth, exportTypes, exportAnim)
+                            self.PrepareExportCombined(finalExportList, path, group.name, suffix)
 
 
                     # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
@@ -801,36 +804,49 @@ class GT_Export_Assets(Operator):
                         i += 1
 
                     # Remove any triangulation modifiers
-                    if useTriangulate is True and applyModifiers is True:
+                    if useTriangulate is True and self.applyModifiers is True:
                         for object in triangulateList:
                             if object.type == 'MESH':
                                 if object.GXStm.has_triangulate is False:
-                                    print("Object has created triangulation, remove it.")
                                     self.RemoveTriangulate(object)
 
-                    print("Checking", object.name, "'s position... ",rootObject.location)
-                    for object in moveList:
-                        print("Checking", object.name, "'s position... ", object.location)
+                    #print("Checking", object.name, "'s position... ",rootObject.location)
+                    #for object in moveList:
+                        #print("Checking", object.name, "'s position... ", object.location)
 
+                    #print("Checking stuff before moving it...")
+                    #print(rootObject, moveList, rootObjectLocation)
 
+                    # Move objects back
+                    MoveAll(rootObject, context, rootObjectLocation)
 
-                    MoveObjects(rootObject, moveList, context, rootObjectLocation)
+                    # Restore parenting
+                    #if rootObjectParent != None:
+                        #print(">>> Reparenting <<<")
+                        #AddParent(rootObject, rootObjectParent)
 
                     exportedPasses += 1
                     print(">>> Pass Complete <<<")
 
-                # Restore visibility defaults
-                i = 0
-                for item in group.objects:
-                    item.hide = hiddenList[i]
-                    item.hide_select = selectList[i]
-                    i += 1
-
-                i = 0
 
                 exportedGroups += 1
                 print(">>> Group Export Complete <<<")
 
+        # Restore Constraint Defaults
+        for entry in constraintList:
+            item = bpy.data.objects[entry['object_name']]
+            index = entry['index']
+            item.constraints[index].mute = entry['enabled']
+            item.constraints[index].influence = entry['influence']
+
+        # Restore visibility defaults
+        while len(hiddenObjectList) != 0:
+            item = hiddenObjectList.pop()
+            hide = hiddenList.pop()
+            hide_select = selectList.pop()
+
+            item.hide = hide
+            item.hide_select = hide_select
 
         # Re-select the objects previously selected
         if active is not None:
