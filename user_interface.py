@@ -215,6 +215,7 @@ class GX_SelectionObject(Panel):
 
                 col_export.separator()
                 col_export.prop(obj, "enable_export")
+                col_export.prop(obj, "use_scene_origin")
                 #col_export.prop(obj, "auto_assign")
                 col_export.separator()
                 col_export.separator()

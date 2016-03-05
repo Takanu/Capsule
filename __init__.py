@@ -154,7 +154,7 @@ class ExportPass(PropertyGroup):
 
     export_individual = BoolProperty(
         name="Export Individual",
-        description="Exports every object in the pass as an individual object.",
+        description="Exports every object in the pass as an individual object, regardless of whether it's in a group.",
         default=False
     )
 
@@ -184,11 +184,36 @@ class ExportPreset(PropertyGroup):
         default=""
     )
 
+    use_blend_directory = BoolProperty(
+        name="Add Blend Directory",
+        description="Exports all objects from a .blend file, into a folder named after that .blend file.  Useful if you're exporting objects from multiple .blend files into one export folder, for additional, automated organisation.",
+        default=False
+    )
+
     use_sub_directory = BoolProperty(
         name="Add Object Directories",
         description="If ticked, every individual or group export will be placed in it's own folder inside the target location.  Any pass sub-directories will be contained inside these folders.",
         default=False
     )
+
+    filter_render = BoolProperty(
+        name="Filter by Rendering",
+        description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
+    )
+
+    export_types = EnumProperty(
+            name="Object Types",
+            options={'ENUM_FLAG'},
+            items=(('EMPTY', "Empty", ""),
+                   ('CAMERA', "Camera", ""),
+                   ('LAMP', "Lamp", ""),
+                   ('ARMATURE', "Armature", ""),
+                   ('MESH', "Mesh", ""),
+                   ('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),
+                   ),
+            description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other defined options in Capsule.",
+            default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'OTHER'},
+            )
 
 
     passes = CollectionProperty(type=ExportPass)
@@ -404,10 +429,24 @@ class GEXAddonPreferences(AddonPreferences):
                 export_separator = export_box.column(align=True)
                 #export_separator.separator()
 
-                if ui.export_preset_options == 'Main':
+                if ui.export_preset_options == 'Export':
                     export_main = export_box.row(align=True)
                     export_1 = export_main.column(align=True)
+
+                    export_1.label("Exportable Object Types")
+                    export_1.separator()
+                    export_types = export_1.row(align=True)
+                    export_types.prop(currentExp, "export_types", expand=True)
+                    export_1.separator()
+                    export_1.separator()
+
+                    export_1.prop(currentExp, "use_blend_directory")
                     export_1.prop(currentExp, "use_sub_directory")
+                    export_1.prop(currentExp, "filter_render")
+
+                if ui.export_preset_options == 'Transform':
+                    export_main = export_box.row(align=True)
+                    export_1 = export_main.column(align=True)
                     export_1.prop(currentExp, "bake_space_transform")
                     export_1.separator()
 

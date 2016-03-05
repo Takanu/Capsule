@@ -306,20 +306,6 @@ class GX_Set_Root_Object(Operator):
 
         return {'RUNNING_MODAL'}
 
-    def CheckForChild(self, group, target):
-
-        # Figure out if it is a child of any object in the group.
-        print("Searching through children...")
-        for altObject in group.objects:
-            for child in altObject.children:
-                print("Checking child ", child.name)
-                if child.name == target.name:
-                    self.report({'WARNING'}, 'The object selected is a child of another object in the group, and cant be used as a root object.')
-
-                    FocusObject(self.object)
-                    self.finish()
-                    return{'FINISHED'}
-
     def modal(self,context,event):
         # If escape is pressed, exit
         if event.type in {'ESC'}:
@@ -344,8 +330,6 @@ class GX_Set_Root_Object(Operator):
                         # Make sure the root object being selected matches the groip
                         for item in group.objects:
                             if item.name == context.selected_objects[0].name:
-
-                                self.CheckForChild(group, item)
 
                                 group.GXGrp.root_object = context.selected_objects[0].name
                                 FocusObject(self.object)

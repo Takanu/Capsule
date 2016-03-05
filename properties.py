@@ -196,6 +196,12 @@ class GX_Object_Preferences(PropertyGroup):
         default = False,
         update = Update_EnableExport)
 
+    use_scene_origin = BoolProperty(
+        name = "Use Scene Origin",
+        description = "Uses the scene's centre as an origin point for the object export, rather than the object's own origin point.",
+        default = False
+    )
+
     location_default = EnumProperty(
         name="Select Location Default",
         description="The filepath default the selected objects will be exported to.",
@@ -227,7 +233,7 @@ class GX_Group_Preferences(PropertyGroup):
 
     root_object = StringProperty(
         name = "Root Object",
-        description = "Defines the exported origin point of the group object.  If defined as an empty, the root will not be exported.  If not defined, the origin will be the world center.",
+        description = "Defines the exported origin point of the group object.  If not defined, the origin will be the world center.",
         default = "")
 
     location_default = EnumProperty(
@@ -292,10 +298,11 @@ class GX_UI_Preferences(PropertyGroup):
         name = "Export Options",
         description = "",
         items=(
-        ('Main', 'Main', 'Sets up a custom preset for UE4, with support for multiple collision objects per low_poly and seamless collision importing.'),
-        ('Geometry', 'Geometry', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.'),
-        ('Armature', 'Armature', 'Hahahaha, just kidding.'),
-        ('Animation', 'Animation', 'Hahahaha, just kidding.')
+        ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
+        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
+        ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
+        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
+        ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
         ),)
 
 class GX_Object_StateMachine(PropertyGroup):
