@@ -2,7 +2,6 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty
 from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
-from .update import Update_GroupSelectionEdit
 
 class GEX_Name_UIList(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -18,17 +17,26 @@ class GEX_TagFilter_UIList(bpy.types.UIList):
 class Object_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
         scn = context.scene.GXScn
 
         layout.prop(item, "name", text="", emboss=False)
         layout.prop(item, "enable_export", text="")
-        layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
+
+        if addon_prefs.list_feature == 'focus':
+            layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
+        elif addon_prefs.list_feature == 'sel':
+            layout.prop(item, "sel", text="", emboss=False, icon='RESTRICT_SELECT_OFF')
+
         layout.separator()
 
 
 class Group_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
         scn = context.scene.GXScn
         groupData = None
 
@@ -38,7 +46,12 @@ class Group_UIList(UIList):
 
         layout.prop(item, "name", text="", emboss=False)
         layout.prop(groupData.GXGrp, "export_group", text="")
-        layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
+
+        if addon_prefs.list_feature == 'focus':
+            layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
+        elif addon_prefs.list_feature == 'sel':
+            layout.prop(item, "sel", text="", emboss=False, icon='RESTRICT_SELECT_OFF')
+
         layout.separator()
 
 
@@ -123,145 +136,116 @@ class GX_SelectionObject(Panel):
 
             col_location = layout.row(align=True)
             col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
+            col_location.separator()
+            row_location = col_location.column(align=True)
+            row_location.prop(ui, "object_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
 
-            #col_location.separator()
-
-            #row_location = col_location.column(align=True)
-            #row_location.operator("scene.gx_refobjects", text="", icon="FILE_REFRESH")
+            if addon_prefs.object_list_autorefresh is False:
+                row_location.operator("scene.gx_refobjects", text="", icon="FILE_REFRESH")
 
             layout.separator()
 
             # Check we have an active object
-            if context.active_object is None or len(context.selected_objects) is 0:
+            if context.active_object is None or len(context.selected_objects) is 0 and ui.object_multi_edit is True:
                 col_export = layout.column(align=True)
                 col_export.alignment = 'EXPAND'
                 col_export.label(text="Select an object to change settings")
                 return
 
-            # Ensure the active object isnt an incorrect type
-            elif context.active_object.type != 'MESH':
-                if len(context.selected_objects) == 1:
-                    col_export = layout.column(align=True)
-                    col_export.alignment = 'EXPAND'
-                    col_export.label(text="Select a mesh object to change settings")
-                else:
-                    col_export = layout.column(align=True)
-                    col_export.alignment = 'EXPAND'
-                    col_export.label(text="Deselect the active non-mesh object")
-                    col_export.label(text="to change settings")
+            # Get the currently active object, whatever that is
+            obj = None
+            ob = None
 
-            #elif context.active_object.name.find(addon_prefs.lp_tag) == -1:
-                #col_export = layout.column(align=True)
-                #col_export.alignment = 'EXPAND'
-                #col_export.label(text="Select a low-poly object.")
+            if ui.object_multi_edit is False:
+                entry = scn.object_list[scn.object_list_index]
 
-            # Now the UI can load
+                for item in context.scene.objects:
+                    if item.name == entry.name:
+                        obj = item.GXObj
+                        ob = item
             else:
                 obj = context.object.GXObj
                 ob = context.object
 
-                # Need to figure out if only one object is selected and whather any selected objects have an armature
-                singleObject = False
-                skeletalFound = False
-                staticFound = False
-                type = 1
+            # Now we can build the UI
+            col_export = layout.column(align=True)
 
-                if len(context.selected_objects) is 1:
-                    singleObject = True
+            if len(context.selected_objects) is 1 or ui.object_multi_edit is False:
+                singleObject = True
+                col_export.alignment = 'EXPAND'
+                col_export.label(text=ob.name, icon="OBJECT_DATA")
 
+            else:
+                objectCount = 0
+                objectLabel = ""
+                selected = []
                 for sel in context.selected_objects:
                     if sel.type == 'MESH':
-                        foundLocal = False
+                        objectCount += 1
+                        selected.append(sel)
 
-                        for modifier in sel.modifiers:
-                            if modifier.type == 'ARMATURE':
-                                skeletalFound = True
-                                foundLocal = True
-                                type = 2
-
-                        if foundLocal is False:
-                            staticFound = True
-
-
-                if skeletalFound is not True:
-                    type = 1
-
-                col_export = layout.column(align=True)
-                col_export.alignment = 'EXPAND'
-
-                # Work out what kind of object label should be used
-                if len(context.selected_objects) is 1:
+                if objectCount == 1:
                     if type is 1:
-                        col_export.label(text=context.object.name, icon="OBJECT_DATA")
-                    else:
-                        col_export.label(text=context.object.name, icon="OUTLINER_OB_ARMATURE")
+                        col_export.label(text=selected[0].name, icon="OBJECT_DATA")
 
                 else:
-                    objectCount = 0
-                    objectLabel = ""
-                    selected = []
-                    for sel in context.selected_objects:
-                        if sel.type == 'MESH':
-                            objectCount += 1
-                            selected.append(sel)
+                    objectLabel = str(objectCount) + " objects selected"
+                    col_export.label(text=objectLabel, icon="OBJECT_DATA")
 
-                    if objectCount == 1:
-                        if type is 1:
-                            col_export.label(text=selected[0].name, icon="OBJECT_DATA")
-
-                    else:
-                        objectLabel = str(objectCount) + " valid objects selected"
-                        col_export.label(text=objectLabel, icon="OBJECT_DATA")
-
-                col_export.separator()
-                col_export.prop(obj, "enable_export")
-                col_export.prop(obj, "use_scene_origin")
-                #col_export.prop(obj, "auto_assign")
-                col_export.separator()
-                col_export.separator()
-                col_export.label(text="Location")
-                col_export.separator()
-                col_export.prop(obj, "location_default", icon="FILESEL", text="")
-                col_export.separator()
-                col_export.label(text="Export Settings:")
-                col_export.separator()
-                col_export.prop(obj, "export_default", text="")
-                col_export.separator()
-                col_export.label(text="Mesh Normal Export:")
-                col_export.separator()
-                col_export.prop(obj, "normals", text="")
-                col_export.separator()
+            col_export.separator()
+            col_export.prop(obj, "enable_export")
+            col_export.prop(obj, "use_scene_origin")
+            #col_export.prop(obj, "auto_assign")
+            col_export.separator()
+            col_export.separator()
+            col_export.label(text="Location")
+            col_export.separator()
+            col_export.prop(obj, "location_default", icon="FILESEL", text="")
+            col_export.separator()
+            col_export.label(text="Export Settings:")
+            col_export.separator()
+            col_export.prop(obj, "export_default", text="")
+            col_export.separator()
+            col_export.label(text="Mesh Normal Export:")
+            col_export.separator()
+            col_export.prop(obj, "normals", text="")
+            col_export.separator()
 
 
         #////////////////////////// GROUP UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
 
         else:
+            col_location = layout.row(align=True)
+            col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
+            col_location.separator()
+            row_location = col_location.column(align=True)
+            row_location.prop(ui, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
+            row_location.operator("scene.gx_refgroups", text="", icon="FILE_REFRESH")
 
-            if scn.group_multi_edit is False:
-                col_location = layout.row(align=True)
-                col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
+            layout.separator()
 
-                col_location.separator()
+            # Get the first group pointer we need
+            grp = None
+            gr = None
 
-                row_location = col_location.column(align=True)
-                row_location.operator("scene.gx_refgroups", text="", icon="FILE_REFRESH")
-                row_location.prop(scn, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
+            # If the multi-edit isnt on, just grab the list group
+            if ui.group_multi_edit is False:
+                if len(scn.group_list) > 0:
+                    entry = scn.group_list[scn.group_list_index]
 
-                layout.separator()
+                    for group in bpy.data.groups:
+                        if group.name == entry.name:
+                            grp = group.GXGrp
+                            gr = group
 
-                selection_label = layout.column(align=True)
+                group_label = layout.column(align=True)
+                group_label.alignment = 'EXPAND'
+                group_label.label(text=gr.name, icon="OBJECT_DATA")
 
-                # If we only have single group editing enabled, the object selected is irrelevant
-                #if len(context.selected_objects) is 1:
-                    #if scn.group_multi_edit is False:
-                        #pass
-                        #selection_label.label(text=context.object.users_group[0].name, icon="OBJECT_DATA")
-
-            # Otherwise, lets figure out how many groups are being selected
+            # Otherwise, just find it in a selection
             else:
                 groups_found = []
-
                 for item in context.selected_objects:
                     for group in item.users_group:
                         groupAdded = False
@@ -279,59 +263,51 @@ class GX_SelectionObject(Panel):
                 else:
                     groupLabel = str(len(groups_found)) + " groups found."
 
-                group_selection = layout.row(align=True)
-
-                #group_selection.prop(scn, "group_selected_list_enum", text="")
-
-                group_selection.template_list("Group_UIList", "rawr", scn, "group_selected_list", scn, "group_selected_list_index", rows=3, maxrows=10)
-                group_selection.separator()
-
-                group_row = group_selection.column(align=True)
-                group_row.operator("scene.gx_refgroups", text="", icon="FILE_REFRESH")
-                group_row.prop(scn, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
+                if context.active_object is not None:
+                    if len(context.active_object.users_group) > 0:
+                        for group in context.active_object.users_group:
+                            grp = group.GXGrp
+                            break
 
                 group_label = layout.column(align=True)
-                group_label.separator()
+                group_label.alignment = 'EXPAND'
                 group_label.label(text=groupLabel, icon="OBJECT_DATA")
-
-                group_label.separator()
 
 
 
             #Get the group so we can obtain preference data from it
             #With Multi-Edit, we have to find a flexible approach to obtaining group data
-            if len(scn.group_list) > 0:
-                entry = scn.group_list[scn.group_list_index]
+            if grp != None:
 
-                for group in bpy.data.groups:
-                    if group.name == entry.name:
-                        grp = group.GXGrp
+                rawr = layout.column(align=True)
+                rawr.prop(grp, "export_group", text="Enable Export")
+                rawr.separator()
+                rawr.label(text="Root Object:")
 
-                        rawr = layout.column(align=True)
-                        rawr.prop(grp, "export_group", text="Enable Export")
-                        rawr.separator()
-                        rawr.label(text="Root Object:")
+                rawr_row = layout.row(align=True)
+                rawr_row.prop(grp, "root_object", icon="OBJECT_DATA", text="")
+                rawr_row.operator("scene.gx_setroot", text="", icon="EYEDROPPER")
+                rawr_row.operator("scene.gx_clearroot", text="", icon="X")
 
-                        rawr_row = layout.row(align=True)
-                        rawr_row.prop(grp, "root_object", icon="OBJECT_DATA", text="")
-                        rawr_row.operator("scene.gx_setroot", text="", icon="EYEDROPPER")
-                        rawr_row.operator("scene.gx_clearroot", text="", icon="X")
+                rawr_other = layout.column(align=True)
+                rawr_other.label(text="Location:")
+                rawr_other.separator()
+                rawr_other.prop(grp, "location_default", icon="FILESEL", text="")
+                rawr_other.separator()
+                rawr_other.label(text="Export Settings:")
+                rawr_other.separator()
+                rawr_other.prop(grp, "export_default", text="")
+                rawr_other.separator()
+                rawr_other.label(text="Mesh Normal Export:")
+                rawr_other.separator()
+                rawr_other.prop(grp, "normals", text="")
 
-                        rawr_other = layout.column(align=True)
-                        rawr_other.label(text="Location:")
-                        rawr_other.separator()
-                        rawr_other.prop(grp, "location_default", icon="FILESEL", text="")
-                        rawr_other.separator()
-                        rawr_other.label(text="Export Settings:")
-                        rawr_other.separator()
-                        rawr_other.prop(grp, "export_default", text="")
-                        rawr_other.separator()
-                        rawr_other.label(text="Mesh Normal Export:")
-                        rawr_other.separator()
-                        rawr_other.prop(grp, "normals", text="")
             else:
                 groupPrefs = layout.column(align=True)
-                groupPrefs.label(text="No groups found, press refresh to find new groups.")
+                if ui.group_multi_edit is False:
+                    groupPrefs.label(text="No groups found, press refresh to find new groups.")
+                else:
+                    groupPrefs.label(text="No groups selected.  Please select a group to edit it.")
 
             layout.separator()
 

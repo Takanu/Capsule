@@ -28,9 +28,10 @@ def Update_EnableExport(self, context):
         for object in selected:
             object.GXObj.enable_export = enableExport
 
-    ui.enable_export_loop = True
-    bpy.ops.scene.gx_refobjects()
-    ui.enable_export_loop = False
+    if addon_prefs.object_list_autorefresh == True:
+        ui.enable_export_loop = True
+        bpy.ops.scene.gx_refobjects()
+        ui.enable_export_loop = False
 
     return None
 
@@ -251,7 +252,6 @@ def Focus_Object(self, context):
                             bpy.ops.view3d.view_selected(override)
     return None
 
-
 def Focus_Group(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
@@ -275,15 +275,47 @@ def Focus_Group(self, context):
 
     return None
 
+def Select_Object(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
-def Update_GroupRoot(self, context):
+    for object in context.scene.objects:
+        if object.name == self.name:
+
+            ActivateObject(object)
+            SelectObject(object)
+
+    return None
+
+def Select_Group(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    for group in bpy.data.groups:
+        if group.name == self.name:
+
+            #bpy.ops.object.select_all(action='DESELECT')
+
+            for object in group.objects:
+                ActivateObject(object)
+                SelectObject(object)
+
+    return None
+
+
+
+def Update_GroupExport(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
     # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
+    if self == context.active_object.users_group[0].GXGrp:
+        currentGroup = None
+        if context.active_object.users_group is not None:
+            currentGroup = context.active_object.users_group[0]
 
         groups_found = []
+        groups_found.append(currentGroup)
 
         for item in context.selected_objects:
             for group in item.users_group:
@@ -294,22 +326,161 @@ def Update_GroupRoot(self, context):
                         groupAdded = True
 
                 if groupAdded == False:
+                    print("")
                     groups_found.append(group)
 
+        groups_found.remove(currentGroup)
+
+        # Obtain the value changed
+        value = currentGroup.GXGrp.export_group
+
         # Run through the objects
-        for object in selected:
-            object.GXObj.export_default = value
+        for group in groups_found:
+            group.GXGrp.export_group = value
 
     return None
 
-def Update_GroupMultiEdit(self, context):
 
-    bpy.ops.scene.gx_group_multiedit_warning()
+def Update_GroupRootObject(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.users_group[0].GXGrp:
+        currentGroup = None
+        if context.active_object.users_group is not None:
+            currentGroup = context.active_object.users_group[0]
+
+        groups_found = []
+        groups_found.append(currentGroup)
+
+        for item in context.selected_objects:
+            for group in item.users_group:
+                groupAdded = False
+
+                for found_group in groups_found:
+                    if found_group.name == group.name:
+                        groupAdded = True
+
+                if groupAdded == False:
+                    print("")
+                    groups_found.append(group)
+
+        groups_found.remove(currentGroup)
+
+        # Obtain the value changed
+        value = currentGroup.GXGrp.root_object
+
+        # Run through the objects
+        for group in groups_found:
+            group.GXGrp.root_object = value
 
     return None
 
-def Update_GroupSelectionEdit(self, context):
+def Update_GroupExportDefault(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
 
-    bpy.ops.scene.gx_ref_selected_groups()
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.users_group[0].GXGrp:
+        currentGroup = None
+        if context.active_object.users_group is not None:
+            currentGroup = context.active_object.users_group[0]
+
+        groups_found = []
+        groups_found.append(currentGroup)
+
+        for item in context.selected_objects:
+            for group in item.users_group:
+                groupAdded = False
+
+                for found_group in groups_found:
+                    if found_group.name == group.name:
+                        groupAdded = True
+
+                if groupAdded == False:
+                    print("")
+                    groups_found.append(group)
+
+        groups_found.remove(currentGroup)
+
+        # Obtain the value changed
+        value = currentGroup.GXGrp.export_default
+
+        # Run through the objects
+        for group in groups_found:
+            group.GXGrp.export_default = value
+
+    return None
+
+def Update_GroupLocationDefault(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.users_group[0].GXGrp:
+        currentGroup = None
+        if context.active_object.users_group is not None:
+            currentGroup = context.active_object.users_group[0]
+
+        groups_found = []
+        groups_found.append(currentGroup)
+
+        for item in context.selected_objects:
+            for group in item.users_group:
+                groupAdded = False
+
+                for found_group in groups_found:
+                    if found_group.name == group.name:
+                        groupAdded = True
+
+                if groupAdded == False:
+                    print("")
+                    groups_found.append(group)
+
+        groups_found.remove(currentGroup)
+
+        # Obtain the value changed
+        value = currentGroup.GXGrp.location_default
+
+        # Run through the objects
+        for group in groups_found:
+            group.GXGrp.location_default = value
+
+    return None
+
+def Update_GroupNormals(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.users_group[0].GXGrp:
+        currentGroup = None
+        if context.active_object.users_group is not None:
+            currentGroup = context.active_object.users_group[0]
+
+        groups_found = []
+        groups_found.append(currentGroup)
+
+        for item in context.selected_objects:
+            for group in item.users_group:
+                groupAdded = False
+
+                for found_group in groups_found:
+                    if found_group.name == group.name:
+                        groupAdded = True
+
+                if groupAdded == False:
+                    print("")
+                    groups_found.append(group)
+
+        groups_found.remove(currentGroup)
+
+        # Obtain the value changed
+        value = currentGroup.GXGrp.normals
+
+        # Run through the objects
+        for group in groups_found:
+            group.GXGrp.normals = value
 
     return None

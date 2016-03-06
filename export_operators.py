@@ -194,7 +194,7 @@ class GT_Export_Assets(Operator):
             if useObjectDirectory is True:
                 newPath = newPath + objectName + "/"
 
-            if sub_directory != "":
+            if sub_directory.replace(" ", "") != "":
                 newPath = newPath + sub_directory + "/"
 
             print(">>> Sub-Directory found, appending...")
@@ -243,6 +243,100 @@ class GT_Export_Assets(Operator):
         self.bake_anim_step = exportDefault.bake_anim_step
         self.bake_anim_simplify_factor = exportDefault.bake_anim_simplify_factor
 
+    def SetupScene(self, context):
+        # Keep a record of the selected and active objects to restore later
+        self.active = None
+        self.selected = []
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                self.selected.append(sel)
+        self.active = context.active_object
+
+        # Keep a record of the current object mode
+        mode = bpy.context.mode
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        # Ensure all layers are visible
+        self.layersBackup = []
+        for layer in context.scene.layers:
+            layerVisibility = layer
+            self.layersBackup.append(layerVisibility)
+
+        context.scene.layers = (True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True)
+
+        # NOW FOR A ONCE AND FOR ALL OBJECT MOVEMENT FIX
+        self.hiddenList = []
+        self.selectList = []
+        self.hiddenObjectList = []
+
+        for item in context.scene.objects:
+            self.hiddenObjectList.append(item)
+            isHidden = item.hide
+            self.hiddenList.append(isHidden)
+            isSelectable = item.hide_select
+            self.selectList.append(isSelectable)
+
+        for item in context.scene.objects:
+            item.hide_select = False
+
+        # For each object, find certain offending constraints, and turn them off for now
+        self.constraintList = []
+
+        con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS'}
+
+        for item in context.scene.objects:
+            i = 0
+            for constraint in item.constraints:
+                if constraint.type in con_types_target:
+                    copyLocation = Vector((0.0, 0.0, 0.0))
+                    copyLocation[0] = item.location[0]
+
+                    entry = {'object_name': item.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
+                    self.constraintList.append(entry)
+
+                    constraint.mute = True
+                    constraint.influence = 0.0
+
+                i += 1
+
+        # Now we can unhide and deselect everything
+        bpy.ops.object.hide_view_clear()
+        bpy.ops.object.select_all(action='DESELECT')
+        print("Rawr")
+
+    def RestoreScene(self, context):
+
+        # Restore Constraint Defaults
+        for entry in self.constraintList:
+            item = bpy.data.objects[entry['object_name']]
+            index = entry['index']
+            item.constraints[index].mute = entry['enabled']
+            item.constraints[index].influence = entry['influence']
+
+        # Restore visibility defaults
+        while len(self.hiddenObjectList) != 0:
+            item = self.hiddenObjectList.pop()
+            hide = self.hiddenList.pop()
+            hide_select = self.selectList.pop()
+
+            item.hide = hide
+            item.hide_select = hide_select
+
+        # Turn off all other layers
+        i = 0
+        while i < 20:
+            context.scene.layers[i] = self.layersBackup[i]
+            i += 1
+
+        # Re-select the objects previously selected
+        if self.active is not None:
+            FocusObject(self.active)
+
+        for sel in self.selected:
+            SelectObject(sel)
+
+        print("Rawr")
+
     def execute(self, context):
         print("Self = ")
         print(self)
@@ -255,66 +349,7 @@ class GT_Export_Assets(Operator):
         exportedGroups = 0
         exportedPasses = 0
 
-        # Keep a record of the selected and active objects to restore later
-        active = None
-        selected = []
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-        active = context.active_object
-
-        # Keep a record of the current object mode
-        mode = bpy.context.mode
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-        # Ensure all layers are visible
-        layersBackup = []
-        for layer in context.scene.layers:
-            layerVisibility = layer
-            layersBackup.append(layerVisibility)
-
-        context.scene.layers = (True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True)
-
-        # NOW FOR A ONCE AND FOR ALL OBJECT MOVEMENT FIX
-        hiddenList = []
-        selectList = []
-        hiddenObjectList = []
-
-        for item in context.scene.objects:
-            hiddenObjectList.append(item)
-            isHidden = item.hide
-            hiddenList.append(isHidden)
-            isSelectable = item.hide_select
-            selectList.append(isSelectable)
-
-        for item in context.scene.objects:
-            item.hide_select = False
-
-        # For each object, find certain offending constraints, and turn them off for now
-        constraintList = []
-
-        con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS'}
-
-        for item in context.scene.objects:
-            i = 0
-            for constraint in item.constraints:
-                if constraint.type in con_types_target:
-                    copyLocation = Vector((0.0, 0.0, 0.0))
-                    copyLocation[0] = item.location[0]
-
-                    entry = {'object_name': item.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
-                    constraintList.append(entry)
-
-                    constraint.mute = True
-                    constraint.influence = 0.0
-
-                i += 1
-
-        # Now we can unhide and deselect everything
-        bpy.ops.object.hide_view_clear()
-        bpy.ops.object.select_all(action='DESELECT')
-
-
+        self.SetupScene(context)
 
         # OBJECT CYCLE
         ###############################################################
@@ -337,6 +372,7 @@ class GT_Export_Assets(Operator):
                         statement = "The selected object " + object.name + " has no export default selected.  Please define!"
                         FocusObject(object)
                         self.report({'WARNING'}, statement)
+                        self.RestoreScene(context)
                         return {'FINISHED'}
 
 
@@ -435,6 +471,7 @@ class GT_Export_Assets(Operator):
                         if path.find("WARNING") == 0:
                             path = path.replace("WARNING: ", "")
                             self.report({'WARNING'}, path)
+                            self.RestoreScene(context)
                             return {'CANCELLED'}
 
                         print("Path created...", path)
@@ -476,7 +513,8 @@ class GT_Export_Assets(Operator):
                         # Debug check for found objects
                         print("Checking found objects...")
                         for item in foundObjects:
-                            print(item.name)
+                            if exportDefault.filter_render is True and item.hide_render is False:
+                                print(item.name)
 
 
                         # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
@@ -561,11 +599,13 @@ class GT_Export_Assets(Operator):
                 rootObject = None
                 rootObjectName = ""
                 rootType = 0
+                rootObjectNotGroup = True
 
                 for object in group.objects:
                     if object.name == group.GXGrp.root_object:
                         rootObject = object
                         rootObjectName = object.name
+                        rootObjectNotGroup = False
 
                 if rootObject == None:
                     print("No root object is currently being used, proceed!")
@@ -576,6 +616,7 @@ class GT_Export_Assets(Operator):
                 if expKey == -1:
                     statement = "The group object " + group.name + " has no export default selected.  Please define!"
                     self.report({'WARNING'}, statement)
+                    self.RestoreScene(context)
                     return {'FINISHED'}
 
                 # Collect hidden defaults to restore afterwards.
@@ -649,7 +690,7 @@ class GT_Export_Assets(Operator):
 
                     # Lets see if the root object can be exported...
                     expRoot = False
-                    if rootObject != None:
+                    if rootObject != None and rootObjectNotGroup is True:
                         if rootType == -1:
                             if len(activeTags) == 0:
                                 expRoot = True
@@ -658,12 +699,14 @@ class GT_Export_Assets(Operator):
                         if exportDefault.filter_render == True and rootObject.hide_render == True:
                             expRoot = False
 
+
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
                     path = self.CalculateFilePath(context, group.GXGrp.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
 
                     if path.find("WARNING") == 0:
                         path = path.replace("WARNING: ", "")
                         self.report({'WARNING'}, path)
+                        self.RestoreScene(context)
                         return {'CANCELLED'}
 
                     print("Path created...", path)
@@ -795,35 +838,7 @@ class GT_Export_Assets(Operator):
                 print(">>> Group Export Complete <<<")
 
 
-
-        # Restore Constraint Defaults
-        for entry in constraintList:
-            item = bpy.data.objects[entry['object_name']]
-            index = entry['index']
-            item.constraints[index].mute = entry['enabled']
-            item.constraints[index].influence = entry['influence']
-
-        # Restore visibility defaults
-        while len(hiddenObjectList) != 0:
-            item = hiddenObjectList.pop()
-            hide = hiddenList.pop()
-            hide_select = selectList.pop()
-
-            item.hide = hide
-            item.hide_select = hide_select
-
-        # Turn off all other layers
-        i = 0
-        while i < 20:
-            context.scene.layers[i] = layersBackup[i]
-            i += 1
-
-        # Re-select the objects previously selected
-        if active is not None:
-            FocusObject(active)
-
-        for sel in selected:
-            SelectObject(sel)
+        self.RestoreScene(context)
 
         textGroupSingle = " group"
         textGroupMultiple = " groups"

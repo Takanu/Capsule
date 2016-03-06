@@ -1,4 +1,4 @@
-from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Focus_Object, Focus_Group, Update_GroupMultiEdit
+from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Focus_Object, Focus_Group, Select_Object, Select_Group, Update_GroupExport, Update_GroupRootObject, Update_GroupExportDefault, Update_GroupLocationDefault, Update_GroupNormals
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
@@ -24,8 +24,14 @@ class ObjectItem(PropertyGroup):
         update=Update_ObjectItemExport
     )
 
+    sel = BoolProperty(
+        name = "Select",
+        description = "Selects the object in the scene",
+        default = True,
+        update = Select_Object)
+
     focus = BoolProperty(
-        name = "Focus Export",
+        name = "Focus",
         description = "Focuses the camera to the object",
         default = True,
         update = Focus_Object)
@@ -41,6 +47,12 @@ class GroupItem(PropertyGroup):
         name="",
         description="Internal only, used for tracking name updates."
     )
+
+    sel = BoolProperty(
+        name = "Select",
+        description = "Selects the group in the scene",
+        default = True,
+        update = Select_Group)
 
     focus = BoolProperty(
         name = "Focus Export",
@@ -149,12 +161,6 @@ class GX_Scene_Preferences(PropertyGroup):
         ('2', 'Groups', 'Switches to the Group menu, for editing the exports of groups.')
         ),)
 
-    group_multi_edit = BoolProperty(
-        name = "Group Multi-Edit Mode",
-        description = "Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
-        default=False,
-        update=Update_GroupMultiEdit)
-
 def GetLocationDefaults(scene, context):
 
     items = [
@@ -229,22 +235,26 @@ class GX_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
         name = "Export Group",
         description = "Enables all objects within the group to be exported as a single FBX file through GEX.",
-        default = False)
+        default = False,
+        update=Update_GroupExport)
 
     root_object = StringProperty(
         name = "Root Object",
         description = "Defines the exported origin point of the group object.  If not defined, the origin will be the world center.",
-        default = "")
+        default = "",
+        update=Update_GroupRootObject)
 
     location_default = EnumProperty(
         name="Select Location Default",
         description="The filepath default the selected group will be exported to.",
-        items=GetLocationDefaults)
+        items=GetLocationDefaults,
+        update=Update_GroupLocationDefault)
 
     export_default = EnumProperty(
         name = "Select Export Default",
         description = "Defines the export setting sets used on this object.",
-        items=GetExportDefaults)
+        items=GetExportDefaults,
+        update=Update_GroupExportDefault)
 
     normals = EnumProperty(
         name = "Normal Export Type",
@@ -253,7 +263,8 @@ class GX_Group_Preferences(PropertyGroup):
         ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
         ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
         ('3', 'Normals Only', 'Exports the current custom normals of the model.')
-        ),)
+        ),
+        update=Update_GroupNormals)
 
 def GetExportPresets(scene, context):
 
@@ -279,6 +290,7 @@ class GX_UI_Preferences(PropertyGroup):
     presets_dropdown = BoolProperty(default = False)
     tags_dropdown = BoolProperty(default = False)
     passes_dropdown = BoolProperty(default = False)
+    options_dropdown = BoolProperty(default = False)
 
     action_list = CollectionProperty(type=ActionItem)
     action_list_index = IntProperty()
@@ -304,6 +316,16 @@ class GX_UI_Preferences(PropertyGroup):
         ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
         ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
         ),)
+
+    object_multi_edit = BoolProperty(
+        name = "Group Multi-Edit Mode",
+        description = "Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
+        default=True)
+
+    group_multi_edit = BoolProperty(
+        name = "Group Multi-Edit Mode",
+        description = "Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
+        default=False)
 
 class GX_Object_StateMachine(PropertyGroup):
 

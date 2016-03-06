@@ -328,19 +328,19 @@ class GX_Set_Root_Object(Operator):
                         print("Found Group: ", group.name)
 
                         # Make sure the root object being selected matches the groip
-                        for item in group.objects:
-                            if item.name == context.selected_objects[0].name:
+                        #for item in group.objects:
+                            #if item.name == context.selected_objects[0].name:
 
-                                group.GXGrp.root_object = context.selected_objects[0].name
-                                FocusObject(self.object)
-                                self.finish()
-                                return{'FINISHED'}
-
-                        self.report({'WARNING'}, 'The object selected is not in the same group, TRY AGAIN O_O')
-
+                        group.GXGrp.root_object = context.selected_objects[0].name
                         FocusObject(self.object)
                         self.finish()
                         return{'FINISHED'}
+
+                        #self.report({'WARNING'}, 'The object selected is not in the same group, TRY AGAIN O_O')
+
+                        #FocusObject(self.object)
+                        #self.finish()
+                        #return{'FINISHED'}
 
         return {'PASS_THROUGH'}
 
@@ -560,8 +560,9 @@ class GX_Group_MultiEdit_Warning(Operator):
 
     def execute(self, context):
         scn = context.scene.GXScn
+        ui = context.scene.GXUI
 
-        if scn.group_multi_edit is True:
+        if ui.group_multi_edit is True:
             self.report({'WARNING'}, 'Group Multi-Edit has been turned on, be careful!')
             return {'FINISHED'}
 

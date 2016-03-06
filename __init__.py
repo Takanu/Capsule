@@ -381,6 +381,20 @@ class GEXAddonPreferences(AddonPreferences):
     export_defaults = CollectionProperty(type=ExportPreset)
     export_defaults_index = IntProperty(default=0)
 
+    object_list_autorefresh = BoolProperty(
+        name="Object List Auto-Refresh",
+        description="Determines whether or not an object on the object export list will automatically be removed when Enable Export is unticked.  If this option is disabled, a manual refresh button will appear next to the list."
+    )
+
+    list_feature = EnumProperty(
+        name="Additional List Features",
+        description="Allows for the customisation of a secondary button next to each Object and Group Export list entry.",
+        items=(
+            ('sel', 'Select', 'Adds an option next to a list entry that allows you to select that Object or Group in the 3D View.'),
+            ('focus', 'Focus', 'Adds an option next to a list entry that allows you to select and focus the 3D view on that Object or Group.')),
+        default='focus'
+    )
+
     def draw(self, context):
         layout = self.layout
 
@@ -436,7 +450,7 @@ class GEXAddonPreferences(AddonPreferences):
                     export_1.label("Exportable Object Types")
                     export_1.separator()
                     export_types = export_1.row(align=True)
-                    export_types.prop(currentExp, "export_types", expand=True)
+                    export_types.prop(currentExp, "export_types")
                     export_1.separator()
                     export_1.separator()
 
@@ -501,8 +515,6 @@ class GEXAddonPreferences(AddonPreferences):
                 preset_unselected = export_box.column(align=True)
                 preset_unselected.label("Select a preset in order to view preset settings.")
                 preset_unselected.separator()
-
-
 
 
         #---------------------------------------------------------
@@ -633,6 +645,33 @@ class GEXAddonPreferences(AddonPreferences):
                 unselected.label("Select a preset in order to view tag settings.")
                 unselected.separator()
 
+        #---------------------------------------------------------
+        # Options
+        #---------------------------------------------------------
+        options_box = layout.box()
+        optionsUI = options_box.row(align=True)
+
+        if ui.options_dropdown is False:
+            optionsUI.prop(ui, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            optionsUI.label("Plugin Options")
+
+        else:
+            optionsUI.prop(ui, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            optionsUI.label("Plugin Options")
+            options_main = options_box.row(align=True)
+
+            options_1 = options_main.column(align=True)
+            options_1.label("Additional List Option")
+            options_1.separator()
+            options_1.prop(addon_prefs, "list_feature", text="")
+            options_1.separator()
+            options_1.separator()
+            options_1.prop(addon_prefs, "object_list_autorefresh")
+
+            options_2 = options_main.column(align=True)
+            options_2.label(" ")
+            options_2.separator()
+
 
 
 def register():
@@ -648,7 +687,6 @@ def unregister():
     bpy.utils.unregister_class(ExportPassTag)
     bpy.utils.unregister_class(ExportPass)
     bpy.utils.unregister_class(ExportPreset)
-    bpy.utils.unregister_class(GEXAddonPreferences)
     bpy.utils.unregister_module(__name__)
 
 if __name__ == "__main__":
