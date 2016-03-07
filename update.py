@@ -35,8 +35,7 @@ def Update_EnableExport(self, context):
 
     return None
 
-
-def Update_AutoAssign(self, context):
+def Update_SceneOrigin(self, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
@@ -52,11 +51,11 @@ def Update_AutoAssign(self, context):
                 selected.append(sel)
 
         # Obtain the value changed
-        autoAssign = self.auto_assign
+        value = self.use_scene_origin
 
         # Run through the objects
         for object in selected:
-            object.GXObj.auto_assign = autoAssign
+            object.GXObj.use_scene_origin = value
 
     return None
 

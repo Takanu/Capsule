@@ -138,7 +138,7 @@ class GX_SelectionObject(Panel):
             col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
             col_location.separator()
             row_location = col_location.column(align=True)
-            row_location.prop(ui, "object_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
+            row_location.prop(addon_prefs, "object_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
 
             if addon_prefs.object_list_autorefresh is False:
                 row_location.operator("scene.gx_refobjects", text="", icon="FILE_REFRESH")
@@ -146,7 +146,7 @@ class GX_SelectionObject(Panel):
             layout.separator()
 
             # Check we have an active object
-            if context.active_object is None or len(context.selected_objects) is 0 and ui.object_multi_edit is True:
+            if context.active_object is None or len(context.selected_objects) is 0 and addon_prefs.object_multi_edit is True:
                 col_export = layout.column(align=True)
                 col_export.alignment = 'EXPAND'
                 col_export.label(text="Select an object to change settings")
@@ -156,7 +156,7 @@ class GX_SelectionObject(Panel):
             obj = None
             ob = None
 
-            if ui.object_multi_edit is False:
+            if addon_prefs.object_multi_edit is False:
                 entry = scn.object_list[scn.object_list_index]
 
                 for item in context.scene.objects:
@@ -170,7 +170,7 @@ class GX_SelectionObject(Panel):
             # Now we can build the UI
             col_export = layout.column(align=True)
 
-            if len(context.selected_objects) is 1 or ui.object_multi_edit is False:
+            if len(context.selected_objects) is 1 or addon_prefs.object_multi_edit is False:
                 singleObject = True
                 col_export.alignment = 'EXPAND'
                 col_export.label(text=ob.name, icon="OBJECT_DATA")
@@ -220,7 +220,7 @@ class GX_SelectionObject(Panel):
             col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
             col_location.separator()
             row_location = col_location.column(align=True)
-            row_location.prop(ui, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
+            row_location.prop(addon_prefs, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
             row_location.operator("scene.gx_refgroups", text="", icon="FILE_REFRESH")
 
             layout.separator()
@@ -230,7 +230,7 @@ class GX_SelectionObject(Panel):
             gr = None
 
             # If the multi-edit isnt on, just grab the list group
-            if ui.group_multi_edit is False:
+            if addon_prefs.group_multi_edit is False:
                 if len(scn.group_list) > 0:
                     entry = scn.group_list[scn.group_list_index]
 
@@ -282,7 +282,8 @@ class GX_SelectionObject(Panel):
                 rawr = layout.column(align=True)
                 rawr.prop(grp, "export_group", text="Enable Export")
                 rawr.separator()
-                rawr.label(text="Root Object:")
+                rawr.separator()
+                rawr.label(text="Origin Object:")
 
                 rawr_row = layout.row(align=True)
                 rawr_row.prop(grp, "root_object", icon="OBJECT_DATA", text="")
@@ -304,7 +305,7 @@ class GX_SelectionObject(Panel):
 
             else:
                 groupPrefs = layout.column(align=True)
-                if ui.group_multi_edit is False:
+                if addon_prefs.group_multi_edit is False:
                     groupPrefs.label(text="No groups found, press refresh to find new groups.")
                 else:
                     groupPrefs.label(text="No groups selected.  Please select a group to edit it.")
@@ -362,20 +363,4 @@ class GX_Location(Panel):
         if scn.location_defaults_index > -1 and scn.location_defaults_index < count:
             file.prop(scn.location_defaults[scn.location_defaults_index], "path", text="Location")
 
-
-class GX_Settings(Panel):
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOLS"
-    bl_context = "objectmode"
-    bl_label = "Settings"
-    bl_category = "Capsule"
-
-    def draw(self, context):
-        layout = self.layout
-
-        scn = context.scene.GXScn
-        ob = context.object
-
-        col_settings = layout.column(align=True)
-        col_settings.operator("scene.gx_resetsceneprops", text="Reset Scene")
-        col_settings.operator("scene.gx_resetprefs", text="Reset Defaults")
+            

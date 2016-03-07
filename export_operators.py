@@ -41,8 +41,8 @@ class GT_Export_Assets(Operator):
         use_default_take=self.use_default_take,
         use_anim_optimize=self.optimise_keyframes,
         anim_optimize_precision=6.0,
-        path_mode='AUTO',
-        embed_textures=False,
+        path_mode=self.batch_mode,
+        embed_textures=True,
         batch_mode='OFF',
         use_batch_own_dir=False,
         use_metadata=False)
@@ -219,6 +219,12 @@ class GT_Export_Assets(Operator):
 
     def GetExportInfo(self, exportDefault):
 
+        self.exportTypes = exportDefault.export_types
+        self.bundle_textures = exportDefault.bundle_textures
+        self.batch_mode = 'AUTO'
+        if self.bundle_textures is True:
+            self.batch_mode = 'COPY'
+
         self.axisForward = exportDefault.axis_forward
         self.axisUp = exportDefault.axis_up
         self.globalScale = exportDefault.global_scale
@@ -337,6 +343,66 @@ class GT_Export_Assets(Operator):
 
         print("Rawr")
 
+    def CheckForErrors(self, context):
+
+        scn = context.scene.GXScn
+
+        # Checks for any easily-preventable errors
+        for object in context.scene.objects:
+            if object.GXObj.enable_export is True:
+
+                # Check Export Key
+                expKey = int(object.GXObj.export_default) - 1
+                if expKey == -1:
+                    statement = "The selected object " + object.name + " has no export default selected.  Please define!"
+                    FocusObject(object)
+                    return statement
+
+                # Check Location Default
+                if int(object.GXObj.location_default) == 0:
+                    statement =  "The selected object " + object.name + " has no location preset defined, please define one!"
+                    FocusObject(object)
+                    return statement
+
+                self.exportCount += 1
+
+        for group in bpy.data.groups:
+            if group.GXGrp.export_group is True:
+
+                # Check Export Key
+                expKey = int(group.GXGrp.export_default) - 1
+                if expKey == -1:
+                    statement = "The group " + group.name + " has no export default selected.  Please define!"
+                    return statement
+
+                # Check Location Default
+                if int(group.GXGrp.location_default) == 0:
+                    statement =  "The selected object " + group.name + " has no location preset defined, please define one!"
+                    return statement
+
+                self.exportCount += 1
+
+        # Check Paths
+        i = 0
+        while i < len(scn.location_defaults):
+            enumIndex = i
+            filePath = ""
+            enumIndex -= 1
+
+            defaultFilePath = scn.location_defaults[enumIndex].path
+
+            if defaultFilePath == "":
+                statement = "The path for " + scn.location_defaults[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
+                return statement
+
+            if defaultFilePath.find('//') != -1:
+                statement =  "The Location " + scn.location_defaults[enumIndex].name + " is using a location preset with a relative file path name, please tick off the Relative Path option when choosing the file path."
+                return statement
+
+            i += 1
+
+        return None
+
     def execute(self, context):
         print("Self = ")
         print(self)
@@ -345,244 +411,255 @@ class GT_Export_Assets(Operator):
         user_preferences = context.user_preferences
         self.addon_prefs = user_preferences.addons[__package__].preferences
 
-        exportedObjects = 0
-        exportedGroups = 0
-        exportedPasses = 0
+        self.exportCount = 0
+        self.exportedObjects = 0
+        self.exportedGroups = 0
+        self.exportedPasses = 0
 
+        # Check for stupid errors before continuing
+        result = self.CheckForErrors(context)
+        print("RAAAWR")
+        print(result)
+        if result is not None:
+            print("RAAAWR")
+            self.report({'WARNING'}, result)
+            return {'FINISHED'}
+
+        # Setup the scene
         self.SetupScene(context)
+
+        context.window_manager.progress_begin(0, self.exportCount)
 
         # OBJECT CYCLE
         ###############################################################
         ###############################################################
         # Cycle through the available objects
         for object in context.scene.objects:
-            if object.type == 'MESH':
+            if object.GXObj.enable_export is True:
+
+                print("-"*109)
+                print("NEW JOB", "-"*100)
                 print("Object", object.name, "found.")
+                print("-"*109)
 
-                if object.GXObj.enable_export is True:
+                #Get the export default for the object
+                expKey = int(object.GXObj.export_default) - 1
 
-                    print("-"*109)
-                    print("NEW JOB", "-"*100)
-                    print("-"*109)
-
-                    #Get the export default for the object
-                    expKey = int(object.GXObj.export_default) - 1
-
-                    if expKey == -1:
-                        statement = "The selected object " + object.name + " has no export default selected.  Please define!"
-                        FocusObject(object)
-                        self.report({'WARNING'}, statement)
-                        self.RestoreScene(context)
-                        return {'FINISHED'}
+                if expKey == -1:
+                    statement = "The selected object " + object.name + " has no export default selected.  Please define!"
+                    FocusObject(object)
+                    self.report({'WARNING'}, statement)
+                    self.RestoreScene(context)
+                    return {'FINISHED'}
 
 
-                    exportDefault = self.addon_prefs.export_defaults[expKey]
-                    useBlendDirectory = exportDefault.use_blend_directory
-                    useObjectDirectory = exportDefault.use_sub_directory
-                    self.GetExportInfo(exportDefault)
+                exportDefault = self.addon_prefs.export_defaults[expKey]
+                useBlendDirectory = exportDefault.use_blend_directory
+                useObjectDirectory = exportDefault.use_sub_directory
+                self.GetExportInfo(exportDefault)
 
-                    rootObject = object
-                    rootType = IdentifyObjectTag(context, rootObject, exportDefault)
-                    useSceneOrigin = rootObject.GXObj.use_scene_origin
+                rootObject = object
+                rootType = IdentifyObjectTag(context, rootObject, exportDefault)
+                useSceneOrigin = rootObject.GXObj.use_scene_origin
 
-                    print("Root Type is...", rootType)
+                print("Root Type is...", rootType)
 
-                    # Need to get the movement location.  If the user wants to use the scene origin though,
-                    # just make it 0
+                # Need to get the movement location.  If the user wants to use the scene origin though,
+                # just make it 0
+                rootObjectLocation = Vector((0.0, 0.0, 0.0))
+
+                if useSceneOrigin is False:
+                    tempROL = FindWorldSpaceObjectLocation(rootObject, context)
                     rootObjectLocation = Vector((0.0, 0.0, 0.0))
+                    rootObjectLocation[0] = tempROL[0]
+                    rootObjectLocation[1] = tempROL[1]
+                    rootObjectLocation[2] = tempROL[2]
 
-                    if useSceneOrigin:
-                        tempROL = FindWorldSpaceObjectLocation(rootObject, context)
-                        rootObjectLocation = Vector((0.0, 0.0, 0.0))
-                        rootObjectLocation[0] = tempROL[0]
-                        rootObjectLocation[1] = tempROL[1]
-                        rootObjectLocation[2] = tempROL[2]
+                # Collect hidden defaults to restore afterwards.
+                objectName = ""
 
-                    # Collect hidden defaults to restore afterwards.
-                    objectName = ""
+                # Lists for the UE4 renaming feature
+                renameNameList = []
+                renameObjectList = []
 
-                    # Lists for the UE4 renaming feature
-                    renameNameList = []
-                    renameObjectList = []
-
-                    # Get the object's base name
-                    if rootType != -1:
-                        objectName = RemoveObjectTag(context, rootObject, exportDefault)
-                        print("objectName =", objectName)
-                    else:
-                        objectName = rootObject.name
+                # Get the object's base name
+                if rootType != -1:
+                    objectName = RemoveObjectTag(context, rootObject, exportDefault)
+                    print("objectName =", objectName)
+                else:
+                    objectName = rootObject.name
 
 
-                    for objPass in exportDefault.passes:
+                for objPass in exportDefault.passes:
 
-                        print("-"*109)
-                        print("NEW PASS", "-"*100)
-                        print("-"*109)
-                        print("Export pass", objPass.name, "being used on object", object.name)
+                    print("-"*109)
+                    print("NEW PASS", "-"*100)
+                    print("-"*109)
+                    print("Export pass", objPass.name, "being used on object", object.name)
 
-                        activeTags = []
-                        foundObjects = []
-                        i = 0
+                    activeTags = []
+                    foundObjects = []
+                    i = 0
 
-                        # Create a list for every tag in use
-                        print("Processing tags...")
-                        for passTag in objPass.tags:
-                            if passTag.use_tag is True:
-                                print("Active Tag Found: ", passTag.name)
-                                activeTags.append(exportDefault.tags[i])
+                    # Create a list for every tag in use
+                    print("Processing tags...")
+                    for passTag in objPass.tags:
+                        if passTag.use_tag is True:
+                            print("Active Tag Found: ", passTag.name)
+                            activeTags.append(exportDefault.tags[i])
 
-                            i += 1
+                        i += 1
 
-                        # Obtain some pass-specific preferences
-                        self.applyModifiers = objPass.apply_modifiers
-                        useTriangulate = objPass.triangulate
-                        exportIndividual = objPass.export_individual
-                        self.exportAnim = objPass.export_animation
+                    # Obtain some pass-specific preferences
+                    self.applyModifiers = objPass.apply_modifiers
+                    useTriangulate = objPass.triangulate
+                    exportIndividual = objPass.export_individual
+                    self.exportAnim = objPass.export_animation
+                    self.meshSmooth = self.GetNormals(rootObject.GXObj.normals)
 
-                        self.meshSmooth = self.GetNormals(rootObject.GXObj.normals)
-                        self.exportTypes = exportDefault.export_types
-
-
-                        # Also set file path name
-                        path = ""                                # Path given from the location default
-                        fileName = ""                            # File name for the object (without tag suffixes)
-                        suffix = objPass.file_suffix             # Additional file name suffix
-                        sub_directory = objPass.sub_directory    # Whether a sub-directory needs to be created
+                    # Also set file path name
+                    path = ""                                # Path given from the location default
+                    fileName = ""                            # File name for the object (without tag suffixes)
+                    suffix = objPass.file_suffix             # Additional file name suffix
+                    sub_directory = objPass.sub_directory    # Whether a sub-directory needs to be created
 
 
-                        # Lets see if the root object can be exported...
+                    # Lets see if the root object can be exported...
+                    expRoot = False
+
+                    if rootType == -1:
+                        if len(activeTags) == 0:
+                            expRoot = True
+                    elif objPass.tags[rootType].use_tag is True:
+                        expRoot = True
+
+                    if exportDefault.filter_render is True and rootObject.hide_render is True:
                         expRoot = False
 
-                        if rootType == -1:
-                            if len(activeTags) == 0:
-                                expRoot = True
-                        elif objPass.tags[rootType].use_tag is True:
-                            expRoot = True
-
-                        if exportDefault.filter_render is True and rootObject.hide_render is True:
-                            expRoot = False
-
-                        print("Export Root = ", expRoot)
+                    print("Export Root = ", expRoot)
 
 
-                        #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                        path = self.CalculateFilePath(context, rootObject.GXObj.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
+                    #/////////////////// - FILE NAME - /////////////////////////////////////////////////
+                    path = self.CalculateFilePath(context, rootObject.GXObj.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
 
-                        if path.find("WARNING") == 0:
-                            path = path.replace("WARNING: ", "")
-                            self.report({'WARNING'}, path)
-                            self.RestoreScene(context)
-                            return {'CANCELLED'}
+                    if path.find("WARNING") == 0:
+                        path = path.replace("WARNING: ", "")
+                        self.report({'WARNING'}, path)
+                        self.RestoreScene(context)
+                        return {'CANCELLED'}
 
-                        print("Path created...", path)
-
-
-                        #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
-                        # In this new system, we only have to search through objects that meet the criteria using one function,
-                        # only for the tags that are active
-
-                        print(">>>> Collecting Objects <<<<")
-
-                        if len(activeTags) > 0:
-                            print(">>>> Tags On, searching... <<<")
-
-                            # For each tag, try to search for an object that matches the tag
-                            for tag in activeTags:
-                                if FindObjectWithTag(context, objectName, tag) is not None:
-                                    item = FindObjectWithTag(context, objectName, tag)
-
-                                    if item != None:
-                                        if item.name != rootObject.name:
-                                            if exportDefault.filter_render is True and item.hide_render is False:
-                                                foundObjects.append(item)
-
-                                                print("Tag", tag.name, "Found...", item.name)
-
-                                                # If the active tag has the ability to replace names, do it here.
-                                                if tag.x_ue4_collision_naming is True:
-                                                    print("SUPER SECRET REPLACE NAME FUNCTION USED!")
-                                                    renameObjectList.append(item)
-                                                    renameNameList.append(item.name)
-
-                                                    item.name = item.name.replace(tag.name_filter, "")
-                                                    item.name = "UCX_" + item.name + exportDefault.tags[1].name_filter
-
-                                                    print("Name replaced...", item.name)
+                    print("Path created...", path)
 
 
-                        # Debug check for found objects
-                        print("Checking found objects...")
-                        for item in foundObjects:
-                            if exportDefault.filter_render is True and item.hide_render is False:
-                                print(item.name)
+                    #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
+                    # In this new system, we only have to search through objects that meet the criteria using one function,
+                    # only for the tags that are active
+
+                    print(">>>> Collecting Objects <<<<")
+
+                    if len(activeTags) > 0:
+                        print(">>>> Tags On, searching... <<<")
+
+                        # For each tag, try to search for an object that matches the tag
+                        for tag in activeTags:
+                            if FindObjectWithTag(context, objectName, tag) is not None:
+                                item = FindObjectWithTag(context, objectName, tag)
+
+                                if item != None:
+                                    if item.name != rootObject.name:
+                                        if exportDefault.filter_render is True and item.hide_render is False:
+                                            foundObjects.append(item)
+
+                                            print("Tag", tag.name, "Found...", item.name)
+
+                                            # If the active tag has the ability to replace names, do it here.
+                                            if tag.x_ue4_collision_naming is True:
+                                                print("SUPER SECRET REPLACE NAME FUNCTION USED!")
+                                                renameObjectList.append(item)
+                                                renameNameList.append(item.name)
+
+                                                item.name = item.name.replace(tag.name_filter, "")
+                                                item.name = "UCX_" + item.name + exportDefault.tags[1].name_filter
+
+                                                print("Name replaced...", item.name)
 
 
-                        # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
-                        # ///////////////////////////////////////////////////////////////////////////////////
-                        if useSceneOrigin is False:
-                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
-
-                        print(">>> Asset List Count...", len(foundObjects))
-
-                        # /////////// - MODIFIERS - ///////////////////////////////////////////////////
-                        # ////////////////////////////////////////////////////////////////////////////
-                        print(">>> Triangulating Objects <<<")
-                        triangulateList = []
-                        triangulateList += foundObjects
-
-                        if expRoot is True:
-                            triangulateList.append(rootObject)
-
-                        if useTriangulate is True and self.applyModifiers is True:
-                            for item in triangulateList:
-                                if item.type == 'MESH':
-                                    print("Triangulating Mesh...", item.name)
-                                    stm = item.GXStm
-                                    hasTriangulation = False
-                                    hasTriangulation = self.AddTriangulate(item)
-                                    stm.has_triangulate = hasTriangulation
+                    # Debug check for found objects
+                    print("Checking found objects...")
+                    for item in foundObjects:
+                        if exportDefault.filter_render is True and item.hide_render is False:
+                            print(item.name)
 
 
-                        # //////////// - EXPORT PROCESS - ///////////////////////////////////////////
-                        # A separate FBX export function call for every corner case isnt actually necessary
-                        finalExportList = []
-                        finalExportList += foundObjects
+                    # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+                    if useSceneOrigin is False:
+                        MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
-                        if expRoot is True:
-                            finalExportList.append(rootObject)
+                    print(">>> Asset List Count...", len(foundObjects))
 
-                        if exportIndividual is True:
-                            self.PrepareExportIndividual(context, finalExportList, path, suffix)
+                    # /////////// - MODIFIERS - ///////////////////////////////////////////////////
+                    # ////////////////////////////////////////////////////////////////////////////
+                    print(">>> Triangulating Objects <<<")
+                    triangulateList = []
+                    triangulateList += foundObjects
 
-                        else:
-                            self.PrepareExportCombined(finalExportList, path, objectName, suffix)
+                    if expRoot is True:
+                        triangulateList.append(rootObject)
+
+                    if useTriangulate is True and self.applyModifiers is True:
+                        for item in triangulateList:
+                            if item.type == 'MESH':
+                                print("Triangulating Mesh...", item.name)
+                                stm = item.GXStm
+                                hasTriangulation = False
+                                hasTriangulation = self.AddTriangulate(item)
+                                stm.has_triangulate = hasTriangulation
 
 
-                        # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
-                        # ///////////////////////////////////////////////////////////////////////////////////
-                        # Restore names
-                        i = 0
-                        for item in renameObjectList:
-                            item.name = renameNameList[i]
-                            i += 1
+                    # //////////// - EXPORT PROCESS - ///////////////////////////////////////////
+                    # A separate FBX export function call for every corner case isnt actually necessary
+                    finalExportList = []
+                    finalExportList += foundObjects
 
-                        # Remove any triangulation modifiers
-                        if useTriangulate is True and self.applyModifiers is True:
-                            for item in triangulateList:
-                                if item.type == 'MESH':
-                                    if item.GXStm.has_triangulate is False:
-                                        print("Object has created triangulation, remove it.")
-                                        self.RemoveTriangulate(item)
+                    if expRoot is True:
+                        finalExportList.append(rootObject)
 
-                        # Move objects back
+                    if exportIndividual is True:
+                        self.PrepareExportIndividual(context, finalExportList, path, suffix)
+
+                    else:
+                        self.PrepareExportCombined(finalExportList, path, objectName, suffix)
+
+
+                    # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
+                    # ///////////////////////////////////////////////////////////////////////////////////
+                    # Restore names
+                    i = 0
+                    for item in renameObjectList:
+                        item.name = renameNameList[i]
+                        i += 1
+
+                    # Remove any triangulation modifiers
+                    if useTriangulate is True and self.applyModifiers is True:
+                        for item in triangulateList:
+                            if item.type == 'MESH':
+                                if item.GXStm.has_triangulate is False:
+                                    print("Object has created triangulation, remove it.")
+                                    self.RemoveTriangulate(item)
+
+                    # Move objects back
+                    if useSceneOrigin is False:
                         MoveAll(rootObject, context, rootObjectLocation)
 
-                        exportedPasses += 1
-                        print(">>> Pass Complete <<<")
+                    self.exportedPasses += 1
+                    print(">>> Pass Complete <<<")
 
-                    # Count up exported objects
-                    exportedObjects += 1
-                    print(">>> Object Export Complete <<<")
+                # Count up exported objects
+                self.exportedObjects += 1
+                self.exportCount += 1
+                context.window_manager.progress_update(self.exportCount)
+                print(">>> Object Export Complete <<<")
 
         # GROUP CYCLE
         ###############################################################
@@ -594,6 +671,7 @@ class GT_Export_Assets(Operator):
                 print("-"*79)
                 print("NEW JOB", "-"*70)
                 print("-"*79)
+                print(group.name)
 
                 # Before we do anything, check that a root object exists
                 rootObject = None
@@ -614,7 +692,7 @@ class GT_Export_Assets(Operator):
                 expKey = int(group.GXGrp.export_default) - 1
 
                 if expKey == -1:
-                    statement = "The group object " + group.name + " has no export default selected.  Please define!"
+                    statement = "The group " + group.name + " has no export default selected.  Please define!"
                     self.report({'WARNING'}, statement)
                     self.RestoreScene(context)
                     return {'FINISHED'}
@@ -675,10 +753,9 @@ class GT_Export_Assets(Operator):
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
                     self.exportAnim = objPass.export_animation
+                    self.meshSmooth = self.GetNormals(group.GXGrp.normals)
 
                     hasTriangulation = False
-                    self.meshSmooth = self.GetNormals(group.GXGrp.normals)
-                    self.exportTypes = exportDefault.export_types
                     print("EXPORT TYPES:", self.exportTypes)
 
                     # Also set file path name
@@ -690,7 +767,7 @@ class GT_Export_Assets(Operator):
 
                     # Lets see if the root object can be exported...
                     expRoot = False
-                    if rootObject != None and rootObjectNotGroup is True:
+                    if rootObject != None and rootObjectNotGroup is False:
                         if rootType == -1:
                             if len(activeTags) == 0:
                                 expRoot = True
@@ -698,6 +775,8 @@ class GT_Export_Assets(Operator):
                             expRoot = True
                         if exportDefault.filter_render == True and rootObject.hide_render == True:
                             expRoot = False
+
+                    print("expRoot:", expRoot)
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
@@ -830,15 +909,18 @@ class GT_Export_Assets(Operator):
                     if rootObject != None:
                         MoveAll(rootObject, context, rootObjectLocation)
 
-                    exportedPasses += 1
+                    self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
 
 
-                exportedGroups += 1
+                self.exportedGroups += 1
+                self.exportCount += 1
+                context.window_manager.progress_update(self.exportCount)
                 print(">>> Group Export Complete <<<")
 
 
         self.RestoreScene(context)
+        context.window_manager.progress_end()
 
         textGroupSingle = " group"
         textGroupMultiple = " groups"
@@ -846,30 +928,30 @@ class GT_Export_Assets(Operator):
 
         output = "Finished exporting "
 
-        if exportedObjects > 1:
-            output += str(exportedObjects) + " objects"
-        elif exportedObjects == 1:
-            output += str(exportedObjects) + " object"
+        if self.exportedObjects > 1:
+            output += str(self.exportedObjects) + " objects"
+        elif self.exportedObjects == 1:
+            output += str(self.exportedObjects) + " object"
 
-        if exportedObjects > 0 and exportedGroups > 0:
+        if self.exportedObjects > 0 and self.exportedGroups > 0:
             output += " and "
 
-        if exportedGroups > 1:
-            output += str(exportedGroups) + " groups"
-        elif exportedGroups == 1:
-            output += str(exportedGroups) + " group"
+        if self.exportedGroups > 1:
+            output += str(self.exportedGroups) + " groups"
+        elif self.exportedGroups == 1:
+            output += str(self.exportedGroups) + " group"
 
         output += ".  "
 
         output += "Total of "
 
-        if exportedPasses > 1:
-            output += str(exportedPasses) + " passes."
-        elif exportedPasses == 1:
-            output += str(exportedPasses) + " pass."
+        if self.exportedPasses > 1:
+            output += str(self.exportedPasses) + " passes."
+        elif self.exportedPasses == 1:
+            output += str(self.exportedPasses) + " pass."
 
         # Output a nice report
-        if exportedObjects == 0 and exportedGroups == 0:
+        if self.exportedObjects == 0 and self.exportedGroups == 0:
             self.report({'WARNING'}, 'No objects were exported.  Ensure any objects tagged for exporting are enabled.')
 
         else:

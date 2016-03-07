@@ -7,7 +7,7 @@ from mathutils import Vector
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
 
 class GX_Add_Path(Operator):
-    """Creates a path from the menu"""
+    """Creates a new Location, that lets you define a file path for exports to go to."""
 
     bl_idname = "scene.gx_addpath"
     bl_label = "Add"
@@ -33,7 +33,7 @@ class GX_Add_Path(Operator):
         return {'FINISHED'}
 
 class GX_Delete_Path(Operator):
-    """Deletes the selected path from the menu"""
+    """Deletes the selected Location from the list."""
 
     bl_idname = "scene.gx_deletepath"
     bl_label = "Remove"
@@ -51,7 +51,7 @@ class GX_Delete_Path(Operator):
 #///////////////// - EXPORT DEFAULTS - ///////////////////////////////////////////
 
 class GX_Add_Export(Operator):
-    """Creates a path from the menu"""
+    """Creates a new Export Preset."""
 
     bl_idname = "scene.gx_addexport"
     bl_label = "Add"
@@ -65,13 +65,18 @@ class GX_Add_Export(Operator):
         newDefault.name = "Export " + str(len(addon_prefs.export_defaults))
         newDefault.path = ""
 
+        # Ensure the tag index keeps within a window
+        addon_prefs.export_defaults_index = len(addon_prefs.export_defaults) - 1
+
         return {'FINISHED'}
 
 class GX_Delete_Export(Operator):
-    """Deletes the selected path from the menu"""
+    """Deletes the selected Export Preset from the list."""
 
     bl_idname = "scene.gx_deleteexport"
-    bl_label = "Remove"
+    bl_label = "Delete Export Preset"
+
+    #StringProperty(default="Are you sure you wish to delete the selected preset?")
 
     def execute(self, context):
         print(self)
@@ -80,10 +85,14 @@ class GX_Delete_Export(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         addon_prefs.export_defaults.remove(addon_prefs.export_defaults_index)
 
+        if addon_prefs.export_defaults_index > 0:
+            addon_prefs.export_defaults_index -= 1
+
         return {'FINISHED'}
 
+
 class GX_Add_Tag(Operator):
-    """Creates a path from the menu"""
+    """Creates a new Tag."""
 
     bl_idname = "scene.gx_addtag"
     bl_label = "Add"
@@ -106,10 +115,13 @@ class GX_Add_Tag(Operator):
             newPassTag.name = newTag.name
             newPassTag.index = len(export.tags) - 1
 
+        # Ensure the tag index keeps within a window
+        export.tags_index = len(export.tags) - 1
+
         return {'FINISHED'}
 
 class GX_Delete_Tag(Operator):
-    """Deletes the selected path from the menu"""
+    """Deletes the selected Tag from the list."""
 
     bl_idname = "scene.gx_deletetag"
     bl_label = "Remove"
@@ -140,13 +152,14 @@ class GX_Delete_Tag(Operator):
             expPass.tags_index -= 1
             expPass.tags.remove(export.tags_index)
 
-        export.tags_index -= 1
+        if export.tags_index > 0:
+            export.tags_index -= 1
 
         return {'FINISHED'}
 
 
 class GX_Add_Pass(Operator):
-    """Creates a path from the menu"""
+    """Creates a new Pass."""
 
     bl_idname = "scene.gx_addpass"
     bl_label = "Add"
@@ -168,10 +181,13 @@ class GX_Add_Pass(Operator):
             newPassTag.name = tag.name
             newPassTag.index = len(export.tags) - 1
 
+        # Ensure the tag index keeps within a window
+        export.passes_index = len(export.passes) - 1
+
         return {'FINISHED'}
 
 class GX_Delete_Pass(Operator):
-    """Deletes the selected path from the menu"""
+    """Deletes the selected Pass from the list."""
 
     bl_idname = "scene.gx_deletepass"
     bl_label = "Remove"
@@ -184,7 +200,8 @@ class GX_Delete_Pass(Operator):
         export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
         export.passes.remove(export.passes_index)
 
-        export.passes_index -= 1
+        if export.passes_index > 0:
+            export.passes_index -= 1
 
         return {'FINISHED'}
 
@@ -224,7 +241,7 @@ class GX_Shift_Path_Down(Operator):
 
 #///////////////// - OBJECTS - //////////////////////////////////////////////////////
 class GX_Refresh_Objects(Operator):
-    """Generates a list of groups to browse"""
+    """Refreshes the list of objects that are marked for export."""
 
     bl_idname = "scene.gx_refobjects"
     bl_label = "Refresh"
@@ -251,7 +268,7 @@ class GX_Refresh_Objects(Operator):
 
 
 class GX_Refresh_Groups(Operator):
-    """Generates a list of groups to browse"""
+    """Refreshes the list of available groups in the scene, that can be marked for export."""
 
     bl_idname = "scene.gx_refgroups"
     bl_label = "Refresh"
@@ -271,7 +288,7 @@ class GX_Refresh_Groups(Operator):
         return {'FINISHED'}
 
 class GX_Set_Root_Object(Operator):
-    """Lets you click on another object to set it as the root object for the group."""
+    """Allows you to set the Origin Object through an interactive tool.  Right-Click: Select the object you wish to be the origin point for the scene.  Esc - Quit the tool."""
 
     bl_idname = "scene.gx_setroot"
     bl_label = "Remove"
@@ -350,7 +367,7 @@ class GX_Set_Root_Object(Operator):
 
 
 class GX_Clear_Root_Object(Operator):
-    """Clears the currently chosen root object."""
+    """Clears the currently chosen origin object for the group."""
 
     bl_idname = "scene.gx_clearroot"
     bl_label = "Remove"
@@ -371,7 +388,7 @@ class GX_Clear_Root_Object(Operator):
 
 
 class GX_Reset_Scene(Operator):
-    """Resets all object and group variables in the file."""
+    """Resets all object and group variables in the scene.  Use at your own peril!"""
 
     bl_idname = "scene.gx_resetsceneprops"
     bl_label = "Reset Scene"
@@ -391,27 +408,21 @@ class GX_Reset_Scene(Operator):
 
         active = context.active_object
 
-        for group in bpy.data.groups:
-            group.GXGrp.export_group = False
-            group.GXGrp.auto_assign = False
-            group.GXGrp.location_default = '0'
+        for group in bpy.scene.groups:
+            obj.enable_export = False
+            obj.root_object = False
+            obj.location_default = '0'
+            obj.export_default = '0'
+            obj.normals = '1'
 
-        for object in bpy.data.objects:
+        for object in bpy.scene.objects:
             obj = object.GXObj
-            FocusObject(object)
 
             obj.enable_export = False
-            obj.apply_modifiers = False
-            obj.triangulate = False
-            obj.use_collision = False
-            obj.generate_convex = False
-            obj.separate_collision = False
-            obj.collision_object = ""
-            obj.export_collision = False
+            obj.use_scene_origin = False
             obj.location_default = '0'
-            obj.export_anim = False
-            obj.export_anim_file = False
-            obj.export_anim_actions = False
+            obj.export_default = '0'
+            obj.normals = '1'
 
         # Re-select the objects previously selected
         FocusObject(active)
@@ -553,18 +564,25 @@ class GX_Refresh_Actions(Operator):
 
         return {'FINISHED'}
 
-class GX_Group_MultiEdit_Warning(Operator):
-    """A simple warning for turning on Group MultiEdit"""
-    bl_idname = "scene.gx_group_multiedit_warning"
-    bl_label = "TEST ME"
+class GX_Tutorial_Tags(Operator):
+    """Deletes the selected Export Preset from the list."""
+
+    bl_idname = "gx_tutorial.tags"
+    bl_label = "Tags let you automatically split objects in your passes by defining an object suffix/prefix and/or object type, that objects in the pass it's used in need to match in order to be included for export, enabiling you to create multiple different versions of an object or group export, without having to manually define them."
+
+    StringProperty(default="Are you sure you wish to delete the selected preset?")
 
     def execute(self, context):
-        scn = context.scene.GXScn
-        ui = context.scene.GXUI
+        print(self)
 
-        if ui.group_multi_edit is True:
-            self.report({'WARNING'}, 'Group Multi-Edit has been turned on, be careful!')
-            return {'FINISHED'}
+        #main(self, context)
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+        return {'FINISHED'}
+
 
 class GX_Custom_Presets(Operator):
     """Adds a special preset that changes how objects are processed for export, making exports from Blender to other programs smoother."""
@@ -754,42 +772,5 @@ class GX_Custom_Presets(Operator):
                 newPassTag.name = tag.name
                 newPassTag.index = len(export.tags) - 1
                 newPassTag.use_tag = True
-
-
-
-        return {'FINISHED'}
-
-class GX_Test_Me(Operator):
-
-    """Dont fucking ask"""
-
-    bl_idname = "scene.gx_teststuff"
-    bl_label = "TEST ME"
-
-    def execute(self, context):
-
-        string = "_LP_LP"
-        suffix = "_LP"
-
-        print("First test...")
-        CheckSuffix(string, suffix)
-
-        string = "Cube_LPSUPERAWESOME_LP"
-        suffix = "_LP"
-
-        print("Second test...")
-        CheckSuffix(string, suffix)
-
-        string = "CubeDX"
-        suffix = "_LP"
-
-        print("Third test...")
-        CheckSuffix(string, suffix)
-
-        string = "PL_ebuC"
-        suffix = "_LP"
-
-        print("Final test...")
-        CheckSuffix(string, suffix)
 
         return {'FINISHED'}

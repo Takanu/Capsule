@@ -1,4 +1,4 @@
-from .update import Update_EnableExport, Update_AutoAssign, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Focus_Object, Focus_Group, Select_Object, Select_Group, Update_GroupExport, Update_GroupRootObject, Update_GroupExportDefault, Update_GroupLocationDefault, Update_GroupNormals
+from .update import Update_EnableExport, Update_SceneOrigin, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Focus_Object, Focus_Group, Select_Object, Select_Group, Update_GroupExport, Update_GroupRootObject, Update_GroupExportDefault, Update_GroupLocationDefault, Update_GroupNormals
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
@@ -205,8 +205,8 @@ class GX_Object_Preferences(PropertyGroup):
     use_scene_origin = BoolProperty(
         name = "Use Scene Origin",
         description = "Uses the scene's centre as an origin point for the object export, rather than the object's own origin point.",
-        default = False
-    )
+        default = False,
+        update = Update_SceneOrigin)
 
     location_default = EnumProperty(
         name="Select Location Default",
@@ -239,7 +239,7 @@ class GX_Group_Preferences(PropertyGroup):
         update=Update_GroupExport)
 
     root_object = StringProperty(
-        name = "Root Object",
+        name = "Origin Object",
         description = "Defines the exported origin point of the group object.  If not defined, the origin will be the world center.",
         default = "",
         update=Update_GroupRootObject)
@@ -287,45 +287,10 @@ class GX_UI_Preferences(PropertyGroup):
         items = GetExportPresets
     )
 
-    presets_dropdown = BoolProperty(default = False)
-    tags_dropdown = BoolProperty(default = False)
-    passes_dropdown = BoolProperty(default = False)
-    options_dropdown = BoolProperty(default = False)
-
     action_list = CollectionProperty(type=ActionItem)
     action_list_index = IntProperty()
 
-    custom_presets = EnumProperty(
-    name = "Custom Presets",
-    description = "Adds a special preset that changes how objects are processed for export, making exports from Blender to other programs smoother.",
-    items=(
-    ('1', 'Unreal Engine 4 Standard', 'Sets up a custom preset for UE4, with support for multiple collision objects per low_poly and seamless collision importing.'),
-    ('2', 'Unity 5', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.'),
-    ('3', '3DS Max', 'Hahahaha, just kidding.')
-    ),)
-
     enable_export_loop = BoolProperty(default = False)
-
-    export_preset_options = EnumProperty(
-        name = "Export Options",
-        description = "",
-        items=(
-        ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
-        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
-        ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
-        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
-        ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
-        ),)
-
-    object_multi_edit = BoolProperty(
-        name = "Group Multi-Edit Mode",
-        description = "Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
-        default=True)
-
-    group_multi_edit = BoolProperty(
-        name = "Group Multi-Edit Mode",
-        description = "Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
-        default=False)
 
 class GX_Object_StateMachine(PropertyGroup):
 

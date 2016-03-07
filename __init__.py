@@ -196,6 +196,11 @@ class ExportPreset(PropertyGroup):
         default=False
     )
 
+    bundle_textures = BoolProperty(
+        name="Bundle Textures",
+        description="Allows any textures that are packed in the .blend file and applied to an object or group you're exporting, to be bundled with it inside the FBX file.",
+        default=False)
+
     filter_render = BoolProperty(
         name="Filter by Rendering",
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
@@ -381,6 +386,32 @@ class GEXAddonPreferences(AddonPreferences):
     export_defaults = CollectionProperty(type=ExportPreset)
     export_defaults_index = IntProperty(default=0)
 
+    presets_dropdown = BoolProperty(default = False)
+    tags_dropdown = BoolProperty(default = False)
+    passes_dropdown = BoolProperty(default = False)
+    options_dropdown = BoolProperty(default = False)
+
+    export_preset_options = EnumProperty(
+        name = "Export Options",
+        description = "",
+        items=(
+        ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
+        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
+        ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
+        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
+        ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
+        ),)
+
+    object_multi_edit = BoolProperty(
+        name = "Group Multi-Edit Mode",
+        description = "Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
+        default=True)
+
+    group_multi_edit = BoolProperty(
+        name = "Group Multi-Edit Mode",
+        description = "Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
+        default=False)
+
     object_list_autorefresh = BoolProperty(
         name="Object List Auto-Refresh",
         description="Determines whether or not an object on the object export list will automatically be removed when Enable Export is unticked.  If this option is disabled, a manual refresh button will appear next to the list."
@@ -410,18 +441,18 @@ class GEXAddonPreferences(AddonPreferences):
         export_box = layout.box()
         col_export_title = export_box.row(align=True)
 
-        if ui.presets_dropdown is False:
-            col_export_title.prop(ui, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+        if addon_prefs.presets_dropdown is False:
+            col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            #col_export_title.operator("gx_tutorial.tags", text="", icon='INFO')
             col_export_title.label("Export Defaults")
             col_export_title.operator_menu_enum("gx.custom_presets", "presets")
+
 
         else:
-            col_export_title.prop(ui, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            #col_export_title.operator("gx_tutorial.tags", text="", icon='INFO')
             col_export_title.label("Export Defaults")
             col_export_title.operator_menu_enum("gx.custom_presets", "presets")
-
-            #custom_presets = export_box.column(align=True)
-            #custom_presets.operator_menu_enum("gx.custom_presets", "presets")
 
             col_export = export_box.row(align=True)
             col_export.template_list("Export_Default_UIList", "default", addon_prefs, "export_defaults", addon_prefs, "export_defaults_index", rows=3, maxrows=6)
@@ -438,28 +469,41 @@ class GEXAddonPreferences(AddonPreferences):
                 export_settings = export_box.column(align=True)
                 export_settings.separator()
                 export_tabs = export_settings.row(align=True)
-                export_tabs.prop(ui, "export_preset_options", expand=True)
+                export_tabs.prop(addon_prefs, "export_preset_options", expand=True)
 
                 export_separator = export_box.column(align=True)
                 #export_separator.separator()
 
-                if ui.export_preset_options == 'Export':
+
+                if addon_prefs.export_preset_options == 'Export':
                     export_main = export_box.row(align=True)
+                    export_main.separator()
+
                     export_1 = export_main.column(align=True)
-
-                    export_1.label("Exportable Object Types")
+                    export_1.label("Additional Options")
                     export_1.separator()
-                    export_types = export_1.row(align=True)
-                    export_types.prop(currentExp, "export_types")
-                    export_1.separator()
-                    export_1.separator()
-
                     export_1.prop(currentExp, "use_blend_directory")
                     export_1.prop(currentExp, "use_sub_directory")
                     export_1.prop(currentExp, "filter_render")
+                    export_1.prop(currentExp, "bundle_textures")
 
-                if ui.export_preset_options == 'Transform':
+                    export_main.separator()
+                    export_main.separator()
+                    export_main.separator()
+
+                    export_2 = export_main.column(align=True)
+                    export_2.label("Exportable Object Types")
+                    export_2.separator()
+                    #export_types = export_1.row(align=True)
+                    export_2.prop(currentExp, "export_types")
+                    export_2.separator()
+
+                    export_main.separator()
+
+                if addon_prefs.export_preset_options == 'Transform':
                     export_main = export_box.row(align=True)
+                    export_main.separator()
+
                     export_1 = export_main.column(align=True)
                     export_1.prop(currentExp, "bake_space_transform")
                     export_1.separator()
@@ -467,37 +511,69 @@ class GEXAddonPreferences(AddonPreferences):
                     export_scale = export_1.row(align=True)
                     export_scale.prop(currentExp, "global_scale")
                     export_scale.prop(currentExp, "apply_unit_scale", text="", icon='NDOF_TRANS')
+                    export_1.separator()
 
-                    export_main_separator = export_main.column(align=True)
-                    export_main_separator.separator()
-                    export_main_separator.separator()
+                    export_main.separator()
+                    export_main.separator()
+                    export_main.separator()
 
                     export_2 = export_main.column(align=True)
-                    export_2.prop(currentExp, "axis_up")
-                    export_2.prop(currentExp, "axis_forward")
-                    export_2.separator()
+                    export_2_row = export_2.row(align=True)
+                    export_2_row.alignment = 'RIGHT'
 
-                elif ui.export_preset_options == 'Geometry':
+                    export_2_label = export_2_row.column(align=True)
+                    export_2_label.alignment = 'RIGHT'
+                    export_2_label.label("Axis Up:")
+                    export_2_label.label("Axis Forward:")
+
+                    export_2_dropdowns = export_2_row.column(align=True)
+                    export_2_dropdowns.alignment = 'EXPAND'
+                    export_2_dropdowns.prop(currentExp, "axis_up", text="")
+                    export_2_dropdowns.prop(currentExp, "axis_forward", text="")
+                    export_2_dropdowns.separator()
+
+                    export_main.separator()
+
+                elif addon_prefs.export_preset_options == 'Geometry':
                     export_main = export_box.row(align=True)
+                    export_main.separator()
                     export_1 = export_main.column(align=True)
                     export_1.prop(currentExp, "loose_edges")
                     export_1.prop(currentExp, "tangent_space")
                     export_1.separator()
 
-                elif ui.export_preset_options == 'Armature':
+                elif addon_prefs.export_preset_options == 'Armature':
                     export_main = export_box.row(align=True)
+                    export_main.separator()
                     export_1 = export_main.column(align=True)
                     export_1.prop(currentExp, "use_armature_deform_only")
                     export_1.prop(currentExp, "add_leaf_bones")
 
-                    export_2 = export_main.column(align=True)
-                    export_2.prop(currentExp, "primary_bone_axis")
-                    export_2.prop(currentExp, "secondary_bone_axis")
-                    export_2.prop(currentExp, "armature_nodetype")
-                    export_2.separator()
+                    export_main.separator()
+                    export_main.separator()
+                    export_main.separator()
 
-                elif ui.export_preset_options == 'Animation':
+                    export_2 = export_main.row(align=True)
+                    export_2.alignment = 'RIGHT'
+                    export_2_label = export_2.column(align=True)
+                    export_2_label.alignment = 'RIGHT'
+                    export_2_label.label("Primary Bone Axis:")
+                    export_2_label.label("Secondary Bone Axis:")
+                    export_2_label.label("Armature Node Type:")
+
+                    export_2_dropdowns = export_2.column(align=True)
+                    export_2_dropdowns.alignment = 'EXPAND'
+                    export_2_dropdowns.prop(currentExp, "primary_bone_axis", text="")
+                    export_2_dropdowns.prop(currentExp, "secondary_bone_axis", text="")
+                    export_2_dropdowns.prop(currentExp, "armature_nodetype", text="")
+                    export_2_dropdowns.separator()
+
+                    export_main.separator()
+
+                elif addon_prefs.export_preset_options == 'Animation':
                     export_main = export_box.row(align=True)
+                    export_main.separator()
+
                     export_1 = export_main.column(align=True)
                     export_1.prop(currentExp, "bake_anim_use_all_bones")
                     export_1.prop(currentExp, "bake_anim_use_nla_strips")
@@ -505,11 +581,18 @@ class GEXAddonPreferences(AddonPreferences):
                     export_1.prop(currentExp, "bake_anim_force_startend_keying")
                     export_1.prop(currentExp, "optimise_keyframes")
                     export_1.prop(currentExp, "use_default_take")
+                    export_1.separator()
+
+                    export_main.separator()
+                    export_main.separator()
+                    export_main.separator()
 
                     export_2 = export_main.column(align=True)
                     export_2.prop(currentExp, "bake_anim_step")
                     export_2.prop(currentExp, "bake_anim_simplify_factor")
                     export_2.separator()
+
+                    export_main.separator()
 
             else:
                 preset_unselected = export_box.column(align=True)
@@ -523,12 +606,12 @@ class GEXAddonPreferences(AddonPreferences):
         tag_box = layout.box()
         tag_title = tag_box.row(align=True)
 
-        if ui.tags_dropdown is False:
-            tag_title.prop(ui, "tags_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+        if addon_prefs.tags_dropdown is False:
+            tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
             tag_title.label("Tags")
 
         else:
-            tag_title.prop(ui, "tags_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             tag_title.label("Tags")
 
             if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
@@ -572,12 +655,12 @@ class GEXAddonPreferences(AddonPreferences):
         pass_box = layout.box()
         passUI = pass_box.row(align=True)
 
-        if ui.passes_dropdown is False:
-            passUI.prop(ui, "passes_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+        if addon_prefs.passes_dropdown is False:
+            passUI.prop(addon_prefs, "passes_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
             passUI.label("Passes")
 
         else:
-            passUI.prop(ui, "passes_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            passUI.prop(addon_prefs, "passes_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             passUI.label("Passes")
 
 
@@ -614,6 +697,7 @@ class GEXAddonPreferences(AddonPreferences):
                     pass_settings.separator()
 
                     pass_options = pass_settings.row(align=True)
+                    pass_options.separator()
 
                     # Additional Export Options
                     options_ui = pass_options.column(align=True)
@@ -624,6 +708,11 @@ class GEXAddonPreferences(AddonPreferences):
                     options_ui.prop(currentPass, "export_animation")
                     options_ui.prop(currentPass, "apply_modifiers")
                     options_ui.prop(currentPass, "triangulate")
+                    options_ui.separator()
+
+                    pass_options.separator()
+                    pass_options.separator()
+                    pass_options.separator()
 
                     # Tag Filters
                     tag_filter = pass_options.column(align=True)
@@ -634,11 +723,13 @@ class GEXAddonPreferences(AddonPreferences):
                         tag = tag_filter.column(align=True)
                         tag.prop(passTag, "use_tag", text="Filter " + passTag.name)
 
-                    #tag_filter.prop(ui, "component_dropdown", text="Filter By Tags")
+                    tag_filter.separator()
+
+                    pass_options.separator()
+
+                    #tag_filter.prop(addon_prefs, "component_dropdown", text="Filter By Tags")
                     #tag_filter.template_list("GEX_TagFilter_UIList", "default", currentPass, "tags", currentPass, "tags_index", rows=3, maxrows=6)
                     #tag_filter.separator()
-
-                    pass_settings.separator()
 
             else:
                 unselected = pass_box.column(align=True)
@@ -651,26 +742,38 @@ class GEXAddonPreferences(AddonPreferences):
         options_box = layout.box()
         optionsUI = options_box.row(align=True)
 
-        if ui.options_dropdown is False:
-            optionsUI.prop(ui, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+        if addon_prefs.options_dropdown is False:
+            optionsUI.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
             optionsUI.label("Plugin Options")
 
         else:
-            optionsUI.prop(ui, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            optionsUI.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             optionsUI.label("Plugin Options")
             options_main = options_box.row(align=True)
+            options_main.separator()
 
-            options_1 = options_main.column(align=True)
-            options_1.label("Additional List Option")
+            options_1 = options_main.column(align=False)
+            #options_1.alignment = 'CENTER'
+            options_1.label("Additional List Options")
             options_1.separator()
-            options_1.prop(addon_prefs, "list_feature", text="")
+            options_1.prop(addon_prefs, "list_feature", text="", expand=False)
             options_1.separator()
             options_1.separator()
-            options_1.prop(addon_prefs, "object_list_autorefresh")
+            options_1.prop(addon_prefs, "object_list_autorefresh", expand=False)
 
-            options_2 = options_main.column(align=True)
-            options_2.label(" ")
+            options_main.separator()
+            options_main.separator()
+            options_main.separator()
+            options_main.separator()
+            options_main.separator()
+
+            options_2 = options_main.column(align=False)
+            options_2.label("Reset")
             options_2.separator()
+            options_2.operator("scene.gx_resetsceneprops", text="Reset Scene")
+            options_2.separator()
+
+            options_main.separator()
 
 
 
