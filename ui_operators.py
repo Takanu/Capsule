@@ -6,16 +6,16 @@ from mathutils import Vector
 
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
 
-class GX_Add_Path(Operator):
+class CAP_Add_Path(Operator):
     """Creates a new Location, that lets you define a file path for exports to go to."""
 
-    bl_idname = "scene.gx_addpath"
+    bl_idname = "scene.cap_addpath"
     bl_label = "Add"
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
+        scn = context.scene.CAPScn
         newPath = scn.location_defaults.add()
         newPath.name = "Location " + str(len(scn.location_defaults))
         newPath.path = ""
@@ -32,16 +32,16 @@ class GX_Add_Path(Operator):
 
         return {'FINISHED'}
 
-class GX_Delete_Path(Operator):
+class CAP_Delete_Path(Operator):
     """Deletes the selected Location from the list."""
 
-    bl_idname = "scene.gx_deletepath"
+    bl_idname = "scene.cap_deletepath"
     bl_label = "Remove"
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
+        scn = context.scene.CAPScn
         scn.location_defaults.remove(scn.location_defaults_index)
 
         return {'FINISHED'}
@@ -50,10 +50,10 @@ class GX_Delete_Path(Operator):
 
 #///////////////// - EXPORT DEFAULTS - ///////////////////////////////////////////
 
-class GX_Add_Export(Operator):
+class CAP_Add_Export(Operator):
     """Creates a new Export Preset."""
 
-    bl_idname = "scene.gx_addexport"
+    bl_idname = "scene.cap_addexport"
     bl_label = "Add"
 
     def execute(self, context):
@@ -70,10 +70,10 @@ class GX_Add_Export(Operator):
 
         return {'FINISHED'}
 
-class GX_Delete_Export(Operator):
+class CAP_Delete_Export(Operator):
     """Deletes the selected Export Preset from the list."""
 
-    bl_idname = "scene.gx_deleteexport"
+    bl_idname = "scene.cap_deleteexport"
     bl_label = "Delete Export Preset"
 
     #StringProperty(default="Are you sure you wish to delete the selected preset?")
@@ -91,10 +91,10 @@ class GX_Delete_Export(Operator):
         return {'FINISHED'}
 
 
-class GX_Add_Tag(Operator):
+class CAP_Add_Tag(Operator):
     """Creates a new Tag."""
 
-    bl_idname = "scene.gx_addtag"
+    bl_idname = "scene.cap_addtag"
     bl_label = "Add"
 
 
@@ -120,10 +120,10 @@ class GX_Add_Tag(Operator):
 
         return {'FINISHED'}
 
-class GX_Delete_Tag(Operator):
+class CAP_Delete_Tag(Operator):
     """Deletes the selected Tag from the list."""
 
-    bl_idname = "scene.gx_deletetag"
+    bl_idname = "scene.cap_deletetag"
     bl_label = "Remove"
 
     @classmethod
@@ -158,10 +158,10 @@ class GX_Delete_Tag(Operator):
         return {'FINISHED'}
 
 
-class GX_Add_Pass(Operator):
+class CAP_Add_Pass(Operator):
     """Creates a new Pass."""
 
-    bl_idname = "scene.gx_addpass"
+    bl_idname = "scene.cap_addpass"
     bl_label = "Add"
 
     def execute(self, context):
@@ -186,10 +186,10 @@ class GX_Add_Pass(Operator):
 
         return {'FINISHED'}
 
-class GX_Delete_Pass(Operator):
+class CAP_Delete_Pass(Operator):
     """Deletes the selected Pass from the list."""
 
-    bl_idname = "scene.gx_deletepass"
+    bl_idname = "scene.cap_deletepass"
     bl_label = "Remove"
 
     def execute(self, context):
@@ -205,34 +205,34 @@ class GX_Delete_Pass(Operator):
 
         return {'FINISHED'}
 
-class GX_Shift_Path_Up(Operator):
+class CAP_Shift_Path_Up(Operator):
     """Moves the current entry in the list up by one"""
 
-    bl_idname = "scene.gx_shiftup"
+    bl_idname = "scene.cap_shiftup"
     bl_label = "Add"
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
-        obj = context.active_object.GXObj
+        scn = context.scene.CAPScn
+        obj = context.active_object.CAPObj
 
         scn.path_defaults.move(scn.path_list_index, scn.path_list_index - 1)
         scn.path_list_index -= 1
 
         return {'FINISHED'}
 
-class GX_Shift_Path_Down(Operator):
+class CAP_Shift_Path_Down(Operator):
     """Moves the current entry in the list down by one"""
 
-    bl_idname = "scene.gx_shiftdown"
+    bl_idname = "scene.cap_shiftdown"
     bl_label = "Remove"
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
-        obj = context.active_object.GXObj
+        scn = context.scene.CAPScn
+        obj = context.active_object.CAPObj
 
         scn.path_defaults.move(scn.path_list_index, scn.path_list_index + 1)
         scn.path_list_index += 1
@@ -240,25 +240,25 @@ class GX_Shift_Path_Down(Operator):
         return {'FINISHED'}
 
 #///////////////// - OBJECTS - //////////////////////////////////////////////////////
-class GX_Refresh_Objects(Operator):
+class CAP_Refresh_Objects(Operator):
     """Refreshes the list of objects that are marked for export."""
 
-    bl_idname = "scene.gx_refobjects"
+    bl_idname = "scene.cap_refobjects"
     bl_label = "Refresh"
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
+        scn = context.scene.CAPScn
 
         scn.object_list.clear()
 
         for object in context.scene.objects:
-            if object.GXObj.enable_export is True:
+            if object.CAPObj.enable_export is True:
                 entry = scn.object_list.add()
                 entry.name = object.name
                 entry.prev_name = object.name
-                entry.enable_export = object.GXObj.enable_export
+                entry.enable_export = object.CAPObj.enable_export
 
 
         return {'FINISHED'}
@@ -267,16 +267,16 @@ class GX_Refresh_Objects(Operator):
 #///////////////// - GROUPS - //////////////////////////////////////////////////////
 
 
-class GX_Refresh_Groups(Operator):
+class CAP_Refresh_Groups(Operator):
     """Refreshes the list of available groups in the scene, that can be marked for export."""
 
-    bl_idname = "scene.gx_refgroups"
+    bl_idname = "scene.cap_refgroups"
     bl_label = "Refresh"
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
+        scn = context.scene.CAPScn
         scn.group_list.clear()
 
         for group in bpy.data.groups:
@@ -287,10 +287,10 @@ class GX_Refresh_Groups(Operator):
 
         return {'FINISHED'}
 
-class GX_Set_Root_Object(Operator):
+class CAP_Set_Root_Object(Operator):
     """Allows you to set the Origin Object through an interactive tool.  Right-Click: Select the object you wish to be the origin point for the scene.  Esc - Quit the tool."""
 
-    bl_idname = "scene.gx_setroot"
+    bl_idname = "scene.cap_setroot"
     bl_label = "Remove"
 
     def finish(self):
@@ -303,8 +303,8 @@ class GX_Set_Root_Object(Operator):
         print("invoke!")
         print("Is this new?")
 
-        scn = context.scene.GXScn
-        obj = context.active_object.GXObj
+        scn = context.scene.CAPScn
+        obj = context.active_object.CAPObj
 
         user_preferences = context.user_preferences
         self.addon_prefs = user_preferences.addons[__package__].preferences
@@ -337,7 +337,7 @@ class GX_Set_Root_Object(Operator):
             # ALSO, check its not a dummy or origin object
             if context.selected_objects != None and len(context.selected_objects) == 1:
 
-                entry = context.scene.GXScn.group_list[context.scene.GXScn.group_list_index]
+                entry = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
 
                 # Find the group we're getting a root object for
                 for group in bpy.data.groups:
@@ -348,7 +348,7 @@ class GX_Set_Root_Object(Operator):
                         #for item in group.objects:
                             #if item.name == context.selected_objects[0].name:
 
-                        group.GXGrp.root_object = context.selected_objects[0].name
+                        group.CAPGrp.root_object = context.selected_objects[0].name
                         FocusObject(self.object)
                         self.finish()
                         return{'FINISHED'}
@@ -366,31 +366,31 @@ class GX_Set_Root_Object(Operator):
         return {'FINISHED'}
 
 
-class GX_Clear_Root_Object(Operator):
+class CAP_Clear_Root_Object(Operator):
     """Clears the currently chosen origin object for the group."""
 
-    bl_idname = "scene.gx_clearroot"
+    bl_idname = "scene.cap_clearroot"
     bl_label = "Remove"
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
-        obj = context.active_object.GXObj
+        scn = context.scene.CAPScn
+        obj = context.active_object.CAPObj
 
-        entry = context.scene.GXScn.group_list[context.scene.GXScn.group_list_index]
+        entry = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
         for group in bpy.data.groups:
             if group.name == entry.name:
-                group.GXGrp.root_object = ""
+                group.CAPGrp.root_object = ""
                 return{'FINISHED'}
 
         return {'FINISHED'}
 
 
-class GX_Reset_Scene(Operator):
+class CAP_Reset_Scene(Operator):
     """Resets all object and group variables in the scene.  Use at your own peril!"""
 
-    bl_idname = "scene.gx_resetsceneprops"
+    bl_idname = "scene.cap_resetsceneprops"
     bl_label = "Reset Scene"
 
     def execute(self, context):
@@ -416,7 +416,7 @@ class GX_Reset_Scene(Operator):
             obj.normals = '1'
 
         for object in bpy.scene.objects:
-            obj = object.GXObj
+            obj = object.CAPObj
 
             obj.enable_export = False
             obj.use_scene_origin = False
@@ -432,10 +432,10 @@ class GX_Reset_Scene(Operator):
 
         return {'FINISHED'}
 
-class GX_Reset_Scene(Operator):
+class CAP_Reset_Scene(Operator):
     """Resets all location and export defaults in the file"""
 
-    bl_idname = "scene.gx_resetprefs"
+    bl_idname = "scene.cap_resetprefs"
     bl_label = "Reset Scene"
 
     def execute(self, context):
@@ -467,17 +467,17 @@ class GX_Reset_Scene(Operator):
 
         return {'FINISHED'}
 
-class GX_UI_Group_Separate(Operator):
+class CAP_UI_Group_Separate(Operator):
     """Toggles the drop-down menu for separate group export options"""
 
-    bl_idname = "scene.gx_grpseparate"
+    bl_idname = "scene.cap_grpseparate"
     bl_label = ""
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
-        ui = context.scene.GXUI
+        scn = context.scene.CAPScn
+        ui = context.scene.CAPUI
 
         if ui.group_separate_dropdown is True:
             ui.group_separate_dropdown = False
@@ -486,17 +486,17 @@ class GX_UI_Group_Separate(Operator):
 
         return {'FINISHED'}
 
-class GX_UI_Group_Options(Operator):
+class CAP_UI_Group_Options(Operator):
     """Toggles the drop-down menu for separate group export options"""
 
-    bl_idname = "scene.gx_grpoptions"
+    bl_idname = "scene.cap_grpoptions"
     bl_label = ""
 
     def execute(self, context):
         print(self)
 
-        scn = context.scene.GXScn
-        ui = context.scene.GXUI
+        scn = context.scene.CAPScn
+        ui = context.scene.CAPUI
 
         if ui.group_options_dropdown is True:
             ui.group_options_dropdown = False
@@ -506,16 +506,16 @@ class GX_UI_Group_Options(Operator):
         return {'FINISHED'}
 
 
-class GX_Refresh_Actions(Operator):
+class CAP_Refresh_Actions(Operator):
     """Generates a list of groups to browse"""
 
-    bl_idname = "scene.gx_refactions"
+    bl_idname = "scene.cap_refactions"
     bl_label = "Refresh"
 
     def execute(self, context):
         print(self)
 
-        ui = context.scene.GXUI
+        ui = context.scene.CAPUI
         active = context.active_object
         armature = None
 
@@ -564,10 +564,10 @@ class GX_Refresh_Actions(Operator):
 
         return {'FINISHED'}
 
-class GX_Tutorial_Tags(Operator):
+class CAP_Tutorial_Tags(Operator):
     """Deletes the selected Export Preset from the list."""
 
-    bl_idname = "gx_tutorial.tags"
+    bl_idname = "cap_tutorial.tags"
     bl_label = "Tags let you automatically split objects in your passes by defining an object suffix/prefix and/or object type, that objects in the pass it's used in need to match in order to be included for export, enabiling you to create multiple different versions of an object or group export, without having to manually define them."
 
     StringProperty(default="Are you sure you wish to delete the selected preset?")
@@ -584,9 +584,9 @@ class GX_Tutorial_Tags(Operator):
         return {'FINISHED'}
 
 
-class GX_Custom_Presets(Operator):
+class CAP_Custom_Presets(Operator):
     """Adds a special preset that changes how objects are processed for export, making exports from Blender to other programs smoother."""
-    bl_idname = "gx.custom_presets"
+    bl_idname = "cap.custom_presets"
     bl_label = "Default Presets"
 
     presets = EnumProperty(
@@ -605,7 +605,7 @@ class GX_Custom_Presets(Operator):
         # Basic Export All
         # -------------------------------------------------------------------------
         if self.presets == 'All':
-            scn = context.scene.GXScn
+            scn = context.scene.CAPScn
             user_preferences = context.user_preferences
             addon_prefs = user_preferences.addons[__package__].preferences
 
@@ -625,7 +625,7 @@ class GX_Custom_Presets(Operator):
         # UE4 Standard Template
         # -------------------------------------------------------------------------
         if self.presets == 'UE4':
-            scn = context.scene.GXScn
+            scn = context.scene.CAPScn
             user_preferences = context.user_preferences
             addon_prefs = user_preferences.addons[__package__].preferences
 
@@ -718,7 +718,7 @@ class GX_Custom_Presets(Operator):
         # UE4 Standard Template
         # -------------------------------------------------------------------------
         if self.presets == 'Unity5':
-            scn = context.scene.GXScn
+            scn = context.scene.CAPScn
             user_preferences = context.user_preferences
             addon_prefs = user_preferences.addons[__package__].preferences
 

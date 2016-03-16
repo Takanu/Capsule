@@ -111,6 +111,11 @@ def MoveObject(target, context, location):
 
     print(">>> Moving Object <<<")
 
+    copyLocation = Vector((0.0, 0.0, 0.0))
+    copyLocation[0] = location[0]
+    copyLocation[1] = location[1]
+    copyLocation[2] = location[2]
+
     # Prevent auto keyframing from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
     lockTransform = target.lock_location
@@ -140,8 +145,7 @@ def MoveObject(target, context, location):
     print(cursor_location)
 
     # Calculate the movement difference
-    locationDiff = Vector((0.0, 0.0, 0.0))
-    locationDiff = locationDiff - cursor_location
+    locationDiff = copyLocation - cursor_location
 
     bpy.ops.transform.translate(
         value=locationDiff,
@@ -324,6 +328,7 @@ def MoveAll(target, context, location):
 
     bpy.ops.object.select_all(action='SELECT')
     ActivateObject(target)
+    print("Selected Objects for movement...", len(bpy.context.selected_objects))
 
     bpy.ops.transform.translate(
         value=locationDiff,
@@ -397,7 +402,7 @@ def CheckPrefix(string, prefix):
 
 def CheckForTags(context, string):
 
-    scn = context.scene.GXScn
+    scn = context.scene.CAPScn
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
@@ -414,7 +419,7 @@ def CheckForTags(context, string):
 
 def RemoveObjectTag(context, object, export_default):
 
-    scn = context.scene.GXScn
+    scn = context.scene.CAPScn
 
     print(">>> Removing Tags <<<")
 
@@ -422,17 +427,17 @@ def RemoveObjectTag(context, object, export_default):
     newString = ""
 
     for tag in export_default.tags:
-        print("Found tag...", tag.name)
+        #print("Found tag...", tag.name)
         passed_type_filter = False
 
         #If the object matches the type filter, we can continue
-        print("Checking Type Filter.....", tag.object_type)
+        #print("Checking Type Filter.....", tag.object_type)
 
         typeFilter = 'NONE'
 
         if tag.object_type == '1':
             typeFilter = 'NONE'
-            print("Object matches type filter")
+            #print("Object matches type filter")
             passed_type_filter = True
 
         elif tag.object_type == '2':
@@ -458,11 +463,11 @@ def RemoveObjectTag(context, object, export_default):
         elif tag.object_type == '12':
             typeFilter = 'SPEAKER'
 
-        print("Type Filter Found...", typeFilter)
+        #print("Type Filter Found...", typeFilter)
 
         if tag.object_type != '1':
             if object.type == typeFilter:
-                print("Object matches type filter")
+                #print("Object matches type filter")
                 passed_type_filter = True
 
         if passed_type_filter is True:
@@ -498,7 +503,7 @@ def IdentifyObjectTag(context, object, export_default):
 
     # Now collect objects based on the filtering categories
     for tag in export_default.tags:
-        print("Found tag...", tag.name)
+        #print("Found tag...", tag.name)
 
         # NAME CHECK!
         passed_name_filter = False
@@ -507,30 +512,30 @@ def IdentifyObjectTag(context, object, export_default):
         if tag.name_filter != "":
             if tag.name_filter_type is '1':
                 if CheckSuffix(object.name, tag.name_filter) is True:
-                    print("Object matches name filter")
+                    #print("Object matches name filter")
                     passed_name_filter = True
 
             elif tag.name_filter_type is '2':
                 if object.name.find(tag.name_filter) == 0:
-                    print("Object matches name filter")
+                    #print("Object matches name filter")
                     passed_name_filter = True
 
             elif tag.name_filter_type is '3':
                 if object.name.find(tag.name_filter) != -1:
-                    print("Object matches name filter")
+                    #print("Object matches name filter")
                     passed_name_filter = True
 
         else:
-            print("Object matches name filter")
+            #print("Object matches name filter")
             passed_name_filter = True
 
-        print("Checking Type Filter.....", tag.object_type)
+        #print("Checking Type Filter.....", tag.object_type)
 
         typeFilter = 'NONE'
 
         if tag.object_type == '1':
             typeFilter = 'NONE'
-            print("Object matches type filter")
+            #print("Object matches type filter")
             passed_type_filter = True
 
         elif tag.object_type == '2':
@@ -556,7 +561,7 @@ def IdentifyObjectTag(context, object, export_default):
         elif tag.object_type == '12':
             typeFilter = 'SPEAKER'
 
-        print("Type Filter Found...", typeFilter)
+        #print("Type Filter Found...", typeFilter)
 
         if tag.object_type != '1':
             if object.type == typeFilter:
@@ -583,30 +588,30 @@ def CompareObjectWithTag(context, object, tag):
     if tag.name_filter != "":
         if tag.name_filter_type is '1':
             if CheckSuffix(object.name, tag.name_filter) is True:
-                print("Object matches name filter")
+                #print("Object matches name filter")
                 passed_name_filter = True
 
         elif tag.name_filter_type is '2':
             if object.name.find(tag.name_filter) == 0:
-                print("Object matches name filter")
+                #print("Object matches name filter")
                 passed_name_filter = True
 
         elif tag.name_filter_type is '3':
             if object.name.find(tag.name_filter) != -1:
-                print("Object matches name filter")
+                #print("Object matches name filter")
                 passed_name_filter = True
 
     else:
-        print("Object matches name filter")
+        #print("Object matches name filter")
         passed_name_filter = True
 
-    print("Checking Type Filter.....", tag.object_type)
+    #print("Checking Type Filter.....", tag.object_type)
 
     typeFilter = 'NONE'
 
     if tag.object_type == '1':
         typeFilter = 'NONE'
-        print("Object matches type filter")
+        #print("Object matches type filter")
         passed_type_filter = True
 
     elif tag.object_type == '2':
@@ -632,11 +637,11 @@ def CompareObjectWithTag(context, object, tag):
     elif tag.object_type == '12':
         typeFilter = 'SPEAKER'
 
-    print("Type Filter Found...", typeFilter)
+    #print("Type Filter Found...", typeFilter)
 
     if tag.object_type != '1':
         if object.type == typeFilter:
-            print("Object matches type filter")
+            #print("Object matches type filter")
             passed_type_filter = True
 
     if passed_type_filter is True and passed_name_filter is True:
@@ -665,14 +670,14 @@ def FindObjectWithTag(context, object_name, tag):
 
         if bpy.data.objects.find(search_name) != -1:
             search_object = bpy.data.objects[search_name]
-            print("Found search object......", search_object.name)
-            print("Checking Type Filter.....", tag.object_type)
+            #print("Found search object......", search_object.name)
+            #print("Checking Type Filter.....", tag.object_type)
 
             typeFilter = 'NONE'
 
             if tag.object_type == '1':
                 typeFilter = 'NONE'
-                print("Object matches type filter")
+                #print("Object matches type filter")
                 return search_object
 
             elif tag.object_type == '2':
@@ -698,13 +703,14 @@ def FindObjectWithTag(context, object_name, tag):
             elif tag.object_type == '12':
                 typeFilter = 'SPEAKER'
 
-            print("Type Filter Found...", typeFilter)
+            #print("Type Filter Found...", typeFilter)
 
             if tag.object_type != '1':
                 if search_object.type == typeFilter:
                     print("Object matches type filter")
                     return search_object
 
+    print("Object doesn't match type filter")
     return None
 
 

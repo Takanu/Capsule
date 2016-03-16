@@ -99,7 +99,7 @@ def GetSelectedGroups(scene, context):
         ("0", "None",  "", 0),
     ]
 
-    scn = context.scene.GXScn
+    scn = context.scene.CAP_Scn
     scn.group_selected_list.clear()
     groups_found = []
 
@@ -125,7 +125,7 @@ def GetSelectedGroups(scene, context):
     return items
 
 
-class GX_Scene_Preferences(PropertyGroup):
+class CAP_Scene_Preferences(PropertyGroup):
 
     engine_select = EnumProperty(
         name="Set Game Engine",
@@ -167,7 +167,7 @@ def GetLocationDefaults(scene, context):
         ("0", "None",  "", 0),
     ]
 
-    scn = context.scene.GXScn
+    scn = context.scene.CAPScn
 
     u = 1
 
@@ -195,7 +195,7 @@ def GetExportDefaults(scene, context):
     return items
 
 
-class GX_Object_Preferences(PropertyGroup):
+class CAP_Object_Preferences(PropertyGroup):
     enable_export = BoolProperty(
         name = "Enable Export",
         description = "Enables the object and any matching, tagged objects to be exported as a single FBX file through GEX.",
@@ -231,7 +231,7 @@ class GX_Object_Preferences(PropertyGroup):
         update=Update_Normals)
 
 
-class GX_Group_Preferences(PropertyGroup):
+class CAP_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
         name = "Export Group",
         description = "Enables all objects within the group to be exported as a single FBX file through GEX.",
@@ -280,7 +280,7 @@ def GetExportPresets(scene, context):
 
     return items
 
-class GX_UI_Preferences(PropertyGroup):
+class CAP_UI_Preferences(PropertyGroup):
     export_presets = EnumProperty(
         name = "Export Presets",
         description = "List of available visibility presets.",
@@ -292,14 +292,14 @@ class GX_UI_Preferences(PropertyGroup):
 
     enable_export_loop = BoolProperty(default = False)
 
-class GX_Object_StateMachine(PropertyGroup):
+class CAP_Object_StateMachine(PropertyGroup):
 
     has_triangulate = BoolProperty(
         name = "Has Triangulation Modifier",
         description = "Internal variable used to monitor whether or not the object has a Triangulation modifier, when triangulating the mesh ",
         default = False)
 
-class GX_Action_Preferences(PropertyGroup):
+class CAP_Action_Preferences(PropertyGroup):
     export = BoolProperty(
         name = "Export",
         description = "Determines whether the action can be exported or not.",
@@ -307,14 +307,14 @@ class GX_Action_Preferences(PropertyGroup):
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (ObjectItem, GroupItem, ActionItem, LocationDefault, GX_Scene_Preferences, GX_Object_Preferences, GX_Group_Preferences, GX_UI_Preferences, GX_Object_StateMachine, GX_Action_Preferences)
+classes = (ObjectItem, GroupItem, ActionItem, LocationDefault, CAP_Scene_Preferences, CAP_Object_Preferences, CAP_Group_Preferences, CAP_UI_Preferences, CAP_Object_StateMachine, CAP_Action_Preferences)
 
 for cls in classes:
     bpy.utils.register_class(cls)
 
-bpy.types.Scene.GXScn = PointerProperty(type=GX_Scene_Preferences)
-bpy.types.Object.GXObj = PointerProperty(type=GX_Object_Preferences)
-bpy.types.Group.GXGrp = PointerProperty(type=GX_Group_Preferences)
-bpy.types.Action.GXAcn = PointerProperty(type=GX_Action_Preferences)
-bpy.types.Scene.GXUI = PointerProperty(type=GX_UI_Preferences)
-bpy.types.Object.GXStm = PointerProperty(type=GX_Object_StateMachine)
+bpy.types.Scene.CAPScn = PointerProperty(type=CAP_Scene_Preferences)
+bpy.types.Object.CAPObj = PointerProperty(type=CAP_Object_Preferences)
+bpy.types.Group.CAPGrp = PointerProperty(type=CAP_Group_Preferences)
+bpy.types.Action.CAPAcn = PointerProperty(type=CAP_Action_Preferences)
+bpy.types.Scene.CAPUI = PointerProperty(type=CAP_UI_Preferences)
+bpy.types.Object.CAPStm = PointerProperty(type=CAP_Object_StateMachine)

@@ -2,7 +2,7 @@
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
-    "author": "Crocadillian/Takanu @ Polarised Games",
+    "author": "Takanu Kyriako",
     "version": (1,0),
     "blender": (2, 7, 5),
     "api": 39347,
@@ -154,7 +154,7 @@ class ExportPass(PropertyGroup):
 
     export_individual = BoolProperty(
         name="Export Individual",
-        description="Exports every object in the pass as an individual object, regardless of whether it's in a group.",
+        description="Exports every object in the pass into individual files, rather than a single file, as well as ensuring their .",
         default=False
     )
 
@@ -173,6 +173,12 @@ class ExportPass(PropertyGroup):
     triangulate = BoolProperty(
         name="Triangulate Export",
         description="Triangulate objects in the pass on export using optimal triangulation settings.",
+        default=False
+    )
+
+    object_use_tags = BoolProperty(
+        name="(Object Only) Use All Tags",
+        description="If enabling individual export, this option allows the inclusion of all tagged objects associated with a single object.",
         default=False
     )
 
@@ -380,7 +386,7 @@ class ExportPreset(PropertyGroup):
         soft_max = 10
     )
 
-class GEXAddonPreferences(AddonPreferences):
+class CAPAddonPreferences(AddonPreferences):
     bl_idname = __name__
 
     export_defaults = CollectionProperty(type=ExportPreset)
@@ -431,9 +437,9 @@ class GEXAddonPreferences(AddonPreferences):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__name__].preferences
-        scn = context.scene.GXScn
+        scn = context.scene.CAPScn
         ob = context.object
-        ui = context.scene.GXUI
+        ui = context.scene.CAPUI
 
         #---------------------------------------------------------
         # Export UI
@@ -443,24 +449,24 @@ class GEXAddonPreferences(AddonPreferences):
 
         if addon_prefs.presets_dropdown is False:
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            #col_export_title.operator("gx_tutorial.tags", text="", icon='INFO')
+            #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
             col_export_title.label("Export Defaults")
-            col_export_title.operator_menu_enum("gx.custom_presets", "presets")
+            col_export_title.operator_menu_enum("cap.custom_presets", "presets")
 
 
         else:
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            #col_export_title.operator("gx_tutorial.tags", text="", icon='INFO')
+            #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
             col_export_title.label("Export Defaults")
-            col_export_title.operator_menu_enum("gx.custom_presets", "presets")
+            col_export_title.operator_menu_enum("cap.custom_presets", "presets")
 
             col_export = export_box.row(align=True)
             col_export.template_list("Export_Default_UIList", "default", addon_prefs, "export_defaults", addon_prefs, "export_defaults_index", rows=3, maxrows=6)
 
             col_export.separator()
             row_export = col_export.column(align=True)
-            row_export.operator("scene.gx_addexport", text="", icon="ZOOMIN")
-            row_export.operator("scene.gx_deleteexport", text="", icon="ZOOMOUT")
+            row_export.operator("scene.cap_addexport", text="", icon="ZOOMIN")
+            row_export.operator("scene.cap_deleteexport", text="", icon="ZOOMOUT")
 
             if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
 
@@ -622,8 +628,8 @@ class GEXAddonPreferences(AddonPreferences):
                 tagUI_row.template_list("Tag_Default_UIList", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
 
                 tagUI_col = tagUI_row.column(align=True)
-                tagUI_col.operator("scene.gx_addtag", text="", icon="ZOOMIN")
-                tagUI_col.operator("scene.gx_deletetag", text="", icon="ZOOMOUT")
+                tagUI_col.operator("scene.cap_addtag", text="", icon="ZOOMIN")
+                tagUI_col.operator("scene.cap_deletetag", text="", icon="ZOOMOUT")
                 tagUI_col.separator()
 
                 tag_settings = tag_box.column(align=True)
@@ -674,8 +680,8 @@ class GEXAddonPreferences(AddonPreferences):
                 row_passes.separator()
 
                 col_passes = row_passes.column(align=True)
-                col_passes.operator("scene.gx_addpass", text="", icon="ZOOMIN")
-                col_passes.operator("scene.gx_deletepass", text="", icon="ZOOMOUT")
+                col_passes.operator("scene.cap_addpass", text="", icon="ZOOMIN")
+                col_passes.operator("scene.cap_deletepass", text="", icon="ZOOMOUT")
                 col_passes.separator()
 
 
@@ -704,10 +710,14 @@ class GEXAddonPreferences(AddonPreferences):
                     options_ui.label(text="Export Options")
 
                     options_ui.separator()
-                    options_ui.prop(currentPass, "export_individual")
-                    options_ui.prop(currentPass, "export_animation")
+                    #options_ui.prop(currentPass, "export_animation")
                     options_ui.prop(currentPass, "apply_modifiers")
                     options_ui.prop(currentPass, "triangulate")
+                    options_ui.prop(currentPass, "export_individual")
+                    options_object_tags = options_ui.column(align=True)
+                    options_object_tags.prop(currentPass, "object_use_tags")
+                    if currentPass.export_individual is False:
+                        options_object_tags.enabled = False
                     options_ui.separator()
 
                     pass_options.separator()
@@ -770,7 +780,7 @@ class GEXAddonPreferences(AddonPreferences):
             options_2 = options_main.column(align=False)
             options_2.label("Reset")
             options_2.separator()
-            options_2.operator("scene.gx_resetsceneprops", text="Reset Scene")
+            options_2.operator("scene.cap_resetsceneprops", text="Reset Scene")
             options_2.separator()
 
             options_main.separator()

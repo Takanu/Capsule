@@ -4,10 +4,10 @@ from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, Po
 from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation
 from mathutils import Vector
 
-class GT_Export_Assets(Operator):
+class CAP_Export_Assets(Operator):
     """Updates the origin point based on the option selected, for all selected objects"""
 
-    bl_idname = "scene.gx_export"
+    bl_idname = "scene.cap_export"
     bl_label = "Export"
 
     def ExportFBX(self, filePath):
@@ -70,11 +70,10 @@ class GT_Export_Assets(Operator):
             self.ExportFBX(individualFilePath)
 
             print("Moving location back to root-orientated centre...")
+            print("tempLoc - ", tempLoc)
             MoveObject(item, context, tempLoc)
             print("Location..........", item.location)
-
-        if exportAnim is True:
-            print("Exporting separate animation files...")
+            print("tempLoc - ", tempLoc)
 
     def PrepareExportCombined(self, targets, path, exportName, suffix):
         print(">>> Exporting Combined Pass <<<")
@@ -84,7 +83,7 @@ class GT_Export_Assets(Operator):
 
         for item in targets:
             print("Exporting: ", item.name)
-            print(item.name, "has export set to", item.GXObj.enable_export)
+            print(item.name, "has export set to", item.CAPObj.enable_export)
             SelectObject(item)
 
         print(path)
@@ -130,7 +129,7 @@ class GT_Export_Assets(Operator):
 
     def GetFilePath(self, context, locationEnum, fileName):
         # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
-        scn = context.scene.GXScn
+        scn = context.scene.CAPScn
         enumIndex = int(locationEnum)
         filePath = ""
 
@@ -197,6 +196,10 @@ class GT_Export_Assets(Operator):
             if sub_directory.replace(" ", "") != "":
                 newPath = newPath + sub_directory + "/"
 
+            if newPath == "":
+                newPath = path
+
+            print("newPath = ", newPath)
             print(">>> Sub-Directory found, appending...")
 
             if not os.path.exists(newPath):
@@ -305,6 +308,19 @@ class GT_Export_Assets(Operator):
 
                 i += 1
 
+        # If an object has locked Location/Rotation/Scale values, store them and turn it on
+        self.translateList = []
+
+        for item in context.scene.objects:
+            if item.lock_location != (False, False, False) or item.lock_rotation != (False, False, False) or item.lock_scale != (False, False, False):
+                entry = {'object_name': item.name, 'lock_location': item.lock_location, 'lock_rotation': item.lock_rotation, 'lock_scale': item.lock_scale}
+                self.translateList.append(entry)
+
+        for item in context.scene.objects:
+            item.lock_location = (False, False, False)
+            item.lock_rotation = (False, False, False)
+            item.lock_scale = (False, False, False)
+
         # Now we can unhide and deselect everything
         bpy.ops.object.hide_view_clear()
         bpy.ops.object.select_all(action='DESELECT')
@@ -334,6 +350,16 @@ class GT_Export_Assets(Operator):
             context.scene.layers[i] = self.layersBackup[i]
             i += 1
 
+        # If an object has locked Location/Rotation/Scale values, store them and turn it on
+        self.translateList = []
+
+        while len(self.translateList) != 0:
+            entry = self.translateList.pop()
+            item = bpy.data.objects[entry['object_name']]
+            item.lock_location = entry['lock_location']
+            item.lock_rotation = entry['lock_location']
+            item.lock_scale = entry['lock_location']
+
         # Re-select the objects previously selected
         if self.active is not None:
             FocusObject(self.active)
@@ -345,21 +371,21 @@ class GT_Export_Assets(Operator):
 
     def CheckForErrors(self, context):
 
-        scn = context.scene.GXScn
+        scn = context.scene.CAPScn
 
         # Checks for any easily-preventable errors
         for object in context.scene.objects:
-            if object.GXObj.enable_export is True:
+            if object.CAPObj.enable_export is True:
 
                 # Check Export Key
-                expKey = int(object.GXObj.export_default) - 1
+                expKey = int(object.CAPObj.export_default) - 1
                 if expKey == -1:
                     statement = "The selected object " + object.name + " has no export default selected.  Please define!"
                     FocusObject(object)
                     return statement
 
                 # Check Location Default
-                if int(object.GXObj.location_default) == 0:
+                if int(object.CAPObj.location_default) == 0:
                     statement =  "The selected object " + object.name + " has no location preset defined, please define one!"
                     FocusObject(object)
                     return statement
@@ -367,16 +393,16 @@ class GT_Export_Assets(Operator):
                 self.exportCount += 1
 
         for group in bpy.data.groups:
-            if group.GXGrp.export_group is True:
+            if group.CAPGrp.export_group is True:
 
                 # Check Export Key
-                expKey = int(group.GXGrp.export_default) - 1
+                expKey = int(group.CAPGrp.export_default) - 1
                 if expKey == -1:
                     statement = "The group " + group.name + " has no export default selected.  Please define!"
                     return statement
 
                 # Check Location Default
-                if int(group.GXGrp.location_default) == 0:
+                if int(group.CAPGrp.location_default) == 0:
                     statement =  "The selected object " + group.name + " has no location preset defined, please define one!"
                     return statement
 
@@ -403,11 +429,57 @@ class GT_Export_Assets(Operator):
 
         return None
 
+    def CheckAnimation(self, context):
+        for item in context.scene.objects:
+            print(item.name)
+            print(item.animation_data)
+            if item.animation_data is not None:
+                print(item.animation_data.action)
+                print(item.animation_data.drivers)
+                print(item.animation_data.nla_tracks)
+                for driver in item.animation_data.drivers:
+                    print("------Driver:", driver)
+                    print(len(driver.driver.variables))
+                    for variable in driver.driver.variables:
+                        print("---Variable:", variable.name)
+                        print(len(variable.targets))
+                        for target in variable.targets:
+                            print("-Target:", target)
+                            print("Bone Target.....", target.bone_target)
+                            print("Data Path.......", target.data_path)
+                            print("ID..............", target.id)
+                            print("ID Type.........", target.id_type)
+                            print("Transform Space.", target.transform_space)
+                            print("Transform Type..", target.transform_type)
+
+                if item.animation_data.action is not None:
+                    action = item.animation_data.action
+                    print("FCurves......", action.fcurves)
+                    print("Frame Range..", action.frame_range)
+                    print("Groups.......", action.groups)
+                    print("ID Root......", action.id_root)
+
+                    for curve in action.fcurves:
+                        print(curve.driver.data_path)
+                        #for variable in curve.driver.variables:
+                            #for target in variable.targets:
+                                #print("-Target:", target)
+                                #print("Bone Target.....", target.bone_target)
+                                #print("Data Path.......", target.data_path)
+                            #    print("ID..............", target.id)
+                            #    print("ID Type.........", target.id_type)
+                            #    print("Transform Space.", target.transform_space)
+                            #    print("Transform Type..", target.transform_type)
+
+
+        print(">>>> CHECKED ANIMATION <<<<")
+
+
     def execute(self, context):
         print("Self = ")
         print(self)
 
-        scn = context.scene.GXScn
+        scn = context.scene.CAPScn
         user_preferences = context.user_preferences
         self.addon_prefs = user_preferences.addons[__package__].preferences
 
@@ -435,7 +507,7 @@ class GT_Export_Assets(Operator):
         ###############################################################
         # Cycle through the available objects
         for object in context.scene.objects:
-            if object.GXObj.enable_export is True:
+            if object.CAPObj.enable_export is True:
 
                 print("-"*109)
                 print("NEW JOB", "-"*100)
@@ -443,7 +515,7 @@ class GT_Export_Assets(Operator):
                 print("-"*109)
 
                 #Get the export default for the object
-                expKey = int(object.GXObj.export_default) - 1
+                expKey = int(object.CAPObj.export_default) - 1
 
                 if expKey == -1:
                     statement = "The selected object " + object.name + " has no export default selected.  Please define!"
@@ -460,7 +532,7 @@ class GT_Export_Assets(Operator):
 
                 rootObject = object
                 rootType = IdentifyObjectTag(context, rootObject, exportDefault)
-                useSceneOrigin = rootObject.GXObj.use_scene_origin
+                useSceneOrigin = rootObject.CAPObj.use_scene_origin
 
                 print("Root Type is...", rootType)
 
@@ -497,25 +569,32 @@ class GT_Export_Assets(Operator):
                     print("-"*109)
                     print("Export pass", objPass.name, "being used on object", object.name)
 
-                    activeTags = []
-                    foundObjects = []
-                    i = 0
-
-                    # Create a list for every tag in use
-                    print("Processing tags...")
-                    for passTag in objPass.tags:
-                        if passTag.use_tag is True:
-                            print("Active Tag Found: ", passTag.name)
-                            activeTags.append(exportDefault.tags[i])
-
-                        i += 1
-
                     # Obtain some pass-specific preferences
                     self.applyModifiers = objPass.apply_modifiers
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
-                    self.exportAnim = objPass.export_animation
-                    self.meshSmooth = self.GetNormals(rootObject.GXObj.normals)
+                    objectUseTags = objPass.object_use_tags
+                    self.exportAnim = False
+                    self.meshSmooth = self.GetNormals(rootObject.CAPObj.normals)
+
+                    activeTags = []
+                    foundObjects = []
+                    i = 0
+
+                    if exportIndividual is True and objectUseTags is True:
+                        for passTag in objPass.tags:
+                            activeTags.append(exportDefault.tags[i])
+                            i += 1
+
+                    # Create a list for every tag in use
+                    else:
+                        print("Processing tags...")
+                        for passTag in objPass.tags:
+                            if passTag.use_tag is True:
+                                print("Active Tag Found: ", passTag.name)
+                                activeTags.append(exportDefault.tags[i])
+
+                            i += 1
 
                     # Also set file path name
                     path = ""                                # Path given from the location default
@@ -530,7 +609,9 @@ class GT_Export_Assets(Operator):
                     if rootType == -1:
                         if len(activeTags) == 0:
                             expRoot = True
-                    elif objPass.tags[rootType].use_tag is True:
+                    elif len(activeTags) == 0:
+                        expRoot = True
+                    if objPass.tags[rootType].use_tag is True or (exportIndividual is True and objectUseTags is True):
                         expRoot = True
 
                     if exportDefault.filter_render is True and rootObject.hide_render is True:
@@ -540,7 +621,7 @@ class GT_Export_Assets(Operator):
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    path = self.CalculateFilePath(context, rootObject.GXObj.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
+                    path = self.CalculateFilePath(context, rootObject.CAPObj.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
 
                     if path.find("WARNING") == 0:
                         path = path.replace("WARNING: ", "")
@@ -567,13 +648,13 @@ class GT_Export_Assets(Operator):
 
                                 if item != None:
                                     if item.name != rootObject.name:
-                                        if exportDefault.filter_render is True and item.hide_render is False:
+                                        if exportDefault.filter_render is False or (exportDefault.filter_render is True and item.hide_render is False):
                                             foundObjects.append(item)
 
                                             print("Tag", tag.name, "Found...", item.name)
 
                                             # If the active tag has the ability to replace names, do it here.
-                                            if tag.x_ue4_collision_naming is True:
+                                            if tag.x_ue4_collision_naming is True and exportIndividual is False:
                                                 print("SUPER SECRET REPLACE NAME FUNCTION USED!")
                                                 renameObjectList.append(item)
                                                 renameNameList.append(item.name)
@@ -587,8 +668,7 @@ class GT_Export_Assets(Operator):
                     # Debug check for found objects
                     print("Checking found objects...")
                     for item in foundObjects:
-                        if exportDefault.filter_render is True and item.hide_render is False:
-                            print(item.name)
+                        print(item.name)
 
 
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
@@ -611,7 +691,7 @@ class GT_Export_Assets(Operator):
                         for item in triangulateList:
                             if item.type == 'MESH':
                                 print("Triangulating Mesh...", item.name)
-                                stm = item.GXStm
+                                stm = item.CAPStm
                                 hasTriangulation = False
                                 hasTriangulation = self.AddTriangulate(item)
                                 stm.has_triangulate = hasTriangulation
@@ -623,13 +703,15 @@ class GT_Export_Assets(Operator):
                     finalExportList += foundObjects
 
                     if expRoot is True:
+                        print("expRoot = ", expRoot)
                         finalExportList.append(rootObject)
 
-                    if exportIndividual is True:
-                        self.PrepareExportIndividual(context, finalExportList, path, suffix)
+                    if len(finalExportList) > 0:
+                        if exportIndividual is True:
+                            self.PrepareExportIndividual(context, finalExportList, path, suffix)
 
-                    else:
-                        self.PrepareExportCombined(finalExportList, path, objectName, suffix)
+                        else:
+                            self.PrepareExportCombined(finalExportList, path, objectName, suffix)
 
 
                     # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
@@ -644,7 +726,7 @@ class GT_Export_Assets(Operator):
                     if useTriangulate is True and self.applyModifiers is True:
                         for item in triangulateList:
                             if item.type == 'MESH':
-                                if item.GXStm.has_triangulate is False:
+                                if item.CAPStm.has_triangulate is False:
                                     print("Object has created triangulation, remove it.")
                                     self.RemoveTriangulate(item)
 
@@ -666,7 +748,7 @@ class GT_Export_Assets(Operator):
         ###############################################################
         # Now hold up, its group time!
         for group in bpy.data.groups:
-            if group.GXGrp.export_group is True:
+            if group.CAPGrp.export_group is True:
 
                 print("-"*79)
                 print("NEW JOB", "-"*70)
@@ -677,19 +759,27 @@ class GT_Export_Assets(Operator):
                 rootObject = None
                 rootObjectName = ""
                 rootType = 0
-                rootObjectNotGroup = True
+                rootObjectInGroup = False
 
-                for object in group.objects:
-                    if object.name == group.GXGrp.root_object:
-                        rootObject = object
-                        rootObjectName = object.name
-                        rootObjectNotGroup = False
+                # Find the root object in a group, if thats where it's located
+                for item in group.objects:
+                    if item.name == group.CAPGrp.root_object:
+                        rootObject = item
+                        rootObjectName = item.name
+                        rootObjectInGroup = True
+
+                # Otherwise, find it elsewhere
+                if rootObjectInGroup == False:
+                    for item in context.scene.objects:
+                        if item.name == group.CAPGrp.root_object:
+                            rootObject = item
+                            rootObjectName = item.name
 
                 if rootObject == None:
                     print("No root object is currently being used, proceed!")
 
                 #Get the export default for the object
-                expKey = int(group.GXGrp.export_default) - 1
+                expKey = int(group.CAPGrp.export_default) - 1
 
                 if expKey == -1:
                     statement = "The group " + group.name + " has no export default selected.  Please define!"
@@ -752,8 +842,8 @@ class GT_Export_Assets(Operator):
                     self.applyModifiers = objPass.apply_modifiers
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
-                    self.exportAnim = objPass.export_animation
-                    self.meshSmooth = self.GetNormals(group.GXGrp.normals)
+                    self.exportAnim = False
+                    self.meshSmooth = self.GetNormals(group.CAPGrp.normals)
 
                     hasTriangulation = False
                     print("EXPORT TYPES:", self.exportTypes)
@@ -767,10 +857,11 @@ class GT_Export_Assets(Operator):
 
                     # Lets see if the root object can be exported...
                     expRoot = False
-                    if rootObject != None and rootObjectNotGroup is False:
-                        if rootType == -1:
-                            if len(activeTags) == 0:
-                                expRoot = True
+                    print("Checking Root Exportability...")
+                    if rootObject != None and rootObjectInGroup is True:
+                        print("Well we have a root...")
+                        if len(activeTags) == 0:
+                            expRoot = True
                         elif objPass.tags[rootType].use_tag is True:
                             expRoot = True
                         if exportDefault.filter_render == True and rootObject.hide_render == True:
@@ -780,7 +871,7 @@ class GT_Export_Assets(Operator):
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    path = self.CalculateFilePath(context, group.GXGrp.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
+                    path = self.CalculateFilePath(context, group.CAPGrp.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
 
                     if path.find("WARNING") == 0:
                         path = path.replace("WARNING: ", "")
@@ -798,6 +889,7 @@ class GT_Export_Assets(Operator):
 
                     # If we have any active tags in use, export only by filtering them
                     if len(activeTags) > 0:
+                        print("Using tags to sort objects...")
                         for tag in activeTags:
                             print("Current tag...", tag.name)
                             list = []
@@ -810,7 +902,7 @@ class GT_Export_Assets(Operator):
                                     if item.name != rootObjectName:
                                         print(item.hide_render)
 
-                                        if exportDefault.filter_render == True and item.hide_render == False:
+                                        if exportDefault.filter_render == False or (exportDefault.filter_render == True and item.hide_render == False):
                                             print("ITEM FOUND: ", item.name)
                                             list.append(item)
                                             objectList.append(item)
@@ -830,13 +922,17 @@ class GT_Export_Assets(Operator):
 
                     # If not, export everything
                     else:
+                        print("No tags found, processing objects...")
                         for item in group.objects:
                             if item.name != rootObjectName:
-                                if exportDefault.filter_render == True and item.hide_render == False:
+                                if exportDefault.filter_render == False:
+                                    print("ITEM FOUND: ", item.name)
+                                    objectList.append(item)
+                                elif exportDefault.filter_render == True and item.hide_render == False:
                                     print("ITEM FOUND: ", item.name)
                                     objectList.append(item)
 
-                    print(objectList)
+                    print("Object List...", objectList)
 
 
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
@@ -856,7 +952,7 @@ class GT_Export_Assets(Operator):
                     if useTriangulate is True and self.applyModifiers is True:
                         for item in triangulateList:
                             if item.type == 'MESH':
-                                stm = item.GXStm
+                                stm = item.CAPStm
                                 hasTriangulation = False
                                 hasTriangulation = self.AddTriangulate(item)
                                 stm.has_triangulate = hasTriangulation
@@ -883,12 +979,14 @@ class GT_Export_Assets(Operator):
                         if expRoot is True:
                             finalExportList.append(rootObject)
 
-                        if exportIndividual is True:
-                            self.PrepareExportIndividual(context, finalExportList, path, suffix)
+                        if len(finalExportList) > 0:
+                            if exportIndividual is True:
+                                self.PrepareExportIndividual(context, finalExportList, path, suffix)
 
-                        else:
-                            self.PrepareExportCombined(finalExportList, path, group.name, suffix)
+                            else:
+                                self.PrepareExportCombined(finalExportList, path, group.name, suffix)
 
+                    bpy.ops.object.select_all(action='DESELECT')
 
                     # /////////// - DELETE/RESTORE - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
@@ -902,7 +1000,7 @@ class GT_Export_Assets(Operator):
                     if useTriangulate is True and self.applyModifiers is True:
                         for object in triangulateList:
                             if object.type == 'MESH':
-                                if object.GXStm.has_triangulate is False:
+                                if object.CAPStm.has_triangulate is False:
                                     self.RemoveTriangulate(object)
 
                     # Move objects back

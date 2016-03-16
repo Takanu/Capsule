@@ -6,32 +6,37 @@ def Update_EnableExport(self, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
-    ui = context.scene.GXUI
+    ui = context.scene.CAPUI
+    print("Hithere")
 
-    if ui.enable_export_loop is True:
-        return None
+    if addon_prefs.object_multi_edit is True:
+        if ui.enable_export_loop is True:
+            return None
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
+        print("Export...")
 
-        # Keep a record of the selected objects to update
-        selected = []
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.CAPObj:
 
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
+            # Keep a record of the selected objects to update
+            selected = []
 
-        # Obtain the value changed
-        enableExport = self.enable_export
+            for sel in context.selected_objects:
+                if sel.name != context.active_object.name:
+                    selected.append(sel)
 
-        # Run through the objects
-        for object in selected:
-            object.GXObj.enable_export = enableExport
+            # Obtain the value changed
+            enableExport = self.enable_export
 
-    if addon_prefs.object_list_autorefresh == True:
-        ui.enable_export_loop = True
-        bpy.ops.scene.gx_refobjects()
-        ui.enable_export_loop = False
+            # Run through the objects
+            for object in selected:
+                object.CAPObj.enable_export = enableExport
+
+        if addon_prefs.object_list_autorefresh == True:
+            print("RAWR")
+            ui.enable_export_loop = True
+            bpy.ops.scene.cap_refobjects()
+            ui.enable_export_loop = False
 
     return None
 
@@ -40,22 +45,23 @@ def Update_SceneOrigin(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
+    if addon_prefs.object_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.CAPObj:
 
-        # Keep a record of the selected objects to update
-        selected = []
+            # Keep a record of the selected objects to update
+            selected = []
 
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
+            for sel in context.selected_objects:
+                if sel.name != context.active_object.name:
+                    selected.append(sel)
 
-        # Obtain the value changed
-        value = self.use_scene_origin
+            # Obtain the value changed
+            value = self.use_scene_origin
 
-        # Run through the objects
-        for object in selected:
-            object.GXObj.use_scene_origin = value
+            # Run through the objects
+            for object in selected:
+                object.CAPObj.use_scene_origin = value
 
     return None
 
@@ -65,23 +71,24 @@ def Update_LocationDefault(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
-        print(context.active_object.name)
+    if addon_prefs.object_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.CAPObj:
+            print(context.active_object.name)
 
-        # Keep a record of the selected objects to update
-        selected = []
+            # Keep a record of the selected objects to update
+            selected = []
 
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
+            for sel in context.selected_objects:
+                if sel.name != context.active_object.name:
+                    selected.append(sel)
 
-        # Obtain the value changed
-        value = self.location_default
+            # Obtain the value changed
+            value = self.location_default
 
-        # Run through the objects
-        for object in selected:
-            object.GXObj.location_default = value
+            # Run through the objects
+            for object in selected:
+                object.CAPObj.location_default = value
 
     return None
 
@@ -90,22 +97,23 @@ def Update_ExportDefault(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
+    if addon_prefs.object_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.CAPObj:
 
-        # Keep a record of the selected objects to update
-        selected = []
+            # Keep a record of the selected objects to update
+            selected = []
 
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
+            for sel in context.selected_objects:
+                if sel.name != context.active_object.name:
+                    selected.append(sel)
 
-        # Obtain the value changed
-        value = self.export_default
+            # Obtain the value changed
+            value = self.export_default
 
-        # Run through the objects
-        for object in selected:
-            object.GXObj.export_default = value
+            # Run through the objects
+            for object in selected:
+                object.CAPObj.export_default = value
 
     return None
 
@@ -114,22 +122,23 @@ def Update_Normals(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.GXObj:
+    if addon_prefs.object_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.CAPObj:
 
-        # Keep a record of the selected objects to update
-        selected = []
+            # Keep a record of the selected objects to update
+            selected = []
 
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
+            for sel in context.selected_objects:
+                if sel.name != context.active_object.name:
+                    selected.append(sel)
 
-        # Obtain the value changed
-        value = self.normals
+            # Obtain the value changed
+            value = self.normals
 
-        # Run through the objects
-        for object in selected:
-            object.GXObj.normals = value
+            # Run through the objects
+            for object in selected:
+                object.CAPObj.normals = value
 
     return None
 
@@ -161,7 +170,7 @@ def Update_ObjectItemExport(self, context):
         if object.name == self.name:
 
             print("Found object name ", object.name)
-            object.GXObj.enable_export = self.enable_export
+            object.CAPObj.enable_export = self.enable_export
 
     return None
 
@@ -307,35 +316,36 @@ def Update_GroupExport(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.users_group[0].GXGrp:
-        currentGroup = None
-        if context.active_object.users_group is not None:
-            currentGroup = context.active_object.users_group[0]
+    if addon_prefs.group_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.users_group[0].CAPGrp:
+            currentGroup = None
+            if context.active_object.users_group is not None:
+                currentGroup = context.active_object.users_group[0]
 
-        groups_found = []
-        groups_found.append(currentGroup)
+            groups_found = []
+            groups_found.append(currentGroup)
 
-        for item in context.selected_objects:
-            for group in item.users_group:
-                groupAdded = False
+            for item in context.selected_objects:
+                for group in item.users_group:
+                    groupAdded = False
 
-                for found_group in groups_found:
-                    if found_group.name == group.name:
-                        groupAdded = True
+                    for found_group in groups_found:
+                        if found_group.name == group.name:
+                            groupAdded = True
 
-                if groupAdded == False:
-                    print("")
-                    groups_found.append(group)
+                    if groupAdded == False:
+                        print("")
+                        groups_found.append(group)
 
-        groups_found.remove(currentGroup)
+            groups_found.remove(currentGroup)
 
-        # Obtain the value changed
-        value = currentGroup.GXGrp.export_group
+            # Obtain the value changed
+            value = currentGroup.CAPGrp.export_group
 
-        # Run through the objects
-        for group in groups_found:
-            group.GXGrp.export_group = value
+            # Run through the objects
+            for group in groups_found:
+                group.CAPGrp.export_group = value
 
     return None
 
@@ -344,35 +354,36 @@ def Update_GroupRootObject(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.users_group[0].GXGrp:
-        currentGroup = None
-        if context.active_object.users_group is not None:
-            currentGroup = context.active_object.users_group[0]
+    if addon_prefs.group_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.users_group[0].CAPGrp:
+            currentGroup = None
+            if context.active_object.users_group is not None:
+                currentGroup = context.active_object.users_group[0]
 
-        groups_found = []
-        groups_found.append(currentGroup)
+            groups_found = []
+            groups_found.append(currentGroup)
 
-        for item in context.selected_objects:
-            for group in item.users_group:
-                groupAdded = False
+            for item in context.selected_objects:
+                for group in item.users_group:
+                    groupAdded = False
 
-                for found_group in groups_found:
-                    if found_group.name == group.name:
-                        groupAdded = True
+                    for found_group in groups_found:
+                        if found_group.name == group.name:
+                            groupAdded = True
 
-                if groupAdded == False:
-                    print("")
-                    groups_found.append(group)
+                    if groupAdded == False:
+                        print("")
+                        groups_found.append(group)
 
-        groups_found.remove(currentGroup)
+            groups_found.remove(currentGroup)
 
-        # Obtain the value changed
-        value = currentGroup.GXGrp.root_object
+            # Obtain the value changed
+            value = currentGroup.CAPGrp.root_object
 
-        # Run through the objects
-        for group in groups_found:
-            group.GXGrp.root_object = value
+            # Run through the objects
+            for group in groups_found:
+                group.CAPGrp.root_object = value
 
     return None
 
@@ -380,35 +391,36 @@ def Update_GroupExportDefault(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.users_group[0].GXGrp:
-        currentGroup = None
-        if context.active_object.users_group is not None:
-            currentGroup = context.active_object.users_group[0]
+    if addon_prefs.group_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.users_group[0].CAPGrp:
+            currentGroup = None
+            if context.active_object.users_group is not None:
+                currentGroup = context.active_object.users_group[0]
 
-        groups_found = []
-        groups_found.append(currentGroup)
+            groups_found = []
+            groups_found.append(currentGroup)
 
-        for item in context.selected_objects:
-            for group in item.users_group:
-                groupAdded = False
+            for item in context.selected_objects:
+                for group in item.users_group:
+                    groupAdded = False
 
-                for found_group in groups_found:
-                    if found_group.name == group.name:
-                        groupAdded = True
+                    for found_group in groups_found:
+                        if found_group.name == group.name:
+                            groupAdded = True
 
-                if groupAdded == False:
-                    print("")
-                    groups_found.append(group)
+                    if groupAdded == False:
+                        print("")
+                        groups_found.append(group)
 
-        groups_found.remove(currentGroup)
+            groups_found.remove(currentGroup)
 
-        # Obtain the value changed
-        value = currentGroup.GXGrp.export_default
+            # Obtain the value changed
+            value = currentGroup.CAPGrp.export_default
 
-        # Run through the objects
-        for group in groups_found:
-            group.GXGrp.export_default = value
+            # Run through the objects
+            for group in groups_found:
+                group.CAPGrp.export_default = value
 
     return None
 
@@ -416,35 +428,36 @@ def Update_GroupLocationDefault(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.users_group[0].GXGrp:
-        currentGroup = None
-        if context.active_object.users_group is not None:
-            currentGroup = context.active_object.users_group[0]
+    if addon_prefs.group_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.users_group[0].CAPGrp:
+            currentGroup = None
+            if context.active_object.users_group is not None:
+                currentGroup = context.active_object.users_group[0]
 
-        groups_found = []
-        groups_found.append(currentGroup)
+            groups_found = []
+            groups_found.append(currentGroup)
 
-        for item in context.selected_objects:
-            for group in item.users_group:
-                groupAdded = False
+            for item in context.selected_objects:
+                for group in item.users_group:
+                    groupAdded = False
 
-                for found_group in groups_found:
-                    if found_group.name == group.name:
-                        groupAdded = True
+                    for found_group in groups_found:
+                        if found_group.name == group.name:
+                            groupAdded = True
 
-                if groupAdded == False:
-                    print("")
-                    groups_found.append(group)
+                    if groupAdded == False:
+                        print("")
+                        groups_found.append(group)
 
-        groups_found.remove(currentGroup)
+            groups_found.remove(currentGroup)
 
-        # Obtain the value changed
-        value = currentGroup.GXGrp.location_default
+            # Obtain the value changed
+            value = currentGroup.CAPGrp.location_default
 
-        # Run through the objects
-        for group in groups_found:
-            group.GXGrp.location_default = value
+            # Run through the objects
+            for group in groups_found:
+                group.CAPGrp.location_default = value
 
     return None
 
@@ -452,34 +465,35 @@ def Update_GroupNormals(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.users_group[0].GXGrp:
-        currentGroup = None
-        if context.active_object.users_group is not None:
-            currentGroup = context.active_object.users_group[0]
+    if addon_prefs.group_multi_edit is True:
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.users_group[0].CAPGrp:
+            currentGroup = None
+            if context.active_object.users_group is not None:
+                currentGroup = context.active_object.users_group[0]
 
-        groups_found = []
-        groups_found.append(currentGroup)
+            groups_found = []
+            groups_found.append(currentGroup)
 
-        for item in context.selected_objects:
-            for group in item.users_group:
-                groupAdded = False
+            for item in context.selected_objects:
+                for group in item.users_group:
+                    groupAdded = False
 
-                for found_group in groups_found:
-                    if found_group.name == group.name:
-                        groupAdded = True
+                    for found_group in groups_found:
+                        if found_group.name == group.name:
+                            groupAdded = True
 
-                if groupAdded == False:
-                    print("")
-                    groups_found.append(group)
+                    if groupAdded == False:
+                        print("")
+                        groups_found.append(group)
 
-        groups_found.remove(currentGroup)
+            groups_found.remove(currentGroup)
 
-        # Obtain the value changed
-        value = currentGroup.GXGrp.normals
+            # Obtain the value changed
+            value = currentGroup.CAPGrp.normals
 
-        # Run through the objects
-        for group in groups_found:
-            group.GXGrp.normals = value
+            # Run through the objects
+            for group in groups_found:
+                group.CAPGrp.normals = value
 
     return None
