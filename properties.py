@@ -309,12 +309,27 @@ class CAP_Action_Preferences(PropertyGroup):
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
 classes = (ObjectItem, GroupItem, ActionItem, LocationDefault, CAP_Scene_Preferences, CAP_Object_Preferences, CAP_Group_Preferences, CAP_UI_Preferences, CAP_Object_StateMachine, CAP_Action_Preferences)
 
-for cls in classes:
-    bpy.utils.register_class(cls)
+def register():
+    print("Registering Properties")
+    for item in classes:
+        bpy.utils.register_class(item)
 
-bpy.types.Scene.CAPScn = PointerProperty(type=CAP_Scene_Preferences)
-bpy.types.Object.CAPObj = PointerProperty(type=CAP_Object_Preferences)
-bpy.types.Group.CAPGrp = PointerProperty(type=CAP_Group_Preferences)
-bpy.types.Action.CAPAcn = PointerProperty(type=CAP_Action_Preferences)
-bpy.types.Scene.CAPUI = PointerProperty(type=CAP_UI_Preferences)
-bpy.types.Object.CAPStm = PointerProperty(type=CAP_Object_StateMachine)
+    bpy.types.Scene.CAPScn = PointerProperty(type=CAP_Scene_Preferences)
+    bpy.types.Object.CAPObj = PointerProperty(type=CAP_Object_Preferences)
+    bpy.types.Group.CAPGrp = PointerProperty(type=CAP_Group_Preferences)
+    bpy.types.Action.CAPAcn = PointerProperty(type=CAP_Action_Preferences)
+    bpy.types.Scene.CAPUI = PointerProperty(type=CAP_UI_Preferences)
+    bpy.types.Object.CAPStm = PointerProperty(type=CAP_Object_StateMachine)
+
+def unregister():
+    print("Un-registering Properties")
+    del bpy.types.Scene.CAPScn
+    del bpy.types.Object.CAPObj
+    del bpy.types.Group.CAPGrp
+    del bpy.types.Action.CAPAcn
+    del bpy.types.Scene.CAPUI
+    del bpy.types.Object.CAPStm
+
+    #i = len(classes) - 1
+    #while i != -1:
+        #bpy.utils.unregister_class(classes[i])

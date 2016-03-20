@@ -126,7 +126,6 @@ class CAP_Export_Assets(Operator):
             if modifier.type in modType:
                 bpy.ops.object.modifier_remove(modifier=modifier.name)
 
-
     def GetFilePath(self, context, locationEnum, fileName):
         # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
         scn = context.scene.CAPScn
@@ -147,7 +146,6 @@ class CAP_Export_Assets(Operator):
         filePath = defaultFilePath
 
         return filePath
-
 
     def CalculateFilePath(self, context, locationDefault, objectName, sub_directory, useBlendDirectory, useObjectDirectory):
 
@@ -256,9 +254,15 @@ class CAP_Export_Assets(Operator):
         # Keep a record of the selected and active objects to restore later
         self.active = None
         self.selected = []
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
+
+        if context.active_object is not None:
+            for sel in context.selected_objects:
+                if sel.name != context.active_object.name:
+                    self.selected.append(sel)
+        else:
+            for sel in context.selected_objects:
                 self.selected.append(sel)
+
         self.active = context.active_object
 
         # Keep a record of the current object mode
@@ -367,6 +371,9 @@ class CAP_Export_Assets(Operator):
         for sel in self.selected:
             SelectObject(sel)
 
+        if self.active is None and len(self.selected) == 0:
+            bpy.ops.object.select_all(action='DESELECT')
+
         print("Rawr")
 
     def CheckForErrors(self, context):
@@ -473,7 +480,6 @@ class CAP_Export_Assets(Operator):
 
 
         print(">>>> CHECKED ANIMATION <<<<")
-
 
     def execute(self, context):
         print("Self = ")

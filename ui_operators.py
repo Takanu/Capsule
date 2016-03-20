@@ -304,7 +304,6 @@ class CAP_Set_Root_Object(Operator):
         print("Is this new?")
 
         scn = context.scene.CAPScn
-        obj = context.active_object.CAPObj
 
         user_preferences = context.user_preferences
         self.addon_prefs = user_preferences.addons[__package__].preferences
@@ -349,7 +348,8 @@ class CAP_Set_Root_Object(Operator):
                             #if item.name == context.selected_objects[0].name:
 
                         group.CAPGrp.root_object = context.selected_objects[0].name
-                        FocusObject(self.object)
+                        if self.object != None:
+                            FocusObject(self.object)
                         self.finish()
                         return{'FINISHED'}
 

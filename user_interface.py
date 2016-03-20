@@ -3,12 +3,12 @@ from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, Po
 from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
 
-class GEX_Name_UIList(bpy.types.UIList):
+class GEX_Name_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
             layout.prop(item, "name", text="", emboss=False)
 
-class GEX_TagFilter_UIList(bpy.types.UIList):
+class GEX_TagFilter_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
             layout.prop(item, "name", text="", emboss=False)
@@ -44,15 +44,16 @@ class Group_UIList(UIList):
             if group.name == item.name:
                 groupData = group
 
-        layout.prop(item, "name", text="", emboss=False)
-        layout.prop(groupData.CAPGrp, "export_group", text="")
+        if groupData is not None:
+            layout.prop(item, "name", text="", emboss=False)
+            layout.prop(groupData.CAPGrp, "export_group", text="")
 
-        if addon_prefs.list_feature == 'focus':
-            layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
-        elif addon_prefs.list_feature == 'sel':
-            layout.prop(item, "sel", text="", emboss=False, icon='RESTRICT_SELECT_OFF')
+            if addon_prefs.list_feature == 'focus':
+                layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
+            elif addon_prefs.list_feature == 'sel':
+                layout.prop(item, "sel", text="", emboss=False, icon='RESTRICT_SELECT_OFF')
 
-        layout.separator()
+            layout.separator()
 
 
 class Path_Default_UIList(UIList):

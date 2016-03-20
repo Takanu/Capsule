@@ -5,8 +5,8 @@ bl_info = {
     "author": "Takanu Kyriako",
     "version": (1,0),
     "blender": (2, 7, 5),
-    "api": 39347,
     "location": "3D View > Object Mode > Tools > GEX",
+    "wiki_url": "http://blenderartists.org/forum/showthread.php?373523-GEX-0-85-(15-11-2015)-One-Click-Batch-FBX-Exports",
     "description": "Provides tools for batch exporting objects from Blender using FBX.",
     "tracker_url": "",
     "category": "Import-Export"
@@ -31,9 +31,6 @@ if "bpy" in locals():
     if "update" in locals():
         imp.reload(update)
 
-
-print("Beginning Import"*20)
-
 import bpy
 from . import definitions
 from . import properties
@@ -43,8 +40,6 @@ from . import ui_operators
 from . import update
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
-
-print("End of import")
 
 def Update_TagName(self, context):
 
@@ -788,19 +783,24 @@ class CAPAddonPreferences(AddonPreferences):
 
 
 def register():
-    bpy.utils.register_class(ExportTag)
-    bpy.utils.register_class(ExportPassTag)
-    bpy.utils.register_class(ExportPass)
-    bpy.utils.register_class(ExportPreset)
+    #bpy.utils.register_class(ExportTag)
+    #bpy.utils.register_class(ExportPassTag)
+    #bpy.utils.register_class(ExportPass)
+    #bpy.utils.register_class(ExportPreset)
+    #bpy.utils.register_class(CAPAddonPreferences)
+    properties.register()
     bpy.utils.register_module(__name__)
 
 
 def unregister():
-    bpy.utils.unregister_class(ExportTag)
-    bpy.utils.unregister_class(ExportPassTag)
-    bpy.utils.unregister_class(ExportPass)
-    bpy.utils.unregister_class(ExportPreset)
+    #bpy.utils.unregister_class(CAPAddonPreferences)
+    #bpy.utils.unregister_class(ExportPreset)
+    #bpy.utils.unregister_class(ExportPass)
+    #bpy.utils.unregister_class(ExportPassTag)
+    #bpy.utils.unregister_class(ExportTag)
     bpy.utils.unregister_module(__name__)
+    properties.unregister()
 
-if __name__ == "__main__":
-    register()
+# Only if i ever wanted to run the script in the text editor, which I don't
+#if __name__ == "__main__":
+    #register()
