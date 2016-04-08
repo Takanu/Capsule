@@ -119,6 +119,19 @@ class CAP_SelectionObject(Panel):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
+
+        if addon_prefs.data_missing is True:
+            layout = self.layout
+            col_export = layout.column(align=True)
+            col_export.label("No Capsule for this .blend file has been found,")
+            col_export.label("Please press the button below to generate new data.")
+            col_export.separator()
+            col_export.separator()
+            col_export.operator("cap.exportdata_create")
+            col_export.separator()
+            return
+
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         scn = context.scene.CAPScn
         ui = context.scene.CAPUI
 
@@ -146,76 +159,97 @@ class CAP_SelectionObject(Panel):
 
             layout.separator()
 
-            # Check we have an active object
-            if context.active_object is None or len(context.selected_objects) is 0 and addon_prefs.object_multi_edit is True:
-                col_export = layout.column(align=True)
-                col_export.alignment = 'EXPAND'
-                col_export.label(text="Select an object to change settings")
-                return
-
             # Get the currently active object, whatever that is
             obj = None
             ob = None
 
+            # If we're taking objects from a
             if addon_prefs.object_multi_edit is False:
-                entry = scn.object_list[scn.object_list_index]
+                if len(scn.object_list) is not 0:
+                    if len(scn.object_list) > scn.object_list_index:
+                        entry = scn.object_list[scn.object_list_index]
 
-                for item in context.scene.objects:
-                    if item.name == entry.name:
-                        obj = item.CAPObj
-                        ob = item
-            else:
-                obj = context.object.CAPObj
-                ob = context.object
+                        for item in context.scene.objects:
+                            if item.name == entry.name:
+                                obj = item.CAPObj
+                                ob = item
+
+            elif context.active_object is not None:
+                obj = context.active_object.CAPObj
+                ob = context.active_object
+
+            elif len(context.selected_objects) > 0:
+                obj = context.selected_objects[0].CAPObj
+                ob = context.selected_objects[0]
+
+            print(ob)
 
             # Now we can build the UI
-            col_export = layout.column(align=True)
+            if ob != None:
+                if addon_prefs.object_multi_edit is False or len(context.selected_objects) == 1 or (context.active_object is not None and len(context.selected_objects) == 0):
+                    col_export = layout.column(align=True)
+                    col_export.alignment = 'EXPAND'
+                    col_export.label(text=ob.name, icon="OBJECT_DATA")
+                    col_export.separator()
 
-            if ob == None:
-                col_export = layout.column(align=True)
-                col_export.alignment = 'EXPAND'
-                col_export.label(text="Refresh the list or select a valid object to view settings.")
+                elif len(context.selected_objects) > 1:
+                    objectCount = 0
+                    objectLabel = ""
+                    selected = []
+                    for sel in context.selected_objects:
+                        if sel.type == 'MESH':
+                            objectCount += 1
+                            selected.append(sel)
 
-            elif len(context.selected_objects) is 1 or addon_prefs.object_multi_edit is False:
-                singleObject = True
-                col_export.alignment = 'EXPAND'
-                col_export.label(text=ob.name, icon="OBJECT_DATA")
+                    if objectCount == 1:
+                        if type is 1:
+                            col_export = layout.column(align=True)
+                            col_export.label(text=selected[0].name, icon="OBJECT_DATA")
+                            col_export.separator()
+
+                    else:
+                        col_export = layout.column(align=True)
+                        objectLabel = str(objectCount) + " objects selected"
+                        col_export.label(text=objectLabel, icon="OBJECT_DATA")
+                        col_export.separator()
+
+            if ob != None:
+
+                obj_settings = layout.column(align=True)
+                obj_settings.prop(obj, "enable_export")
+                obj_settings.prop(obj, "use_scene_origin")
+                obj_settings.separator()
+                obj_settings.separator()
+                obj_settings.label(text="Location")
+                obj_settings.separator()
+                obj_settings.prop(obj, "location_default", icon="FILESEL", text="")
+                obj_settings.separator()
+                obj_settings.label(text="Export Settings:")
+                obj_settings.separator()
+                obj_settings.prop(obj, "export_default", text="")
+                obj_settings.separator()
+                obj_settings.label(text="Mesh Normal Export:")
+                obj_settings.separator()
+                obj_settings.prop(obj, "normals", text="")
+                obj_settings.separator()
 
             else:
-                objectCount = 0
-                objectLabel = ""
-                selected = []
-                for sel in context.selected_objects:
-                    if sel.type == 'MESH':
-                        objectCount += 1
-                        selected.append(sel)
-
-                if objectCount == 1:
-                    if type is 1:
-                        col_export.label(text=selected[0].name, icon="OBJECT_DATA")
-
+                object_info = layout.column(align=True)
+                if addon_prefs.object_multi_edit is False:
+                    if len(scn.object_list) < (scn.object_list_index + 1) and len(scn.object_list) != 0:
+                        object_info.label(text="Please select an object from the list to view")
+                        object_info.label(text="it's settings.")
+                    else:
+                        object_info.label(text="No objects found, press refresh to find new objects,")
+                        object_info.label(text="or change selection mode.")
                 else:
-                    objectLabel = str(objectCount) + " objects selected"
-                    col_export.label(text=objectLabel, icon="OBJECT_DATA")
+                    object_info.label(text="No objects selected.  Please objects a group to edit it,")
+                    object_info.label(text="or change selection mode.")
 
-            col_export.separator()
-            col_export.prop(obj, "enable_export")
-            col_export.prop(obj, "use_scene_origin")
-            #col_export.prop(obj, "auto_assign")
-            col_export.separator()
-            col_export.separator()
-            col_export.label(text="Location")
-            col_export.separator()
-            col_export.prop(obj, "location_default", icon="FILESEL", text="")
-            col_export.separator()
-            col_export.label(text="Export Settings:")
-            col_export.separator()
-            col_export.prop(obj, "export_default", text="")
-            col_export.separator()
-            col_export.label(text="Mesh Normal Export:")
-            col_export.separator()
-            col_export.prop(obj, "normals", text="")
-            col_export.separator()
+
+
+            layout.separator()
+
 
 
         #////////////////////////// GROUP UI /////////////////////////////
@@ -245,13 +279,16 @@ class CAP_SelectionObject(Panel):
                             grp = group.CAPGrp
                             gr = group
 
-                group_label = layout.column(align=True)
-                group_label.alignment = 'EXPAND'
-                group_label.label(text=gr.name, icon="OBJECT_DATA")
+                if gr is not None:
+                    group_label = layout.column(align=True)
+                    group_label.alignment = 'EXPAND'
+                    group_label.label(text=gr.name, icon="MOD_ARRAY")
+
 
             # Otherwise, just find it in a selection
-            else:
+            elif context.active_object is not None or len(context.selected_objects) > 0:
                 groups_found = []
+                groupLabel = ""
                 for item in context.selected_objects:
                     for group in item.users_group:
                         groupAdded = False
@@ -264,20 +301,25 @@ class CAP_SelectionObject(Panel):
                             groups_found.append(group)
 
                 if len(groups_found) == 1:
-                    groupLabel = "1 group found."
+                    groupLabel = groups_found[0].name + " group selected."
 
-                else:
+                elif len(groups_found) > 1:
                     groupLabel = str(len(groups_found)) + " groups found."
 
                 if context.active_object is not None:
                     if len(context.active_object.users_group) > 0:
                         for group in context.active_object.users_group:
+                            gr = group
                             grp = group.CAPGrp
                             break
 
-                group_label = layout.column(align=True)
-                group_label.alignment = 'EXPAND'
-                group_label.label(text=groupLabel, icon="OBJECT_DATA")
+                if gr is not None and len(groups_found) == 0:
+                    groupLabel = gr.name + " group selected."
+
+                if groupLabel != "":
+                    group_label = layout.column(align=True)
+                    group_label.alignment = 'EXPAND'
+                    group_label.label(text=groupLabel, icon="MOD_ARRAY")
 
 
 
@@ -310,11 +352,13 @@ class CAP_SelectionObject(Panel):
                 rawr_other.prop(grp, "normals", text="")
 
             else:
-                groupPrefs = layout.column(align=True)
+                group_info = layout.column(align=True)
                 if addon_prefs.group_multi_edit is False:
-                    groupPrefs.label(text="No groups found, press refresh to find new groups.")
+                    group_info.label(text="No groups found, press refresh to find new groups,")
+                    group_info.label(text="or change selection mode.")
                 else:
-                    groupPrefs.label(text="No groups selected.  Please select a group to edit it.")
+                    group_info.label(text="No groups selected.  Please select a group to edit it,")
+                    group_info.label(text="or change selection mode.")
 
             layout.separator()
 
@@ -345,11 +389,14 @@ class CAP_Location(Panel):
     def draw(self, context):
         layout = self.layout
 
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         scn = context.scene.CAPScn
         ob = context.object
 
         col_location = layout.row(align=True)
-        col_location.template_list("Path_Default_UIList", "default", scn, "location_defaults", scn, "location_defaults_index", rows=3, maxrows=6)
+        col_location.template_list("Path_Default_UIList", "default", exp, "location_defaults", exp, "location_defaults_index", rows=3, maxrows=6)
 
         col_location.separator()
 
@@ -363,8 +410,8 @@ class CAP_Location(Panel):
         file.alignment = 'EXPAND'
 
         count = 0
-        for i, item in enumerate(scn.location_defaults, 1):
+        for i, item in enumerate(exp.location_defaults, 1):
             count += 1
 
-        if scn.location_defaults_index > -1 and scn.location_defaults_index < count:
-            file.prop(scn.location_defaults[scn.location_defaults_index], "path", text="Location")
+        if exp.location_defaults_index > -1 and exp.location_defaults_index < count:
+            file.prop(exp.location_defaults[exp.location_defaults_index], "path", text="Location")

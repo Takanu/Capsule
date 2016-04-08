@@ -15,9 +15,12 @@ class CAP_Add_Path(Operator):
     def execute(self, context):
         print(self)
 
-        scn = context.scene.CAPScn
-        newPath = scn.location_defaults.add()
-        newPath.name = "Location " + str(len(scn.location_defaults))
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        newPath = exp.location_defaults.add()
+        newPath.name = "Location " + str(len(exp.location_defaults))
         newPath.path = ""
 
         # Position the index to the current location of the
@@ -41,8 +44,11 @@ class CAP_Delete_Path(Operator):
     def execute(self, context):
         print(self)
 
-        scn = context.scene.CAPScn
-        scn.location_defaults.remove(scn.location_defaults_index)
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        exp.location_defaults.remove(exp.location_defaults_index)
 
         return {'FINISHED'}
 
@@ -61,12 +67,14 @@ class CAP_Add_Export(Operator):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
-        newDefault = addon_prefs.export_defaults.add()
-        newDefault.name = "Export " + str(len(addon_prefs.export_defaults))
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        newDefault = exp.export_defaults.add()
+        newDefault.name = "Export " + str(len(exp.export_defaults))
         newDefault.path = ""
 
         # Ensure the tag index keeps within a window
-        addon_prefs.export_defaults_index = len(addon_prefs.export_defaults) - 1
+        exp.export_defaults_index = len(exp.export_defaults) - 1
 
         return {'FINISHED'}
 
@@ -83,10 +91,12 @@ class CAP_Delete_Export(Operator):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
-        addon_prefs.export_defaults.remove(addon_prefs.export_defaults_index)
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        if addon_prefs.export_defaults_index > 0:
-            addon_prefs.export_defaults_index -= 1
+        exp.export_defaults.remove(exp.export_defaults_index)
+
+        if exp.export_defaults_index > 0:
+            exp.export_defaults_index -= 1
 
         return {'FINISHED'}
 
@@ -103,9 +113,10 @@ class CAP_Add_Tag(Operator):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Add the tag into the main list
-        export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+        export = exp.export_defaults[exp.export_defaults_index]
         newTag = export.tags.add()
         newTag.name = "Tag " + str(len(export.tags))
 
@@ -130,8 +141,9 @@ class CAP_Delete_Tag(Operator):
     def poll(cls, context):
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+        export = exp.export_defaults[exp.export_defaults_index]
         currentTag = export.tags[export.tags_index]
 
         if currentTag.x_user_deletable is True:
@@ -145,7 +157,9 @@ class CAP_Delete_Tag(Operator):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
-        export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        export = exp.export_defaults[exp.export_defaults_index]
         export.tags.remove(export.tags_index)
 
         for expPass in export.passes:
@@ -169,8 +183,9 @@ class CAP_Add_Pass(Operator):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
-        export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
+        export = exp.export_defaults[exp.export_defaults_index]
         newPass = export.passes.add()
         newPass.name = "Pass " + str(len(export.passes))
         newPass.path = ""
@@ -197,7 +212,9 @@ class CAP_Delete_Pass(Operator):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
-        export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        export = exp.export_defaults[exp.export_defaults_index]
         export.passes.remove(export.passes_index)
 
         if export.passes_index > 0:
@@ -583,194 +600,253 @@ class CAP_Tutorial_Tags(Operator):
 
         return {'FINISHED'}
 
+class CAP_Create_ExportData(Operator):
+    """Creates a new empty object from which Export Preset and Location data for the blend file is stored."""
 
-class CAP_Custom_Presets(Operator):
-    """Adds a special preset that changes how objects are processed for export, making exports from Blender to other programs smoother."""
-    bl_idname = "cap.custom_presets"
+    bl_idname = "cap.exportdata_create"
+    bl_label = "Create Capsule Data"
+
+    def execute(self, context):
+        print(self)
+
+        user_preferences = bpy.context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
+        # Figure out if an object already exists, if yes do nothing
+        for object in bpy.data.objects:
+            print(object)
+            if object.name == addon_prefs.default_datablock:
+                self.report({'WARNING'}, "Capsule data for the blend file has been found, a new one will not be created.")
+                return {'CANCELLED'}
+
+        # Otherwise create the object using the addon preference data
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.empty_add(type='PLAIN_AXES')
+
+        defaultDatablock = bpy.context.scene.objects.active
+        defaultDatablock.name = addon_prefs.default_datablock
+        defaultDatablock.hide = True
+        defaultDatablock.hide_render = True
+        defaultDatablock.hide_select = True
+        defaultDatablock.CAPExp.is_storage_object = True
+        addon_prefs.data_missing = False
+
+        self.report({'INFO'}, "Capsule data created.")
+        return {'FINISHED'}
+
+def GetGlobalPresets(scene, context):
+
+    items = [
+        ("0", "None",  "", 0),
+    ]
+
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    exp = addon_prefs.global_presets
+
+    u = 1
+
+    for i,x in enumerate(exp):
+
+        items.append((str(i+1), x.name, x.description, i+1))
+
+    return items
+
+def ExchangePresetData(context, new_preset, old_preset):
+    #First transfer the basic information
+    pass
+
+
+class CAP_Make_Stored_Presets(Operator):
+    """Adds a stored preset into the usable Export Presets for this .blend file."""
+    bl_idname = "cap.make_stored_preset"
     bl_label = "Default Presets"
 
     presets = EnumProperty(
     name = "Custom Presets",
-    items=(
-    ('All', 'Basic Export All', 'Sets up a basic preset with no tags, and will export all content in objects and groups marked for export.'),
-    ('UE4', 'Unreal Engine 4 Standard', 'Sets up a custom preset for UE4, with support for multiple collision objects per low_poly and seamless collision importing.'),
-    ('Unity5', 'Unity 5', 'Sets up a custom preset for Unity, which in conjunction with the included import script, supports collision components with the base mesh in one file.')
-    ),)
+    items=GetGlobalPresets)
 
     def execute(self, context):
 
-        print(self.presets)
+        # Get the current export data
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        # -------------------------------------------------------------------------
-        # Basic Export All
-        # -------------------------------------------------------------------------
-        if self.presets == 'All':
-            scn = context.scene.CAPScn
-            user_preferences = context.user_preferences
-            addon_prefs = user_preferences.addons[__package__].preferences
-
-            export = addon_prefs.export_defaults.add()
-            export.name = "Basic Export All (Preset)"
-            export.axis_forward = "-Z"
-            export.axis_up = "Y"
-            export.global_scale = 1.0
-
-            passOne = export.passes.add()
-            passOne.name = "Combined Pass"
-            passOne.export_animation = True
-            passOne.apply_modifiers = True
-            passOne.triangulate = True
-
-        # -------------------------------------------------------------------------
-        # UE4 Standard Template
-        # -------------------------------------------------------------------------
-        if self.presets == 'UE4':
-            scn = context.scene.CAPScn
-            user_preferences = context.user_preferences
-            addon_prefs = user_preferences.addons[__package__].preferences
-
-            export = addon_prefs.export_defaults.add()
-            export.name = "UE4 Standard (Preset)"
-            export.axis_forward = "-Z"
-            export.axis_up = "Y"
-            export.global_scale = 1.0
-
-            tagHP = export.tags.add()
-            tagHP.name = "High-Poly"
-            tagHP.name_filter = "_HP"
-            tagHP.name_filter_type = '1'
-            tagHP.object_type = '2'
-            tagHP.x_user_deletable = False
-            tagHP.x_user_editable_type = True
-
-
-            tagLP = export.tags.add()
-            tagLP.name = "Low-Poly"
-            tagLP.name_filter = "_LP"
-            tagLP.name_filter_type = '1'
-            tagLP.object_type = '2'
-            tagLP.x_user_deletable = False
-            tagLP.x_user_editable_type = True
-
-            tagCG = export.tags.add()
-            tagCG.name = "Cage"
-            tagCG.name_filter = "_CG"
-            tagCG.name_filter_type = '1'
-            tagCG.object_type = '2'
-            tagCG.x_user_deletable = False
-            tagCG.x_user_editable_type = True
-
-            tagCG.x_name_ext = "UCX_"
-            tagCG.x_name_ext_type = '2'
-
-            tagCX = export.tags.add()
-            tagCX.name = "Collision"
-            tagCX.name_filter = "_CX"
-            tagCX.name_filter_type = '1'
-            tagCX.object_type = '2'
-            tagCX.x_user_deletable = False
-            tagCX.x_user_editable_type = True
-            tagCX.x_ue4_collision_naming = True
-
-            tagAR = export.tags.add()
-            tagAR.name = "Armature"
-            tagAR.name_filter = "_AR"
-            tagAR.name_filter_type = '1'
-            tagAR.object_type = '7'
-            tagAR.x_user_deletable = False
-            tagAR.x_user_editable_type = False
-
-
-
-            passOne = export.passes.add()
-            passOne.name = "Combined Pass"
-            passOne.export_animation = True
-            passOne.apply_modifiers = True
-            passOne.triangulate = True
-
-            # Ensure the new pass has all the current tags
-            for tag in export.tags:
-                newPassTag = passOne.tags.add()
-                newPassTag.name = tag.name
-                newPassTag.index = len(export.tags) - 1
-                newPassTag.use_tag = True
-
-            passTwo = export.passes.add()
-            passTwo.name = "Game-Ready Pass"
-            passTwo.export_animation = True
-            passTwo.apply_modifiers = True
-            passTwo.triangulate = True
-
-            i = 0
-
-            # Ensure the new pass has all the current tags
-            for tag in export.tags:
-                newPassTag = passTwo.tags.add()
-                newPassTag.name = tag.name
-                newPassTag.index = len(export.tags) - 1
-
-                if i != 0:
-                    newPassTag.use_tag = True
-
-                i += 1
-
-        # -------------------------------------------------------------------------
-        # UE4 Standard Template
-        # -------------------------------------------------------------------------
-        if self.presets == 'Unity5':
-            scn = context.scene.CAPScn
-            user_preferences = context.user_preferences
-            addon_prefs = user_preferences.addons[__package__].preferences
-
-            export = addon_prefs.export_defaults.add()
-            export.name = "Unity 5 Standard (Preset)"
-            export.axis_forward = "-Z"
-            export.axis_up = "Y"
-            export.global_scale = 1.0
-            export.bake_space_transform = True
-
-            tagLP = export.tags.add()
-            tagLP.name = "Low-Poly"
-            tagLP.name_filter = "_LP"
-            tagLP.name_filter_type = '1'
-            tagLP.x_user_deletable = False
-
-            tagHP = export.tags.add()
-            tagHP.name = "High-Poly"
-            tagHP.name_filter = "_HP"
-            tagHP.name_filter_type = '1'
-            tagHP.x_user_deletable = False
-
-            tagCG = export.tags.add()
-            tagCG.name = "Cage"
-            tagCG.name_filter = "_CG"
-            tagCG.name_filter_type = '1'
-            tagCG.x_user_deletable = False
-
-            tagCX = export.tags.add()
-            tagCX.name = "Collision"
-            tagCX.name_filter = "_CX"
-            tagCX.name_filter_type = '1'
-            tagCX.x_user_deletable = False
-
-            tagAR = export.tags.add()
-            tagAR.name = "Armature"
-            tagAR.name_filter = "_AR"
-            tagAR.name_filter_type = '1'
-            tagAR.object_type = '7'
-            tagAR.x_user_deletable = False
-
-            passOne = export.passes.add()
-            passOne.name = "Combined Pass"
-            passOne.export_animation = True
-            passOne.apply_modifiers = True
-            passOne.triangulate = True
-
-            # Ensure the new pass has all the current tags
-            for tag in export.tags:
-                newPassTag = passOne.tags.add()
-                newPassTag.name = tag.name
-                newPassTag.index = len(export.tags) - 1
-                newPassTag.use_tag = True
+        # Obtain the selected preset
+        #exp.export_defaults.append(addon_prefs.global_presets[self.presets - 1])
+        new_preset = exp.export_defaults.add()
+        new_preset = addon_prefs.global_presets[self.presets - 1]
 
         return {'FINISHED'}
+
+def CreatePresets():
+    # -------------------------------------------------------------------------
+    # Basic Export All
+    # -------------------------------------------------------------------------
+    user_preferences = bpy.context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    exp = addon_prefs.global_presets
+
+    export = exp.add()
+    export.name = "Basic Export All (Preset)"
+    export.description = "Creates a basic Export Preset with ideal settings for most purposes."
+    export.axis_forward = "-Z"
+    export.axis_up = "Y"
+    export.global_scale = 1.0
+
+    passOne = export.passes.add()
+    passOne.name = "Combined Pass"
+    passOne.export_animation = True
+    passOne.apply_modifiers = True
+    passOne.triangulate = True
+
+    export = None
+
+    # -------------------------------------------------------------------------
+    # UE4 Standard Template
+    # -------------------------------------------------------------------------
+    export = exp.add()
+    export.name = "UE4 Standard (Preset)"
+    export.description = "Creates an Export Preset for exporting FBX files for Unreal Engine 4, with optimised settings.  Enables the bundling of Collision objects in a format readable by UE4."
+    export.axis_forward = "-Z"
+    export.axis_up = "Y"
+    export.global_scale = 1.0
+
+    tagHP = export.tags.add()
+    tagHP.name = "High-Poly"
+    tagHP.name_filter = "_HP"
+    tagHP.name_filter_type = '1'
+    tagHP.object_type = '2'
+    tagHP.x_user_deletable = False
+    tagHP.x_user_editable_type = True
+
+
+    tagLP = export.tags.add()
+    tagLP.name = "Low-Poly"
+    tagLP.name_filter = "_LP"
+    tagLP.name_filter_type = '1'
+    tagLP.object_type = '2'
+    tagLP.x_user_deletable = False
+    tagLP.x_user_editable_type = True
+
+    tagCG = export.tags.add()
+    tagCG.name = "Cage"
+    tagCG.name_filter = "_CG"
+    tagCG.name_filter_type = '1'
+    tagCG.object_type = '2'
+    tagCG.x_user_deletable = False
+    tagCG.x_user_editable_type = True
+
+    tagCG.x_name_ext = "UCX_"
+    tagCG.x_name_ext_type = '2'
+
+    tagCX = export.tags.add()
+    tagCX.name = "Collision"
+    tagCX.name_filter = "_CX"
+    tagCX.name_filter_type = '1'
+    tagCX.object_type = '2'
+    tagCX.x_user_deletable = False
+    tagCX.x_user_editable_type = True
+    tagCX.x_ue4_collision_naming = True
+
+    tagAR = export.tags.add()
+    tagAR.name = "Armature"
+    tagAR.name_filter = "_AR"
+    tagAR.name_filter_type = '1'
+    tagAR.object_type = '7'
+    tagAR.x_user_deletable = False
+    tagAR.x_user_editable_type = False
+
+
+
+    passOne = export.passes.add()
+    passOne.name = "Combined Pass"
+    passOne.export_animation = True
+    passOne.apply_modifiers = True
+    passOne.triangulate = True
+
+    # Ensure the new pass has all the current tags
+    for tag in export.tags:
+        newPassTag = passOne.tags.add()
+        newPassTag.name = tag.name
+        newPassTag.index = len(export.tags) - 1
+        newPassTag.use_tag = True
+
+    passTwo = export.passes.add()
+    passTwo.name = "Game-Ready Pass"
+    passTwo.export_animation = True
+    passTwo.apply_modifiers = True
+    passTwo.triangulate = True
+
+    i = 0
+
+    # Ensure the new pass has all the current tags
+    for tag in export.tags:
+        newPassTag = passTwo.tags.add()
+        newPassTag.name = tag.name
+        newPassTag.index = len(export.tags) - 1
+
+        if i != 0:
+            newPassTag.use_tag = True
+
+        i += 1
+
+    export = None
+
+    # -------------------------------------------------------------------------
+    # UE4 Standard Template
+    # -------------------------------------------------------------------------
+    export = exp.add()
+    export.name = "Unity 5 Standard (Preset)"
+    export.description = "Creates an Export Preset for exporting FBX files for Unity 5, with optimised settings."
+    export.axis_forward = "-Z"
+    export.axis_up = "Y"
+    export.global_scale = 1.0
+    export.bake_space_transform = True
+
+    tagLP = export.tags.add()
+    tagLP.name = "Low-Poly"
+    tagLP.name_filter = "_LP"
+    tagLP.name_filter_type = '1'
+    tagLP.x_user_deletable = False
+
+    tagHP = export.tags.add()
+    tagHP.name = "High-Poly"
+    tagHP.name_filter = "_HP"
+    tagHP.name_filter_type = '1'
+    tagHP.x_user_deletable = False
+
+    tagCG = export.tags.add()
+    tagCG.name = "Cage"
+    tagCG.name_filter = "_CG"
+    tagCG.name_filter_type = '1'
+    tagCG.x_user_deletable = False
+
+    tagCX = export.tags.add()
+    tagCX.name = "Collision"
+    tagCX.name_filter = "_CX"
+    tagCX.name_filter_type = '1'
+    tagCX.x_user_deletable = False
+
+    tagAR = export.tags.add()
+    tagAR.name = "Armature"
+    tagAR.name_filter = "_AR"
+    tagAR.name_filter_type = '1'
+    tagAR.object_type = '7'
+    tagAR.x_user_deletable = False
+
+    passOne = export.passes.add()
+    passOne.name = "Combined Pass"
+    passOne.export_animation = True
+    passOne.apply_modifiers = True
+    passOne.triangulate = True
+
+    # Ensure the new pass has all the current tags
+    for tag in export.tags:
+        newPassTag = passOne.tags.add()
+        newPassTag.name = tag.name
+        newPassTag.index = len(export.tags) - 1
+        newPassTag.use_tag = True
+
+    export = None

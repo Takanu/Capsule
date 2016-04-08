@@ -59,7 +59,7 @@ def Update_TagName(self, context):
 
     return None
 
-class ExportTag(PropertyGroup):
+class CAP_ExportTag(PropertyGroup):
 
     name = StringProperty(
         name="Tag Name",
@@ -106,7 +106,7 @@ class ExportTag(PropertyGroup):
     # Special preference to rename objects during export, to make UE4/Unity export more seamless
     x_ue4_collision_naming = BoolProperty(default=False)
 
-class ExportPassTag(PropertyGroup):
+class CAP_ExportPassTag(PropertyGroup):
     name = StringProperty(
         name = "Tag Name",
         description = "The name of the tag...",
@@ -127,7 +127,7 @@ class ExportPassTag(PropertyGroup):
         description = "Determines whether or not the tag gets used in the pass.",
         default = False)
 
-class ExportPass(PropertyGroup):
+class CAP_ExportPass(PropertyGroup):
 
     name = StringProperty(
         name="Pass Name",
@@ -144,7 +144,7 @@ class ExportPass(PropertyGroup):
         description="Export the pass to a new folder inside the chosen location default."
     )
 
-    tags = CollectionProperty(type=ExportPassTag)
+    tags = CollectionProperty(type=CAP_ExportPassTag)
     tags_index = IntProperty(default=0)
 
     export_individual = BoolProperty(
@@ -177,11 +177,16 @@ class ExportPass(PropertyGroup):
         default=False
     )
 
-
-class ExportPreset(PropertyGroup):
+class CAP_ExportPreset(PropertyGroup):
     name = StringProperty(
         name = "Default Name",
         description="The name of the export preset, whoda thunk :OO",
+        default=""
+    )
+
+    description = StringProperty(
+        name = "Description",
+        description="(Internal Use Only)",
         default=""
     )
 
@@ -210,11 +215,11 @@ class ExportPreset(PropertyGroup):
     export_types = EnumProperty(
             name="Object Types",
             options={'ENUM_FLAG'},
-            items=(('EMPTY', "Empty", ""),
+            items=(('MESH', "Mesh", ""),
+                   ('ARMATURE', "Armature", ""),
                    ('CAMERA', "Camera", ""),
                    ('LAMP', "Lamp", ""),
-                   ('ARMATURE', "Armature", ""),
-                   ('MESH', "Mesh", ""),
+                   ('EMPTY', "Empty", ""),
                    ('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),
                    ),
             description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other defined options in Capsule.",
@@ -222,9 +227,9 @@ class ExportPreset(PropertyGroup):
             )
 
 
-    passes = CollectionProperty(type=ExportPass)
+    passes = CollectionProperty(type=CAP_ExportPass)
     passes_index = IntProperty(default=0)
-    tags = CollectionProperty(type=ExportTag)
+    tags = CollectionProperty(type=CAP_ExportTag)
     tags_index = IntProperty(default=0)
 
     global_scale = FloatProperty(
@@ -381,16 +386,47 @@ class ExportPreset(PropertyGroup):
         soft_max = 10
     )
 
-class CAPAddonPreferences(AddonPreferences):
+    x_global_user_deletable = BoolProperty(default=True)
+
+class CAP_LocationDefault(PropertyGroup):
+    name = StringProperty(
+        name="",
+        description="The name of the file path default.")
+
+    path = StringProperty(name="",
+        description="The file path to export the object to.",
+        default="",
+        subtype="FILE_PATH")
+
+class CAP_ExportPresets(PropertyGroup):
+    export_defaults = CollectionProperty(type=CAP_ExportPreset)
+    export_defaults_index = IntProperty(default=0)
+    is_storage_object = BoolProperty(default=False)
+
+    location_defaults = CollectionProperty(type=CAP_LocationDefault)
+    location_defaults_index = IntProperty(default=0)
+
+class CAP_AddonPreferences(AddonPreferences):
     bl_idname = __name__
 
-    export_defaults = CollectionProperty(type=ExportPreset)
-    export_defaults_index = IntProperty(default=0)
+    # This is for special presets that users wish to save between .blend files
+    default_datablock = StringProperty(
+        name = "Dummy Datablock Name",
+        description = "The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
+        default = ">Capsule Blend File Data<"
+    )
+
+    global_presets = CollectionProperty(type=CAP_ExportPreset)
 
     presets_dropdown = BoolProperty(default = False)
     tags_dropdown = BoolProperty(default = False)
     passes_dropdown = BoolProperty(default = False)
     options_dropdown = BoolProperty(default = False)
+
+    #global_presets_dropdown = EnumProperty(
+        #name = "Export Options",
+        #description = "",
+        #items=GetGlobalPresets)
 
     export_preset_options = EnumProperty(
         name = "Export Options",
@@ -399,8 +435,8 @@ class CAPAddonPreferences(AddonPreferences):
         ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
         ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
-        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
-        ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
+        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.')
+        #('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
         ),)
 
     object_multi_edit = BoolProperty(
@@ -427,11 +463,32 @@ class CAPAddonPreferences(AddonPreferences):
         default='focus'
     )
 
+    data_missing = BoolProperty(default=False)
+
     def draw(self, context):
         layout = self.layout
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__name__].preferences
+        exp = None
+
+        for item in bpy.data.objects:
+            if item.name == addon_prefs.default_datablock:
+                exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        if exp is None:
+            layout = self.layout
+            col_export = layout.column(align=True)
+            col_export.label("No Capsule for this .blend file has been found,")
+            col_export.label("Please press the button below to generate new data.")
+            col_export.separator()
+            col_export.separator()
+            col_export.operator("cap.exportdata_create")
+            col_export.separator()
+            addon_prefs.data_missing = True
+            return
+
+
         scn = context.scene.CAPScn
         ob = context.object
         ui = context.scene.CAPUI
@@ -446,26 +503,26 @@ class CAPAddonPreferences(AddonPreferences):
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
             col_export_title.label("Export Defaults")
-            col_export_title.operator_menu_enum("cap.custom_presets", "presets")
+            col_export_title.operator_menu_enum("cap.make_stored_preset", "presets")
 
 
         else:
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
             col_export_title.label("Export Defaults")
-            col_export_title.operator_menu_enum("cap.custom_presets", "presets")
+            col_export_title.operator_menu_enum("cap.make_stored_preset", "presets")
 
             col_export = export_box.row(align=True)
-            col_export.template_list("Export_Default_UIList", "default", addon_prefs, "export_defaults", addon_prefs, "export_defaults_index", rows=3, maxrows=6)
+            col_export.template_list("Export_Default_UIList", "default", exp, "export_defaults", exp, "export_defaults_index", rows=3, maxrows=6)
 
             col_export.separator()
             row_export = col_export.column(align=True)
             row_export.operator("scene.cap_addexport", text="", icon="ZOOMIN")
             row_export.operator("scene.cap_deleteexport", text="", icon="ZOOMOUT")
 
-            if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
+            if len(exp.export_defaults) > 0 and (exp.export_defaults_index) < len(exp.export_defaults):
 
-                currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+                currentExp = exp.export_defaults[exp.export_defaults_index]
 
                 export_settings = export_box.column(align=True)
                 export_settings.separator()
@@ -571,29 +628,29 @@ class CAPAddonPreferences(AddonPreferences):
 
                     export_main.separator()
 
-                elif addon_prefs.export_preset_options == 'Animation':
-                    export_main = export_box.row(align=True)
-                    export_main.separator()
+                #elif addon_prefs.export_preset_options == 'Animation':
+                    #export_main = export_box.row(align=True)
+                    #export_main.separator()
 
-                    export_1 = export_main.column(align=True)
-                    export_1.prop(currentExp, "bake_anim_use_all_bones")
-                    export_1.prop(currentExp, "bake_anim_use_nla_strips")
-                    export_1.prop(currentExp, "bake_anim_use_all_actions")
-                    export_1.prop(currentExp, "bake_anim_force_startend_keying")
-                    export_1.prop(currentExp, "optimise_keyframes")
-                    export_1.prop(currentExp, "use_default_take")
-                    export_1.separator()
+                    #export_1 = export_main.column(align=True)
+                    #export_1.prop(currentExp, "bake_anim_use_all_bones")
+                    #export_1.prop(currentExp, "bake_anim_use_nla_strips")
+                    #export_1.prop(currentExp, "bake_anim_use_all_actions")
+                    #export_1.prop(currentExp, "bake_anim_force_startend_keying")
+                    #export_1.prop(currentExp, "optimise_keyframes")
+                    #export_1.prop(currentExp, "use_default_take")
+                    #export_1.separator()
 
-                    export_main.separator()
-                    export_main.separator()
-                    export_main.separator()
+                    #export_main.separator()
+                    #export_main.separator()
+                    #export_main.separator()
 
-                    export_2 = export_main.column(align=True)
-                    export_2.prop(currentExp, "bake_anim_step")
-                    export_2.prop(currentExp, "bake_anim_simplify_factor")
-                    export_2.separator()
+                    #export_2 = export_main.column(align=True)
+                    #export_2.prop(currentExp, "bake_anim_step")
+                    #export_2.prop(currentExp, "bake_anim_simplify_factor")
+                    #export_2.separator()
 
-                    export_main.separator()
+                    #export_main.separator()
 
             else:
                 preset_unselected = export_box.column(align=True)
@@ -615,9 +672,9 @@ class CAPAddonPreferences(AddonPreferences):
             tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             tag_title.label("Tags")
 
-            if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
+            if len(exp.export_defaults) > 0 and (exp.export_defaults_index) < len(exp.export_defaults):
 
-                currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+                currentExp = exp.export_defaults[exp.export_defaults_index]
 
                 tagUI_row = tag_box.row(align=True)
                 tagUI_row.template_list("Tag_Default_UIList", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
@@ -665,9 +722,9 @@ class CAPAddonPreferences(AddonPreferences):
             passUI.label("Passes")
 
 
-            if len(addon_prefs.export_defaults) > 0 and (addon_prefs.export_defaults_index) < len(addon_prefs.export_defaults):
+            if len(exp.export_defaults) > 0 and (exp.export_defaults_index) < len(exp.export_defaults):
 
-                currentExp = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
+                currentExp = exp.export_defaults[exp.export_defaults_index]
 
                 row_passes = pass_box.row(align=True)
                 row_passes.template_list("Pass_Default_UIList", "default", currentExp, "passes", currentExp, "passes_index", rows=3, maxrows=6)
@@ -783,24 +840,39 @@ class CAPAddonPreferences(AddonPreferences):
 
 
 def register():
-    #bpy.utils.register_class(ExportTag)
-    #bpy.utils.register_class(ExportPassTag)
-    #bpy.utils.register_class(ExportPass)
-    #bpy.utils.register_class(ExportPreset)
-    #bpy.utils.register_class(CAPAddonPreferences)
-    properties.register()
+
+    print("Registering Stuff")
     bpy.utils.register_module(__name__)
+    #bpy.utils.register_class(CAP_AddonPreferences)
+
+    bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAP_Scene_Preferences)
+    bpy.types.Object.CAPObj = PointerProperty(type=properties.CAP_Object_Preferences)
+    bpy.types.Group.CAPGrp = PointerProperty(type=properties.CAP_Group_Preferences)
+    bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAP_Action_Preferences)
+    bpy.types.Scene.CAPUI = PointerProperty(type=properties.CAP_UI_Preferences)
+    bpy.types.Object.CAPStm = PointerProperty(type=properties.CAP_Object_StateMachine)
+
+    bpy.types.Object.CAPExp = PointerProperty(type=CAP_ExportPresets)
+    ui_operators.CreatePresets()
 
 
 def unregister():
-    #bpy.utils.unregister_class(CAPAddonPreferences)
-    #bpy.utils.unregister_class(ExportPreset)
-    #bpy.utils.unregister_class(ExportPass)
-    #bpy.utils.unregister_class(ExportPassTag)
-    #bpy.utils.unregister_class(ExportTag)
+
+    print("Unregistering Stuff")
+    del bpy.types.Object.CAPExp
+
+    del bpy.types.Scene.CAPScn
+    del bpy.types.Object.CAPObj
+    del bpy.types.Group.CAPGrp
+    del bpy.types.Action.CAPAcn
+    del bpy.types.Scene.CAPUI
+    del bpy.types.Object.CAPStm
+
     bpy.utils.unregister_module(__name__)
-    properties.unregister()
+    #bpy.utils.unregister_class(CAP_AddonPreferences)
+
+
 
 # Only if i ever wanted to run the script in the text editor, which I don't
-#if __name__ == "__main__":
-    #register()
+if __name__ == "__main__":
+    register()

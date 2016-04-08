@@ -128,14 +128,13 @@ class CAP_Export_Assets(Operator):
 
     def GetFilePath(self, context, locationEnum, fileName):
         # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
-        scn = context.scene.CAPScn
         enumIndex = int(locationEnum)
         filePath = ""
 
         enumIndex -= 1
 
-        defaultFilePath = scn.location_defaults[enumIndex].path
-        print("Obtained location default: ", scn.location_defaults[enumIndex].path)
+        defaultFilePath = self.exportInfo.location_defaults[enumIndex].path
+        print("Obtained location default: ", self.exportInfo.location_defaults[enumIndex].path)
 
         if defaultFilePath == "":
             return {'2'}
@@ -378,7 +377,9 @@ class CAP_Export_Assets(Operator):
 
     def CheckForErrors(self, context):
 
-        scn = context.scene.CAPScn
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Checks for any easily-preventable errors
         for object in context.scene.objects:
@@ -417,19 +418,19 @@ class CAP_Export_Assets(Operator):
 
         # Check Paths
         i = 0
-        while i < len(scn.location_defaults):
+        while i < len(exp.location_defaults):
             enumIndex = i
             filePath = ""
             enumIndex -= 1
 
-            defaultFilePath = scn.location_defaults[enumIndex].path
+            defaultFilePath = exp.location_defaults[enumIndex].path
 
             if defaultFilePath == "":
-                statement = "The path for " + scn.location_defaults[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
+                statement = "The path for " + exp.location_defaults[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
                 return statement
 
             if defaultFilePath.find('//') != -1:
-                statement =  "The Location " + scn.location_defaults[enumIndex].name + " is using a location preset with a relative file path name, please tick off the Relative Path option when choosing the file path."
+                statement =  "The Location " + exp.location_defaults[enumIndex].name + " is using a location preset with a relative file path name, please tick off the Relative Path option when choosing the file path."
                 return statement
 
             i += 1
@@ -487,7 +488,8 @@ class CAP_Export_Assets(Operator):
 
         scn = context.scene.CAPScn
         user_preferences = context.user_preferences
-        self.addon_prefs = user_preferences.addons[__package__].preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        self.exportInfo = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         self.exportCount = 0
         self.exportedObjects = 0
@@ -531,7 +533,7 @@ class CAP_Export_Assets(Operator):
                     return {'FINISHED'}
 
 
-                exportDefault = self.addon_prefs.export_defaults[expKey]
+                exportDefault = self.exportInfo.export_defaults[expKey]
                 useBlendDirectory = exportDefault.use_blend_directory
                 useObjectDirectory = exportDefault.use_sub_directory
                 self.GetExportInfo(exportDefault)
@@ -617,7 +619,7 @@ class CAP_Export_Assets(Operator):
                             expRoot = True
                     elif len(activeTags) == 0:
                         expRoot = True
-                    if objPass.tags[rootType].use_tag is True or (exportIndividual is True and objectUseTags is True):
+                    elif objPass.tags[rootType].use_tag is True or (exportIndividual is True and objectUseTags is True):
                         expRoot = True
 
                     if exportDefault.filter_render is True and rootObject.hide_render is True:
@@ -744,10 +746,11 @@ class CAP_Export_Assets(Operator):
                     print(">>> Pass Complete <<<")
 
                 # Count up exported objects
-                self.exportedObjects += 1
-                self.exportCount += 1
-                context.window_manager.progress_update(self.exportCount)
-                print(">>> Object Export Complete <<<")
+                if len(exportDefault.passes) > 0:
+                    self.exportedObjects += 1
+                    self.exportCount += 1
+                    context.window_manager.progress_update(self.exportCount)
+                    print(">>> Object Export Complete <<<")
 
         # GROUP CYCLE
         ###############################################################
@@ -796,7 +799,7 @@ class CAP_Export_Assets(Operator):
                 # Collect hidden defaults to restore afterwards.
                 objectName = group.name
 
-                exportDefault = self.addon_prefs.export_defaults[expKey]
+                exportDefault = self.exportInfo.export_defaults[expKey]
                 useBlendDirectory = exportDefault.use_blend_directory
                 useObjectDirectory = exportDefault.use_sub_directory
                 self.GetExportInfo(exportDefault)
@@ -1016,11 +1019,12 @@ class CAP_Export_Assets(Operator):
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
 
+                if len(exportDefault.passes) > 0:
+                    self.exportedGroups += 1
+                    self.exportCount += 1
+                    context.window_manager.progress_update(self.exportCount)
 
-                self.exportedGroups += 1
-                self.exportCount += 1
-                context.window_manager.progress_update(self.exportCount)
-                print(">>> Group Export Complete <<<")
+                    print(">>> Group Export Complete <<<")
 
 
         self.RestoreScene(context)
@@ -1056,7 +1060,7 @@ class CAP_Export_Assets(Operator):
 
         # Output a nice report
         if self.exportedObjects == 0 and self.exportedGroups == 0:
-            self.report({'WARNING'}, 'No objects were exported.  Ensure any objects tagged for exporting are enabled.')
+            self.report({'WARNING'}, 'No objects were exported.  Ensure you have objects tagges for export, and passes in your export presets.')
 
         else:
             self.report({'INFO'}, output)

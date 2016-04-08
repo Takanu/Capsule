@@ -3,7 +3,7 @@ from .update import Update_EnableExport, Update_SceneOrigin, Update_LocationDefa
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
-
+from bpy.app.handlers import persistent
 
 class ObjectItem(PropertyGroup):
     name = StringProperty(
@@ -60,7 +60,6 @@ class GroupItem(PropertyGroup):
         default = True,
         update = Focus_Group)
 
-
 class ActionItem(PropertyGroup):
     name = StringProperty(
         name="",
@@ -83,23 +82,13 @@ class ActionItem(PropertyGroup):
         ('4', 'NLA Armature', ''),
         ),)
 
-class LocationDefault(PropertyGroup):
-    name = StringProperty(
-        name="",
-        description="The name of the file path default.")
-
-    path = StringProperty(name="",
-        description="The file path to export the object to.",
-        default="",
-        subtype="FILE_PATH")
-
 def GetSelectedGroups(scene, context):
 
     items = [
         ("0", "None",  "", 0),
     ]
 
-    scn = context.scene.CAP_Scn
+    scn = context.scene.CAPScn
     scn.group_selected_list.clear()
     groups_found = []
 
@@ -123,7 +112,6 @@ def GetSelectedGroups(scene, context):
         newGroup.name = x.name
 
     return items
-
 
 class CAP_Scene_Preferences(PropertyGroup):
 
@@ -150,9 +138,6 @@ class CAP_Scene_Preferences(PropertyGroup):
     object_list = CollectionProperty(type=ObjectItem)
     object_list_index = IntProperty()
 
-    location_defaults = CollectionProperty(type=LocationDefault)
-    location_defaults_index = IntProperty(default=0)
-
     object_switch = EnumProperty(
         name = "Object Type Switch",
         description = "Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
@@ -167,11 +152,13 @@ def GetLocationDefaults(scene, context):
         ("0", "None",  "", 0),
     ]
 
-    scn = context.scene.CAPScn
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
     u = 1
 
-    for i,x in enumerate(scn.location_defaults):
+    for i,x in enumerate(exp.location_defaults):
 
         items.append((str(i+1), x.name, x.name, i+1))
 
@@ -185,15 +172,15 @@ def GetExportDefaults(scene, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
+    exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
     u = 1
 
-    for i,x in enumerate(addon_prefs.export_defaults):
+    for i,x in enumerate(exp.export_defaults):
 
         items.append((str(i+1), x.name, x.name, i+1))
 
     return items
-
 
 class CAP_Object_Preferences(PropertyGroup):
     enable_export = BoolProperty(
@@ -229,7 +216,6 @@ class CAP_Object_Preferences(PropertyGroup):
         ('3', 'Normals Only', 'Exports the current custom normals of the model.')
         ),
         update=Update_Normals)
-
 
 class CAP_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
@@ -307,7 +293,7 @@ class CAP_Action_Preferences(PropertyGroup):
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (ObjectItem, GroupItem, ActionItem, LocationDefault, CAP_Scene_Preferences, CAP_Object_Preferences, CAP_Group_Preferences, CAP_UI_Preferences, CAP_Object_StateMachine, CAP_Action_Preferences)
+classes = (ObjectItem, GroupItem, ActionItem, CAP_Scene_Preferences, CAP_Object_Preferences, CAP_Group_Preferences, CAP_UI_Preferences, CAP_Object_StateMachine, CAP_Action_Preferences)
 
 def register():
     print("Registering Properties")
@@ -330,6 +316,31 @@ def unregister():
     del bpy.types.Scene.CAPUI
     del bpy.types.Object.CAPStm
 
-    #i = len(classes) - 1
-    #while i != -1:
-        #bpy.utils.unregister_class(classes[i])
+    i = len(classes) - 1
+    while i != -1:
+        bpy.utils.unregister_class(classes[i])
+
+@persistent
+def CreateDefaultData(scene):
+
+    user_preferences = bpy.context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    # Figure out if an object already exists, if yes do nothing
+    for object in bpy.data.objects:
+        print(object)
+        if object.name == addon_prefs.default_datablock:
+            return
+
+    # Otherwise create the object using the addon preference data
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.empty_add(type='PLAIN_AXES')
+
+    defaultDatablock = bpy.context.scene.objects.active
+    defaultDatablock.name = addon_prefs.default_datablock
+    defaultDatablock.hide = True
+    defaultDatablock.hide_render = True
+    defaultDatablock.hide_select = True
+    defaultDatablock.CAPExp.is_storage_object = True
+
+bpy.app.handlers.load_post.append(CreateDefaultData)
