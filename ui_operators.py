@@ -634,37 +634,14 @@ class CAP_Create_ExportData(Operator):
         self.report({'INFO'}, "Capsule data created.")
         return {'FINISHED'}
 
-def GetGlobalPresets(scene, context):
-
-    items = [
-        ("0", "None",  "", 0),
-    ]
-
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
-    exp = addon_prefs.global_presets
-
-    u = 1
-
-    for i,x in enumerate(exp):
-
-        items.append((str(i+1), x.name, x.description, i+1))
-
-    return items
-
 def ExchangePresetData(context, new_preset, old_preset):
     #First transfer the basic information
     pass
 
-
-class CAP_Make_Stored_Presets(Operator):
+class CAP_Add_Stored_Presets(Operator):
     """Adds a stored preset into the usable Export Presets for this .blend file."""
-    bl_idname = "cap.make_stored_preset"
+    bl_idname = "cap.create_current_preset"
     bl_label = "Default Presets"
-
-    presets = EnumProperty(
-    name = "Custom Presets",
-    items=GetGlobalPresets)
 
     def execute(self, context):
 
@@ -674,9 +651,71 @@ class CAP_Make_Stored_Presets(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
-        #exp.export_defaults.append(addon_prefs.global_presets[self.presets - 1])
         new_preset = exp.export_defaults.add()
-        new_preset = addon_prefs.global_presets[self.presets - 1]
+        preset_len = int(addon_prefs.global_presets_enum) - 1
+        CopyPreset(addon_prefs.global_presets[preset_len], new_preset)
+
+        return {'FINISHED'}
+
+class CAP_Delete_Presets(Operator):
+    """Deletes the currently selected Global Preset."""
+    bl_idname = "cap.delete_global_preset"
+    bl_label = "Store Preset"
+
+    @classmethod
+    def poll(cls, context):
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
+        if len(addon_prefs.global_presets) > 0:
+            if addon_prefs.global_presets_enum != "0":
+                export = addon_prefs.global_presets[int(addon_prefs.global_presets_enum) - 1]
+                if export.x_global_user_deletable is True:
+                    return True
+
+        return False
+
+    def execute(self, context):
+
+        # Get the current export data
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        # Obtain the selected preset
+        addon_prefs.global_presets.remove(int(addon_prefs.global_presets_enum) - 1)
+        addon_prefs.global_presets_enum = str(0)
+
+        return {'FINISHED'}
+
+class CAP_Store_Presets(Operator):
+    """Stores the currently selected Export Preset as Plugin data, to enable it's use in other .blend files."""
+    bl_idname = "cap.add_global_preset"
+    bl_label = "Store Preset"
+
+    @classmethod
+    def poll(cls, context):
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        if len(exp.export_defaults) > 0:
+            return True
+
+        else:
+            return False
+
+
+    def execute(self, context):
+
+        # Get the current export data
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        # Obtain the selected preset
+        new_preset = addon_prefs.global_presets.add()
+        CopyPreset(exp.export_defaults[exp.export_defaults_index], new_preset)
 
         return {'FINISHED'}
 
@@ -694,6 +733,7 @@ def CreatePresets():
     export.axis_forward = "-Z"
     export.axis_up = "Y"
     export.global_scale = 1.0
+    export.x_global_user_deletable = False
 
     passOne = export.passes.add()
     passOne.name = "Combined Pass"
@@ -712,6 +752,7 @@ def CreatePresets():
     export.axis_forward = "-Z"
     export.axis_up = "Y"
     export.global_scale = 1.0
+    export.x_global_user_deletable = False
 
     tagHP = export.tags.add()
     tagHP.name = "High-Poly"
@@ -795,7 +836,7 @@ def CreatePresets():
     export = None
 
     # -------------------------------------------------------------------------
-    # UE4 Standard Template
+    # Unity 5 Standard Template
     # -------------------------------------------------------------------------
     export = exp.add()
     export.name = "Unity 5 Standard (Preset)"
@@ -804,6 +845,7 @@ def CreatePresets():
     export.axis_up = "Y"
     export.global_scale = 1.0
     export.bake_space_transform = True
+    export.x_global_user_deletable = False
 
     tagLP = export.tags.add()
     tagLP.name = "Low-Poly"
@@ -850,3 +892,75 @@ def CreatePresets():
         newPassTag.use_tag = True
 
     export = None
+
+def CopyPreset(old_preset, new_preset):
+
+    new_preset.name = old_preset.name
+    new_preset.use_blend_directory = old_preset.use_blend_directory
+    new_preset.use_sub_directory = old_preset.use_sub_directory
+    new_preset.bundle_textures = old_preset.bundle_textures
+    new_preset.filter_render = old_preset.filter_render
+    new_preset.export_types = old_preset.export_types
+
+    # OLD PASS COPYING
+    for old_pass in old_preset.passes:
+        new_pass = new_preset.passes.add()
+
+        new_pass.name = old_pass.name
+        new_pass.file_suffix = old_pass.file_suffix
+        new_pass.sub_directory = old_pass.sub_directory
+
+        # OLD TAG COPYING
+        for old_passtag in old_pass.tags:
+            new_passtag = new_pass.tags.add()
+
+            new_passtag.name = old_passtag.name
+            new_passtag.prev_name = old_passtag.prev_name
+            new_passtag.index = old_passtag.index
+            new_passtag.use_tag = old_passtag.use_tag
+
+        new_pass.export_individual = old_pass.export_individual
+        new_pass.export_animation = old_pass.export_animation
+        new_pass.apply_modifiers = old_pass.apply_modifiers
+        new_pass.triangulate = old_pass.triangulate
+        new_pass.object_use_tags = old_pass.object_use_tags
+
+    new_preset.passes_index = old_preset.passes_index
+
+    for old_tag in old_preset.tags:
+        new_tag = new_preset.tags.add()
+
+        new_tag.name = old_tag.name
+        new_tag.name_filter = old_tag.name_filter
+        new_tag.name_filter_type = old_tag.name_filter_type
+        new_tag.object_type = old_tag.object_type
+        new_tag.x_user_deletable = old_tag.x_user_deletable
+        new_tag.x_user_editable_type = old_tag.x_user_editable_type
+        new_tag.x_ue4_collision_naming = old_tag.x_ue4_collision_naming
+
+    new_preset.tags_index = old_preset.tags_index
+
+    new_preset.global_scale = old_preset.global_scale
+    new_preset.bake_space_transform = old_preset.bake_space_transform
+    new_preset.axis_up = old_preset.axis_up
+    new_preset.axis_forward = old_preset.axis_forward
+    new_preset.apply_unit_scale = old_preset.apply_unit_scale
+
+    new_preset.loose_edges = old_preset.loose_edges
+    new_preset.tangent_space = old_preset.tangent_space
+
+    new_preset.use_armature_deform_only = old_preset.use_armature_deform_only
+    new_preset.add_leaf_bones = old_preset.add_leaf_bones
+    new_preset.primary_bone_axis = old_preset.primary_bone_axis
+    new_preset.secondary_bone_axis = old_preset.secondary_bone_axis
+    new_preset.armature_nodetype = old_preset.armature_nodetype
+
+    new_preset.bake_anim_use_all_bones = old_preset.bake_anim_use_all_bones
+    new_preset.bake_anim_use_nla_strips = old_preset.bake_anim_use_nla_strips
+    new_preset.bake_anim_use_all_actions = old_preset.bake_anim_use_all_actions
+    new_preset.bake_anim_force_startend_keying = old_preset.bake_anim_force_startend_keying
+    new_preset.use_default_take = old_preset.use_default_take
+    new_preset.optimise_keyframes = old_preset.optimise_keyframes
+    new_preset.bake_anim_step = old_preset.bake_anim_step
+    new_preset.bake_anim_simplify_factor = old_preset.bake_anim_simplify_factor
+    new_preset.x_global_user_deletable = old_preset.x_global_user_deletable

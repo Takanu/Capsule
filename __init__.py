@@ -45,11 +45,9 @@ def Update_TagName(self, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
-
     export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
     currentTag = export.tags[export.tags_index]
 
-    # Get the name of the tag
     tag_name = currentTag.name
 
     # Get tags in all current passes, and edit them
@@ -59,26 +57,44 @@ def Update_TagName(self, context):
 
     return None
 
+def GetGlobalPresets(scene, context):
+
+    items = [
+        ("0", "None",  "", 0),
+        ]
+
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    exp = addon_prefs.global_presets
+
+    u = 1
+
+    for i,x in enumerate(exp):
+        items.append((str(i+1), x.name, x.description, i+1))
+
+    return items
+
 class CAP_ExportTag(PropertyGroup):
+    # The main Export Tag collection property, used for storing the actual tags used in an Export Preset
 
     name = StringProperty(
         name="Tag Name",
         description="The name of the tag.",
-        update = Update_TagName
-    )
+        update=Update_TagName
+        )
 
     name_filter = StringProperty(
         name="Tag",
         description="The string you wish to use as a tag when sorting through object names."
-    )
+        )
 
     name_filter_type = EnumProperty(
-        name = "Tag Type",
-        description = "Where the tag is being placed in the object name.",
+        name="Tag Type",
+        description="Where the tag is being placed in the object name.",
         items=(
         ('1', 'Suffix', ''),
-        ('2', 'Prefix', ''),
-        ),)
+        ('2', 'Prefix', ''),),
+        )
 
     object_type = EnumProperty(
         name="Object Type",
@@ -97,52 +113,56 @@ class CAP_ExportTag(PropertyGroup):
             ('12', 'Speaker', 'Applies to speaker object types only.')
             ),
         default='1'
-    )
+        )
 
-    # Special preferences for special export presets
+    # Special preferences for special export presets.
     x_user_deletable = BoolProperty(default=True)
     x_user_editable_type = BoolProperty(default=True)
 
-    # Special preference to rename objects during export, to make UE4/Unity export more seamless
+    # Special preference to rename objects during export, to make UE4/Unity export more seamless.
     x_ue4_collision_naming = BoolProperty(default=False)
 
+
 class CAP_ExportPassTag(PropertyGroup):
+    # The Export Tag reference, used inside Export Passes to list the available tags.
+    # Also specified for that pass, whether or not it is to be used.
+
     name = StringProperty(
-        name = "Tag Name",
-        description = "The name of the tag...",
-        default = "")
-
+        name="Tag Name",
+        description="The name of the tag...",
+        default=""
+        )
     prev_name = StringProperty(
-        name = "Previous Tag Name",
-        description = "A backup tag name designed to prevent editing of tag names when viewing them",
-        default = "")
-
+        name="Previous Tag Name",
+        description="A backup tag name designed to prevent editing of tag names when viewing them",
+        default=""
+        )
     index = IntProperty(
-        name = "Tag Index",
-        description = "Where the tag is located in the Export Preset, so it can be looked up later (Internal Only)",
-        default = 0)
-
+        name="Tag Index",
+        description="Where the tag is located in the Export Preset, so it can be looked up later (Internal Only)",
+        default=0
+        )
     use_tag = BoolProperty(
-        name = "Use Tag",
-        description = "Determines whether or not the tag gets used in the pass.",
-        default = False)
+        name="Use Tag",
+        description="Determines whether or not the tag gets used in the pass.",
+        defaul=False
+        )
+
 
 class CAP_ExportPass(PropertyGroup):
 
     name = StringProperty(
         name="Pass Name",
         description="The name of the selected pass."
-    )
-
+        )
     file_suffix = StringProperty(
         name="File Suffix",
         description="The suffix added on the exported file created from this pass."
-    )
-
+        )
     sub_directory = StringProperty(
         name="Sub-Directory",
         description="Export the pass to a new folder inside the chosen location default."
-    )
+        )
 
     tags = CollectionProperty(type=CAP_ExportPassTag)
     tags_index = IntProperty(default=0)
@@ -151,66 +171,68 @@ class CAP_ExportPass(PropertyGroup):
         name="Export Individual",
         description="Exports every object in the pass into individual files, rather than a single file, as well as ensuring their .",
         default=False
-    )
+        )
 
     export_animation = BoolProperty(
         name="Export Animation",
         description="Enables animations for this pass to be exported.",
         default=False
-    )
+        )
 
     apply_modifiers = BoolProperty(
         name="Apply Modifiers",
         description="Applies all modifiers on every object in the pass",
         default=False
-    )
+        )
 
     triangulate = BoolProperty(
         name="Triangulate Export",
         description="Triangulate objects in the pass on export using optimal triangulation settings.",
         default=False
-    )
+        )
 
     object_use_tags = BoolProperty(
         name="(Object Only) Use All Tags",
         description="If enabling individual export, this option allows the inclusion of all tagged objects associated with a single object.",
         default=False
-    )
+        )
+
 
 class CAP_ExportPreset(PropertyGroup):
     name = StringProperty(
         name = "Default Name",
         description="The name of the export preset, whoda thunk :OO",
         default=""
-    )
+        )
 
     description = StringProperty(
         name = "Description",
         description="(Internal Use Only)",
         default=""
-    )
+        )
 
     use_blend_directory = BoolProperty(
         name="Add Blend Directory",
         description="Exports all objects from a .blend file, into a folder named after that .blend file.  Useful if you're exporting objects from multiple .blend files into one export folder, for additional, automated organisation.",
         default=False
-    )
+        )
 
     use_sub_directory = BoolProperty(
         name="Add Object Directories",
         description="If ticked, every individual or group export will be placed in it's own folder inside the target location.  Any pass sub-directories will be contained inside these folders.",
         default=False
-    )
+        )
 
     bundle_textures = BoolProperty(
         name="Bundle Textures",
         description="Allows any textures that are packed in the .blend file and applied to an object or group you're exporting, to be bundled with it inside the FBX file.",
-        default=False)
+        default=False
+        )
 
     filter_render = BoolProperty(
         name="Filter by Rendering",
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
-    )
+        )
 
     export_types = EnumProperty(
             name="Object Types",
@@ -235,12 +257,14 @@ class CAP_ExportPreset(PropertyGroup):
     global_scale = FloatProperty(
         name="Global Scale",
         description="The exported scale of the objects.",
-        default=1.0)
+        default=1.0
+        )
 
     bake_space_transform = BoolProperty(
         name="Bake Space Transform",
         description="Erm...",
-        default=False)
+        default=False
+        )
 
     axis_up = EnumProperty(
         name="Axis Up",
@@ -251,7 +275,8 @@ class CAP_ExportPreset(PropertyGroup):
             ('Z', 'Z', ''),
             ('-X', '-X', ''),
             ('-Y', '-Y', ''),
-            ('-Z', '-Z', '')))
+            ('-Z', '-Z', ''))
+            )
 
 
     axis_forward = EnumProperty(
@@ -263,37 +288,38 @@ class CAP_ExportPreset(PropertyGroup):
             ('Z', 'Z', ''),
             ('-X', '-X', ''),
             ('-Y', '-Y', ''),
-            ('-Z', '-Z', '')))
+            ('-Z', '-Z', ''))
+            )
 
     apply_unit_scale = BoolProperty(
         name="Apply Unit Scale",
         description="Scales the Blender Units system to match the FBX unit measurement (centimetres).",
         default=False
-    )
+        )
 
     loose_edges = BoolProperty(
         name="Loose Edges",
         description="Makes any separate edges a two-verted polygon.",
         default=False
-    )
+        )
 
     tangent_space = BoolProperty(
         name="Tangent Space",
         description="blablablabla",
         default=False
-    )
+        )
 
     use_armature_deform_only = BoolProperty(
         name="Only Include Deform Bones",
         description="Makes any separate edges a two-verted polygon.",
         default=False
-    )
+        )
 
     add_leaf_bones = BoolProperty(
         name="Add Leaf Bones",
         description="Append a bone to the end of each chain...",
         default=False
-    )
+        )
 
     primary_bone_axis = EnumProperty(
         name="Primary Bone Axis",
@@ -305,7 +331,8 @@ class CAP_ExportPreset(PropertyGroup):
             ('-X', '-X', ''),
             ('-Y', '-Y', ''),
             ('-Z', '-Z', '')),
-            default='Y')
+            default='Y'
+            )
 
     secondary_bone_axis = EnumProperty(
         name="Secondary Bone Axis",
@@ -317,7 +344,8 @@ class CAP_ExportPreset(PropertyGroup):
             ('-X', '-X', ''),
             ('-Y', '-Y', ''),
             ('-Z', '-Z', '')),
-        default='X')
+        default='X'
+        )
 
     armature_nodetype = EnumProperty(
         name="FBX Armature NodeType",
@@ -325,78 +353,79 @@ class CAP_ExportPreset(PropertyGroup):
         items=(
             ('Null', 'Null', ''),
             ('Root', 'Root', ''),
-            ('LimbNode', 'LimbNode', '')))
+            ('LimbNode', 'LimbNode', ''))
+            )
 
 
     bake_anim_use_all_bones = BoolProperty(
         name="Use All Bones",
         description="Makes any separate edges a two-verted polygon.",
-        default=False
-    )
+        default=False)
 
     bake_anim_use_nla_strips = BoolProperty(
         name="Use NLA Strips",
         description="Makes any separate edges a two-verted polygon.",
         default=False
-    )
+        )
 
     bake_anim_use_all_actions = BoolProperty(
         name="Use All Actions",
         description="Makes any separate edges a two-verted polygon.",
         default=False
-    )
+        )
 
     bake_anim_force_startend_keying = BoolProperty(
         name="Start/End Keying",
         description="Makes any separate edges a two-verted polygon.",
         default=False
-    )
+        )
 
     use_default_take = BoolProperty(
         name="Use Default Take",
         description="Rawr?",
         default=False
-    )
+        )
 
     optimise_keyframes = BoolProperty(
         name="Optimise Keyframes",
         description="Removes double keyframes.",
         default=False
-    )
-
+        )
 
     bake_anim_step = FloatProperty(
         name="Sampling Rate",
         description="Blah",
-        default = 1,
-        min = 0,
-        max = 100,
-        soft_min = 0.1,
-        soft_max = 10
-
-    )
+        default=1,
+        min=0,
+        max=100,
+        soft_min=0.1,
+        soft_max=10
+        )
 
     bake_anim_simplify_factor = FloatProperty(
         name="Simplify Factor",
         description="Blah",
-        default = 1,
-        min = 0,
-        max = 100,
-        soft_min = 0,
-        soft_max = 10
-    )
+        default=1,
+        min=0,
+        max=100,
+        soft_min=0,
+        soft_max=10
+        )
 
+    # A special system variable that defines whether it can be deleted from the Global Presets list.
     x_global_user_deletable = BoolProperty(default=True)
 
 class CAP_LocationDefault(PropertyGroup):
     name = StringProperty(
         name="",
-        description="The name of the file path default.")
+        description="The name of the file path default."
+        )
 
     path = StringProperty(name="",
         description="The file path to export the object to.",
         default="",
-        subtype="FILE_PATH")
+        subtype="FILE_PATH"
+        )
 
 class CAP_ExportPresets(PropertyGroup):
     export_defaults = CollectionProperty(type=CAP_ExportPreset)
@@ -409,14 +438,19 @@ class CAP_ExportPresets(PropertyGroup):
 class CAP_AddonPreferences(AddonPreferences):
     bl_idname = __name__
 
-    # This is for special presets that users wish to save between .blend files
+    # The name for the empty object that exists to store .blend file level Capsule data.
     default_datablock = StringProperty(
-        name = "Dummy Datablock Name",
-        description = "The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
-        default = ">Capsule Blend File Data<"
+        name="Dummy Datablock Name",
+        description="The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
+        default=">Capsule Blend File Data<"
     )
 
+    # Storage for the Global Presets, and it's enum UI list.
     global_presets = CollectionProperty(type=CAP_ExportPreset)
+    global_presets_enum = EnumProperty(
+        name="Stored Export Presets",
+        description="The export presets saved as plugin data, which can be accessed between .blend files.",
+        items=GetGlobalPresets)
 
     presets_dropdown = BoolProperty(default = False)
     tags_dropdown = BoolProperty(default = False)
@@ -429,8 +463,8 @@ class CAP_AddonPreferences(AddonPreferences):
         #items=GetGlobalPresets)
 
     export_preset_options = EnumProperty(
-        name = "Export Options",
-        description = "",
+        name="Export Options",
+        description="",
         items=(
         ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
@@ -440,19 +474,21 @@ class CAP_AddonPreferences(AddonPreferences):
         ),)
 
     object_multi_edit = BoolProperty(
-        name = "Group Multi-Edit Mode",
-        description = "Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
-        default=True)
+        name="Group Multi-Edit Mode",
+        description="Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
+        default=True
+        )
 
     group_multi_edit = BoolProperty(
-        name = "Group Multi-Edit Mode",
-        description = "Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
-        default=False)
+        name="Group Multi-Edit Mode",
+        description="Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
+        default=False
+        )
 
     object_list_autorefresh = BoolProperty(
         name="Object List Auto-Refresh",
         description="Determines whether or not an object on the object export list will automatically be removed when Enable Export is unticked.  If this option is disabled, a manual refresh button will appear next to the list."
-    )
+        )
 
     list_feature = EnumProperty(
         name="Additional List Features",
@@ -461,7 +497,7 @@ class CAP_AddonPreferences(AddonPreferences):
             ('sel', 'Select', 'Adds an option next to a list entry that allows you to select that Object or Group in the 3D View.'),
             ('focus', 'Focus', 'Adds an option next to a list entry that allows you to select and focus the 3D view on that Object or Group.')),
         default='focus'
-    )
+        )
 
     data_missing = BoolProperty(default=False)
 
@@ -503,14 +539,18 @@ class CAP_AddonPreferences(AddonPreferences):
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
             col_export_title.label("Export Defaults")
-            col_export_title.operator_menu_enum("cap.make_stored_preset", "presets")
+            col_export_title.operator("cap.create_current_preset", text="", icon="ZOOMIN")
+            col_export_title.operator("cap.delete_global_preset", text="", icon="ZOOMOUT")
+            col_export_title.prop(addon_prefs, "global_presets_enum", text="")
 
 
         else:
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
             col_export_title.label("Export Defaults")
-            col_export_title.operator_menu_enum("cap.make_stored_preset", "presets")
+            col_export_title.operator("cap.create_current_preset", text="", icon="ZOOMIN")
+            col_export_title.operator("cap.delete_global_preset", text="", icon="ZOOMOUT")
+            col_export_title.prop(addon_prefs, "global_presets_enum", text="")
 
             col_export = export_box.row(align=True)
             col_export.template_list("Export_Default_UIList", "default", exp, "export_defaults", exp, "export_defaults_index", rows=3, maxrows=6)
@@ -519,6 +559,8 @@ class CAP_AddonPreferences(AddonPreferences):
             row_export = col_export.column(align=True)
             row_export.operator("scene.cap_addexport", text="", icon="ZOOMIN")
             row_export.operator("scene.cap_deleteexport", text="", icon="ZOOMOUT")
+            row_export.separator()
+            row_export.operator("cap.add_global_preset", text="", icon="FORWARD")
 
             if len(exp.export_defaults) > 0 and (exp.export_defaults_index) < len(exp.export_defaults):
 
@@ -843,7 +885,6 @@ def register():
 
     print("Registering Stuff")
     bpy.utils.register_module(__name__)
-    #bpy.utils.register_class(CAP_AddonPreferences)
 
     bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAP_Scene_Preferences)
     bpy.types.Object.CAPObj = PointerProperty(type=properties.CAP_Object_Preferences)
@@ -851,7 +892,6 @@ def register():
     bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAP_Action_Preferences)
     bpy.types.Scene.CAPUI = PointerProperty(type=properties.CAP_UI_Preferences)
     bpy.types.Object.CAPStm = PointerProperty(type=properties.CAP_Object_StateMachine)
-
     bpy.types.Object.CAPExp = PointerProperty(type=CAP_ExportPresets)
     ui_operators.CreatePresets()
 
@@ -860,7 +900,6 @@ def unregister():
 
     print("Unregistering Stuff")
     del bpy.types.Object.CAPExp
-
     del bpy.types.Scene.CAPScn
     del bpy.types.Object.CAPObj
     del bpy.types.Group.CAPGrp
@@ -869,8 +908,6 @@ def unregister():
     del bpy.types.Object.CAPStm
 
     bpy.utils.unregister_module(__name__)
-    #bpy.utils.unregister_class(CAP_AddonPreferences)
-
 
 
 # Only if i ever wanted to run the script in the text editor, which I don't

@@ -182,8 +182,6 @@ class CAP_SelectionObject(Panel):
                 obj = context.selected_objects[0].CAPObj
                 ob = context.selected_objects[0]
 
-            print(ob)
-
             # Now we can build the UI
             if ob != None:
                 if addon_prefs.object_multi_edit is False or len(context.selected_objects) == 1 or (context.active_object is not None and len(context.selected_objects) == 0):

@@ -10,83 +10,87 @@ class ObjectItem(PropertyGroup):
         name="",
         description="The name of the group.",
         update=Update_ObjectItemName
-    )
+        )
 
     prev_name = StringProperty(
         name="",
         description="Internal only, used for tracking name updates."
-    )
+        )
 
     enable_export = BoolProperty(
         name="",
         description="",
         default=False,
         update=Update_ObjectItemExport
-    )
+        )
 
     sel = BoolProperty(
-        name = "Select",
-        description = "Selects the object in the scene",
-        default = True,
-        update = Select_Object)
+        name="Select",
+        description="Selects the object in the scene",
+        default=True,
+        update=Select_Object
+        )
 
     focus = BoolProperty(
-        name = "Focus",
-        description = "Focuses the camera to the object",
-        default = True,
-        update = Focus_Object)
+        name="Focus",
+        description="Focuses the camera to the object",
+        default=True,
+        update=Focus_Object
+        )
 
 class GroupItem(PropertyGroup):
     name = StringProperty(
         name="",
         description="The name of the group.",
         update=Update_GroupItemName
-    )
+        )
 
     prev_name = StringProperty(
         name="",
         description="Internal only, used for tracking name updates."
-    )
+        )
 
     sel = BoolProperty(
-        name = "Select",
-        description = "Selects the group in the scene",
-        default = True,
-        update = Select_Group)
+        name="Select",
+        description="Selects the group in the scene",
+        default=True,
+        update=Select_Group
+        )
 
     focus = BoolProperty(
-        name = "Focus Export",
-        description = "Focuses the camera to the entire group.",
-        default = True,
-        update = Focus_Group)
+        name="Focus Export",
+        description="Focuses the camera to the entire group.",
+        default=True,
+        update=Focus_Group
+        )
 
 class ActionItem(PropertyGroup):
     name = StringProperty(
         name="",
         description="The name of the action.",
         update=Update_ActionItemName
-    )
+        )
 
     prev_name = StringProperty(
         name="",
         description="Internal only, used for tracking name updates."
-    )
+        )
 
     anim_type = EnumProperty(
-        name = "Animation Data Type",
-        description = "Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
+        name="Animation Data Type",
+        description="Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
         items=(
         ('1', 'Action Object', ''),
         ('2', 'NLA Object', ''),
         ('3', 'Action Armature', ''),
-        ('4', 'NLA Armature', ''),
-        ),)
+        ('4', 'NLA Armature', ''),),
+        )
 
 def GetSelectedGroups(scene, context):
 
     items = [
         ("0", "None",  "", 0),
-    ]
+        ]
 
     scn = context.scene.CAPScn
     scn.group_selected_list.clear()
@@ -106,7 +110,6 @@ def GetSelectedGroups(scene, context):
     u = 1
 
     for i,x in enumerate(groups_found):
-
         items.append((str(i+1), x.name, x.name, i+1))
         newGroup = scn.group_selected_list.add()
         newGroup.name = x.name
@@ -119,13 +122,14 @@ class CAP_Scene_Preferences(PropertyGroup):
         name="Set Game Engine",
         items=(
         ('1', 'Unreal Engine 4', 'Configures export and export options for Unreal Engine 4'),
-        ('2', 'Unity 5', 'Configures export and export options for Unity'),
-        ),)
+        ('2', 'Unity 5', 'Configures export and export options for Unity'),),
+        )
 
     correct_rotation = BoolProperty(
         name="Correct Rotation",
         description="Rotates all assets 180º on the Z axis before exporting, to appear in the same orientation in Unity as it does currently.",
-        default=False)
+        default=False
+        )
 
 
     group_list = CollectionProperty(type=GroupItem)
@@ -139,18 +143,18 @@ class CAP_Scene_Preferences(PropertyGroup):
     object_list_index = IntProperty()
 
     object_switch = EnumProperty(
-        name = "Object Type Switch",
-        description = "Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
+        name="Object Type Switch",
+        description="Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
         items=(
         ('1', 'Objects', 'Switches to the Object menu, for editing the exports of single objects and any tags associated with them.'),
-        ('2', 'Groups', 'Switches to the Group menu, for editing the exports of groups.')
-        ),)
+        ('2', 'Groups', 'Switches to the Group menu, for editing the exports of groups.')),
+        )
 
 def GetLocationDefaults(scene, context):
 
     items = [
         ("0", "None",  "", 0),
-    ]
+        ]
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
@@ -159,7 +163,6 @@ def GetLocationDefaults(scene, context):
     u = 1
 
     for i,x in enumerate(exp.location_defaults):
-
         items.append((str(i+1), x.name, x.name, i+1))
 
     return items
@@ -168,7 +171,7 @@ def GetExportDefaults(scene, context):
 
     items = [
         ("0", "None",  "", 0),
-    ]
+        ]
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
@@ -177,7 +180,6 @@ def GetExportDefaults(scene, context):
     u = 1
 
     for i,x in enumerate(exp.export_defaults):
-
         items.append((str(i+1), x.name, x.name, i+1))
 
     return items
@@ -187,70 +189,80 @@ class CAP_Object_Preferences(PropertyGroup):
         name = "Enable Export",
         description = "Enables the object and any matching, tagged objects to be exported as a single FBX file through GEX.",
         default = False,
-        update = Update_EnableExport)
+        update = Update_EnableExport
+        )
 
     use_scene_origin = BoolProperty(
-        name = "Use Scene Origin",
-        description = "Uses the scene's centre as an origin point for the object export, rather than the object's own origin point.",
-        default = False,
-        update = Update_SceneOrigin)
+        name="Use Scene Origin",
+        description="Uses the scene's centre as an origin point for the object export, rather than the object's own origin point.",
+        default=False,
+        update=Update_SceneOrigin
+        )
 
     location_default = EnumProperty(
         name="Select Location Default",
         description="The filepath default the selected objects will be exported to.",
         items=GetLocationDefaults,
-        update=Update_LocationDefault)
+        update=Update_LocationDefault
+        )
 
     export_default = EnumProperty(
-        name = "Select Export Default",
-        description = "Defines the export setting sets used on this object.",
+        name="Select Export Default",
+        description="Defines the export setting sets used on this object.",
         items=GetExportDefaults,
-        update=Update_ExportDefault)
+        update=Update_ExportDefault
+        )
 
     normals = EnumProperty(
-        name = "Normal Export Type",
-        description = "Defines how the mesh normals are exported.",
+        name="Normal Export Type",
+        description="Defines how the mesh normals are exported.",
         items=(
         ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
         ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
         ('3', 'Normals Only', 'Exports the current custom normals of the model.')
         ),
-        update=Update_Normals)
+        update=Update_Normals
+        )
 
 class CAP_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
-        name = "Export Group",
-        description = "Enables all objects within the group to be exported as a single FBX file through GEX.",
-        default = False,
-        update=Update_GroupExport)
+        name="Export Group",
+        description="Enables all objects within the group to be exported as a single FBX file through GEX.",
+        default=False,
+        update=Update_GroupExport
+        )
 
     root_object = StringProperty(
-        name = "Origin Object",
-        description = "Defines the exported origin point of the group object.  If not defined, the origin will be the world center.",
-        default = "",
-        update=Update_GroupRootObject)
+        name="Origin Object",
+        description="Defines the exported origin point of the group object.  If not defined, the origin will be the world center.",
+        default="",
+        update=Update_GroupRootObject
+        )
 
     location_default = EnumProperty(
         name="Select Location Default",
         description="The filepath default the selected group will be exported to.",
         items=GetLocationDefaults,
-        update=Update_GroupLocationDefault)
+        update=Update_GroupLocationDefault
+        )
 
     export_default = EnumProperty(
-        name = "Select Export Default",
-        description = "Defines the export setting sets used on this object.",
+        name="Select Export Default",
+        description="Defines the export setting sets used on this object.",
         items=GetExportDefaults,
-        update=Update_GroupExportDefault)
+        update=Update_GroupExportDefault
+        )
 
     normals = EnumProperty(
-        name = "Normal Export Type",
-        description = "Defines how the mesh normals are exported.",
+        name="Normal Export Type",
+        description="Defines how the mesh normals are exported.",
         items=(
         ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
         ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
         ('3', 'Normals Only', 'Exports the current custom normals of the model.')
         ),
-        update=Update_GroupNormals)
+        update=Update_GroupNormals
+        )
 
 def GetExportPresets(scene, context):
 
@@ -261,35 +273,35 @@ def GetExportPresets(scene, context):
     u = 1
 
     for i,x in enumerate(addon_prefs.presets):
-
         items.append((str(i), x.name, x.name, i))
 
     return items
 
 class CAP_UI_Preferences(PropertyGroup):
     export_presets = EnumProperty(
-        name = "Export Presets",
-        description = "List of available visibility presets.",
-        items = GetExportPresets
-    )
+        name="Export Presets",
+        description="List of available visibility presets.",
+        items=GetExportPresets
+        )
 
     action_list = CollectionProperty(type=ActionItem)
     action_list_index = IntProperty()
-
-    enable_export_loop = BoolProperty(default = False)
+    enable_export_loop = BoolProperty(default=False)
 
 class CAP_Object_StateMachine(PropertyGroup):
 
     has_triangulate = BoolProperty(
-        name = "Has Triangulation Modifier",
-        description = "Internal variable used to monitor whether or not the object has a Triangulation modifier, when triangulating the mesh ",
-        default = False)
+        name="Has Triangulation Modifier",
+        description="Internal variable used to monitor whether or not the object has a Triangulation modifier, when triangulating the mesh ",
+        default=False
+        )
 
 class CAP_Action_Preferences(PropertyGroup):
     export = BoolProperty(
-        name = "Export",
-        description = "Determines whether the action can be exported or not.",
-        default = True)
+        name="Export",
+        description="Determines whether the action can be exported or not.",
+        default=True
+        )
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
