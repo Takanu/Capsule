@@ -1,8 +1,11 @@
 import bpy, bmesh, os
+from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
+
 from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation
-from mathutils import Vector
+
+
 
 class CAP_Export_Assets(Operator):
     """Updates the origin point based on the option selected, for all selected objects"""
@@ -61,7 +64,7 @@ class CAP_Export_Assets(Operator):
             tempLoc[0] = item.location[0]
             tempLoc[1] = item.location[1]
             tempLoc[2] = item.location[2]
-            print("Moving location to centre...")
+            #print("Moving location to centre...")
             MoveObject(item, context, (0.0, 0.0, 0.0))
 
             bpy.ops.object.select_all(action='DESELECT')
@@ -69,11 +72,10 @@ class CAP_Export_Assets(Operator):
 
             self.ExportFBX(individualFilePath)
 
-            print("Moving location back to root-orientated centre...")
-            print("tempLoc - ", tempLoc)
+            #print("Moving location back to root-orientated centre...")
+            #print("tempLoc - ", tempLoc)
             MoveObject(item, context, tempLoc)
-            print("Location..........", item.location)
-            print("tempLoc - ", tempLoc)
+            #print("tempLoc - ", tempLoc)
 
     def PrepareExportCombined(self, targets, path, exportName, suffix):
         print(">>> Exporting Combined Pass <<<")
@@ -146,7 +148,7 @@ class CAP_Export_Assets(Operator):
 
         return filePath
 
-    def CalculateFilePath(self, context, locationDefault, objectName, sub_directory, useBlendDirectory, useObjectDirectory):
+    def CalculateFilePath(self, context, locationDefault, objectName, subDirectory, useBlendDirectory, useObjectDirectory):
 
         # Does the proper calculation and error handling for the file path, in conjunction with GetFilePath()
         print("Obtaining File...")
@@ -175,7 +177,7 @@ class CAP_Export_Assets(Operator):
         # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
         # Need to extract the information from the pass name to see
         # if a sub-directory needs creating in the location default
-        if sub_directory != "" or useObjectDirectory is True or useBlendDirectory is True:
+        if subDirectory != "" or useObjectDirectory is True or useBlendDirectory is True:
             newPath = ""
 
             if useBlendDirectory is True:
@@ -190,8 +192,8 @@ class CAP_Export_Assets(Operator):
             if useObjectDirectory is True:
                 newPath = newPath + objectName + "/"
 
-            if sub_directory.replace(" ", "") != "":
-                newPath = newPath + sub_directory + "/"
+            if subDirectory.replace(" ", "") != "":
+                newPath = newPath + subDirectory + "/"
 
             if newPath == "":
                 newPath = path
@@ -441,16 +443,20 @@ class CAP_Export_Assets(Operator):
         for item in context.scene.objects:
             print(item.name)
             print(item.animation_data)
+
             if item.animation_data is not None:
                 print(item.animation_data.action)
                 print(item.animation_data.drivers)
                 print(item.animation_data.nla_tracks)
+
                 for driver in item.animation_data.drivers:
                     print("------Driver:", driver)
                     print(len(driver.driver.variables))
+
                     for variable in driver.driver.variables:
                         print("---Variable:", variable.name)
                         print(len(variable.targets))
+
                         for target in variable.targets:
                             print("-Target:", target)
                             print("Bone Target.....", target.bone_target)
@@ -482,10 +488,12 @@ class CAP_Export_Assets(Operator):
 
         print(">>>> CHECKED ANIMATION <<<<")
 
-    def execute(self, context):
-        print("Self = ")
-        print(self)
 
+
+    ###############################################################
+    # EXECUTE
+    ###############################################################
+    def execute(self, context):
         scn = context.scene.CAPScn
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
@@ -498,20 +506,19 @@ class CAP_Export_Assets(Operator):
 
         # Check for stupid errors before continuing
         result = self.CheckForErrors(context)
-        print("RAAAWR")
-        print(result)
         if result is not None:
-            print("RAAAWR")
             self.report({'WARNING'}, result)
             return {'FINISHED'}
 
-        # Setup the scene
+        # Setup and store scene variables, to be restored when complete
         self.SetupScene(context)
-
         context.window_manager.progress_begin(0, self.exportCount)
 
-        # OBJECT CYCLE
+
+
+
         ###############################################################
+        # OBJECT CYCLE
         ###############################################################
         # Cycle through the available objects
         for object in context.scene.objects:
@@ -608,7 +615,7 @@ class CAP_Export_Assets(Operator):
                     path = ""                                # Path given from the location default
                     fileName = ""                            # File name for the object (without tag suffixes)
                     suffix = objPass.file_suffix             # Additional file name suffix
-                    sub_directory = objPass.sub_directory    # Whether a sub-directory needs to be created
+                    subDirectory = objPass.sub_directory    # Whether a sub-directory needs to be created
 
 
                     # Lets see if the root object can be exported...
@@ -629,7 +636,7 @@ class CAP_Export_Assets(Operator):
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    path = self.CalculateFilePath(context, rootObject.CAPObj.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
+                    path = self.CalculateFilePath(context, rootObject.CAPObj.location_default, objectName, subDirectory, useBlendDirectory, useObjectDirectory)
 
                     if path.find("WARNING") == 0:
                         path = path.replace("WARNING: ", "")
@@ -752,8 +759,9 @@ class CAP_Export_Assets(Operator):
                     context.window_manager.progress_update(self.exportCount)
                     print(">>> Object Export Complete <<<")
 
-        # GROUP CYCLE
+
         ###############################################################
+        # OBJECT CYCLE
         ###############################################################
         # Now hold up, its group time!
         for group in bpy.data.groups:
@@ -862,7 +870,7 @@ class CAP_Export_Assets(Operator):
                     filePath = ""
                     objectFilePath = ""
                     suffix = objPass.file_suffix
-                    sub_directory = objPass.sub_directory
+                    subDirectory = objPass.sub_directory
 
                     # Lets see if the root object can be exported...
                     expRoot = False
@@ -880,7 +888,7 @@ class CAP_Export_Assets(Operator):
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    path = self.CalculateFilePath(context, group.CAPGrp.location_default, objectName, sub_directory, useBlendDirectory, useObjectDirectory)
+                    path = self.CalculateFilePath(context, group.CAPGrp.location_default, objectName, subDirectory, useBlendDirectory, useObjectDirectory)
 
                     if path.find("WARNING") == 0:
                         path = path.replace("WARNING: ", "")
@@ -1032,7 +1040,6 @@ class CAP_Export_Assets(Operator):
 
         textGroupSingle = " group"
         textGroupMultiple = " groups"
-        dot = "."
 
         output = "Finished exporting "
 
@@ -1043,14 +1050,12 @@ class CAP_Export_Assets(Operator):
 
         if self.exportedObjects > 0 and self.exportedGroups > 0:
             output += " and "
-
         if self.exportedGroups > 1:
             output += str(self.exportedGroups) + " groups"
         elif self.exportedGroups == 1:
             output += str(self.exportedGroups) + " group"
 
         output += ".  "
-
         output += "Total of "
 
         if self.exportedPasses > 1:

@@ -1,3 +1,4 @@
+
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty
 from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
@@ -24,6 +25,7 @@ class Object_UIList(UIList):
         layout.prop(item, "name", text="", emboss=False)
         layout.prop(item, "enable_export", text="")
 
+        # A switch to change the extra tool on the Object list entries.
         if addon_prefs.list_feature == 'focus':
             layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
         elif addon_prefs.list_feature == 'sel':
@@ -48,6 +50,7 @@ class Group_UIList(UIList):
             layout.prop(item, "name", text="", emboss=False)
             layout.prop(groupData.CAPGrp, "export_group", text="")
 
+            # A switch to change the extra tool on the Group list entries.
             if addon_prefs.list_feature == 'focus':
                 layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
             elif addon_prefs.list_feature == 'sel':
@@ -94,12 +97,10 @@ class Action_UIList(UIList):
 
         if item.anim_type == '2':
             icon = "OBJECT_DATA"
-
         elif item.anim_type == '4':
             icon = "OUTLINER_OB_ARMATURE"
 
         layout.prop(item, "name", text="", icon=icon, emboss=False)
-
         layout.separator()
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
@@ -120,6 +121,7 @@ class CAP_SelectionObject(Panel):
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
 
+        # UI Prompt for when the .blend Capsule data can no longer be found.
         if addon_prefs.data_missing is True:
             layout = self.layout
             col_export = layout.column(align=True)
@@ -136,7 +138,7 @@ class CAP_SelectionObject(Panel):
         ui = context.scene.CAPUI
 
         layout = self.layout
-        obType = int(str(scn.object_switch))
+
         col_export = layout.column(align=True)
         col_export.operator("scene.cap_export")
         col_export.separator()
@@ -144,26 +146,27 @@ class CAP_SelectionObject(Panel):
         object_switch.prop(scn, "object_switch", expand=True)
 
 
+        #/////////////////////////////////////////////////////////////////
         #/////////////// OBJECT SELECTION UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
+        obType = int(str(scn.object_switch))
         if obType == 1:
 
-            col_location = layout.row(align=True)
+            col_location = layout.column(align=True)
             col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
-            col_location.separator()
-            row_location = col_location.column(align=True)
-            row_location.prop(addon_prefs, "object_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
 
             if addon_prefs.object_list_autorefresh is False:
-                row_location.operator("scene.cap_refobjects", text="", icon="FILE_REFRESH")
+                #col_location = col_location.column(align=True)
+                col_location.operator("scene.cap_refobjects", text="", icon="FILE_REFRESH")
 
+            col_location.separator()
             layout.separator()
 
-            # Get the currently active object, whatever that is
+            # Get the currently active object, whatever that might be.
             obj = None
             ob = None
 
-            # If we're taking objects from a
+            # If multi-edit is off, find it from the currently selected list entry.
             if addon_prefs.object_multi_edit is False:
                 if len(scn.object_list) is not 0:
                     if len(scn.object_list) > scn.object_list_index:
@@ -174,6 +177,7 @@ class CAP_SelectionObject(Panel):
                                 obj = item.CAPObj
                                 ob = item
 
+            # If multi-edit is on, find it from the scene.
             elif context.active_object is not None:
                 obj = context.active_object.CAPObj
                 ob = context.active_object
@@ -212,7 +216,6 @@ class CAP_SelectionObject(Panel):
                         col_export.separator()
 
             if ob != None:
-
                 obj_settings = layout.column(align=True)
                 obj_settings.prop(obj, "enable_export")
                 obj_settings.prop(obj, "use_scene_origin")
@@ -231,35 +234,33 @@ class CAP_SelectionObject(Panel):
                 obj_settings.prop(obj, "normals", text="")
                 obj_settings.separator()
 
+            # If no object was eventually found, bring up warning labels.
             else:
                 object_info = layout.column(align=True)
                 if addon_prefs.object_multi_edit is False:
                     if len(scn.object_list) < (scn.object_list_index + 1) and len(scn.object_list) != 0:
-                        object_info.label(text="Please select an object from the list to view")
-                        object_info.label(text="it's settings.")
+                        object_info.label(text="Please select an object from the ")
+                        object_info.label(text="list to view it's settings.")
                     else:
-                        object_info.label(text="No objects found, press refresh to find new objects,")
-                        object_info.label(text="or change selection mode.")
+                        object_info.label(text="No objects found, press refresh to find ")
+                        object_info.label(text="new objects, or change selection mode.")
                 else:
-                    object_info.label(text="No objects selected.  Please objects a group to edit it,")
-                    object_info.label(text="or change selection mode.")
-
-
+                    object_info.label(text="No objects selected.  Please select an ")
+                    object_info.label(text="object to edit it, or change selection mode.")
 
             layout.separator()
 
 
-
+        #/////////////////////////////////////////////////////////////////
         #////////////////////////// GROUP UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
-
         else:
-            col_location = layout.row(align=True)
+            col_location = layout.column(align=True)
             col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
             col_location.separator()
-            row_location = col_location.column(align=True)
-            row_location.prop(addon_prefs, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
-            row_location.operator("scene.cap_refgroups", text="", icon="FILE_REFRESH")
+            #row_location = col_location.column(align=True)
+            #row_location.prop(addon_prefs, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
+            col_location.operator("scene.cap_refgroups", text="", icon="FILE_REFRESH")
 
             layout.separator()
 
@@ -349,20 +350,22 @@ class CAP_SelectionObject(Panel):
                 rawr_other.separator()
                 rawr_other.prop(grp, "normals", text="")
 
+            # If no group was eventually found, bring up warning labels.
             else:
                 group_info = layout.column(align=True)
                 if addon_prefs.group_multi_edit is False:
-                    group_info.label(text="No groups found, press refresh to find new groups,")
-                    group_info.label(text="or change selection mode.")
+                    group_info.label(text="No groups found, press refresh to find ")
+                    group_info.label(text="new groups, or change selection mode.")
                 else:
-                    group_info.label(text="No groups selected.  Please select a group to edit it,")
-                    group_info.label(text="or change selection mode.")
+                    group_info.label(text="No groups selected.  Please select a group ")
+                    group_info.label(text="to edit it, or change selection mode.")
 
             layout.separator()
 
 
         #////////////////////////// ANIMATION UI /////////////////////////
         #/////////////////////////////////////////////////////////////////
+        # Currently broken, un-comment at your own peril!
 
         #col_location = layout.row(align=True)
         #col_location.template_list("Action_UIList", "rawr", ui, "action_list", ui, "action_list_index", rows=3, maxrows=10)

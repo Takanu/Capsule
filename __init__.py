@@ -40,13 +40,14 @@ from . import ui_operators
 from . import update
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
+from bpy.app.handlers import persistent
 
 def Update_TagName(self, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
-    export = addon_prefs.export_defaults[addon_prefs.export_defaults_index]
-    currentTag = export.tags[export.tags_index]
+    exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    currentTag = exp.tags[exp.tags_index]
 
     tag_name = currentTag.name
 
@@ -73,6 +74,17 @@ def GetGlobalPresets(scene, context):
         items.append((str(i+1), x.name, x.description, i+1))
 
     return items
+
+def UpdateObjectSelectMode(self, context):
+
+    if self.object_multi_edit is True:
+        context.scene.CAPScn.object_list_index = -1
+
+def UpdateGroupSelectMode(self, context):
+
+    if self.group_multi_edit is True:
+        context.scene.CAPScn.group_list_index = -1
+
 
 class CAP_ExportTag(PropertyGroup):
     # The main Export Tag collection property, used for storing the actual tags used in an Export Preset
@@ -122,7 +134,6 @@ class CAP_ExportTag(PropertyGroup):
     # Special preference to rename objects during export, to make UE4/Unity export more seamless.
     x_ue4_collision_naming = BoolProperty(default=False)
 
-
 class CAP_ExportPassTag(PropertyGroup):
     # The Export Tag reference, used inside Export Passes to list the available tags.
     # Also specified for that pass, whether or not it is to be used.
@@ -143,11 +154,10 @@ class CAP_ExportPassTag(PropertyGroup):
         default=0
         )
     use_tag = BoolProperty(
-        name="Use Tag",
+        name="",
         description="Determines whether or not the tag gets used in the pass.",
-        defaul=False
+        default=False
         )
-
 
 class CAP_ExportPass(PropertyGroup):
 
@@ -196,7 +206,6 @@ class CAP_ExportPass(PropertyGroup):
         description="If enabling individual export, this option allows the inclusion of all tagged objects associated with a single object.",
         default=False
         )
-
 
 class CAP_ExportPreset(PropertyGroup):
     name = StringProperty(
@@ -476,13 +485,15 @@ class CAP_AddonPreferences(AddonPreferences):
     object_multi_edit = BoolProperty(
         name="Group Multi-Edit Mode",
         description="Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
-        default=True
+        default=True,
+        update=UpdateObjectSelectMode
         )
 
     group_multi_edit = BoolProperty(
         name="Group Multi-Edit Mode",
         description="Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
-        default=False
+        default=False,
+        update=UpdateGroupSelectMode
         )
 
     object_list_autorefresh = BoolProperty(
@@ -500,6 +511,7 @@ class CAP_AddonPreferences(AddonPreferences):
         )
 
     data_missing = BoolProperty(default=False)
+    prev_selected_object = StringProperty()
 
     def draw(self, context):
         layout = self.layout
@@ -824,12 +836,12 @@ class CAP_AddonPreferences(AddonPreferences):
                     tag_filter.separator()
 
                     for passTag in currentPass.tags:
-                        tag = tag_filter.column(align=True)
-                        tag.prop(passTag, "use_tag", text="Filter " + passTag.name)
+                        tag_column = tag_filter.column(align=True)
+                        tag_column.prop(passTag, "use_tag", text="Filter " + passTag.name)
 
                     tag_filter.separator()
 
-                    pass_options.separator()
+                    #pass_options.separator()
 
                     #tag_filter.prop(addon_prefs, "component_dropdown", text="Filter By Tags")
                     #tag_filter.template_list("GEX_TagFilter_UIList", "default", currentPass, "tags", currentPass, "tags_index", rows=3, maxrows=6)
@@ -879,6 +891,43 @@ class CAP_AddonPreferences(AddonPreferences):
 
             options_main.separator()
 
+@persistent
+def CreateDefaultData(scene):
+
+    user_preferences = bpy.context.user_preferences
+    addon_prefs = user_preferences.addons[__name__].preferences
+
+    # Figure out if an object already exists, if yes do nothing
+    for object in bpy.data.objects:
+        print(object)
+        if object.name == addon_prefs.default_datablock:
+            return
+
+    # Otherwise create the object using the addon preference data
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.empty_add(type='PLAIN_AXES')
+
+    defaultDatablock = bpy.context.scene.objects.active
+    defaultDatablock.name = addon_prefs.default_datablock
+    defaultDatablock.hide = True
+    defaultDatablock.hide_render = True
+    defaultDatablock.hide_select = True
+    defaultDatablock.CAPExp.is_storage_object = True
+
+@persistent
+def CheckSelectedObject(scene):
+
+    user_preferences = bpy.context.user_preferences
+    addon_prefs = user_preferences.addons[__name__].preferences
+
+    if bpy.context.active_object.name != addon_prefs.prev_selected_object:
+        if addon_prefs.object_multi_edit is False:
+            addon_prefs.object_multi_edit = True
+        if addon_prefs.group_multi_edit is False:
+            addon_prefs.group_multi_edit = True
+
+        addon_prefs.prev_selected_object = bpy.context.active_object.name
+
 
 
 def register():
@@ -895,8 +944,13 @@ def register():
     bpy.types.Object.CAPExp = PointerProperty(type=CAP_ExportPresets)
     ui_operators.CreatePresets()
 
+    bpy.app.handlers.load_post.append(CreateDefaultData)
+    bpy.app.handlers.scene_update_post.append(CheckSelectedObject)
 
 def unregister():
+
+    bpy.app.handlers.load_post.remove(CreateDefaultData)
+    bpy.app.handlers.scene_update_post.remove(CheckSelectedObject)
 
     print("Unregistering Stuff")
     del bpy.types.Object.CAPExp

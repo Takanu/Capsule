@@ -1,8 +1,10 @@
+
 import bpy, bmesh
+from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
+
 from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckForTags
-from mathutils import Vector
 
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
 
@@ -86,6 +88,17 @@ class CAP_Delete_Export(Operator):
 
     #StringProperty(default="Are you sure you wish to delete the selected preset?")
 
+    @classmethod
+    def poll(cls, context):
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        if len(exp.export_defaults) > 0:
+            return True
+
+        return False
+
     def execute(self, context):
         print(self)
 
@@ -144,10 +157,11 @@ class CAP_Delete_Tag(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         export = exp.export_defaults[exp.export_defaults_index]
-        currentTag = export.tags[export.tags_index]
+        if len(export.tags) > 0:
+            currentTag = export.tags[export.tags_index]
 
-        if currentTag.x_user_deletable is True:
-            return True
+            if currentTag.x_user_deletable is True:
+                return True
 
         else:
             return False
@@ -207,6 +221,18 @@ class CAP_Delete_Pass(Operator):
     bl_idname = "scene.cap_deletepass"
     bl_label = "Remove"
 
+    @classmethod
+    def poll(cls, context):
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        export = exp.export_defaults[exp.export_defaults_index]
+        if len(export.passes) > 0:
+            return True
+
+        return False
+
     def execute(self, context):
         print(self)
 
@@ -261,14 +287,16 @@ class CAP_Refresh_Objects(Operator):
     """Refreshes the list of objects that are marked for export."""
 
     bl_idname = "scene.cap_refobjects"
-    bl_label = "Refresh"
+    bl_label = "Refresh Objects"
 
     def execute(self, context):
         print(self)
 
         scn = context.scene.CAPScn
-
+        ui = context.scene.CAPUI
         scn.object_list.clear()
+
+        ui.enable_export_loop = True
 
         for object in context.scene.objects:
             if object.CAPObj.enable_export is True:
@@ -277,6 +305,7 @@ class CAP_Refresh_Objects(Operator):
                 entry.prev_name = object.name
                 entry.enable_export = object.CAPObj.enable_export
 
+        ui.enable_export_loop = False
 
         return {'FINISHED'}
 
@@ -288,7 +317,7 @@ class CAP_Refresh_Groups(Operator):
     """Refreshes the list of available groups in the scene, that can be marked for export."""
 
     bl_idname = "scene.cap_refgroups"
-    bl_label = "Refresh"
+    bl_label = "Refresh Groups"
 
     def execute(self, context):
         print(self)
@@ -297,9 +326,10 @@ class CAP_Refresh_Groups(Operator):
         scn.group_list.clear()
 
         for group in bpy.data.groups:
-            groupEntry = scn.group_list.add()
-            groupEntry.name = group.name
-            groupEntry.prev_name = group.name
+            if group.CAPGrp.export_group is True:
+                groupEntry = scn.group_list.add()
+                groupEntry.name = group.name
+                groupEntry.prev_name = group.name
 
 
         return {'FINISHED'}
@@ -425,21 +455,24 @@ class CAP_Reset_Scene(Operator):
 
         active = context.active_object
 
-        for group in bpy.scene.groups:
-            obj.enable_export = False
-            obj.root_object = False
-            obj.location_default = '0'
-            obj.export_default = '0'
-            obj.normals = '1'
+        for group in bpy.data.groups:
+            grp = group.CAPGrp
+            grp.export_group = False
+            grp.root_object = ""
+            grp.location_default = '0'
+            grp.export_default = '0'
+            grp.normals = '1'
 
-        for object in bpy.scene.objects:
+        for object in context.scene.objects:
             obj = object.CAPObj
-
             obj.enable_export = False
             obj.use_scene_origin = False
             obj.location_default = '0'
             obj.export_default = '0'
             obj.normals = '1'
+
+        bpy.ops.scene.cap_refobjects()
+        bpy.ops.scene.cap_refgroups()
 
         # Re-select the objects previously selected
         FocusObject(active)
@@ -639,7 +672,7 @@ def ExchangePresetData(context, new_preset, old_preset):
     pass
 
 class CAP_Add_Stored_Presets(Operator):
-    """Adds a stored preset into the usable Export Presets for this .blend file."""
+    """Adds the currently selected Global Preset into the usable Export Presets for this .blend file."""
     bl_idname = "cap.create_current_preset"
     bl_label = "Default Presets"
 
@@ -963,4 +996,4 @@ def CopyPreset(old_preset, new_preset):
     new_preset.optimise_keyframes = old_preset.optimise_keyframes
     new_preset.bake_anim_step = old_preset.bake_anim_step
     new_preset.bake_anim_simplify_factor = old_preset.bake_anim_simplify_factor
-    new_preset.x_global_user_deletable = old_preset.x_global_user_deletable
+    new_preset.x_global_user_deletable = True

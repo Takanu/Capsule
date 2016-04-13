@@ -1,9 +1,9 @@
-from .update import Update_EnableExport, Update_SceneOrigin, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Focus_Object, Focus_Group, Select_Object, Select_Group, Update_GroupExport, Update_GroupRootObject, Update_GroupExportDefault, Update_GroupLocationDefault, Update_GroupNormals
 
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
-from bpy.app.handlers import persistent
+
+from .update import Update_EnableExport, Update_SceneOrigin, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Focus_Object, Focus_Group, Select_Object, Select_Group, Update_GroupExport, Update_GroupRootObject, Update_GroupExportDefault, Update_GroupLocationDefault, Update_GroupNormals, Update_GroupListSelect, Update_ObjectListSelect
 
 class ObjectItem(PropertyGroup):
     name = StringProperty(
@@ -133,14 +133,21 @@ class CAP_Scene_Preferences(PropertyGroup):
 
 
     group_list = CollectionProperty(type=GroupItem)
-    group_list_index = IntProperty()
+    group_list_index = IntProperty(
+        name="",
+        description="",
+        update=Update_GroupListSelect
+        )
 
     group_selected_list = CollectionProperty(type=GroupItem)
     group_selected_list_enum = EnumProperty(items=GetSelectedGroups)
     group_selected_list_index = IntProperty()
 
     object_list = CollectionProperty(type=ObjectItem)
-    object_list_index = IntProperty()
+    object_list_index = IntProperty(name="",
+        description="",
+        update=Update_ObjectListSelect
+        )
 
     object_switch = EnumProperty(
         name="Object Type Switch",
@@ -331,28 +338,3 @@ def unregister():
     i = len(classes) - 1
     while i != -1:
         bpy.utils.unregister_class(classes[i])
-
-@persistent
-def CreateDefaultData(scene):
-
-    user_preferences = bpy.context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
-
-    # Figure out if an object already exists, if yes do nothing
-    for object in bpy.data.objects:
-        print(object)
-        if object.name == addon_prefs.default_datablock:
-            return
-
-    # Otherwise create the object using the addon preference data
-    bpy.ops.object.select_all(action='DESELECT')
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
-
-    defaultDatablock = bpy.context.scene.objects.active
-    defaultDatablock.name = addon_prefs.default_datablock
-    defaultDatablock.hide = True
-    defaultDatablock.hide_render = True
-    defaultDatablock.hide_select = True
-    defaultDatablock.CAPExp.is_storage_object = True
-
-bpy.app.handlers.load_post.append(CreateDefaultData)

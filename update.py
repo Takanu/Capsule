@@ -1,3 +1,4 @@
+
 import bpy, bmesh, time
 from .definitions import SelectObject, FocusObject, ActivateObject, CheckSuffix, CheckForTags
 from math import *
@@ -9,11 +10,9 @@ def Update_EnableExport(self, context):
     ui = context.scene.CAPUI
     print("Hithere")
 
+    # If multi-editing isnt on, we don't need ANY OF THIS
     if addon_prefs.object_multi_edit is True:
-        if ui.enable_export_loop is True:
-            return None
-
-        print("Export...")
+        print("Multi-edit active")
 
         # Acts as its own switch to prevent endless recursion
         if self == context.active_object.CAPObj:
@@ -32,11 +31,15 @@ def Update_EnableExport(self, context):
             for object in selected:
                 object.CAPObj.enable_export = enableExport
 
-        if addon_prefs.object_list_autorefresh == True:
-            print("RAWR")
-            ui.enable_export_loop = True
+            if addon_prefs.object_list_autorefresh == True:
+                print("RAWR")
+                if ui.enable_export_loop == False:
+                    bpy.ops.scene.cap_refobjects()
+
+    elif addon_prefs.object_list_autorefresh == True:
+        print("RAWR")
+        if ui.enable_export_loop == False:
             bpy.ops.scene.cap_refobjects()
-            ui.enable_export_loop = False
 
     return None
 
@@ -147,32 +150,44 @@ def Update_ObjectItemName(self, context):
 
     print("Finding object name to replace")
 
-    # Set the name of the item to the group name
-    for object in context.scene.objects:
-        if object.name == self.prev_name:
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    ui = context.scene.CAPUI
 
-            print("Found object name ", object.name)
-            object.name = self.name
-            self.prev_name = object.name
+    if ui.enable_export_loop == False:
 
-            print("object Name = ", object.name)
-            print("List Name = ", self.name)
-            print("Prev Name = ", self.prev_name)
+        # Set the name of the item to the group name
+        for object in context.scene.objects:
+            if object.name == self.prev_name:
 
-    return None
+                print("Found object name ", object.name)
+                object.name = self.name
+                self.prev_name = object.name
+
+                print("object Name = ", object.name)
+                print("List Name = ", self.name)
+                print("Prev Name = ", self.prev_name)
+
+        return None
 
 def Update_ObjectItemExport(self, context):
 
-    print("Finding object name to replace")
+    print("Finding object name to replace (Export)")
 
-    # Set the name of the item to the group name
-    for object in context.scene.objects:
-        if object.name == self.name:
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    ui = context.scene.CAPUI
 
-            print("Found object name ", object.name)
-            object.CAPObj.enable_export = self.enable_export
+    if ui.enable_export_loop == False:
 
-    return None
+        # Set the name of the item to the group name
+        for object in context.scene.objects:
+            if object.name == self.name:
+
+                print("Found object name ", object.name)
+                object.CAPObj.enable_export = self.enable_export
+
+        return None
 
 def Update_GroupItemName(self, context):
 
@@ -256,7 +271,7 @@ def Focus_Object(self, context):
                 if area.type == 'VIEW_3D':
                     for region in area.regions:
                         if region.type == 'WINDOW':
-                            override = {'area': area, 'region': region, 'edit_object': bpy.context.edit_object}
+                            override = {'area': area, 'region': region, 'edit_object': bpy.context.edit_object, 'scene': bpy.context.scene, 'screen': bpy.context.screen, 'window': bpy.context.window}
                             bpy.ops.view3d.view_selected(override)
     return None
 
@@ -278,7 +293,7 @@ def Focus_Group(self, context):
                 if area.type == 'VIEW_3D':
                     for region in area.regions:
                         if region.type == 'WINDOW':
-                            override = {'area': area, 'region': region, 'edit_object': bpy.context.edit_object}
+                            override = {'area': area, 'region': region, 'edit_object': bpy.context.edit_object, 'scene': bpy.context.scene, 'screen': bpy.context.screen, 'window': bpy.context.window}
                             bpy.ops.view3d.view_selected(override)
 
     return None
@@ -497,3 +512,17 @@ def Update_GroupNormals(self, context):
                 group.CAPGrp.normals = value
 
     return None
+
+def Update_GroupListSelect(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    if self.group_list_index != -1:
+        addon_prefs.group_multi_edit = False
+
+def Update_ObjectListSelect(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    if self.object_list_index != -1:
+        addon_prefs.object_multi_edit = False
