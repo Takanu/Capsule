@@ -31,7 +31,7 @@ class Object_UIList(UIList):
         elif addon_prefs.list_feature == 'sel':
             layout.prop(item, "sel", text="", emboss=False, icon='RESTRICT_SELECT_OFF')
 
-        layout.separator()
+        layout.prop(item, "remove", text="", icon="X", emboss=False)
 
 
 class Group_UIList(UIList):
@@ -56,7 +56,7 @@ class Group_UIList(UIList):
             elif addon_prefs.list_feature == 'sel':
                 layout.prop(item, "sel", text="", emboss=False, icon='RESTRICT_SELECT_OFF')
 
-            layout.separator()
+            layout.prop(item, "remove", text="", icon="X", emboss=False)
 
 
 class Path_Default_UIList(UIList):
@@ -64,28 +64,24 @@ class Path_Default_UIList(UIList):
 
         scn = context.scene.CAPScn
         layout.prop(item, "name", text="", emboss=False)
-        layout.separator()
 
 class Export_Default_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
         layout.prop(item, "name", text="", emboss=False)
-        layout.separator()
 
 class Tag_Default_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
         layout.prop(item, "name", text="", emboss=False)
-        layout.separator()
 
 class Pass_Default_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
         layout.prop(item, "name", text="", emboss=False)
-        layout.separator()
 
 class Action_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -155,9 +151,9 @@ class CAP_SelectionObject(Panel):
             col_location = layout.column(align=True)
             col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
 
-            if addon_prefs.object_list_autorefresh is False:
+            #if addon_prefs.object_list_autorefresh is False:
                 #col_location = col_location.column(align=True)
-                col_location.operator("scene.cap_refobjects", text="", icon="FILE_REFRESH")
+                #col_location.operator("scene.cap_refobjects", text="", icon="FILE_REFRESH")
 
             col_location.separator()
             layout.separator()
@@ -242,8 +238,8 @@ class CAP_SelectionObject(Panel):
                         object_info.label(text="Please select an object from the ")
                         object_info.label(text="list to view it's settings.")
                     else:
-                        object_info.label(text="No objects found, press refresh to find ")
-                        object_info.label(text="new objects, or change selection mode.")
+                        object_info.label(text="No objects in the list, select ")
+                        object_info.label(text="one from the scene to edit export settings.")
                 else:
                     object_info.label(text="No objects selected.  Please select an ")
                     object_info.label(text="object to edit it, or change selection mode.")
@@ -260,7 +256,7 @@ class CAP_SelectionObject(Panel):
             col_location.separator()
             #row_location = col_location.column(align=True)
             #row_location.prop(addon_prefs, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
-            col_location.operator("scene.cap_refgroups", text="", icon="FILE_REFRESH")
+            #col_location.operator("scene.cap_refgroups", text="", icon="FILE_REFRESH")
 
             layout.separator()
 

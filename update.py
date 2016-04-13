@@ -7,41 +7,53 @@ def Update_EnableExport(self, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
+    scn = context.scene.CAPScn
     ui = context.scene.CAPUI
-    print("Hithere")
 
-    # If multi-editing isnt on, we don't need ANY OF THIS
-    if addon_prefs.object_multi_edit is True:
-        print("Multi-edit active")
+    print("Inside EnableExport (Object)")
 
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.CAPObj:
+    # If this was called from the actual UI element rather than another function,
+    # we need to do stuff!
+    if ui.enable_list_active == False and ui.enable_sel_active == False:
+        print("Called from UI element")
+        ui.enable_sel_active = True
+        collected = []
+        name = ""
+        value = False
 
-            # Keep a record of the selected objects to update
-            selected = []
+        # If the selection has come from the scene, get data from inside the scene
+        if addon_prefs.object_multi_edit is True:
+            # Acts as its own switch to prevent endless recursion
+            if self == context.active_object.CAPObj:
+                print("Changing Export...", context.active_object.name)
 
-            for sel in context.selected_objects:
-                if sel.name != context.active_object.name:
-                    selected.append(sel)
+                for sel in context.selected_objects:
+                    if sel.name != context.active_object.name:
+                        collected.append(sel)
 
-            # Obtain the value changed
-            enableExport = self.enable_export
+                # Obtain the value changed
+                name = context.active_object.name
+                value = self.enable_export
 
-            # Run through the objects
-            for object in selected:
-                object.CAPObj.enable_export = enableExport
+        # Otherwise, get information from the list
+        else:
+            item = scn.object_list[scn.object_list_index]
+            print("Item Found:", item.name)
+            name = item.name
+            value = self.enable_export
 
-            if addon_prefs.object_list_autorefresh == True:
-                print("RAWR")
-                if ui.enable_export_loop == False:
-                    bpy.ops.scene.cap_refobjects()
+        # Update the list associated with the object
+        UpdateObjectList(context.scene, name, value)
 
-    elif addon_prefs.object_list_autorefresh == True:
-        print("RAWR")
-        if ui.enable_export_loop == False:
-            bpy.ops.scene.cap_refobjects()
+        # Run through any collected objects to also update them.
+        for item in collected:
+            item.CAPObj.enable_export = value
+            UpdateObjectList(context.scene, item.name, value)
+
+        ui.enable_sel_active = False
 
     return None
+
 
 def Update_SceneOrigin(self, context):
 
@@ -142,67 +154,6 @@ def Update_Normals(self, context):
             # Run through the objects
             for object in selected:
                 object.CAPObj.normals = value
-
-    return None
-
-
-def Update_ObjectItemName(self, context):
-
-    print("Finding object name to replace")
-
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
-    ui = context.scene.CAPUI
-
-    if ui.enable_export_loop == False:
-
-        # Set the name of the item to the group name
-        for object in context.scene.objects:
-            if object.name == self.prev_name:
-
-                print("Found object name ", object.name)
-                object.name = self.name
-                self.prev_name = object.name
-
-                print("object Name = ", object.name)
-                print("List Name = ", self.name)
-                print("Prev Name = ", self.prev_name)
-
-        return None
-
-def Update_ObjectItemExport(self, context):
-
-    print("Finding object name to replace (Export)")
-
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
-    ui = context.scene.CAPUI
-
-    if ui.enable_export_loop == False:
-
-        # Set the name of the item to the group name
-        for object in context.scene.objects:
-            if object.name == self.name:
-
-                print("Found object name ", object.name)
-                object.CAPObj.enable_export = self.enable_export
-
-        return None
-
-def Update_GroupItemName(self, context):
-
-    # Set the name of the item to the group name
-    for group in bpy.data.groups:
-        print("Finding group name to replace")
-        if group.name == self.prev_name:
-
-            print("Found group name ", group.name)
-            group.name = self.name
-            self.prev_name = group.name
-
-            print("Group Name = ", group.name)
-            print("List Name = ", self.name)
-            print("Prev Name = ", self.prev_name)
 
     return None
 
@@ -330,37 +281,61 @@ def Select_Group(self, context):
 def Update_GroupExport(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
+    scn = context.scene.CAPScn
+    ui = context.scene.CAPUI
 
-    if addon_prefs.group_multi_edit is True:
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.users_group[0].CAPGrp:
-            currentGroup = None
-            if context.active_object.users_group is not None:
-                currentGroup = context.active_object.users_group[0]
+    print("Inside EnableExport (Object)")
 
-            groups_found = []
-            groups_found.append(currentGroup)
+    # If this was called from the actual UI element rather than another function,
+    # we need to do stuff!
+    if ui.enable_list_active == False and ui.enable_sel_active == False:
+        print("Called from UI element")
+        ui.enable_sel_active = True
+        collected = []
+        name = ""
+        value = False
 
-            for item in context.selected_objects:
-                for group in item.users_group:
-                    groupAdded = False
+        if addon_prefs.group_multi_edit is True:
+            # Acts as its own switch to prevent endless recursion
+            if self == context.active_object.users_group[0].CAPGrp:
+                currentGroup = None
 
-                    for found_group in groups_found:
-                        if found_group.name == group.name:
-                            groupAdded = True
+                if context.active_object.users_group is not None:
+                    currentGroup = context.active_object.users_group[0]
 
-                    if groupAdded == False:
-                        print("")
-                        groups_found.append(group)
+                collected.append(currentGroup)
 
-            groups_found.remove(currentGroup)
+                for item in context.selected_objects:
+                    for group in item.users_group:
+                        groupAdded = False
 
-            # Obtain the value changed
-            value = currentGroup.CAPGrp.export_group
+                        for found_group in collected:
+                            if found_group.name == group.name:
+                                groupAdded = True
 
-            # Run through the objects
-            for group in groups_found:
-                group.CAPGrp.export_group = value
+                        if groupAdded == False:
+                            collected.append(group)
+
+                collected.remove(currentGroup)
+                name = currentGroup.name
+                value = self.export_group
+
+        # Otherwise, get information from the list
+        else:
+            item = scn.group_list[scn.group_list_index]
+            print("Item Found:", item.name)
+            name = item.name
+            value = self.enable_export
+
+        # Obtain the value changed
+        UpdateGroupList(context.scene, name, value)
+
+        # Run through the objects
+        for group in collected:
+            group.CAPGrp.export_group = value
+            UpdateGroupList(context.scene, group.name, self.export_group)
+
+        ui.enable_sel_active = False
 
     return None
 
@@ -513,16 +488,168 @@ def Update_GroupNormals(self, context):
 
     return None
 
-def Update_GroupListSelect(self, context):
+def Update_ObjectItemName(self, context):
+
+    print("Finding object name to replace")
+
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
+    ui = context.scene.CAPUI
 
-    if self.group_list_index != -1:
-        addon_prefs.group_multi_edit = False
+    # Set the name of the item to the group name
+    for object in context.scene.objects:
+        if object.name == self.prev_name:
+
+            print("Found object name ", object.name)
+            object.name = self.name
+            self.prev_name = object.name
+
+            print("object Name = ", object.name)
+            print("List Name = ", self.name)
+            print("Prev Name = ", self.prev_name)
+
+        return None
+
+def Update_ObjectItemExport(self, context):
+
+    print("Changing Enable Export... (List)")
+
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    ui = context.scene.CAPUI
+    ui.enable_list_active = True
+
+    if ui.enable_sel_active == False:
+        print("Rawr")
+        # Set the name of the item to the group name
+        for item in context.scene.objects:
+            if item.name == self.name:
+                print("Found object name ", item.name)
+                item.CAPObj.enable_export = self.enable_export
+
+    ui.enable_list_active = False
+    return None
+
+def Update_GroupItemName(self, context):
+
+    # Set the name of the item to the group name
+    for group in bpy.data.groups:
+        print("Finding group name to replace")
+        if group.name == self.prev_name:
+
+            print("Found group name ", group.name)
+            group.name = self.name
+            self.prev_name = group.name
+
+            print("Group Name = ", group.name)
+            print("List Name = ", self.name)
+            print("Prev Name = ", self.prev_name)
+
+    return None
+
+def Update_GroupItemExport(self, context):
+
+    print("Changing Enable Export... (List)")
+
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    ui = context.scene.CAPUI
+    ui.enable_list_active = True
+
+    if ui.enable_sel_active == False:
+
+        # Set the name of the item to the group name
+        for group in bpy.data.groups:
+            print("Finding group name to replace")
+            if group.name == self.name:
+                print("Found object name ", group.name)
+                group.CAPGrp.export_group = self.enable_export
+
+    ui.enable_list_active = False
+    return None
 
 def Update_ObjectListSelect(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
     if self.object_list_index != -1:
+        print("Selection in list, turning off multi edit...")
         addon_prefs.object_multi_edit = False
+
+def Update_GroupListSelect(self, context):
+    user_preferences = context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+
+    if self.group_list_index != -1:
+        print("Selection in list, turning off multi edit...")
+        addon_prefs.group_multi_edit = False
+
+def Update_ObjectRemoveFromList(self, context):
+    i = 0
+
+    # Search through the object list to find a matching name
+    for item in context.scene.CAPScn.object_list:
+        if item.name == self.name:
+            # Search through scene objects to untick export
+            for sceneObj in context.scene.objects:
+                if sceneObj.name == self.name:
+                    print("Deleting", sceneObj.name, "from the list.")
+                    sceneObj.CAPObj.enable_export = False
+                    context.scene.CAPScn.object_list.remove(i)
+                    return
+        i += 1
+
+
+def Update_GroupRemoveFromList(self, context):
+    i = 0
+
+    for item in context.scene.CAPScn.group_list:
+        if item.name == self.name:
+            # Search through scene groups to untick export
+            for sceneGroup in bpy.data.groups:
+                if sceneGroup.name == self.name:
+                    sceneGroup.CAPGrp.export_group = False
+                    context.scene.CAPScn.group_list.remove(i)
+                    return
+        i += 1
+
+
+def UpdateObjectList(scene, name, enableExport):
+
+    ui = scene.CAPUI
+    scn = scene.CAPScn
+
+    # Check a list entry for the object doesn't already exist.
+    for item in scene.CAPScn.object_list:
+        if item.name == name:
+            print("Changing", name, "'s export from list.'")
+            item.enable_export = enableExport
+            return
+
+    if enableExport is True:
+        print("Adding", name, "to list.")
+        entry = scn.object_list.add()
+        entry.name = name
+        entry.prev_name = name
+        entry.enable_export = enableExport
+        ui.modify_list_loop = False
+
+def UpdateGroupList(scene, name, enableExport):
+
+    ui = scene.CAPUI
+    scn = scene.CAPScn
+
+    # Check a list entry for the group doesn't already exist.
+    for item in scene.CAPScn.group_list:
+        if item.name == name:
+            print("Changing", name, "'s export from list.'")
+            item.enable_export = enableExport
+            return
+
+    if enableExport is True:
+        print("Adding", name, "to list.")
+        entry = scn.group_list.add()
+        entry.name = name
+        entry.prev_name = name
+        entry.enable_export = enableExport
+        ui.modify_list_loop = False

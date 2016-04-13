@@ -922,8 +922,10 @@ def CheckSelectedObject(scene):
 
     if bpy.context.active_object.name != addon_prefs.prev_selected_object:
         if addon_prefs.object_multi_edit is False:
+            print("Objects selected, turning Multi-Edit on.")
             addon_prefs.object_multi_edit = True
         if addon_prefs.group_multi_edit is False:
+            print("Objects selected, turning Multi-Edit on.")
             addon_prefs.group_multi_edit = True
 
         addon_prefs.prev_selected_object = bpy.context.active_object.name

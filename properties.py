@@ -3,7 +3,7 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
 
-from .update import Update_EnableExport, Update_SceneOrigin, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_ActionItemName, Focus_Object, Focus_Group, Select_Object, Select_Group, Update_GroupExport, Update_GroupRootObject, Update_GroupExportDefault, Update_GroupLocationDefault, Update_GroupNormals, Update_GroupListSelect, Update_ObjectListSelect
+from .update import Update_EnableExport, Update_SceneOrigin, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_GroupItemExport, Update_ActionItemName, Focus_Object, Focus_Group, Select_Object, Select_Group, Update_GroupExport, Update_GroupRootObject, Update_GroupExportDefault, Update_GroupLocationDefault, Update_GroupNormals, Update_GroupListSelect, Update_ObjectListSelect, Update_ObjectRemoveFromList, Update_GroupRemoveFromList
 
 class ObjectItem(PropertyGroup):
     name = StringProperty(
@@ -38,6 +38,14 @@ class ObjectItem(PropertyGroup):
         update=Focus_Object
         )
 
+    remove = BoolProperty(
+        name="",
+        description="",
+        default=True,
+        update=Update_ObjectRemoveFromList
+        )
+
+
 class GroupItem(PropertyGroup):
     name = StringProperty(
         name="",
@@ -48,6 +56,13 @@ class GroupItem(PropertyGroup):
     prev_name = StringProperty(
         name="",
         description="Internal only, used for tracking name updates."
+        )
+
+    enable_export = BoolProperty(
+        name="",
+        description="",
+        default=False,
+        update=Update_GroupItemExport
         )
 
     sel = BoolProperty(
@@ -63,6 +78,14 @@ class GroupItem(PropertyGroup):
         default=True,
         update=Focus_Group
         )
+
+    remove = BoolProperty(
+        name="",
+        description="",
+        default=True,
+        update=Update_GroupRemoveFromList
+        )
+
 
 class ActionItem(PropertyGroup):
     name = StringProperty(
@@ -293,7 +316,8 @@ class CAP_UI_Preferences(PropertyGroup):
 
     action_list = CollectionProperty(type=ActionItem)
     action_list_index = IntProperty()
-    enable_export_loop = BoolProperty(default=False)
+    enable_sel_active = BoolProperty(default=False)
+    enable_list_active = BoolProperty(default=False)
 
 class CAP_Object_StateMachine(PropertyGroup):
 
