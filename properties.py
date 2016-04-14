@@ -19,7 +19,7 @@ class ObjectItem(PropertyGroup):
 
     enable_export = BoolProperty(
         name="",
-        description="",
+        description="Enable/Disable exporting for this object.",
         default=False,
         update=Update_ObjectItemExport
         )
@@ -40,7 +40,7 @@ class ObjectItem(PropertyGroup):
 
     remove = BoolProperty(
         name="",
-        description="",
+        description="Removes the object from the list, and un-marks it for export.",
         default=True,
         update=Update_ObjectRemoveFromList
         )
@@ -60,7 +60,7 @@ class GroupItem(PropertyGroup):
 
     enable_export = BoolProperty(
         name="",
-        description="",
+        description="Enable/Disable exporting for this group.",
         default=False,
         update=Update_GroupItemExport
         )
@@ -81,7 +81,7 @@ class GroupItem(PropertyGroup):
 
     remove = BoolProperty(
         name="",
-        description="",
+        description="Removes the group from the list, and un-marks it for export.",
         default=True,
         update=Update_GroupRemoveFromList
         )
@@ -217,7 +217,7 @@ def GetExportDefaults(scene, context):
 class CAP_Object_Preferences(PropertyGroup):
     enable_export = BoolProperty(
         name = "Enable Export",
-        description = "Enables the object and any matching, tagged objects to be exported as a single FBX file through GEX.",
+        description = "Enable/Disable exporting for this object.",
         default = False,
         update = Update_EnableExport
         )
@@ -257,7 +257,7 @@ class CAP_Object_Preferences(PropertyGroup):
 class CAP_Group_Preferences(PropertyGroup):
     export_group = BoolProperty(
         name="Export Group",
-        description="Enables all objects within the group to be exported as a single FBX file through GEX.",
+        description="Enable/Disable exporting for this group.",
         default=False,
         update=Update_GroupExport
         )

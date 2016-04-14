@@ -150,10 +150,7 @@ class CAP_SelectionObject(Panel):
 
             col_location = layout.column(align=True)
             col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
-
-            #if addon_prefs.object_list_autorefresh is False:
-                #col_location = col_location.column(align=True)
-                #col_location.operator("scene.cap_refobjects", text="", icon="FILE_REFRESH")
+            col_location.operator("scene.cap_clearlist", icon="X")
 
             col_location.separator()
             layout.separator()
@@ -254,9 +251,7 @@ class CAP_SelectionObject(Panel):
             col_location = layout.column(align=True)
             col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
             col_location.separator()
-            #row_location = col_location.column(align=True)
-            #row_location.prop(addon_prefs, "group_multi_edit", text="", icon='RESTRICT_SELECT_OFF')
-            #col_location.operator("scene.cap_refgroups", text="", icon="FILE_REFRESH")
+            col_location.operator("scene.cap_clearlist", icon="X")
 
             layout.separator()
 

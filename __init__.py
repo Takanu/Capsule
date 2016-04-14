@@ -505,6 +505,7 @@ class CAP_AddonPreferences(AddonPreferences):
         name="Additional List Features",
         description="Allows for the customisation of a secondary button next to each Object and Group Export list entry.",
         items=(
+            ('none', 'None', 'No extra option will be added to the list'),
             ('sel', 'Select', 'Adds an option next to a list entry that allows you to select that Object or Group in the 3D View.'),
             ('focus', 'Focus', 'Adds an option next to a list entry that allows you to select and focus the 3D view on that Object or Group.')),
         default='focus'
@@ -512,6 +513,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
     data_missing = BoolProperty(default=False)
     prev_selected_object = StringProperty()
+    prev_selected_count = IntProperty()
 
     def draw(self, context):
         layout = self.layout
@@ -873,9 +875,9 @@ class CAP_AddonPreferences(AddonPreferences):
             options_1.label("Additional List Options")
             options_1.separator()
             options_1.prop(addon_prefs, "list_feature", text="", expand=False)
-            options_1.separator()
-            options_1.separator()
-            options_1.prop(addon_prefs, "object_list_autorefresh", expand=False)
+            #options_1.separator()
+            #options_1.separator()
+            #options_1.prop(addon_prefs, "object_list_autorefresh", expand=False)
 
             options_main.separator()
             options_main.separator()
@@ -920,15 +922,24 @@ def CheckSelectedObject(scene):
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__name__].preferences
 
-    if bpy.context.active_object.name != addon_prefs.prev_selected_object:
+    if bpy.context.active_object is not None:
+        if bpy.context.active_object.name != addon_prefs.prev_selected_object:
+            if addon_prefs.object_multi_edit is False:
+                print("Objects selected, turning Multi-Edit on.")
+                addon_prefs.object_multi_edit = True
+            if addon_prefs.group_multi_edit is False:
+                print("Objects selected, turning Multi-Edit on.")
+                addon_prefs.group_multi_edit = True
+            addon_prefs.prev_selected_object = bpy.context.active_object.name
+
+    if len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
         if addon_prefs.object_multi_edit is False:
             print("Objects selected, turning Multi-Edit on.")
             addon_prefs.object_multi_edit = True
         if addon_prefs.group_multi_edit is False:
             print("Objects selected, turning Multi-Edit on.")
             addon_prefs.group_multi_edit = True
-
-        addon_prefs.prev_selected_object = bpy.context.active_object.name
+        addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
 
 
 

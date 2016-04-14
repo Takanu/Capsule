@@ -282,58 +282,6 @@ class CAP_Shift_Path_Down(Operator):
 
         return {'FINISHED'}
 
-#///////////////// - OBJECTS - //////////////////////////////////////////////////////
-class CAP_Refresh_Objects(Operator):
-    """Refreshes the list of objects that are marked for export."""
-
-    bl_idname = "scene.cap_refobjects"
-    bl_label = "Refresh Objects"
-
-    def execute(self, context):
-        print(self)
-
-        scn = context.scene.CAPScn
-        ui = context.scene.CAPUI
-        scn.object_list.clear()
-
-        ui.enable_export_loop = True
-
-        for object in context.scene.objects:
-            if object.CAPObj.enable_export is True:
-                entry = scn.object_list.add()
-                entry.name = object.name
-                entry.prev_name = object.name
-                entry.enable_export = object.CAPObj.enable_export
-
-        ui.enable_export_loop = False
-
-        return {'FINISHED'}
-
-
-#///////////////// - GROUPS - //////////////////////////////////////////////////////
-
-
-class CAP_Refresh_Groups(Operator):
-    """Refreshes the list of available groups in the scene, that can be marked for export."""
-
-    bl_idname = "scene.cap_refgroups"
-    bl_label = "Refresh Groups"
-
-    def execute(self, context):
-        print(self)
-
-        scn = context.scene.CAPScn
-        scn.group_list.clear()
-
-        for group in bpy.data.groups:
-            if group.CAPGrp.export_group is True:
-                groupEntry = scn.group_list.add()
-                groupEntry.name = group.name
-                groupEntry.prev_name = group.name
-
-
-        return {'FINISHED'}
-
 class CAP_Set_Root_Object(Operator):
     """Allows you to set the Origin Object through an interactive tool.  Right-Click: Select the object you wish to be the origin point for the scene.  Esc - Quit the tool."""
 
@@ -434,6 +382,35 @@ class CAP_Clear_Root_Object(Operator):
         return {'FINISHED'}
 
 
+class CAP_Clear_List(Operator):
+    """Deletes all objects from the list, and un-tags them for export"""
+
+    bl_idname = "scene.cap_clearlist"
+    bl_label = "Clear Export List"
+
+    def execute(self, context):
+        print(self)
+
+        scn = context.scene.CAPScn
+        obj = context.active_object.CAPObj
+        objectTab = int(str(scn.object_switch))
+
+        if objectTab == 1:
+            for object in context.scene.objects:
+                obj = object.CAPObj
+                obj.enable_export = False
+            scn.object_list.clear()
+
+        if objectTab == 2:
+            for group in bpy.data.groups:
+                grp = group.CAPGrp
+                grp.export_group = False
+            scn.group_list.clear()
+
+
+        return {'FINISHED'}
+
+
 class CAP_Reset_Scene(Operator):
     """Resets all object and group variables in the scene.  Use at your own peril!"""
 
@@ -482,7 +459,7 @@ class CAP_Reset_Scene(Operator):
 
         return {'FINISHED'}
 
-class CAP_Reset_Scene(Operator):
+class CAP_Reset_Defaults(Operator):
     """Resets all location and export defaults in the file"""
 
     bl_idname = "scene.cap_resetprefs"

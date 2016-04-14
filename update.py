@@ -51,6 +51,7 @@ def Update_EnableExport(self, context):
             UpdateObjectList(context.scene, item.name, value)
 
         ui.enable_sel_active = False
+        ui.enable_list_active = False
 
     return None
 
@@ -336,6 +337,7 @@ def Update_GroupExport(self, context):
             UpdateGroupList(context.scene, group.name, self.export_group)
 
         ui.enable_sel_active = False
+        ui.enable_list_active = False
 
     return None
 
@@ -527,6 +529,7 @@ def Update_ObjectItemExport(self, context):
                 print("Found object name ", item.name)
                 item.CAPObj.enable_export = self.enable_export
 
+    ui.enable_sel_active = False
     ui.enable_list_active = False
     return None
 
@@ -565,7 +568,9 @@ def Update_GroupItemExport(self, context):
                 print("Found object name ", group.name)
                 group.CAPGrp.export_group = self.enable_export
 
+    ui.enable_sel_active = False
     ui.enable_list_active = False
+
     return None
 
 def Update_ObjectListSelect(self, context):
@@ -585,31 +590,56 @@ def Update_GroupListSelect(self, context):
         addon_prefs.group_multi_edit = False
 
 def Update_ObjectRemoveFromList(self, context):
+    print("-----DELETING OBJECT FROM LIST-----")
     i = 0
+    ui = context.scene.CAPUI
+    scn = context.scene.CAPScn
+    # To avoid issues within the list, the selected list item needs to be preserved.
+    backupListIndex = scn.object_list_index
 
     # Search through the object list to find a matching name
-    for item in context.scene.CAPScn.object_list:
+    for item in scn.object_list:
         if item.name == self.name:
             # Search through scene objects to untick export
             for sceneObj in context.scene.objects:
                 if sceneObj.name == self.name:
                     print("Deleting", sceneObj.name, "from the list.")
+                    ui.enable_list_active = True
+
                     sceneObj.CAPObj.enable_export = False
                     context.scene.CAPScn.object_list.remove(i)
+                    if backupListIndex != 0:
+                        scn.object_list_index = backupListIndex - 1
+
+                    ui.enable_sel_active = False
+                    ui.enable_list_active = False
                     return
         i += 1
 
 
 def Update_GroupRemoveFromList(self, context):
+    print("-----DELETING GROUP FROM LIST-----")
     i = 0
+    ui = context.scene.CAPUI
+    scn = context.scene.CAPScn
+    # To avoid issues within the list, the selected list item needs to be preserved.
+    backupListIndex = scn.group_list_index
 
-    for item in context.scene.CAPScn.group_list:
+    for item in scn.group_list:
         if item.name == self.name:
             # Search through scene groups to untick export
             for sceneGroup in bpy.data.groups:
                 if sceneGroup.name == self.name:
+                    print("Deleting", sceneGroup.name, "from the list.")
+                    ui.enable_list_active = True
+
                     sceneGroup.CAPGrp.export_group = False
                     context.scene.CAPScn.group_list.remove(i)
+                    if backupListIndex != 0:
+                        scn.group_list_index = backupListIndex - 1
+
+                    ui.enable_sel_active = False
+                    ui.enable_list_active = False
                     return
         i += 1
 
@@ -632,7 +662,6 @@ def UpdateObjectList(scene, name, enableExport):
         entry.name = name
         entry.prev_name = name
         entry.enable_export = enableExport
-        ui.modify_list_loop = False
 
 def UpdateGroupList(scene, name, enableExport):
 
@@ -652,4 +681,3 @@ def UpdateGroupList(scene, name, enableExport):
         entry.name = name
         entry.prev_name = name
         entry.enable_export = enableExport
-        ui.modify_list_loop = False
