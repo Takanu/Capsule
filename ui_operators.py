@@ -662,8 +662,7 @@ class CAP_Add_Stored_Presets(Operator):
 
         # Obtain the selected preset
         new_preset = exp.export_defaults.add()
-        preset_len = int(addon_prefs.global_presets_enum) - 1
-        CopyPreset(addon_prefs.global_presets[preset_len], new_preset)
+        CopyPreset(addon_prefs.global_presets[addon_prefs.global_presets_index], new_preset)
 
         return {'FINISHED'}
 
@@ -678,10 +677,9 @@ class CAP_Delete_Presets(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
 
         if len(addon_prefs.global_presets) > 0:
-            if addon_prefs.global_presets_enum != "0":
-                export = addon_prefs.global_presets[int(addon_prefs.global_presets_enum) - 1]
-                if export.x_global_user_deletable is True:
-                    return True
+            export = addon_prefs.global_presets[addon_prefs.global_presets_index]
+            if export.x_global_user_deletable is True:
+                return True
 
         return False
 
@@ -693,8 +691,7 @@ class CAP_Delete_Presets(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
-        addon_prefs.global_presets.remove(int(addon_prefs.global_presets_enum) - 1)
-        addon_prefs.global_presets_enum = str(0)
+        addon_prefs.global_presets.remove(addon_prefs.global_presets_index)
 
         return {'FINISHED'}
 
@@ -974,3 +971,45 @@ def CopyPreset(old_preset, new_preset):
     new_preset.bake_anim_step = old_preset.bake_anim_step
     new_preset.bake_anim_simplify_factor = old_preset.bake_anim_simplify_factor
     new_preset.x_global_user_deletable = True
+
+class CAP_Toggle_Saved_Presets(bpy.types.Operator):
+    bl_idname = "cap.toggle_saved_presets"
+    bl_label = "Toggle Saved Presets"
+
+    def execute(self, context):
+        user_preferences = bpy.context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
+        dropdownIsOn = addon_prefs.saved_presets_dropdown
+        if dropdownIsOn is True:
+            addon_prefs.saved_presets_dropdown = False
+        else:
+            addon_prefs.saved_presets_dropdown = True
+
+        return {'FINISHED'}
+
+class DialogOperator(bpy.types.Operator):
+    bl_idname = "cap.saved_presets"
+    bl_label = "Saved Presets"
+
+    my_float = FloatProperty(name="Some Floating Point",
+        min=0.0, max=100.0)
+    my_bool = BoolProperty(name="Toggle Option")
+    my_string = StringProperty(name="String Value")
+    my_enum = EnumProperty(name="Enum value",
+        items = [('one', 'eins', 'un'),
+                 ('two', 'zwei', 'deux'),
+                 ('three', 'drei', 'trois')])
+
+    def execute(self, context):
+        message = "%.3f, %d, '%s' %s" % (self.my_float,
+            self.my_bool, self.my_string, self.my_enum)
+        self.report({'INFO'}, message)
+        print(message)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        self.my_float = 2
+        self.my_bool = True
+        self.my_string = "Rawr"
+        return context.window_manager.invoke_props_dialog(self)

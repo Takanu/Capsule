@@ -456,11 +456,13 @@ class CAP_AddonPreferences(AddonPreferences):
 
     # Storage for the Global Presets, and it's enum UI list.
     global_presets = CollectionProperty(type=CAP_ExportPreset)
+    global_presets_index = IntProperty()
     global_presets_enum = EnumProperty(
         name="Stored Export Presets",
         description="The export presets saved as plugin data, which can be accessed between .blend files.",
         items=GetGlobalPresets)
 
+    saved_presets_dropdown = BoolProperty(default=False)
     presets_dropdown = BoolProperty(default = False)
     tags_dropdown = BoolProperty(default = False)
     passes_dropdown = BoolProperty(default = False)
@@ -552,45 +554,63 @@ class CAP_AddonPreferences(AddonPreferences):
         if addon_prefs.presets_dropdown is False:
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
-            col_export_title.label("Export Defaults")
-            col_export_title.operator("cap.create_current_preset", text="", icon="ZOOMIN")
-            col_export_title.operator("cap.delete_global_preset", text="", icon="ZOOMOUT")
-            col_export_title.prop(addon_prefs, "global_presets_enum", text="")
+            col_export_title.label("Export Presets")
 
 
         else:
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
-            col_export_title.label("Export Defaults")
-            col_export_title.operator("cap.create_current_preset", text="", icon="ZOOMIN")
-            col_export_title.operator("cap.delete_global_preset", text="", icon="ZOOMOUT")
-            col_export_title.prop(addon_prefs, "global_presets_enum", text="")
+            col_export_title.label("Export Presets")
 
-            col_export = export_box.row(align=True)
-            col_export.template_list("Export_Default_UIList", "default", exp, "export_defaults", exp, "export_defaults_index", rows=3, maxrows=6)
+            if addon_prefs.saved_presets_dropdown is False:
+                savedpresets_box = export_box.box()
+                col_saved_title = savedpresets_box.row(align=True)
+                col_saved_title.prop(addon_prefs, "saved_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+                col_saved_title.label("Saved Presets")
 
-            col_export.separator()
-            row_export = col_export.column(align=True)
-            row_export.operator("scene.cap_addexport", text="", icon="ZOOMIN")
-            row_export.operator("scene.cap_deleteexport", text="", icon="ZOOMOUT")
-            row_export.separator()
-            row_export.operator("cap.add_global_preset", text="", icon="FORWARD")
+            else:
+                savedpresets_box = export_box.box()
+                col_saved_title = savedpresets_box.row(align=True)
+                col_saved_title.prop(addon_prefs, "saved_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                col_saved_title.label("Saved Presets")
+
+                col_savedpresets = savedpresets_box.row(align=True)
+                col_savedpresets_list = col_savedpresets.column(align=True)
+                col_savedpresets_list.template_list("Saved_Default_UIList", "default", addon_prefs, "global_presets", addon_prefs, "global_presets_index", rows=3, maxrows=6)
+                col_savedpresets_list.operator("cap.create_current_preset", text="Add to File Presets", icon="FORWARD")
+
+                col_savedpresets_options = col_savedpresets.column(align=True)
+                col_savedpresets_options.operator("cap.delete_global_preset", text="", icon="ZOOMOUT")
+
+
+            filepresets_box = export_box.box()
+            filepresets_box.label("File Presets")
+
+            row_defaults = filepresets_box.row(align=True)
+            col_defaultslist = row_defaults.column(align=True)
+            col_defaultslist.template_list("Export_Default_UIList", "default", exp, "export_defaults", exp, "export_defaults_index", rows=3, maxrows=6)
+            col_defaultslist.operator("cap.add_global_preset", text="Add to Saved Presets", icon="FORWARD")
+
+            col_defaultslist_options = row_defaults.column(align=True)
+            col_defaultslist_options.operator("scene.cap_addexport", text="", icon="ZOOMIN")
+            col_defaultslist_options.operator("scene.cap_deleteexport", text="", icon="ZOOMOUT")
+
 
             if len(exp.export_defaults) > 0 and (exp.export_defaults_index) < len(exp.export_defaults):
 
                 currentExp = exp.export_defaults[exp.export_defaults_index]
 
-                export_settings = export_box.column(align=True)
+                export_settings = filepresets_box.column(align=True)
                 export_settings.separator()
                 export_tabs = export_settings.row(align=True)
                 export_tabs.prop(addon_prefs, "export_preset_options", expand=True)
 
-                export_separator = export_box.column(align=True)
+                export_separator = filepresets_box.column(align=True)
                 #export_separator.separator()
 
 
                 if addon_prefs.export_preset_options == 'Export':
-                    export_main = export_box.row(align=True)
+                    export_main = filepresets_box.row(align=True)
                     export_main.separator()
 
                     export_1 = export_main.column(align=True)
@@ -615,7 +635,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     export_main.separator()
 
                 if addon_prefs.export_preset_options == 'Transform':
-                    export_main = export_box.row(align=True)
+                    export_main = filepresets_box.row(align=True)
                     export_main.separator()
 
                     export_1 = export_main.column(align=True)
@@ -649,7 +669,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     export_main.separator()
 
                 elif addon_prefs.export_preset_options == 'Geometry':
-                    export_main = export_box.row(align=True)
+                    export_main = filepresets_box.row(align=True)
                     export_main.separator()
                     export_1 = export_main.column(align=True)
                     export_1.prop(currentExp, "loose_edges")
@@ -657,7 +677,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     export_1.separator()
 
                 elif addon_prefs.export_preset_options == 'Armature':
-                    export_main = export_box.row(align=True)
+                    export_main = filepresets_box.row(align=True)
                     export_main.separator()
                     export_1 = export_main.column(align=True)
                     export_1.prop(currentExp, "use_armature_deform_only")
@@ -709,7 +729,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     #export_main.separator()
 
             else:
-                preset_unselected = export_box.column(align=True)
+                preset_unselected = filepresets_box.column(align=True)
                 preset_unselected.label("Select a preset in order to view preset settings.")
                 preset_unselected.separator()
 
