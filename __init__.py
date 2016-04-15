@@ -457,10 +457,6 @@ class CAP_AddonPreferences(AddonPreferences):
     # Storage for the Global Presets, and it's enum UI list.
     global_presets = CollectionProperty(type=CAP_ExportPreset)
     global_presets_index = IntProperty()
-    global_presets_enum = EnumProperty(
-        name="Stored Export Presets",
-        description="The export presets saved as plugin data, which can be accessed between .blend files.",
-        items=GetGlobalPresets)
 
     saved_presets_dropdown = BoolProperty(default=False)
     presets_dropdown = BoolProperty(default = False)
@@ -524,6 +520,7 @@ class CAP_AddonPreferences(AddonPreferences):
         addon_prefs = user_preferences.addons[__name__].preferences
         exp = None
 
+
         for item in bpy.data.objects:
             if item.name == addon_prefs.default_datablock:
                 exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
@@ -543,7 +540,6 @@ class CAP_AddonPreferences(AddonPreferences):
 
         scn = context.scene.CAPScn
         ob = context.object
-        ui = context.scene.CAPUI
 
         #---------------------------------------------------------
         # Export UI
@@ -972,17 +968,17 @@ def register():
     bpy.types.Object.CAPObj = PointerProperty(type=properties.CAP_Object_Preferences)
     bpy.types.Group.CAPGrp = PointerProperty(type=properties.CAP_Group_Preferences)
     bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAP_Action_Preferences)
-    bpy.types.Scene.CAPUI = PointerProperty(type=properties.CAP_UI_Preferences)
     bpy.types.Object.CAPStm = PointerProperty(type=properties.CAP_Object_StateMachine)
     bpy.types.Object.CAPExp = PointerProperty(type=CAP_ExportPresets)
     ui_operators.CreatePresets()
 
-    bpy.app.handlers.load_post.append(CreateDefaultData)
+    bpy.app.handlers.load_pre.append(CreateDefaultData)
     bpy.app.handlers.scene_update_post.append(CheckSelectedObject)
 
 def unregister():
+    ui_operators.DeletePresets()
 
-    bpy.app.handlers.load_post.remove(CreateDefaultData)
+    bpy.app.handlers.load_pre.remove(CreateDefaultData)
     bpy.app.handlers.scene_update_post.remove(CheckSelectedObject)
 
     print("Unregistering Stuff")
@@ -991,7 +987,6 @@ def unregister():
     del bpy.types.Object.CAPObj
     del bpy.types.Group.CAPGrp
     del bpy.types.Action.CAPAcn
-    del bpy.types.Scene.CAPUI
     del bpy.types.Object.CAPStm
 
     bpy.utils.unregister_module(__name__)

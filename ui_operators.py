@@ -4,7 +4,7 @@ from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckForTags
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, CheckSuffix, CheckForTags, GetSceneGroups
 
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
 
@@ -334,7 +334,7 @@ class CAP_Set_Root_Object(Operator):
                 entry = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
 
                 # Find the group we're getting a root object for
-                for group in bpy.data.groups:
+                for group in GetSceneGroups(context.scene):
                     if group.name == entry.name:
                         print("Found Group: ", group.name)
 
@@ -374,7 +374,7 @@ class CAP_Clear_Root_Object(Operator):
         obj = context.active_object.CAPObj
 
         entry = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
-        for group in bpy.data.groups:
+        for group in GetSceneGroups(context.scene):
             if group.name == entry.name:
                 group.CAPGrp.root_object = ""
                 return{'FINISHED'}
@@ -402,9 +402,9 @@ class CAP_Clear_List(Operator):
             scn.object_list.clear()
 
         if objectTab == 2:
-            for group in bpy.data.groups:
+            for group in GetSceneGroups(context.scene):
                 grp = group.CAPGrp
-                grp.export_group = False
+                grp.enable_export = False
             scn.group_list.clear()
 
 
@@ -432,9 +432,9 @@ class CAP_Reset_Scene(Operator):
 
         active = context.active_object
 
-        for group in bpy.data.groups:
+        for group in GetSceneGroups(context.scene):
             grp = group.CAPGrp
-            grp.export_group = False
+            grp.enable_export = False
             grp.root_object = ""
             grp.location_default = '0'
             grp.export_default = '0'
@@ -726,6 +726,13 @@ class CAP_Store_Presets(Operator):
 
         return {'FINISHED'}
 
+def DeletePresets():
+    user_preferences = bpy.context.user_preferences
+    addon_prefs = user_preferences.addons[__package__].preferences
+    exp = addon_prefs.global_presets
+
+    exp.clear()
+
 def CreatePresets():
     # -------------------------------------------------------------------------
     # Basic Export All
@@ -734,8 +741,17 @@ def CreatePresets():
     addon_prefs = user_preferences.addons[__package__].preferences
     exp = addon_prefs.global_presets
 
+    CreatePresetBasicExport(exp)
+    CreatePresetUE4Standard(exp)
+    CreatePresetUnity5Standard(exp)
+
+
+def CreatePresetBasicExport(exp):
+    # -------------------------------------------------------------------------
+    # Basic Export All
+    # -------------------------------------------------------------------------
     export = exp.add()
-    export.name = "Basic Export All (Preset)"
+    export.name = "Basic Export All"
     export.description = "Creates a basic Export Preset with ideal settings for most purposes."
     export.axis_forward = "-Z"
     export.axis_up = "Y"
@@ -748,13 +764,12 @@ def CreatePresets():
     passOne.apply_modifiers = True
     passOne.triangulate = True
 
-    export = None
-
+def CreatePresetUE4Standard(exp):
     # -------------------------------------------------------------------------
     # UE4 Standard Template
     # -------------------------------------------------------------------------
     export = exp.add()
-    export.name = "UE4 Standard (Preset)"
+    export.name = "UE4 Standard"
     export.description = "Creates an Export Preset for exporting FBX files for Unreal Engine 4, with optimised settings.  Enables the bundling of Collision objects in a format readable by UE4."
     export.axis_forward = "-Z"
     export.axis_up = "Y"
@@ -840,13 +855,12 @@ def CreatePresets():
 
         i += 1
 
-    export = None
-
+def CreatePresetUnity5Standard(exp):
     # -------------------------------------------------------------------------
     # Unity 5 Standard Template
     # -------------------------------------------------------------------------
     export = exp.add()
-    export.name = "Unity 5 Standard (Preset)"
+    export.name = "Unity 5 Standard"
     export.description = "Creates an Export Preset for exporting FBX files for Unity 5, with optimised settings."
     export.axis_forward = "-Z"
     export.axis_up = "Y"
@@ -897,8 +911,6 @@ def CreatePresets():
         newPassTag.name = tag.name
         newPassTag.index = len(export.tags) - 1
         newPassTag.use_tag = True
-
-    export = None
 
 def CopyPreset(old_preset, new_preset):
 
@@ -970,46 +982,3 @@ def CopyPreset(old_preset, new_preset):
     new_preset.optimise_keyframes = old_preset.optimise_keyframes
     new_preset.bake_anim_step = old_preset.bake_anim_step
     new_preset.bake_anim_simplify_factor = old_preset.bake_anim_simplify_factor
-    new_preset.x_global_user_deletable = True
-
-class CAP_Toggle_Saved_Presets(bpy.types.Operator):
-    bl_idname = "cap.toggle_saved_presets"
-    bl_label = "Toggle Saved Presets"
-
-    def execute(self, context):
-        user_preferences = bpy.context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
-
-        dropdownIsOn = addon_prefs.saved_presets_dropdown
-        if dropdownIsOn is True:
-            addon_prefs.saved_presets_dropdown = False
-        else:
-            addon_prefs.saved_presets_dropdown = True
-
-        return {'FINISHED'}
-
-class DialogOperator(bpy.types.Operator):
-    bl_idname = "cap.saved_presets"
-    bl_label = "Saved Presets"
-
-    my_float = FloatProperty(name="Some Floating Point",
-        min=0.0, max=100.0)
-    my_bool = BoolProperty(name="Toggle Option")
-    my_string = StringProperty(name="String Value")
-    my_enum = EnumProperty(name="Enum value",
-        items = [('one', 'eins', 'un'),
-                 ('two', 'zwei', 'deux'),
-                 ('three', 'drei', 'trois')])
-
-    def execute(self, context):
-        message = "%.3f, %d, '%s' %s" % (self.my_float,
-            self.my_bool, self.my_string, self.my_enum)
-        self.report({'INFO'}, message)
-        print(message)
-        return {'FINISHED'}
-
-    def invoke(self, context, event):
-        self.my_float = 2
-        self.my_bool = True
-        self.my_string = "Rawr"
-        return context.window_manager.invoke_props_dialog(self)

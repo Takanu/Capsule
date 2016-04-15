@@ -953,3 +953,19 @@ def FindWorldSpaceObjectLocation(target, context):
     print("Found World Space Location:", cursorLocCopy)
 
     return cursorLocCopy
+
+def GetSceneGroups(scene):
+    groups = []
+
+    for item in scene.objects:
+        for group in item.users_group:
+            groupAdded = False
+
+            for found_group in groups:
+                if found_group.name == group.name:
+                    groupAdded = True
+
+            if groupAdded == False:
+                groups.append(group)
+
+    return groups

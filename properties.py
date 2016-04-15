@@ -141,20 +141,6 @@ def GetSelectedGroups(scene, context):
 
 class CAP_Scene_Preferences(PropertyGroup):
 
-    engine_select = EnumProperty(
-        name="Set Game Engine",
-        items=(
-        ('1', 'Unreal Engine 4', 'Configures export and export options for Unreal Engine 4'),
-        ('2', 'Unity 5', 'Configures export and export options for Unity'),),
-        )
-
-    correct_rotation = BoolProperty(
-        name="Correct Rotation",
-        description="Rotates all assets 180º on the Z axis before exporting, to appear in the same orientation in Unity as it does currently.",
-        default=False
-        )
-
-
     group_list = CollectionProperty(type=GroupItem)
     group_list_index = IntProperty(
         name="",
@@ -171,6 +157,11 @@ class CAP_Scene_Preferences(PropertyGroup):
         description="",
         update=Update_ObjectListSelect
         )
+
+    action_list = CollectionProperty(type=ActionItem)
+    action_list_index = IntProperty()
+    enable_sel_active = BoolProperty(default=False)
+    enable_list_active = BoolProperty(default=False)
 
     object_switch = EnumProperty(
         name="Object Type Switch",
@@ -255,7 +246,7 @@ class CAP_Object_Preferences(PropertyGroup):
         )
 
 class CAP_Group_Preferences(PropertyGroup):
-    export_group = BoolProperty(
+    enable_export = BoolProperty(
         name="Export Group",
         description="Enable/Disable exporting for this group.",
         default=False,
@@ -307,18 +298,6 @@ def GetExportPresets(scene, context):
 
     return items
 
-class CAP_UI_Preferences(PropertyGroup):
-    export_presets = EnumProperty(
-        name="Export Presets",
-        description="List of available visibility presets.",
-        items=GetExportPresets
-        )
-
-    action_list = CollectionProperty(type=ActionItem)
-    action_list_index = IntProperty()
-    enable_sel_active = BoolProperty(default=False)
-    enable_list_active = BoolProperty(default=False)
-
 class CAP_Object_StateMachine(PropertyGroup):
 
     has_triangulate = BoolProperty(
@@ -336,7 +315,7 @@ class CAP_Action_Preferences(PropertyGroup):
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (ObjectItem, GroupItem, ActionItem, CAP_Scene_Preferences, CAP_Object_Preferences, CAP_Group_Preferences, CAP_UI_Preferences, CAP_Object_StateMachine, CAP_Action_Preferences)
+classes = (ObjectItem, GroupItem, ActionItem, CAP_Scene_Preferences, CAP_Object_Preferences, CAP_Group_Preferences, CAP_Object_StateMachine, CAP_Action_Preferences)
 
 def register():
     print("Registering Properties")

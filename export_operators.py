@@ -3,7 +3,7 @@ from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
 
 
 
@@ -161,10 +161,10 @@ class CAP_Export_Assets(Operator):
         path = self.GetFilePath(context, locationDefault, objectName)
 
         if path == "":
-            return "WARNING: Welp, something went wrong.  Contact Crocadillian! D:."
+            return "WARNING: Welp, something went wrong.  Contact the developer for assistance!."
 
         if path == {'1'}:
-            return "WARNING: " + objectName + " is not using a location preset.  Set it plzplzplz."
+            return "WARNING: " + objectName + " is not using a location preset.  Please set one."
 
         if path == {'2'}:
             return "WARNING: " + objectName + " is using an empty location preset.  A file path is required to export."
@@ -184,7 +184,7 @@ class CAP_Export_Assets(Operator):
                 print(bpy.data.filepath)
                 pathSplit = bpy.data.filepath.rsplit("/")
                 blendFile = pathSplit.pop()
-                blendSplit = blendFile.rsplit(".")
+                blendSplit = blendFile.rsplit(".blend")
                 blendName = blendSplit[0]
 
                 newPath = path + blendName + "/"
@@ -402,8 +402,8 @@ class CAP_Export_Assets(Operator):
 
                 self.exportCount += 1
 
-        for group in bpy.data.groups:
-            if group.CAPGrp.export_group is True:
+        for group in GetSceneGroups(context.scene):
+            if group.CAPGrp.enable_export is True:
 
                 # Check Export Key
                 expKey = int(group.CAPGrp.export_default) - 1
@@ -432,7 +432,7 @@ class CAP_Export_Assets(Operator):
                 return statement
 
             if defaultFilePath.find('//') != -1:
-                statement =  "The Location " + exp.location_defaults[enumIndex].name + " is using a location preset with a relative file path name, please tick off the Relative Path option when choosing the file path."
+                statement =  "The path " + exp.location_defaults[enumIndex].name + " is using a relative file path name, please turn off the Relative Path option when choosing a file path in the file browser."
                 return statement
 
             i += 1
@@ -764,8 +764,8 @@ class CAP_Export_Assets(Operator):
         # OBJECT CYCLE
         ###############################################################
         # Now hold up, its group time!
-        for group in bpy.data.groups:
-            if group.CAPGrp.export_group is True:
+        for group in GetSceneGroups(context.scene):
+            if group.CAPGrp.enable_export is True:
 
                 print("-"*79)
                 print("NEW JOB", "-"*70)
