@@ -509,7 +509,13 @@ class CAP_AddonPreferences(AddonPreferences):
         default='focus'
         )
 
+    substitute_directories = BoolProperty(
+        name="Substitute Invalid Directory Characters",
+        description="If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  If unticked, the plugin will prompt you with an error if your directories contain invalid characters."
+    )
+
     data_missing = BoolProperty(default=False)
+    plugin_is_ready = BoolProperty(default=False)
     prev_selected_object = StringProperty()
     prev_selected_count = IntProperty()
 
@@ -891,9 +897,8 @@ class CAP_AddonPreferences(AddonPreferences):
             options_1.label("Additional List Options")
             options_1.separator()
             options_1.prop(addon_prefs, "list_feature", text="", expand=False)
-            #options_1.separator()
-            #options_1.separator()
-            #options_1.prop(addon_prefs, "object_list_autorefresh", expand=False)
+            options_1.separator()
+            options_1.prop(addon_prefs, "substitute_directories", expand=False)
 
             options_main.separator()
             options_main.separator()
@@ -976,12 +981,12 @@ def register():
     bpy.app.handlers.scene_update_post.append(CheckSelectedObject)
 
 def unregister():
+    print("Unregistering Stuff")
     ui_operators.DeletePresets()
 
     bpy.app.handlers.load_pre.remove(CreateDefaultData)
     bpy.app.handlers.scene_update_post.remove(CheckSelectedObject)
 
-    print("Unregistering Stuff")
     del bpy.types.Object.CAPExp
     del bpy.types.Scene.CAPScn
     del bpy.types.Object.CAPObj

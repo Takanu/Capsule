@@ -1,4 +1,4 @@
-import bpy, bmesh, os
+import bpy, bmesh, os, platform
 from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
@@ -154,23 +154,7 @@ class CAP_Export_Assets(Operator):
         print("Obtaining File...")
         print("File Enumerator = ", locationDefault)
 
-        if int(locationDefault) == 0:
-            return "WARNING: " + objectName + " has no location preset defined, please define one!"
-
-
         path = self.GetFilePath(context, locationDefault, objectName)
-
-        if path == "":
-            return "WARNING: Welp, something went wrong.  Contact the developer for assistance!."
-
-        if path == {'1'}:
-            return "WARNING: " + objectName + " is not using a location preset.  Please set one."
-
-        if path == {'2'}:
-            return "WARNING: " + objectName + " is using an empty location preset.  A file path is required to export."
-
-        if path == {'3'}:
-            return "WARNING: " + objectName + " is using a location preset with a relative file path name, please tick off the Relative Path option when choosing the file path."
 
         print("Current Path: ", path)
 
@@ -179,21 +163,25 @@ class CAP_Export_Assets(Operator):
         # if a sub-directory needs creating in the location default
         if subDirectory != "" or useObjectDirectory is True or useBlendDirectory is True:
             newPath = ""
+            slash = "/"
+            if platform.system() == 'Windows':
+                slash = "\\"
 
             if useBlendDirectory is True:
-                print(bpy.data.filepath)
-                pathSplit = bpy.data.filepath.rsplit("/")
-                blendFile = pathSplit.pop()
-                blendSplit = blendFile.rsplit(".blend")
-                blendName = blendSplit[0]
+                print(bpy.path.basename(bpy.context.blend_data.filepath))
+                blendName = bpy.path.basename(bpy.context.blend_data.filepath)
+                #pathSplit = bpy.data.filepath.rsplit(slash)
+                #blendFile = pathSplit.pop()
+                #blendSplit = blendFile.rsplit(".blend")
+                #blendName = blendSplit[0]
 
-                newPath = path + blendName + "/"
+                newPath = path + blendName + slash
 
             if useObjectDirectory is True:
-                newPath = newPath + objectName + "/"
+                newPath = newPath + objectName + slash
 
             if subDirectory.replace(" ", "") != "":
-                newPath = newPath + subDirectory + "/"
+                newPath = newPath + subDirectory + slash
 
             if newPath == "":
                 newPath = path
@@ -377,11 +365,46 @@ class CAP_Export_Assets(Operator):
 
         print("Rawr")
 
+    def CheckDirectoryName(self, context, name):
+        if platform.system() == 'Windows':
+            invalidCharacters = []
+            if name.find('/') != -1:
+                invalidCharacters.append("/")
+            #if defaultFilePath.find(':') != -1:
+                #invalidCharacters.append(":")
+            if name.find('*') != -1:
+                invalidCharacters.append("*")
+            if name.find('?') != -1:
+                invalidCharacters.append("?")
+            if name.find('"') != -1:
+                invalidCharacters.append('"""')
+            if name.find('<') != -1:
+                invalidCharacters.append("<")
+            if name.find('>') != -1:
+                invalidCharacters.append(">")
+            if name.find('|') != -1:
+                invalidCharacters.append("|")
+
+        return invalidCharacters
+
     def CheckForErrors(self, context):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        # Check all active file presets for valid directory names
+        # These lists will be analysed later
+        blendDirectories = []
+        passDirectories = []
+        objectDirectories = []
+        for export in exp.export_defaults:
+            if export.use_blend_directory is True:
+                blendName = bpy.path.basename(bpy.context.blend_data.filepath)
+                blendDirectories.append(blendName)
+            for ePass in export.passes:
+                if ePass.sub_directory != "":
+                    passDirectories.append(ePass.sub_directory)
 
         # Checks for any easily-preventable errors
         for object in context.scene.objects:
@@ -394,6 +417,13 @@ class CAP_Export_Assets(Operator):
                     FocusObject(object)
                     return statement
 
+                # If the export the object is using involves an Object Directory
+                # add it to the list.
+                export = exp.export_defaults[expKey]
+                if export.use_sub_directory is True:
+                    objName = object.name
+                    objectDirectories.append(objName)
+
                 # Check Location Default
                 if int(object.CAPObj.location_default) == 0:
                     statement =  "The selected object " + object.name + " has no location preset defined, please define one!"
@@ -402,6 +432,7 @@ class CAP_Export_Assets(Operator):
 
                 self.exportCount += 1
 
+        # Check all scene groups for potential errors
         for group in GetSceneGroups(context.scene):
             if group.CAPGrp.enable_export is True:
 
@@ -418,7 +449,7 @@ class CAP_Export_Assets(Operator):
 
                 self.exportCount += 1
 
-        # Check Paths
+        # Check Paths to ensure the chatacters contained are valid.
         i = 0
         while i < len(exp.location_defaults):
             enumIndex = i
@@ -426,16 +457,63 @@ class CAP_Export_Assets(Operator):
             enumIndex -= 1
 
             defaultFilePath = exp.location_defaults[enumIndex].path
+            print("Checking File Paths...", defaultFilePath)
 
             if defaultFilePath == "":
                 statement = "The path for " + exp.location_defaults[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
                 return statement
 
             if defaultFilePath.find('//') != -1:
-                statement =  "The path " + exp.location_defaults[enumIndex].name + " is using a relative file path name, please turn off the Relative Path option when choosing a file path in the file browser."
+                statement =  "The path " + exp.location_defaults[enumIndex].name + "is using a relative file path name, please turn off the Relative Path option when choosing a file path in the file browser."
                 return statement
 
             i += 1
+
+        # Check any directory options
+        for name in blendDirectories:
+            result = self.CheckDirectoryName(context, name)
+            if len(result) != 0:
+                plural = " is using the invalid file character "
+                returnStatement = ""
+                if len(result) > 1:
+                    plural = " is using the invalid file characters "
+
+                while len(result) != 0:
+                    text = result.pop()
+                    returnStatement += text + " "
+
+                statement =  "The blend file " + name + plural + returnStatement + " Please remove the invalid character from the path name."
+                return statement
+
+        for name in passDirectories:
+            result = self.CheckDirectoryName(context, name)
+            if len(result) != 0:
+                plural = " is using the invalid file character "
+                returnStatement = ""
+                if len(result) > 1:
+                    plural = " is using the invalid file characters "
+
+                while len(result) != 0:
+                    text = result.pop()
+                    returnStatement += text + " "
+
+                statement =  "The pass sub-directory " + name + plural + returnStatement + " Please remove the invalid character from the directory name."
+                return statement
+
+        for name in objectDirectories:
+            result = self.CheckDirectoryName(context, name)
+            if len(result) != 0:
+                plural = " , marked for a sub-directory, is using the invalid file characters "
+                returnStatement = ""
+                if len(result) > 1:
+                    plural = " , marked for a sub-directory, is using the invalid file characters "
+
+                while len(result) != 0:
+                    text = result.pop()
+                    returnStatement += text + " "
+
+                statement =  "The object " + name + plural + returnStatement + " Please remove the invalid character from the directory name."
+                return statement
 
         return None
 

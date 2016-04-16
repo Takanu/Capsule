@@ -610,6 +610,7 @@ def Update_ObjectRemoveFromList(self, context):
                     scn.enable_sel_active = False
                     scn.enable_list_active = False
                     return
+
         i += 1
 
 
@@ -637,13 +638,8 @@ def Update_GroupRemoveFromList(self, context):
                     return
         i += 1
 
-def SelectObjectList(scene, name):
-    ui = scene.CAPUI
-    scn = scene.CAPScn
-
 
 def UpdateObjectList(scene, name, enableExport):
-    ui = scene.CAPUI
     scn = scene.CAPScn
 
     # Check a list entry for the object doesn't already exist.
@@ -661,7 +657,6 @@ def UpdateObjectList(scene, name, enableExport):
         entry.enable_export = enableExport
 
 def UpdateGroupList(scene, name, enableExport):
-    ui = scene.CAPUI
     scn = scene.CAPScn
 
     # Check a list entry for the group doesn't already exist.

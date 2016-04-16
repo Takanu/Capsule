@@ -171,6 +171,14 @@ class CAP_Scene_Preferences(PropertyGroup):
         ('2', 'Groups', 'Switches to the Group menu, for editing the exports of groups.')),
         )
 
+    selection_switch = EnumProperty(
+        name="Selection Switch",
+        description="Switches the selection editing mode between objects and groups.",
+        items=(
+        ('1', 'Objects', 'Switches to the Object menu, for editing the exports of single objects and any tags associated with them.'),
+        ('2', 'Groups', 'Switches to the Group menu, for editing the exports of groups.')),
+        )
+
 def GetLocationDefaults(scene, context):
 
     items = [

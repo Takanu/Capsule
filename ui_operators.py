@@ -383,16 +383,15 @@ class CAP_Clear_Root_Object(Operator):
 
 
 class CAP_Clear_List(Operator):
-    """Deletes all objects from the list, and un-tags them for export"""
+    """Deletes all objects from the export list, and un-tags them for export"""
 
     bl_idname = "scene.cap_clearlist"
-    bl_label = "Clear Export List"
+    bl_label = "Delete All"
 
     def execute(self, context):
         print(self)
 
         scn = context.scene.CAPScn
-        obj = context.active_object.CAPObj
         objectTab = int(str(scn.object_switch))
 
         if objectTab == 1:
@@ -406,6 +405,40 @@ class CAP_Clear_List(Operator):
                 grp = group.CAPGrp
                 grp.enable_export = False
             scn.group_list.clear()
+
+
+        return {'FINISHED'}
+
+class CAP_Reset_List(Operator):
+    """Rebuilds the list based on available objects or groups in the scene."""
+
+    bl_idname = "scene.cap_refreshlist"
+    bl_label = "Refresh"
+
+    def execute(self, context):
+        print(self)
+
+        scn = context.scene.CAPScn
+        objectTab = int(str(scn.object_switch))
+
+        if objectTab == 1:
+            scn.object_list.clear()
+            for obj in context.scene.objects:
+                if obj.CAPObj.enable_export is True:
+                    entry = scn.object_list.add()
+                    entry.name = obj.name
+                    entry.prev_name = obj.name
+                    entry.enable_export = obj.CAPObj.enable_export
+
+
+        if objectTab == 2:
+            scn.object_list.clear()
+            for group in GetSceneGroups(context.scene):
+                if group.CAPGrp.enable_export is True:
+                    entry = scn.group_list.add()
+                    entry.name = group.name
+                    entry.prev_name = group.name
+                    entry.enable_export = group.CAPGrp.enable_export
 
 
         return {'FINISHED'}
