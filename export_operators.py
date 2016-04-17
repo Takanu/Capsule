@@ -135,8 +135,8 @@ class CAP_Export_Assets(Operator):
 
         enumIndex -= 1
 
-        defaultFilePath = self.exportInfo.location_defaults[enumIndex].path
-        print("Obtained location default: ", self.exportInfo.location_defaults[enumIndex].path)
+        defaultFilePath = self.exportInfo.location_presets[enumIndex].path
+        print("Obtained location default: ", self.exportInfo.location_presets[enumIndex].path)
 
         if defaultFilePath == "":
             return {'2'}
@@ -489,20 +489,20 @@ class CAP_Export_Assets(Operator):
 
         # Check Paths to ensure the chatacters contained are valid.
         i = 0
-        while i < len(exp.location_defaults):
+        while i < len(exp.location_presets):
             enumIndex = i
             filePath = ""
             enumIndex -= 1
 
-            defaultFilePath = exp.location_defaults[enumIndex].path
+            defaultFilePath = exp.location_presets[enumIndex].path
             print("Checking File Paths...", defaultFilePath)
 
             if defaultFilePath == "":
-                statement = "The path for " + exp.location_defaults[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
+                statement = "The path for " + exp.location_presets[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
                 return statement
 
             if defaultFilePath.find('//') != -1:
-                statement =  "The path " + exp.location_defaults[enumIndex].name + "is using a relative file path name, please turn off the Relative Path option when choosing a file path in the file browser."
+                statement =  "The path " + exp.location_presets[enumIndex].name + "is using a relative file path name, please turn off the Relative Path option when choosing a file path in the file browser."
                 return statement
 
             i += 1
@@ -680,7 +680,7 @@ class CAP_Export_Assets(Operator):
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
                     objectUseTags = objPass.object_use_tags
-                    self.exportAnim = False
+                    self.exportAnim = objPass.export_animation
                     self.meshSmooth = self.GetNormals(rootObject.CAPObj.normals)
 
                     activeTags = []
@@ -950,7 +950,7 @@ class CAP_Export_Assets(Operator):
                     self.applyModifiers = objPass.apply_modifiers
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
-                    self.exportAnim = False
+                    self.exportAnim = objPass.export_animation
                     self.meshSmooth = self.GetNormals(group.CAPGrp.normals)
 
                     hasTriangulation = False

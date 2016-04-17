@@ -21,8 +21,8 @@ class CAP_Add_Path(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        newPath = exp.location_defaults.add()
-        newPath.name = "Location " + str(len(exp.location_defaults))
+        newPath = exp.location_presets.add()
+        newPath.name = "Location " + str(len(exp.location_presets))
         newPath.path = ""
 
         # Position the index to the current location of the
@@ -50,7 +50,7 @@ class CAP_Delete_Path(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        exp.location_defaults.remove(exp.location_defaults_index)
+        exp.location_presets.remove(exp.location_presets_index)
 
         return {'FINISHED'}
 
@@ -389,7 +389,7 @@ class CAP_Clear_List(Operator):
         print(self)
 
         scn = context.scene.CAPScn
-        objectTab = int(str(scn.object_switch))
+        objectTab = int(str(scn.list_switch))
 
         if objectTab == 1:
             for object in context.scene.objects:
@@ -416,7 +416,7 @@ class CAP_Reset_List(Operator):
         print(self)
 
         scn = context.scene.CAPScn
-        objectTab = int(str(scn.object_switch))
+        objectTab = int(str(scn.list_switch))
 
         if objectTab == 1:
             scn.object_list.clear()
@@ -787,8 +787,8 @@ def CreatePresetBasicExport(exp):
 
     passOne = export.passes.add()
     passOne.name = "Combined Pass"
-    passOne.export_animation_prev = True
-    passOne.export_animation = True
+    passOne.export_animation_prev = False
+    passOne.export_animation = False
     passOne.apply_modifiers = True
     passOne.triangulate = True
 
@@ -803,6 +803,10 @@ def CreatePresetUE4Standard(exp):
     export.axis_up = "Y"
     export.global_scale = 1.0
     export.x_global_user_deletable = False
+    export.tangent_space = True
+    export.bake_anim_use_all_bones = True
+    export.bake_anim_use_all_actions = True
+    export.optimise_keyframes = True
 
     tagHP = export.tags.add()
     tagHP.name = "High-Poly"
@@ -853,8 +857,8 @@ def CreatePresetUE4Standard(exp):
 
     passOne = export.passes.add()
     passOne.name = "Combined Pass"
-    passOne.export_animation_prev = True
-    passOne.export_animation = True
+    passOne.export_animation_prev = False
+    passOne.export_animation = False
     passOne.apply_modifiers = True
     passOne.triangulate = True
 
@@ -867,8 +871,8 @@ def CreatePresetUE4Standard(exp):
 
     passTwo = export.passes.add()
     passTwo.name = "Game-Ready Pass"
-    passTwo.export_animation_prev = True
-    passTwo.export_animation = True
+    passTwo.export_animation_prev = False
+    passTwo.export_animation = False
     passTwo.apply_modifiers = True
     passTwo.triangulate = True
 
@@ -931,8 +935,8 @@ def CreatePresetUnity5Standard(exp):
 
     passOne = export.passes.add()
     passOne.name = "Combined Pass"
-    passOne.export_animation_prev = True
-    passOne.export_animation = True
+    passOne.export_animation_prev = False
+    passOne.export_animation = False
     passOne.apply_modifiers = True
     passOne.triangulate = True
 

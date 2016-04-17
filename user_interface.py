@@ -217,15 +217,15 @@ class CAP_Selection(Panel):
                 obj_settings.prop(obj, "use_scene_origin")
                 obj_settings.separator()
                 obj_settings.separator()
-                obj_settings.label(text="Location")
+                obj_settings.label(text="Location:")
                 obj_settings.separator()
                 obj_settings.prop(obj, "location_default", icon="FILESEL", text="")
                 obj_settings.separator()
-                obj_settings.label(text="Export Settings:")
+                obj_settings.label(text="Export Preset:")
                 obj_settings.separator()
                 obj_settings.prop(obj, "export_default", text="")
                 obj_settings.separator()
-                obj_settings.label(text="Mesh Normal Export:")
+                obj_settings.label(text="Mesh Normals:")
                 obj_settings.separator()
                 obj_settings.prop(obj, "normals", text="")
                 obj_settings.separator()
@@ -233,16 +233,8 @@ class CAP_Selection(Panel):
             # If no object was eventually found, bring up warning labels.
             else:
                 object_info = layout.column(align=True)
-                if addon_prefs.object_multi_edit is False:
-                    if len(scn.object_list) < (scn.object_list_index + 1) and len(scn.object_list) != 0:
-                        object_info.label(text="Please select an object from the ")
-                        object_info.label(text="list to view it's settings.")
-                    else:
-                        object_info.label(text="No objects in the list, select ")
-                        object_info.label(text="one from the scene to edit export settings.")
-                else:
-                    object_info.label(text="No objects selected.  Please select an ")
-                    object_info.label(text="object to edit it, or change selection mode.")
+                object_info.separator()
+                object_info.label(text="No objects selected.")
 
             layout.separator()
 
@@ -267,7 +259,6 @@ class CAP_Selection(Panel):
                             gr = group
 
                 if gr is not None:
-                    col_selection_item_box = col_selection_box.box()
                     col_selection_item_box = layout.box()
                     group_label = col_selection_item_box.column(align=True)
                     group_label.alignment = 'EXPAND'
@@ -307,7 +298,7 @@ class CAP_Selection(Panel):
 
                 if groupLabel != "":
                     col_selection_item_box = layout.box()
-                    group_label = layout.column(align=True)
+                    group_label = col_selection_item_box.column(align=True)
                     group_label.alignment = 'EXPAND'
                     group_label.label(text=groupLabel, icon="MOD_ARRAY")
 
@@ -333,7 +324,7 @@ class CAP_Selection(Panel):
                 rawr_other.separator()
                 rawr_other.prop(grp, "location_default", icon="FILESEL", text="")
                 rawr_other.separator()
-                rawr_other.label(text="Export Settings:")
+                rawr_other.label(text="Export Preset:")
                 rawr_other.separator()
                 rawr_other.prop(grp, "export_default", text="")
                 rawr_other.separator()
@@ -344,12 +335,8 @@ class CAP_Selection(Panel):
             # If no group was eventually found, bring up warning labels.
             else:
                 group_info = layout.column(align=True)
-                if addon_prefs.group_multi_edit is False:
-                    group_info.label(text="No groups found, press refresh to find ")
-                    group_info.label(text="new groups, or change selection mode.")
-                else:
-                    group_info.label(text="No groups selected.  Please select a group ")
-                    group_info.label(text="to edit it, or change selection mode.")
+                group_info.separator()
+                group_info.label(text="No groups selected.")
 
             layout.separator()
 
@@ -391,10 +378,10 @@ class CAP_List(Panel):
         scn = context.scene.CAPScn
 
         layout = self.layout
-        listTab = int(str(scn.object_switch))
+        listTab = int(str(scn.list_switch))
 
-        object_switch = layout.row(align=True)
-        object_switch.prop(scn, "object_switch", expand=True)
+        list_switch = layout.row(align=True)
+        list_switch.prop(scn, "list_switch", expand=True)
 
         col_location = layout.column(align=True)
 
@@ -429,7 +416,7 @@ class CAP_Location(Panel):
         ob = context.object
 
         col_location = layout.row(align=True)
-        col_location.template_list("Path_Default_UIList", "default", exp, "location_defaults", exp, "location_defaults_index", rows=3, maxrows=6)
+        col_location.template_list("Path_Default_UIList", "default", exp, "location_presets", exp, "location_presets_index", rows=3, maxrows=6)
 
         col_location.separator()
 
@@ -443,10 +430,10 @@ class CAP_Location(Panel):
         file.alignment = 'EXPAND'
 
         count = 0
-        for i, item in enumerate(exp.location_defaults, 1):
+        for i, item in enumerate(exp.location_presets, 1):
             count += 1
 
-        if exp.location_defaults_index > -1 and exp.location_defaults_index < count:
-            file.label("Location")
+        if exp.location_presets_index > -1 and exp.location_presets_index < count:
+            file.label("File Path:")
             file.separator()
-            file.prop(exp.location_defaults[exp.location_defaults_index], "path", text="")
+            file.prop(exp.location_presets[exp.location_presets_index], "path", text="")

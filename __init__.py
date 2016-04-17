@@ -4,7 +4,7 @@ bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
     "version": (1,0),
-    "blender": (2, 7, 5),
+    "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > GEX",
     "wiki_url": "http://blenderartists.org/forum/showthread.php?373523-GEX-0-85-(15-11-2015)-One-Click-Batch-FBX-Exports",
     "description": "Provides tools for batch exporting objects from Blender using FBX.",
@@ -14,10 +14,22 @@ bl_info = {
 
 # Start importing all the addon files
 # The init file just gets things started, no code needs to be placed here.
+import bpy
+from . import definitions
+from . import properties
+from . import user_interface
+from . import export_operators
+from . import ui_operators
+from . import update
+from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
+from bpy.types import AddonPreferences, PropertyGroup
+from bpy.app.handlers import persistent
+
+print("Checking modules...")
 
 if "bpy" in locals():
     import imp
-    print("Reloading Plugin"*20)
+    print("------------------Reloading Plugin------------------")
     if "definitions" in locals():
         imp.reload(definitions)
     if "properties" in locals():
@@ -31,30 +43,24 @@ if "bpy" in locals():
     if "update" in locals():
         imp.reload(update)
 
-import bpy
-from . import definitions
-from . import properties
-from . import user_interface
-from . import export_operators
-from . import ui_operators
-from . import update
-from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
-from bpy.types import AddonPreferences, PropertyGroup
-from bpy.app.handlers import persistent
+print("Importing modules...")
+
 
 def Update_TagName(self, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
-    exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-    currentTag = exp.tags[exp.tags_index]
 
-    tag_name = currentTag.name
+    if addon_prefs.plugin_is_ready is True:
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        currentTag = exp.tags[exp.tags_index]
 
-    # Get tags in all current passes, and edit them
-    for expPass in export.passes:
-        passTag = expPass.tags[export.tags_index]
-        passTag.name = tag_name
+        tag_name = currentTag.name
+
+        # Get tags in all current passes, and edit them
+        for expPass in export.passes:
+            passTag = expPass.tags[export.tags_index]
+            passTag.name = tag_name
 
     return None
 
@@ -116,12 +122,12 @@ class CAP_ExportTag(PropertyGroup):
 
     name_filter = StringProperty(
         name="Tag",
-        description="The string you wish to use as a tag when sorting through object names."
+        description="The text you wish to use as a filter, when sorting through object names."
         )
 
     name_filter_type = EnumProperty(
         name="Tag Type",
-        description="Where the tag is being placed in the object name.",
+        description="Where the name filter is being looked for.",
         items=(
         ('1', 'Suffix', ''),
         ('2', 'Prefix', ''),),
@@ -159,12 +165,12 @@ class CAP_ExportPassTag(PropertyGroup):
 
     name = StringProperty(
         name="Tag Name",
-        description="The name of the tag...",
+        description="The name of the tag.",
         default=""
         )
     prev_name = StringProperty(
         name="Previous Tag Name",
-        description="A backup tag name designed to prevent editing of tag names when viewing them",
+        description="A backup tag name designed to prevent editing of tag names when viewing them. (Internal Only)",
         default=""
         )
     index = IntProperty(
@@ -186,11 +192,11 @@ class CAP_ExportPass(PropertyGroup):
         )
     file_suffix = StringProperty(
         name="File Suffix",
-        description="The suffix added on the exported file created from this pass."
+        description="An optional string that if used, will be appended to all the names of files produced through this pass."
         )
     sub_directory = StringProperty(
         name="Sub-Directory",
-        description="Export the pass to a new folder inside the chosen location default."
+        description="If enabled, a folder will be created inside the currently defined file path (and any other defined folders for the File Preset), where all exports from this pass will be placed into."
         )
 
     tags = CollectionProperty(type=CAP_ExportPassTag)
@@ -198,13 +204,13 @@ class CAP_ExportPass(PropertyGroup):
 
     export_individual = BoolProperty(
         name="Export Individual",
-        description="Exports every object in the pass into individual files, rather than a single file, as well as ensuring their .",
+        description="If enabled, the pass will export every individual object available in the pass into individual files, rather than a single file.",
         default=False
         )
 
     export_animation = BoolProperty(
         name="Export Animation",
-        description="Enables animations for this pass to be exported.",
+        description="(EXPERIMENTAL) If ticked, animations found in objects or groups in this pass, will be exported.",
         default=False,
         update=Update_AnimationWarning
         )
@@ -212,50 +218,50 @@ class CAP_ExportPass(PropertyGroup):
 
     apply_modifiers = BoolProperty(
         name="Apply Modifiers",
-        description="Applies all modifiers on every object in the pass",
+        description="If enabled, all modifiers on every object in the pass will be applied before export.",
         default=False
         )
 
     triangulate = BoolProperty(
         name="Triangulate Export",
-        description="Triangulate objects in the pass on export using optimal triangulation settings.",
+        description="If enabled, all objects in the pass will be triangulated automatically using optimal triangulation settings, unless a Triangulation modifier is already present.",
         default=False
         )
 
     object_use_tags = BoolProperty(
         name="(Object Only) Use All Tags",
-        description="If enabling individual export, this option allows the inclusion of all tagged objects associated with a single object.",
+        description="If Export Invidiual is also enabled, this option allows the inclusion of all tagged objects associated with a single object.",
         default=False
         )
 
 class CAP_ExportPreset(PropertyGroup):
     name = StringProperty(
-        name = "Default Name",
-        description="The name of the export preset, whoda thunk :OO",
+        name = "Preset Name",
+        description="The name of the export preset.",
         default=""
         )
 
     description = StringProperty(
         name = "Description",
-        description="(Internal Use Only)",
+        description="(Internal Use Only) TBA",
         default=""
         )
 
     use_blend_directory = BoolProperty(
-        name="Add Blend Folder",
-        description="Exports all objects from a .blend file, into a folder named after that .blend file.  Useful if you're exporting objects from multiple .blend files into one export folder, for additional, automated organisation.",
+        name="Add Blend File Directory",
+        description="If enabled, a folder will be created inside the currently defined file path, where all exports from this blend file will be placed into.  Useful for exporting multiple .blend file contents to the same destination.",
         default=False
         )
 
     use_sub_directory = BoolProperty(
-        name="Add Object Directories",
-        description="If ticked, every individual or group export will be placed in it's own folder inside the target location.  Any pass sub-directories will be contained inside these folders.",
+        name="Add Object Directory",
+        description="If enabled, a folder will be created inside the currently defined file path (and inside the Blend Folder if enabled), for every object or group created, where it's export results will be placed into.  Useful for complex object or group exports, with multiple passes.",
         default=False
         )
 
     bundle_textures = BoolProperty(
         name="Bundle Textures",
-        description="Allows any textures that are packed in the .blend file and applied to an object or group you're exporting, to be bundled with it inside the FBX file.",
+        description="If enabled, allows any textures that are packed in the .blend file and applied to an object or group that's tagged for export, to be bundled with it inside the FBX file.",
         default=False
         )
 
@@ -265,18 +271,17 @@ class CAP_ExportPreset(PropertyGroup):
         )
 
     export_types = EnumProperty(
-            name="Object Types",
-            options={'ENUM_FLAG'},
-            items=(('MESH', "Mesh", ""),
-                   ('ARMATURE', "Armature", ""),
-                   ('CAMERA', "Camera", ""),
-                   ('LAMP', "Lamp", ""),
-                   ('EMPTY', "Empty", ""),
-                   ('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),
-                   ),
-            description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other defined options in Capsule.",
-            default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'OTHER'},
-            )
+        name="Object Types",
+        options={'ENUM_FLAG'},
+        items=(('MESH', "Mesh", ""),
+            ('ARMATURE', "Armature", ""),
+            ('CAMERA', "Camera", ""),
+            ('LAMP', "Lamp", ""),
+            ('EMPTY', "Empty", ""),
+            ('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),),
+        description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule.",
+        default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'OTHER'},
+        )
 
 
     passes = CollectionProperty(type=CAP_ExportPass)
@@ -347,13 +352,13 @@ class CAP_ExportPreset(PropertyGroup):
 
     add_leaf_bones = BoolProperty(
         name="Add Leaf Bones",
-        description="Append a bone to the end of each chain...",
+        description="Appends an extra bone to the end of each chain.",
         default=False
         )
 
     primary_bone_axis = EnumProperty(
         name="Primary Bone Axis",
-        description="What the Forward Axis will be defined as when the model is exported.",
+        description="TBW",
         items=(
             ('X', 'X', ''),
             ('Y', 'Y', ''),
@@ -366,7 +371,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     secondary_bone_axis = EnumProperty(
         name="Secondary Bone Axis",
-        description="What the Forward Axis will be defined as when the model is exported.",
+        description="TBW",
         items=(
             ('X', 'X', ''),
             ('Y', 'Y', ''),
@@ -379,7 +384,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     armature_nodetype = EnumProperty(
         name="FBX Armature NodeType",
-        description="What the Forward Axis will be defined as when the model is exported.",
+        description="Defines the type of FBX object Armatures will be exported as.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender.",
         items=(
             ('Null', 'Null', ''),
             ('Root', 'Root', ''),
@@ -388,31 +393,31 @@ class CAP_ExportPreset(PropertyGroup):
 
 
     bake_anim_use_all_bones = BoolProperty(
-        name="Use All Bones",
-        description="Makes any separate edges a two-verted polygon.",
+        name="Key All Bones",
+        description="Forces the export of one key animation for all bones (required for target apps like UE4).",
         default=False)
 
     bake_anim_use_nla_strips = BoolProperty(
         name="Use NLA Strips",
-        description="Makes any separate edges a two-verted polygon.",
+        description="If enabled, NLA strips will be exported as animation data.",
         default=False
         )
 
     bake_anim_use_all_actions = BoolProperty(
         name="Use All Actions",
-        description="Makes any separate edges a two-verted polygon.",
+        description="If enabled, all animation actions in the group or object will be exported.",
         default=False
         )
 
     bake_anim_force_startend_keying = BoolProperty(
         name="Start/End Keying",
-        description="Makes any separate edges a two-verted polygon.",
+        description="TBW",
         default=False
         )
 
     use_default_take = BoolProperty(
         name="Use Default Take",
-        description="Rawr?",
+        description="TBW.",
         default=False
         )
 
@@ -424,7 +429,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     bake_anim_step = FloatProperty(
         name="Sampling Rate",
-        description="Blah",
+        description="TBW",
         default=1,
         min=0,
         max=100,
@@ -434,7 +439,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     bake_anim_simplify_factor = FloatProperty(
         name="Simplify Factor",
-        description="Blah",
+        description="TBW",
         default=1,
         min=0,
         max=100,
@@ -462,8 +467,8 @@ class CAP_ExportPresets(PropertyGroup):
     file_presets_index = IntProperty(default=0)
     is_storage_object = BoolProperty(default=False)
 
-    location_defaults = CollectionProperty(type=CAP_LocationDefault)
-    location_defaults_index = IntProperty(default=0)
+    location_presets = CollectionProperty(type=CAP_LocationDefault)
+    location_presets_index = IntProperty(default=0)
 
 class CAP_AddonPreferences(AddonPreferences):
     bl_idname = __name__
@@ -543,10 +548,10 @@ class CAP_AddonPreferences(AddonPreferences):
         addon_prefs = user_preferences.addons[__name__].preferences
         exp = None
 
-
         for item in bpy.data.objects:
             if item.name == addon_prefs.default_datablock:
                 exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+                plugin_is_ready = True
 
         if exp is None:
             layout = self.layout
@@ -980,9 +985,7 @@ def CheckSelectedObject(scene):
         addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
 
 
-
 def register():
-
     print("Registering Stuff")
     bpy.utils.register_module(__name__)
 
