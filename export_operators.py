@@ -170,6 +170,9 @@ class CAP_Export_Assets(Operator):
             if useBlendDirectory is True:
                 print(bpy.path.basename(bpy.context.blend_data.filepath))
                 blendName = bpy.path.basename(bpy.context.blend_data.filepath)
+                if self.replaceInvalidChars is True:
+                    blendName = self.ReplaceSystemChar(context, blendName)
+
                 #pathSplit = bpy.data.filepath.rsplit(slash)
                 #blendFile = pathSplit.pop()
                 #blendSplit = blendFile.rsplit(".blend")
@@ -178,9 +181,13 @@ class CAP_Export_Assets(Operator):
                 newPath = path + blendName + slash
 
             if useObjectDirectory is True:
+                if self.replaceInvalidChars is True:
+                    objectName = self.ReplaceSystemChar(context, objectName)
                 newPath = newPath + objectName + slash
 
             if subDirectory.replace(" ", "") != "":
+                if self.replaceInvalidChars is True:
+                    subDirectory = self.ReplaceSystemChar(context, subDirectory)
                 newPath = newPath + subDirectory + slash
 
             if newPath == "":
@@ -365,27 +372,51 @@ class CAP_Export_Assets(Operator):
 
         print("Rawr")
 
-    def CheckDirectoryName(self, context, name):
+    def ReplaceSystemChar(self, context, name):
+        print("Checking Directory...", name)
+        returnName = name
         if platform.system() == 'Windows':
-            invalidCharacters = []
-            if name.find('/') != -1:
-                invalidCharacters.append("/")
-            #if defaultFilePath.find(':') != -1:
-                #invalidCharacters.append(":")
-            if name.find('*') != -1:
-                invalidCharacters.append("*")
-            if name.find('?') != -1:
-                invalidCharacters.append("?")
-            if name.find('"') != -1:
-                invalidCharacters.append('"""')
-            if name.find('<') != -1:
-                invalidCharacters.append("<")
-            if name.find('>') != -1:
-                invalidCharacters.append(">")
-            if name.find('|') != -1:
-                invalidCharacters.append("|")
+            invalidCharacters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
+            for char in invalidCharacters:
+                returnName = returnName.replace(char, "_")
 
-        return invalidCharacters
+        elif platform.system() == 'Darwin':
+            invalidCharacters = [":", "/"]
+            for char in invalidCharacters:
+                returnName = returnName.replace(char, "_")
+
+        elif platform.system() == 'linux' or platform.system() == 'linux2':
+            invalidCharacters = [":", "/"]
+            for char in invalidCharacters:
+                returnName = returnName.replace(char, "_")
+
+        return returnName
+
+    def CheckSystemChar(self, context, name):
+        print("Checking Directory...", name)
+        if platform.system() == 'Windows':
+            invalidCharacters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
+            invalidCaptured = []
+            for char in invalidCharacters:
+                if name.find(char) != -1:
+                    invalidCaptured.append(char)
+
+        elif platform.system() == 'Darwin':
+            invalidCharacters = [":", "/"]
+            invalidCaptured = []
+            for char in invalidCharacters:
+                if name.find(char) != -1:
+                    invalidCaptured.append(char)
+
+        elif platform.system() == 'linux' or platform.system() == 'linux2':
+            invalidCharacters = [":", "/"]
+            invalidCaptured = []
+            for char in invalidCharacters:
+                if name.find(char) != -1:
+                    invalidCaptured.append(char)
+
+        print("Invalid characters found...", invalidCaptured)
+        return invalidCaptured
 
     def CheckForErrors(self, context):
 
@@ -395,16 +426,18 @@ class CAP_Export_Assets(Operator):
 
         # Check all active file presets for valid directory names
         # These lists will be analysed later
-        blendDirectories = []
-        passDirectories = []
-        objectDirectories = []
-        for export in exp.export_defaults:
+        nameCheck = []
+        for export in exp.file_presets:
             if export.use_blend_directory is True:
                 blendName = bpy.path.basename(bpy.context.blend_data.filepath)
-                blendDirectories.append(blendName)
+                nameCheck.append([" Blend Name", blendName, " Preset", export.name])
             for ePass in export.passes:
                 if ePass.sub_directory != "":
-                    passDirectories.append(ePass.sub_directory)
+                    nameCheck.append([" Pass Folder", ePass.sub_directory, " Preset", export.name])
+                if ePass.file_suffix != "":
+                    nameCheck.append([" File Suffix", ePass.file_suffix, " Preset", export.name])
+
+        print("names found...", nameCheck)
 
         # Checks for any easily-preventable errors
         for object in context.scene.objects:
@@ -417,12 +450,11 @@ class CAP_Export_Assets(Operator):
                     FocusObject(object)
                     return statement
 
-                # If the export the object is using involves an Object Directory
-                # add it to the list.
-                export = exp.export_defaults[expKey]
+                # Check Export Sub-Directory
+                export = exp.file_presets[expKey]
                 if export.use_sub_directory is True:
                     objName = object.name
-                    objectDirectories.append(objName)
+                    nameCheck.append([" Object Name", objName, " Preset", export.name])
 
                 # Check Location Default
                 if int(object.CAPObj.location_default) == 0:
@@ -441,6 +473,12 @@ class CAP_Export_Assets(Operator):
                 if expKey == -1:
                     statement = "The group " + group.name + " has no export default selected.  Please define!"
                     return statement
+
+                # Check Export Sub-Directory
+                export = exp.file_presets[expKey]
+                if export.use_sub_directory is True:
+                    name = group.name
+                    nameCheck.append([" Group Name", name, " Preset", export.name])
 
                 # Check Location Default
                 if int(group.CAPGrp.location_default) == 0:
@@ -469,51 +507,27 @@ class CAP_Export_Assets(Operator):
 
             i += 1
 
-        # Check any directory options
-        for name in blendDirectories:
-            result = self.CheckDirectoryName(context, name)
-            if len(result) != 0:
-                plural = " is using the invalid file character "
+        # Check all collected names for invalid characters
+        if self.replaceInvalidChars is False:
+            for name in nameCheck:
+                print("Checking Directory...", name)
+                result = self.CheckSystemChar(context, name[1])
                 returnStatement = ""
-                if len(result) > 1:
-                    plural = " is using the invalid file characters "
 
-                while len(result) != 0:
-                    text = result.pop()
-                    returnStatement += text + " "
+                if len(result) != 0:
+                    characterlead = ", is using the invalid file character "
+                    end = ".  Please remove the invalid character from the path name."
 
-                statement =  "The blend file " + name + plural + returnStatement + " Please remove the invalid character from the path name."
-                return statement
+                    if len(result) > 1:
+                        characterlead = ", is using the invalid file characters "
+                        end = ".  Please remove the invalid characters from the path name."
 
-        for name in passDirectories:
-            result = self.CheckDirectoryName(context, name)
-            if len(result) != 0:
-                plural = " is using the invalid file character "
-                returnStatement = ""
-                if len(result) > 1:
-                    plural = " is using the invalid file characters "
+                    while len(result) != 0:
+                        text = result.pop()
+                        returnStatement += text + " "
 
-                while len(result) != 0:
-                    text = result.pop()
-                    returnStatement += text + " "
-
-                statement =  "The pass sub-directory " + name + plural + returnStatement + " Please remove the invalid character from the directory name."
-                return statement
-
-        for name in objectDirectories:
-            result = self.CheckDirectoryName(context, name)
-            if len(result) != 0:
-                plural = " , marked for a sub-directory, is using the invalid file characters "
-                returnStatement = ""
-                if len(result) > 1:
-                    plural = " , marked for a sub-directory, is using the invalid file characters "
-
-                while len(result) != 0:
-                    text = result.pop()
-                    returnStatement += text + " "
-
-                statement =  "The object " + name + plural + returnStatement + " Please remove the invalid character from the directory name."
-                return statement
+                    statement = "The" + name[0] + " " + name[1] + ", belonging to the export, " + name[3] + characterlead + returnStatement + end
+                    return statement
 
         return None
 
@@ -566,8 +580,6 @@ class CAP_Export_Assets(Operator):
 
         print(">>>> CHECKED ANIMATION <<<<")
 
-
-
     ###############################################################
     # EXECUTE
     ###############################################################
@@ -576,6 +588,7 @@ class CAP_Export_Assets(Operator):
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
         self.exportInfo = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        self.replaceInvalidChars = addon_prefs.substitute_directories
 
         self.exportCount = 0
         self.exportedObjects = 0
@@ -618,7 +631,7 @@ class CAP_Export_Assets(Operator):
                     return {'FINISHED'}
 
 
-                exportDefault = self.exportInfo.export_defaults[expKey]
+                exportDefault = self.exportInfo.file_presets[expKey]
                 useBlendDirectory = exportDefault.use_blend_directory
                 useObjectDirectory = exportDefault.use_sub_directory
                 self.GetExportInfo(exportDefault)
@@ -885,7 +898,7 @@ class CAP_Export_Assets(Operator):
                 # Collect hidden defaults to restore afterwards.
                 objectName = group.name
 
-                exportDefault = self.exportInfo.export_defaults[expKey]
+                exportDefault = self.exportInfo.file_presets[expKey]
                 useBlendDirectory = exportDefault.use_blend_directory
                 useObjectDirectory = exportDefault.use_sub_directory
                 self.GetExportInfo(exportDefault)

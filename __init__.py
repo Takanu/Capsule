@@ -66,7 +66,7 @@ def GetGlobalPresets(scene, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
-    exp = addon_prefs.global_presets
+    exp = addon_prefs.saved_presets
 
     u = 1
 
@@ -85,6 +85,25 @@ def UpdateGroupSelectMode(self, context):
     if self.group_multi_edit is True:
         context.scene.CAPScn.group_list_index = -1
 
+def DrawAnimationWarning(self, context):
+        layout = self.layout
+        layout.label("Hey!  The animation feature is currently experimental, and may result in")
+        layout.label("objects being repositioned after exporting, and in the FBX file.")
+        layout.separator()
+        layout.label("The animation features should work fine if you're exporting the following:")
+        layout.label(" - Armature Animations")
+        layout.label(" - Any other animations, so long as you do not request the plugin to centre")
+        layout.label("the object being animated.")
+        layout.separator()
+        layout.label("If any objects have been repositioned after export, simply use the undo tool.")
+        layout.label("Bear in mind though, that they probably didn't export correctly.")
+        layout.separator()
+        layout.label("Hopefully i'll have this fully functional in the next version :)")
+
+def Update_AnimationWarning(self, context):
+    if self.export_animation_prev is False and self.export_animation is True:
+        bpy.context.window_manager.popup_menu(DrawAnimationWarning, title="Animation Warning", icon='INFO')
+    self.export_animation_prev = self.export_animation
 
 class CAP_ExportTag(PropertyGroup):
     # The main Export Tag collection property, used for storing the actual tags used in an Export Preset
@@ -186,8 +205,10 @@ class CAP_ExportPass(PropertyGroup):
     export_animation = BoolProperty(
         name="Export Animation",
         description="Enables animations for this pass to be exported.",
-        default=False
+        default=False,
+        update=Update_AnimationWarning
         )
+    export_animation_prev = BoolProperty(default=False)
 
     apply_modifiers = BoolProperty(
         name="Apply Modifiers",
@@ -221,7 +242,7 @@ class CAP_ExportPreset(PropertyGroup):
         )
 
     use_blend_directory = BoolProperty(
-        name="Add Blend Directory",
+        name="Add Blend Folder",
         description="Exports all objects from a .blend file, into a folder named after that .blend file.  Useful if you're exporting objects from multiple .blend files into one export folder, for additional, automated organisation.",
         default=False
         )
@@ -437,8 +458,8 @@ class CAP_LocationDefault(PropertyGroup):
         )
 
 class CAP_ExportPresets(PropertyGroup):
-    export_defaults = CollectionProperty(type=CAP_ExportPreset)
-    export_defaults_index = IntProperty(default=0)
+    file_presets = CollectionProperty(type=CAP_ExportPreset)
+    file_presets_index = IntProperty(default=0)
     is_storage_object = BoolProperty(default=False)
 
     location_defaults = CollectionProperty(type=CAP_LocationDefault)
@@ -455,19 +476,14 @@ class CAP_AddonPreferences(AddonPreferences):
     )
 
     # Storage for the Global Presets, and it's enum UI list.
-    global_presets = CollectionProperty(type=CAP_ExportPreset)
-    global_presets_index = IntProperty()
+    saved_presets = CollectionProperty(type=CAP_ExportPreset)
+    saved_presets_index = IntProperty()
 
     saved_presets_dropdown = BoolProperty(default=False)
     presets_dropdown = BoolProperty(default = False)
     tags_dropdown = BoolProperty(default = False)
     passes_dropdown = BoolProperty(default = False)
     options_dropdown = BoolProperty(default = False)
-
-    #global_presets_dropdown = EnumProperty(
-        #name = "Export Options",
-        #description = "",
-        #items=GetGlobalPresets)
 
     export_preset_options = EnumProperty(
         name="Export Options",
@@ -476,8 +492,8 @@ class CAP_AddonPreferences(AddonPreferences):
         ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
         ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
-        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.')
-        #('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
+        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
+        ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
         ),)
 
     object_multi_edit = BoolProperty(
@@ -510,9 +526,10 @@ class CAP_AddonPreferences(AddonPreferences):
         )
 
     substitute_directories = BoolProperty(
-        name="Substitute Invalid Directory Characters",
-        description="If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  If unticked, the plugin will prompt you with an error if your directories contain invalid characters."
-    )
+        name="Substitute Invalid Folder Characters",
+        description="If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  If unticked, the plugin will prompt you with an error if your directories contain invalid characters.",
+        default=True
+        )
 
     data_missing = BoolProperty(default=False)
     plugin_is_ready = BoolProperty(default=False)
@@ -578,7 +595,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 col_savedpresets = savedpresets_box.row(align=True)
                 col_savedpresets_list = col_savedpresets.column(align=True)
-                col_savedpresets_list.template_list("Saved_Default_UIList", "default", addon_prefs, "global_presets", addon_prefs, "global_presets_index", rows=3, maxrows=6)
+                col_savedpresets_list.template_list("Saved_Default_UIList", "default", addon_prefs, "saved_presets", addon_prefs, "saved_presets_index", rows=3, maxrows=6)
                 col_savedpresets_list.operator("cap.create_current_preset", text="Add to File Presets", icon="FORWARD")
 
                 col_savedpresets_options = col_savedpresets.column(align=True)
@@ -590,7 +607,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             row_defaults = filepresets_box.row(align=True)
             col_defaultslist = row_defaults.column(align=True)
-            col_defaultslist.template_list("Export_Default_UIList", "default", exp, "export_defaults", exp, "export_defaults_index", rows=3, maxrows=6)
+            col_defaultslist.template_list("Export_Default_UIList", "default", exp, "file_presets", exp, "file_presets_index", rows=3, maxrows=6)
             col_defaultslist.operator("cap.add_global_preset", text="Add to Saved Presets", icon="FORWARD")
 
             col_defaultslist_options = row_defaults.column(align=True)
@@ -598,9 +615,9 @@ class CAP_AddonPreferences(AddonPreferences):
             col_defaultslist_options.operator("scene.cap_deleteexport", text="", icon="ZOOMOUT")
 
 
-            if len(exp.export_defaults) > 0 and (exp.export_defaults_index) < len(exp.export_defaults):
+            if len(exp.file_presets) > 0 and (exp.file_presets_index) < len(exp.file_presets):
 
-                currentExp = exp.export_defaults[exp.export_defaults_index]
+                currentExp = exp.file_presets[exp.file_presets_index]
 
                 export_settings = filepresets_box.column(align=True)
                 export_settings.separator()
@@ -706,29 +723,29 @@ class CAP_AddonPreferences(AddonPreferences):
 
                     export_main.separator()
 
-                #elif addon_prefs.export_preset_options == 'Animation':
-                    #export_main = export_box.row(align=True)
-                    #export_main.separator()
+                elif addon_prefs.export_preset_options == 'Animation':
+                    export_main = filepresets_box.row(align=True)
+                    export_main.separator()
 
-                    #export_1 = export_main.column(align=True)
-                    #export_1.prop(currentExp, "bake_anim_use_all_bones")
-                    #export_1.prop(currentExp, "bake_anim_use_nla_strips")
-                    #export_1.prop(currentExp, "bake_anim_use_all_actions")
-                    #export_1.prop(currentExp, "bake_anim_force_startend_keying")
-                    #export_1.prop(currentExp, "optimise_keyframes")
-                    #export_1.prop(currentExp, "use_default_take")
-                    #export_1.separator()
+                    export_1 = export_main.column(align=True)
+                    export_1.prop(currentExp, "bake_anim_use_all_bones")
+                    export_1.prop(currentExp, "bake_anim_use_nla_strips")
+                    export_1.prop(currentExp, "bake_anim_use_all_actions")
+                    export_1.prop(currentExp, "bake_anim_force_startend_keying")
+                    export_1.prop(currentExp, "optimise_keyframes")
+                    export_1.prop(currentExp, "use_default_take")
+                    export_1.separator()
 
-                    #export_main.separator()
-                    #export_main.separator()
-                    #export_main.separator()
+                    export_main.separator()
+                    export_main.separator()
+                    export_main.separator()
 
-                    #export_2 = export_main.column(align=True)
-                    #export_2.prop(currentExp, "bake_anim_step")
-                    #export_2.prop(currentExp, "bake_anim_simplify_factor")
-                    #export_2.separator()
+                    export_2 = export_main.column(align=True)
+                    export_2.prop(currentExp, "bake_anim_step")
+                    export_2.prop(currentExp, "bake_anim_simplify_factor")
+                    export_2.separator()
 
-                    #export_main.separator()
+                    export_main.separator()
 
             else:
                 preset_unselected = filepresets_box.column(align=True)
@@ -750,9 +767,9 @@ class CAP_AddonPreferences(AddonPreferences):
             tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             tag_title.label("Tags")
 
-            if len(exp.export_defaults) > 0 and (exp.export_defaults_index) < len(exp.export_defaults):
+            if len(exp.file_presets) > 0 and (exp.file_presets_index) < len(exp.file_presets):
 
-                currentExp = exp.export_defaults[exp.export_defaults_index]
+                currentExp = exp.file_presets[exp.file_presets_index]
 
                 tagUI_row = tag_box.row(align=True)
                 tagUI_row.template_list("Tag_Default_UIList", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
@@ -800,9 +817,9 @@ class CAP_AddonPreferences(AddonPreferences):
             passUI.label("Passes")
 
 
-            if len(exp.export_defaults) > 0 and (exp.export_defaults_index) < len(exp.export_defaults):
+            if len(exp.file_presets) > 0 and (exp.file_presets_index) < len(exp.file_presets):
 
-                currentExp = exp.export_defaults[exp.export_defaults_index]
+                currentExp = exp.file_presets[exp.file_presets_index]
 
                 row_passes = pass_box.row(align=True)
                 row_passes.template_list("Pass_Default_UIList", "default", currentExp, "passes", currentExp, "passes_index", rows=3, maxrows=6)
@@ -840,7 +857,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     options_ui.label(text="Export Options")
 
                     options_ui.separator()
-                    #options_ui.prop(currentPass, "export_animation")
+                    options_ui.prop(currentPass, "export_animation")
                     options_ui.prop(currentPass, "apply_modifiers")
                     options_ui.prop(currentPass, "triangulate")
                     options_ui.prop(currentPass, "export_individual")

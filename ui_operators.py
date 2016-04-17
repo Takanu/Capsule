@@ -55,9 +55,6 @@ class CAP_Delete_Path(Operator):
         return {'FINISHED'}
 
 
-
-#///////////////// - EXPORT DEFAULTS - ///////////////////////////////////////////
-
 class CAP_Add_Export(Operator):
     """Creates a new Export Preset."""
 
@@ -71,12 +68,12 @@ class CAP_Add_Export(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        newDefault = exp.export_defaults.add()
-        newDefault.name = "Export " + str(len(exp.export_defaults))
+        newDefault = exp.file_presets.add()
+        newDefault.name = "Export " + str(len(exp.file_presets))
         newDefault.path = ""
 
         # Ensure the tag index keeps within a window
-        exp.export_defaults_index = len(exp.export_defaults) - 1
+        exp.file_presets_index = len(exp.file_presets) - 1
 
         return {'FINISHED'}
 
@@ -94,7 +91,7 @@ class CAP_Delete_Export(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        if len(exp.export_defaults) > 0:
+        if len(exp.file_presets) > 0:
             return True
 
         return False
@@ -106,10 +103,10 @@ class CAP_Delete_Export(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        exp.export_defaults.remove(exp.export_defaults_index)
+        exp.file_presets.remove(exp.file_presets_index)
 
-        if exp.export_defaults_index > 0:
-            exp.export_defaults_index -= 1
+        if exp.file_presets_index > 0:
+            exp.file_presets_index -= 1
 
         return {'FINISHED'}
 
@@ -129,7 +126,7 @@ class CAP_Add_Tag(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Add the tag into the main list
-        export = exp.export_defaults[exp.export_defaults_index]
+        export = exp.file_presets[exp.file_presets_index]
         newTag = export.tags.add()
         newTag.name = "Tag " + str(len(export.tags))
 
@@ -156,7 +153,7 @@ class CAP_Delete_Tag(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.export_defaults[exp.export_defaults_index]
+        export = exp.file_presets[exp.file_presets_index]
         if len(export.tags) > 0:
             currentTag = export.tags[export.tags_index]
 
@@ -173,7 +170,7 @@ class CAP_Delete_Tag(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.export_defaults[exp.export_defaults_index]
+        export = exp.file_presets[exp.file_presets_index]
         export.tags.remove(export.tags_index)
 
         for expPass in export.passes:
@@ -199,7 +196,7 @@ class CAP_Add_Pass(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.export_defaults[exp.export_defaults_index]
+        export = exp.file_presets[exp.file_presets_index]
         newPass = export.passes.add()
         newPass.name = "Pass " + str(len(export.passes))
         newPass.path = ""
@@ -227,7 +224,7 @@ class CAP_Delete_Pass(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.export_defaults[exp.export_defaults_index]
+        export = exp.file_presets[exp.file_presets_index]
         if len(export.passes) > 0:
             return True
 
@@ -240,7 +237,7 @@ class CAP_Delete_Pass(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.export_defaults[exp.export_defaults_index]
+        export = exp.file_presets[exp.file_presets_index]
         export.passes.remove(export.passes_index)
 
         if export.passes_index > 0:
@@ -677,9 +674,6 @@ class CAP_Create_ExportData(Operator):
         self.report({'INFO'}, "Capsule data created.")
         return {'FINISHED'}
 
-def ExchangePresetData(context, new_preset, old_preset):
-    #First transfer the basic information
-    pass
 
 class CAP_Add_Stored_Presets(Operator):
     """Adds the currently selected Global Preset into the usable Export Presets for this .blend file."""
@@ -694,8 +688,8 @@ class CAP_Add_Stored_Presets(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
-        new_preset = exp.export_defaults.add()
-        CopyPreset(addon_prefs.global_presets[addon_prefs.global_presets_index], new_preset)
+        new_preset = exp.file_presets.add()
+        CopyPreset(addon_prefs.saved_presets[addon_prefs.saved_presets_index], new_preset)
 
         return {'FINISHED'}
 
@@ -709,8 +703,8 @@ class CAP_Delete_Presets(Operator):
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
 
-        if len(addon_prefs.global_presets) > 0:
-            export = addon_prefs.global_presets[addon_prefs.global_presets_index]
+        if len(addon_prefs.saved_presets) > 0:
+            export = addon_prefs.saved_presets[addon_prefs.saved_presets_index]
             if export.x_global_user_deletable is True:
                 return True
 
@@ -724,7 +718,7 @@ class CAP_Delete_Presets(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
-        addon_prefs.global_presets.remove(addon_prefs.global_presets_index)
+        addon_prefs.saved_presets.remove(addon_prefs.saved_presets_index)
 
         return {'FINISHED'}
 
@@ -739,7 +733,7 @@ class CAP_Store_Presets(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        if len(exp.export_defaults) > 0:
+        if len(exp.file_presets) > 0:
             return True
 
         else:
@@ -754,15 +748,15 @@ class CAP_Store_Presets(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
-        new_preset = addon_prefs.global_presets.add()
-        CopyPreset(exp.export_defaults[exp.export_defaults_index], new_preset)
+        new_preset = addon_prefs.saved_presets.add()
+        CopyPreset(exp.file_presets[exp.file_presets_index], new_preset)
 
         return {'FINISHED'}
 
 def DeletePresets():
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
-    exp = addon_prefs.global_presets
+    exp = addon_prefs.saved_presets
 
     exp.clear()
 
@@ -772,7 +766,7 @@ def CreatePresets():
     # -------------------------------------------------------------------------
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
-    exp = addon_prefs.global_presets
+    exp = addon_prefs.saved_presets
 
     CreatePresetBasicExport(exp)
     CreatePresetUE4Standard(exp)
@@ -793,6 +787,7 @@ def CreatePresetBasicExport(exp):
 
     passOne = export.passes.add()
     passOne.name = "Combined Pass"
+    passOne.export_animation_prev = True
     passOne.export_animation = True
     passOne.apply_modifiers = True
     passOne.triangulate = True
@@ -858,6 +853,7 @@ def CreatePresetUE4Standard(exp):
 
     passOne = export.passes.add()
     passOne.name = "Combined Pass"
+    passOne.export_animation_prev = True
     passOne.export_animation = True
     passOne.apply_modifiers = True
     passOne.triangulate = True
@@ -871,6 +867,7 @@ def CreatePresetUE4Standard(exp):
 
     passTwo = export.passes.add()
     passTwo.name = "Game-Ready Pass"
+    passTwo.export_animation_prev = True
     passTwo.export_animation = True
     passTwo.apply_modifiers = True
     passTwo.triangulate = True
@@ -934,6 +931,7 @@ def CreatePresetUnity5Standard(exp):
 
     passOne = export.passes.add()
     passOne.name = "Combined Pass"
+    passOne.export_animation_prev = True
     passOne.export_animation = True
     passOne.apply_modifiers = True
     passOne.triangulate = True
@@ -972,6 +970,7 @@ def CopyPreset(old_preset, new_preset):
             new_passtag.use_tag = old_passtag.use_tag
 
         new_pass.export_individual = old_pass.export_individual
+        new_pass.export_animation_prev = old_pass.export_animation
         new_pass.export_animation = old_pass.export_animation
         new_pass.apply_modifiers = old_pass.apply_modifiers
         new_pass.triangulate = old_pass.triangulate
@@ -1015,3 +1014,25 @@ def CopyPreset(old_preset, new_preset):
     new_preset.optimise_keyframes = old_preset.optimise_keyframes
     new_preset.bake_anim_step = old_preset.bake_anim_step
     new_preset.bake_anim_simplify_factor = old_preset.bake_anim_simplify_factor
+
+class CAP_DrawError(Operator):
+    bl_idname = "cap.draw_error"
+    bl_label = "Store Preset"
+
+    title = StringProperty()
+    message = StringProperty()
+
+    def execute(self, context):
+        bpy.context.window_manager.popup_menu(self.draw(context), title=self.title, icon='INFO')
+        return {'FINISHED'}
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column()
+        col.label(text="Custom Interface!")
+
+        row = col.row()
+        row.prop(self, "my_float")
+        row.prop(self, "my_bool")
+
+        col.prop(self, "my_string")
