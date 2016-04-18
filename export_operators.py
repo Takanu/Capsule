@@ -3,7 +3,7 @@ from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, RotateAll, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
 
 
 
@@ -780,7 +780,35 @@ class CAP_Export_Assets(Operator):
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     if useSceneOrigin is False:
-                        MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+                        # If Unity needs the rotation fix, first scale the objects, then get their new location
+                        # and move them
+                        if exportDefault.x_unity_rotation_fix is True:
+                            ScaleAll(rootObject, context, (100, 100, 100), (False, False, False))
+                            RotateAll(rootObject, context, -90, (True, False, False))
+                            bpy.ops.object.transform_apply(
+                                location=False,
+                                rotation=True,
+                                scale=True
+                                )
+                            RotateAll(rootObject, context, 90, (True, False, False))
+                            ScaleAll(rootObject, context, (0.01, 0.01, 0.01), (False, False, False))
+
+                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+
+                        # Otherwise, just move the objects
+                        else:
+                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+
+                    elif exportDefault.x_unity_rotation_fix is True:
+                        ScaleAll(rootObject, context, (100, 100, 100), (False, False, False))
+                        RotateAll(rootObject, context, -90, (True, False, False))
+                        bpy.ops.object.transform_apply(
+                            location=False,
+                            rotation=True,
+                            scale=True
+                            )
+                        RotateAll(rootObject, context, 90, (True, False, False))
+                        ScaleAll(rootObject, context, (0.01, 0.01, 0.01), (False, False, False))
 
                     print(">>> Asset List Count...", len(foundObjects))
 
@@ -838,7 +866,25 @@ class CAP_Export_Assets(Operator):
 
                     # Move objects back
                     if useSceneOrigin is False:
-                        MoveAll(rootObject, context, rootObjectLocation)
+                        if exportDefault.x_unity_rotation_fix is True:
+                            MoveAll(rootObject, context, rootObjectLocation)
+                            bpy.ops.object.select_all(action='SELECT')
+                            bpy.ops.object.transform_apply(
+                                location=False,
+                                rotation=True,
+                                scale=True
+                                )
+                        else:
+                            MoveAll(rootObject, context, rootObjectLocation)
+
+                    elif exportDefault.x_unity_rotation_fix is True:
+                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.transform_apply(
+                            location=False,
+                            rotation=True,
+                            scale=True
+                            )
+
 
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
@@ -1046,7 +1092,35 @@ class CAP_Export_Assets(Operator):
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     if rootObject != None:
-                        MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+                        # If Unity needs the rotation fix, first scale the objects, then get their new location
+                        # and move them
+                        if exportDefault.x_unity_rotation_fix is True:
+                            ScaleAll(rootObject, context, (100, 100, 100), (False, False, False))
+                            RotateAll(rootObject, context, -90, (True, False, False))
+                            bpy.ops.object.transform_apply(
+                                location=False,
+                                rotation=True,
+                                scale=True
+                                )
+                            RotateAll(rootObject, context, 90, (True, False, False))
+                            ScaleAll(rootObject, context, (0.01, 0.01, 0.01), (False, False, False))
+                            
+                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+
+                        # Otherwise, just move the objects
+                        else:
+                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+
+                    elif exportDefault.x_unity_rotation_fix is True:
+                        ScaleAll(rootObject, context, (100, 100, 100), (False, False, False))
+                        RotateAll(rootObject, context, -90, (True, False, False))
+                        bpy.ops.object.transform_apply(
+                            location=False,
+                            rotation=True,
+                            scale=True
+                            )
+                        RotateAll(rootObject, context, 90, (True, False, False))
+                        ScaleAll(rootObject, context, (0.01, 0.01, 0.01), (False, False, False))
 
                     # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                     # ////////////////////////////////////////////////////////////////////////////
@@ -1113,7 +1187,24 @@ class CAP_Export_Assets(Operator):
 
                     # Move objects back
                     if rootObject != None:
-                        MoveAll(rootObject, context, rootObjectLocation)
+                        if exportDefault.x_unity_rotation_fix is True:
+                            MoveAll(rootObject, context, rootObjectLocation)
+                            bpy.ops.object.select_all(action='SELECT')
+                            bpy.ops.object.transform_apply(
+                                location=False,
+                                rotation=True,
+                                scale=True
+                                )
+                        else:
+                            MoveAll(rootObject, context, rootObjectLocation)
+
+                    elif exportDefault.x_unity_rotation_fix is True:
+                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.transform_apply(
+                            location=False,
+                            rotation=True,
+                            scale=True
+                            )
 
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")

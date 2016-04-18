@@ -296,8 +296,8 @@ class CAP_ExportPreset(PropertyGroup):
         )
 
     bake_space_transform = BoolProperty(
-        name="Bake Space Transform",
-        description="Erm...",
+        name="Bake Space Transform (Experimental)",
+        description="Bakes the space transform of meshes from Blender into the FBX file, when the target world space does not align with the one Blender has. (WARNING - Known broken on armatures/animations, use at your own peril!)",
         default=False
         )
 
@@ -340,7 +340,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     tangent_space = BoolProperty(
         name="Tangent Space",
-        description="blablablabla",
+        description="Exports the mesh tangent vectors.",
         default=False
         )
 
@@ -352,13 +352,13 @@ class CAP_ExportPreset(PropertyGroup):
 
     add_leaf_bones = BoolProperty(
         name="Add Leaf Bones",
-        description="Appends an extra bone to the end of each chain.",
+        description="Appends an extra bone to the end of each bone chain.",
         default=False
         )
 
     primary_bone_axis = EnumProperty(
         name="Primary Bone Axis",
-        description="TBW",
+        description="Defines the primary bone axis for the export.",
         items=(
             ('X', 'X', ''),
             ('Y', 'Y', ''),
@@ -371,7 +371,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     secondary_bone_axis = EnumProperty(
         name="Secondary Bone Axis",
-        description="TBW",
+        description="Defines the secondary bone axis for the export.",
         items=(
             ('X', 'X', ''),
             ('Y', 'Y', ''),
@@ -394,7 +394,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     bake_anim_use_all_bones = BoolProperty(
         name="Key All Bones",
-        description="Forces the export of one key animation for all bones (required for target apps like UE4).",
+        description="If enabled, this forces the export of one key animation for all bones (required for target apps like UE4).",
         default=False)
 
     bake_anim_use_nla_strips = BoolProperty(
@@ -411,25 +411,25 @@ class CAP_ExportPreset(PropertyGroup):
 
     bake_anim_force_startend_keying = BoolProperty(
         name="Start/End Keying",
-        description="TBW",
+        description="If enabled, this option fully keys the start and end positions of an animation.  Use this if the exported animations playback with incorrect starting positions.",
         default=False
         )
 
     use_default_take = BoolProperty(
         name="Use Default Take",
-        description="TBW.",
+        description="If enabled, uses the currently viewed pose/translation of the object as a starting pose for exported animations (excluding certain keyframes).",
         default=False
         )
 
     optimise_keyframes = BoolProperty(
         name="Optimise Keyframes",
-        description="Removes double keyframes.",
+        description="If enabled, removes double keyframes from exported animations.",
         default=False
         )
 
     bake_anim_step = FloatProperty(
         name="Sampling Rate",
-        description="TBW",
+        description="Defines how often, in frames, the export process should evaluate keyframes.",
         default=1,
         min=0,
         max=100,
@@ -439,7 +439,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     bake_anim_simplify_factor = FloatProperty(
         name="Simplify Factor",
-        description="TBW",
+        description="A measure for how much when exported, animations should be simplified.  Setting this value to 0 will disable simplification.  The higher the value, the greater the simplification.",
         default=1,
         min=0,
         max=100,
@@ -449,6 +449,8 @@ class CAP_ExportPreset(PropertyGroup):
 
     # A special system variable that defines whether it can be deleted from the Global Presets list.
     x_global_user_deletable = BoolProperty(default=True)
+    # A secret fix embedded in the Unity 5 export option, to fix rotated objects.
+    x_unity_rotation_fix = BoolProperty(default=False)
 
 class CAP_LocationDefault(PropertyGroup):
     name = StringProperty(

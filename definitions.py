@@ -1,5 +1,5 @@
 import bpy, bmesh, time
-from math import *
+from math import pi, radians, degrees
 from mathutils import Vector
 
 #//////////////////// - BASIC DEFINITIONS - ///////////////////////
@@ -346,7 +346,8 @@ def MoveAll(target, context, location):
         gpencil_strokes=False,
         texture_space=False,
         remove_on_cancel=False,
-        release_confirm=False)
+        release_confirm=False
+        )
 
     print("Root Object", target.name, "Moved... ", rootLocation)
 
@@ -356,6 +357,94 @@ def MoveAll(target, context, location):
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     target.lock_location = lockTransform
+
+def RotateAll(target, context, rotation, constraintAxis):
+
+    print(">>>> Rotating EVERYTHING <<<<")
+
+    # Prevent auto keyframing and location lock from being active
+    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    lockRotation = target.lock_rotation
+
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+    target.lock_rotation = (False, False, False)
+
+    # Save the current cursor location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
+    # Snap the cursor to the location
+    bpy.ops.object.select_all(action='DESELECT')
+    FocusObject(target)
+    bpy.ops.view3d.snap_cursor_to_selected()
+    rootLocation = Vector((0.0, 0.0, 0.0))
+
+    bpy.ops.object.select_all(action='SELECT')
+    ActivateObject(target)
+
+    print("DEGREES TO RADIANS MOFO: ", str(radians(rotation)))
+
+    bpy.ops.transform.rotate(
+        value=radians(rotation),
+        axis=(0.0, 0.0, 0.0),
+        constraint_axis=constraintAxis,
+        constraint_orientation='GLOBAL',
+        mirror=False, proportional='DISABLED',
+        proportional_edit_falloff='SMOOTH',
+        proportional_size=1.0,
+        snap=False,
+        snap_target='CLOSEST',
+        snap_point=(0.0, 0.0, 0.0),
+        snap_align=False,
+        snap_normal=(0.0, 0.0, 0.0),
+        gpencil_strokes=False,
+        release_confirm=False
+        )
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+    target.lock_rotation = lockRotation
+
+def ScaleAll(target, context, scale, constraintAxis):
+
+    print(">>>> Scaling EVERYTHING <<<<")
+
+    # Prevent auto keyframing and location lock from being active
+    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    lockRotation = target.lock_rotation
+
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+    target.lock_rotation = (False, False, False)
+
+    # Calculate the translation vector using the 3D cursor
+    bpy.ops.object.select_all(action='DESELECT')
+    FocusObject(target)
+
+    bpy.ops.object.select_all(action='SELECT')
+    ActivateObject(target)
+
+    bpy.ops.transform.resize(
+        value=scale,
+        constraint_axis=constraintAxis,
+        constraint_orientation='GLOBAL',
+        mirror=False,
+        proportional='DISABLED',
+        proportional_edit_falloff='SMOOTH',
+        proportional_size=1.0,
+        snap=False,
+        snap_target='CLOSEST',
+        snap_point=(0.0, 0.0, 0.0),
+        snap_align=False,
+        snap_normal=(0.0, 0.0, 0.0),
+        gpencil_strokes=False,
+        texture_space=False,
+        remove_on_cancel=False,
+        release_confirm=False
+        )
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+    target.lock_rotation = lockRotation
 
 
 def CheckSuffix(string, suffix):

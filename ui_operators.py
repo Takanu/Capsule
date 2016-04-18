@@ -802,11 +802,15 @@ def CreatePresetUE4Standard(exp):
     export.axis_forward = "-Z"
     export.axis_up = "Y"
     export.global_scale = 1.0
-    export.x_global_user_deletable = False
+    export.export_types = {'MESH', 'ARMATURE'}
+
     export.tangent_space = True
     export.bake_anim_use_all_bones = True
     export.bake_anim_use_all_actions = True
+    export.bake_anim_force_startend_keying = True
     export.optimise_keyframes = True
+
+    export.x_global_user_deletable = False
 
     tagHP = export.tags.add()
     tagHP.name = "High-Poly"
@@ -896,11 +900,19 @@ def CreatePresetUnity5Standard(exp):
     export = exp.add()
     export.name = "Unity 5 Standard"
     export.description = "Creates an Export Preset for exporting FBX files for Unity 5, with optimised settings."
-    export.axis_forward = "-Z"
+    export.axis_forward = "Z"
     export.axis_up = "Y"
     export.global_scale = 1.0
-    export.bake_space_transform = True
+    export.tangent_space = True
+    export.export_types = {'MESH', 'ARMATURE'}
+
+    export.bake_anim_use_all_bones = True
+    export.bake_anim_use_all_actions = True
+    export.bake_anim_force_startend_keying = True
+    export.optimise_keyframes = True
+
     export.x_global_user_deletable = False
+    export.x_unity_rotation_fix = True
 
     tagLP = export.tags.add()
     tagLP.name = "Low-Poly"
@@ -1018,6 +1030,8 @@ def CopyPreset(old_preset, new_preset):
     new_preset.optimise_keyframes = old_preset.optimise_keyframes
     new_preset.bake_anim_step = old_preset.bake_anim_step
     new_preset.bake_anim_simplify_factor = old_preset.bake_anim_simplify_factor
+
+    new_preset.x_unity_rotation_fix = old_preset.x_unity_rotation_fix
 
 class CAP_DrawError(Operator):
     bl_idname = "cap.draw_error"
