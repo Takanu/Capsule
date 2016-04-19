@@ -358,29 +358,15 @@ def MoveAll(target, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     target.lock_location = lockTransform
 
-def RotateAll(target, context, rotation, constraintAxis):
+def RotateAll(context, rotation, constraintAxis):
 
     print(">>>> Rotating EVERYTHING <<<<")
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
-    lockRotation = target.lock_rotation
-
     context.scene.tool_settings.use_keyframe_insert_auto = False
-    target.lock_rotation = (False, False, False)
-
-    # Save the current cursor location
-    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
-    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
-
-    # Snap the cursor to the location
-    bpy.ops.object.select_all(action='DESELECT')
-    FocusObject(target)
-    bpy.ops.view3d.snap_cursor_to_selected()
-    rootLocation = Vector((0.0, 0.0, 0.0))
 
     bpy.ops.object.select_all(action='SELECT')
-    ActivateObject(target)
 
     print("DEGREES TO RADIANS MOFO: ", str(radians(rotation)))
 
@@ -403,25 +389,16 @@ def RotateAll(target, context, rotation, constraintAxis):
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
-    target.lock_rotation = lockRotation
 
-def ScaleAll(target, context, scale, constraintAxis):
+def ScaleAll(context, scale, constraintAxis):
 
     print(">>>> Scaling EVERYTHING <<<<")
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
-    lockRotation = target.lock_rotation
-
     context.scene.tool_settings.use_keyframe_insert_auto = False
-    target.lock_rotation = (False, False, False)
-
-    # Calculate the translation vector using the 3D cursor
-    bpy.ops.object.select_all(action='DESELECT')
-    FocusObject(target)
 
     bpy.ops.object.select_all(action='SELECT')
-    ActivateObject(target)
 
     bpy.ops.transform.resize(
         value=scale,
@@ -444,8 +421,6 @@ def ScaleAll(target, context, scale, constraintAxis):
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
-    target.lock_rotation = lockRotation
-
 
 def CheckSuffix(string, suffix):
 
@@ -1043,7 +1018,7 @@ def FindWorldSpaceObjectLocation(target, context):
 
     return cursorLocCopy
 
-def GetSceneGroups(scene):
+def GetSceneGroups(scene, hasObjects):
     groups = []
 
     for item in scene.objects:
@@ -1054,7 +1029,8 @@ def GetSceneGroups(scene):
                 if found_group.name == group.name:
                     groupAdded = True
 
-            if groupAdded == False:
-                groups.append(group)
+            if hasObjects is False or len(group.objects) > 0:
+                if groupAdded == False:
+                    groups.append(group)
 
     return groups

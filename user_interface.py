@@ -48,7 +48,7 @@ class Group_UIList(UIList):
         scn = context.scene.CAPScn
         groupData = None
 
-        for group in GetSceneGroups(context.scene):
+        for group in GetSceneGroups(context.scene, True):
             if group.name == item.name:
                 groupData = group
 
@@ -253,7 +253,7 @@ class CAP_Selection(Panel):
                 if len(scn.group_list) > 0:
                     entry = scn.group_list[scn.group_list_index]
 
-                    for group in GetSceneGroups(context.scene):
+                    for group in GetSceneGroups(context.scene, True):
                         if group.name == entry.name:
                             grp = group.CAPGrp
                             gr = group

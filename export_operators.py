@@ -22,6 +22,7 @@ class CAP_Export_Assets(Operator):
         version='BIN7400',
         use_selection=True,
         global_scale=self.globalScale,
+        apply_unit_scale=self.apply_unit_scale,
         axis_forward=self.axisForward,
         axis_up=self.axisUp,
         bake_space_transform=self.bakeSpaceTransform,
@@ -464,14 +465,29 @@ class CAP_Export_Assets(Operator):
 
                 self.exportCount += 1
 
+        # If we're using Unity export options, ensure that every object mesh has a single user
+        if export.x_unity_rotation_fix is True:
+            for item in context.scene.objects:
+                data = item.data
+                if data is not None:
+                    print(data.users)
+                    if data.users > 1:
+                        FocusObject(item)
+                        statement = "Sorry, but currently, this Unity Export Preset requires that all scene objects be single-user only.  Please ensure all objects have only one user, before using it."
+                        return statement
+
+
         # Check all scene groups for potential errors
-        for group in GetSceneGroups(context.scene):
+        for group in GetSceneGroups(context.scene, True):
             if group.CAPGrp.enable_export is True:
 
                 # Check Export Key
                 expKey = int(group.CAPGrp.export_default) - 1
                 if expKey == -1:
-                    statement = "The group " + group.name + " has no export default selected.  Please define!"
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for item in group.objects:
+                        SelectObject(item)
+                    statement = "The selected group " + group.name + " has no export default selected.  Please define!"
                     return statement
 
                 # Check Export Sub-Directory
@@ -482,7 +498,10 @@ class CAP_Export_Assets(Operator):
 
                 # Check Location Default
                 if int(group.CAPGrp.location_default) == 0:
-                    statement =  "The selected object " + group.name + " has no location preset defined, please define one!"
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for item in group.objects:
+                        SelectObject(item)
+                    statement =  "The selected group " + group.name + " has no location preset defined, please define one!"
                     return statement
 
                 self.exportCount += 1
@@ -780,19 +799,17 @@ class CAP_Export_Assets(Operator):
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     if useSceneOrigin is False:
-                        # If Unity needs the rotation fix, first scale the objects, then get their new location
-                        # and move them
+                        # If Unity needs the rotation fix, we'll do it here.  Scale has to be handled in Unity
+                        # however...
                         if exportDefault.x_unity_rotation_fix is True:
-                            ScaleAll(rootObject, context, (100, 100, 100), (False, False, False))
-                            RotateAll(rootObject, context, -90, (True, False, False))
+                            RotateAll(context, -90, (True, False, False))
+                            bpy.ops.object.select_all(action='SELECT')
                             bpy.ops.object.transform_apply(
                                 location=False,
                                 rotation=True,
                                 scale=True
                                 )
-                            RotateAll(rootObject, context, 90, (True, False, False))
-                            ScaleAll(rootObject, context, (0.01, 0.01, 0.01), (False, False, False))
-
+                            RotateAll(context, 90, (True, False, False))
                             MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
                         # Otherwise, just move the objects
@@ -800,15 +817,14 @@ class CAP_Export_Assets(Operator):
                             MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
                     elif exportDefault.x_unity_rotation_fix is True:
-                        ScaleAll(rootObject, context, (100, 100, 100), (False, False, False))
-                        RotateAll(rootObject, context, -90, (True, False, False))
+                        RotateAll(context, -90, (True, False, False))
+                        bpy.ops.object.select_all(action='SELECT')
                         bpy.ops.object.transform_apply(
                             location=False,
                             rotation=True,
                             scale=True
                             )
-                        RotateAll(rootObject, context, 90, (True, False, False))
-                        ScaleAll(rootObject, context, (0.01, 0.01, 0.01), (False, False, False))
+                        RotateAll(context, 90, (True, False, False))
 
                     print(">>> Asset List Count...", len(foundObjects))
 
@@ -901,7 +917,7 @@ class CAP_Export_Assets(Operator):
         # OBJECT CYCLE
         ###############################################################
         # Now hold up, its group time!
-        for group in GetSceneGroups(context.scene):
+        for group in GetSceneGroups(context.scene, True):
             if group.CAPGrp.enable_export is True:
 
                 print("-"*79)
@@ -1095,16 +1111,10 @@ class CAP_Export_Assets(Operator):
                         # If Unity needs the rotation fix, first scale the objects, then get their new location
                         # and move them
                         if exportDefault.x_unity_rotation_fix is True:
-                            ScaleAll(rootObject, context, (100, 100, 100), (False, False, False))
-                            RotateAll(rootObject, context, -90, (True, False, False))
-                            bpy.ops.object.transform_apply(
-                                location=False,
-                                rotation=True,
-                                scale=True
-                                )
-                            RotateAll(rootObject, context, 90, (True, False, False))
-                            ScaleAll(rootObject, context, (0.01, 0.01, 0.01), (False, False, False))
-                            
+                            RotateAll(context, -90, (True, False, False))
+                            bpy.ops.object.select_all(action='SELECT')
+                            bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
+                            RotateAll(context, 90, (True, False, False))
                             MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
                         # Otherwise, just move the objects
@@ -1112,15 +1122,10 @@ class CAP_Export_Assets(Operator):
                             MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
                     elif exportDefault.x_unity_rotation_fix is True:
-                        ScaleAll(rootObject, context, (100, 100, 100), (False, False, False))
-                        RotateAll(rootObject, context, -90, (True, False, False))
-                        bpy.ops.object.transform_apply(
-                            location=False,
-                            rotation=True,
-                            scale=True
-                            )
-                        RotateAll(rootObject, context, 90, (True, False, False))
-                        ScaleAll(rootObject, context, (0.01, 0.01, 0.01), (False, False, False))
+                        RotateAll(context, -90, (True, False, False))
+                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
+                        RotateAll(context, 90, (True, False, False))
 
                     # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                     # ////////////////////////////////////////////////////////////////////////////
@@ -1190,21 +1195,13 @@ class CAP_Export_Assets(Operator):
                         if exportDefault.x_unity_rotation_fix is True:
                             MoveAll(rootObject, context, rootObjectLocation)
                             bpy.ops.object.select_all(action='SELECT')
-                            bpy.ops.object.transform_apply(
-                                location=False,
-                                rotation=True,
-                                scale=True
-                                )
+                            bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
                         else:
                             MoveAll(rootObject, context, rootObjectLocation)
 
                     elif exportDefault.x_unity_rotation_fix is True:
                         bpy.ops.object.select_all(action='SELECT')
-                        bpy.ops.object.transform_apply(
-                            location=False,
-                            rotation=True,
-                            scale=True
-                            )
+                        bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
 
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")

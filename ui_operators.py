@@ -331,7 +331,7 @@ class CAP_Set_Root_Object(Operator):
                 entry = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
 
                 # Find the group we're getting a root object for
-                for group in GetSceneGroups(context.scene):
+                for group in GetSceneGroups(context.scene, True):
                     if group.name == entry.name:
                         print("Found Group: ", group.name)
 
@@ -371,7 +371,7 @@ class CAP_Clear_Root_Object(Operator):
         obj = context.active_object.CAPObj
 
         entry = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
-        for group in GetSceneGroups(context.scene):
+        for group in GetSceneGroups(context.scene, True):
             if group.name == entry.name:
                 group.CAPGrp.root_object = ""
                 return{'FINISHED'}
@@ -397,8 +397,8 @@ class CAP_Clear_List(Operator):
                 obj.enable_export = False
             scn.object_list.clear()
 
-        if objectTab == 2:
-            for group in GetSceneGroups(context.scene):
+        elif objectTab == 2:
+            for group in GetSceneGroups(context.scene, True):
                 grp = group.CAPGrp
                 grp.enable_export = False
             scn.group_list.clear()
@@ -406,7 +406,7 @@ class CAP_Clear_List(Operator):
 
         return {'FINISHED'}
 
-class CAP_Reset_List(Operator):
+class CAP_Refresh_List(Operator):
     """Rebuilds the list based on available objects or groups in the scene."""
 
     bl_idname = "scene.cap_refreshlist"
@@ -428,14 +428,14 @@ class CAP_Reset_List(Operator):
                     entry.enable_export = obj.CAPObj.enable_export
 
 
-        if objectTab == 2:
-            scn.object_list.clear()
-            for group in GetSceneGroups(context.scene):
+        elif objectTab == 2:
+            scn.group_list.clear()
+            for group in GetSceneGroups(context.scene, True):
                 if group.CAPGrp.enable_export is True:
-                    entry = scn.group_list.add()
-                    entry.name = group.name
-                    entry.prev_name = group.name
-                    entry.enable_export = group.CAPGrp.enable_export
+                        entry = scn.group_list.add()
+                        entry.name = group.name
+                        entry.prev_name = group.name
+                        entry.enable_export = group.CAPGrp.enable_export
 
 
         return {'FINISHED'}
@@ -462,7 +462,7 @@ class CAP_Reset_Scene(Operator):
 
         active = context.active_object
 
-        for group in GetSceneGroups(context.scene):
+        for group in GetSceneGroups(context.scene, False):
             grp = group.CAPGrp
             grp.enable_export = False
             grp.root_object = ""
@@ -903,6 +903,7 @@ def CreatePresetUnity5Standard(exp):
     export.axis_forward = "Z"
     export.axis_up = "Y"
     export.global_scale = 1.0
+    export.apply_unit_scale = True
     export.tangent_space = True
     export.export_types = {'MESH', 'ARMATURE'}
 
