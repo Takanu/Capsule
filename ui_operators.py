@@ -292,18 +292,35 @@ class CAP_Set_Root_Object(Operator):
 
 
     def execute(self, context):
-        print("invoke!")
-        print("Is this new?")
-
         scn = context.scene.CAPScn
 
         user_preferences = context.user_preferences
         self.addon_prefs = user_preferences.addons[__package__].preferences
 
-        self.object = context.scene.objects.active
+        self.groups = []
+        self.object = None
+        self.list_item = 0
         context.window_manager.modal_handler_add(self)
-        self._timer = context.window_manager.event_timer_add(0.05, context.window)
 
+        # If multi-edit is on, get info from the scene
+        if self.addon_prefs.group_multi_edit is True:
+            print("Multi-edit on")
+            self.object = context.scene.objects.active
+            for object in context.selected_objects:
+                for foundGroup in object.users_group:
+                    self.groups.append(foundGroup)
+
+        # Otherwise, find it in the scene
+        else:
+            print("Multi-edit off")
+            self.list_item = context.scene.CAPScn.group_list_index
+            item = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
+            for foundGroup in GetSceneGroups(context.scene, True):
+                if foundGroup.name == item.name:
+                    self.groups.append(foundGroup)
+
+        print("Groups found....", self.groups)
+        self._timer = context.window_manager.event_timer_add(0.05, context.window)
         bpy.ops.object.select_all(action='DESELECT')
 
         # Set the header text with USEFUL INSTRUCTIONS :O
@@ -318,38 +335,22 @@ class CAP_Set_Root_Object(Operator):
         # If escape is pressed, exit
         if event.type in {'ESC'}:
             self.finish()
-
-            # This return statement has to be within the same definition (cant defer to finish())
             return{'FINISHED'}
 
         # When an object is selected, set it as a child to the object, and finish.
         elif event.type == 'RIGHTMOUSE':
 
-            # ALSO, check its not a dummy or origin object
+            # Check only one object was selected
             if context.selected_objects != None and len(context.selected_objects) == 1:
+                for group in self.groups:
+                    group.CAPGrp.root_object = context.scene.objects.active.name
+                if self.object != None:
+                    FocusObject(self.object)
+                else:
+                    context.scene.CAPScn.group_list_index = self.list_item
+                self.finish()
 
-                entry = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
-
-                # Find the group we're getting a root object for
-                for group in GetSceneGroups(context.scene, True):
-                    if group.name == entry.name:
-                        print("Found Group: ", group.name)
-
-                        # Make sure the root object being selected matches the groip
-                        #for item in group.objects:
-                            #if item.name == context.selected_objects[0].name:
-
-                        group.CAPGrp.root_object = context.selected_objects[0].name
-                        if self.object != None:
-                            FocusObject(self.object)
-                        self.finish()
-                        return{'FINISHED'}
-
-                        #self.report({'WARNING'}, 'The object selected is not in the same group, TRY AGAIN O_O')
-
-                        #FocusObject(self.object)
-                        #self.finish()
-                        #return{'FINISHED'}
+                return{'FINISHED'}
 
         return {'PASS_THROUGH'}
 
@@ -369,12 +370,23 @@ class CAP_Clear_Root_Object(Operator):
 
         scn = context.scene.CAPScn
         obj = context.active_object.CAPObj
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
 
-        entry = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
-        for group in GetSceneGroups(context.scene, True):
-            if group.name == entry.name:
-                group.CAPGrp.root_object = ""
-                return{'FINISHED'}
+        # If multi-edit is on, get info from the scene
+        if addon_prefs.group_multi_edit is True:
+            print("Multi-edit on")
+            for object in context.selected_objects:
+                for foundGroup in object.users_group:
+                    foundGroup.CAPGrp.root_object = ""
+
+        # Otherwise, find it in the scene
+        else:
+            print("Multi-edit off")
+            item = context.scene.CAPScn.group_list[context.scene.CAPScn.group_list_index]
+            for foundGroup in GetSceneGroups(context.scene, True):
+                if foundGroup.name == item.name:
+                    foundGroup.CAPGrp.root_object = ""
 
         return {'FINISHED'}
 

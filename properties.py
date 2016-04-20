@@ -45,7 +45,6 @@ class ObjectItem(PropertyGroup):
         update=Update_ObjectRemoveFromList
         )
 
-
 class GroupItem(PropertyGroup):
     name = StringProperty(
         name="",
@@ -85,7 +84,6 @@ class GroupItem(PropertyGroup):
         default=True,
         update=Update_GroupRemoveFromList
         )
-
 
 class ActionItem(PropertyGroup):
     name = StringProperty(
