@@ -2,8 +2,13 @@
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
+<<<<<<< HEAD:Capsule/__init__.py
     "author": "Crocadillian (BA) / Takanu (GitHub)",
     "version": (0, 999),
+=======
+    "author": "Takanu Kyriako",
+    "version": (1,0),
+>>>>>>> origin/master:__init__.py
     "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > GEX",
     "wiki_url": "http://blenderartists.org/forum/showthread.php?373523-GEX-0-85-(15-11-2015)-One-Click-Batch-FBX-Exports",
@@ -54,9 +59,15 @@ def Update_TagName(self, context):
     if addon_prefs.plugin_is_ready is True:
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         currentTag = exp.tags[exp.tags_index]
+<<<<<<< HEAD:Capsule/__init__.py
 
         tag_name = currentTag.name
 
+=======
+
+        tag_name = currentTag.name
+
+>>>>>>> origin/master:__init__.py
         # Get tags in all current passes, and edit them
         for expPass in export.passes:
             passTag = expPass.tags[export.tags_index]
@@ -550,10 +561,19 @@ class CAP_AddonPreferences(AddonPreferences):
         addon_prefs = user_preferences.addons[__name__].preferences
         exp = None
 
+<<<<<<< HEAD:Capsule/__init__.py
         # UI Prompt for when the .blend Capsule data can no longer be found.
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
+=======
+        for item in bpy.data.objects:
+            if item.name == addon_prefs.default_datablock:
+                exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+                plugin_is_ready = True
+
+        if exp is None:
+>>>>>>> origin/master:__init__.py
             layout = self.layout
             col_export = layout.column(align=True)
             col_export.label("No Capsule for this .blend file has been found,")
