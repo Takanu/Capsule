@@ -364,7 +364,6 @@ class CAP_List(Panel):
     bl_context = "objectmode"
     bl_label = "Export List"
     bl_category = "Capsule"
-<<<<<<< HEAD:Capsule/user_interface.py
 
     @classmethod
     def poll(cls, context):
@@ -382,19 +381,6 @@ class CAP_List(Panel):
         addon_prefs = user_preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
-=======
-
-    @classmethod
-    def poll(cls, context):
-        return True
-
-    def draw(self, context):
-
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
-        scn = context.scene.CAPScn
-
->>>>>>> origin/master:user_interface.py
         layout = self.layout
         listTab = int(str(scn.list_switch))
 
