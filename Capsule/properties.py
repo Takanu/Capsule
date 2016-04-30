@@ -19,7 +19,7 @@ class ObjectItem(PropertyGroup):
 
     enable_export = BoolProperty(
         name="",
-        description="Enable/Disable exporting for this object.",
+        description="Enables or disables the ability to export this object.",
         default=False,
         update=Update_ObjectItemExport
         )
@@ -45,7 +45,6 @@ class ObjectItem(PropertyGroup):
         update=Update_ObjectRemoveFromList
         )
 
-
 class GroupItem(PropertyGroup):
     name = StringProperty(
         name="",
@@ -60,7 +59,7 @@ class GroupItem(PropertyGroup):
 
     enable_export = BoolProperty(
         name="",
-        description="Enable/Disable exporting for this group.",
+        description="Enables or disables the ability to export this group.",
         default=False,
         update=Update_GroupItemExport
         )
@@ -85,7 +84,6 @@ class GroupItem(PropertyGroup):
         default=True,
         update=Update_GroupRemoveFromList
         )
-
 
 class ActionItem(PropertyGroup):
     name = StringProperty(
@@ -163,12 +161,20 @@ class CAP_Scene_Preferences(PropertyGroup):
     enable_sel_active = BoolProperty(default=False)
     enable_list_active = BoolProperty(default=False)
 
-    object_switch = EnumProperty(
+    list_switch = EnumProperty(
         name="Object Type Switch",
-        description="Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
+        description="Switches the list display mode between objects and groups.",
         items=(
-        ('1', 'Objects', 'Switches to the Object menu, for editing the exports of single objects and any tags associated with them.'),
-        ('2', 'Groups', 'Switches to the Group menu, for editing the exports of groups.')),
+        ('1', 'Objects', 'Displays the Export List for objects in the currently visible scene.'),
+        ('2', 'Groups', 'Displays the Export List for groups in the currently visible scene')),
+        )
+
+    selection_switch = EnumProperty(
+        name="Selection Switch",
+        description="Switches the selection editing mode between objects and groups.",
+        items=(
+        ('1', 'Objects', 'Displays selected objects, and any associated export settings.'),
+        ('2', 'Groups', 'Displays selected groups, and any associated export settings.')),
         )
 
 def GetLocationDefaults(scene, context):
@@ -183,7 +189,7 @@ def GetLocationDefaults(scene, context):
 
     u = 1
 
-    for i,x in enumerate(exp.location_defaults):
+    for i,x in enumerate(exp.location_presets):
         items.append((str(i+1), x.name, x.name, i+1))
 
     return items
@@ -200,7 +206,7 @@ def GetExportDefaults(scene, context):
 
     u = 1
 
-    for i,x in enumerate(exp.export_defaults):
+    for i,x in enumerate(exp.file_presets):
         items.append((str(i+1), x.name, x.name, i+1))
 
     return items
@@ -208,35 +214,35 @@ def GetExportDefaults(scene, context):
 class CAP_Object_Preferences(PropertyGroup):
     enable_export = BoolProperty(
         name = "Enable Export",
-        description = "Enable/Disable exporting for this object.",
+        description = "Enables or disables the ability to export this object.",
         default = False,
         update = Update_EnableExport
         )
 
     use_scene_origin = BoolProperty(
         name="Use Scene Origin",
-        description="Uses the scene's centre as an origin point for the object export, rather than the object's own origin point.",
+        description="If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.",
         default=False,
         update=Update_SceneOrigin
         )
 
     location_default = EnumProperty(
-        name="Select Location Default",
-        description="The filepath default the selected objects will be exported to.",
+        name="Select Location Preset",
+        description="Defines the file path that the object will be exported to.",
         items=GetLocationDefaults,
         update=Update_LocationDefault
         )
 
     export_default = EnumProperty(
-        name="Select Export Default",
-        description="Defines the export setting sets used on this object.",
+        name="Select Export Preset",
+        description="Defines the export settings used on the object.",
         items=GetExportDefaults,
         update=Update_ExportDefault
         )
 
     normals = EnumProperty(
         name="Normal Export Type",
-        description="Defines how the mesh normals are exported.",
+        description="Defines how the object's mesh normals are exported.",
         items=(
         ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
         ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
@@ -248,35 +254,35 @@ class CAP_Object_Preferences(PropertyGroup):
 class CAP_Group_Preferences(PropertyGroup):
     enable_export = BoolProperty(
         name="Export Group",
-        description="Enable/Disable exporting for this group.",
+        description="Enables or disables the ability to export this group.",
         default=False,
         update=Update_GroupExport
         )
 
     root_object = StringProperty(
         name="Origin Object",
-        description="Defines the exported origin point of the group object.  If not defined, the origin will be the world center.",
+        description="Defines the origin point of the exported group object.  If not defined, the origin will be the scene center point.",
         default="",
         update=Update_GroupRootObject
         )
 
     location_default = EnumProperty(
         name="Select Location Default",
-        description="The filepath default the selected group will be exported to.",
+        description="Defines the file path that the group will be exported to.",
         items=GetLocationDefaults,
         update=Update_GroupLocationDefault
         )
 
     export_default = EnumProperty(
         name="Select Export Default",
-        description="Defines the export setting sets used on this object.",
+        description="Defines the export settings used on the group.",
         items=GetExportDefaults,
         update=Update_GroupExportDefault
         )
 
     normals = EnumProperty(
         name="Normal Export Type",
-        description="Defines how the mesh normals are exported.",
+        description="Defines how the group's mesh normals are exported.",
         items=(
         ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
         ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),

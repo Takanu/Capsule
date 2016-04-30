@@ -1,9 +1,9 @@
-import bpy, bmesh, os
+import bpy, bmesh, os, platform
 from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, RotateAll, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
 
 
 
@@ -22,6 +22,7 @@ class CAP_Export_Assets(Operator):
         version='BIN7400',
         use_selection=True,
         global_scale=self.globalScale,
+        apply_unit_scale=self.apply_unit_scale,
         axis_forward=self.axisForward,
         axis_up=self.axisUp,
         bake_space_transform=self.bakeSpaceTransform,
@@ -135,8 +136,8 @@ class CAP_Export_Assets(Operator):
 
         enumIndex -= 1
 
-        defaultFilePath = self.exportInfo.location_defaults[enumIndex].path
-        print("Obtained location default: ", self.exportInfo.location_defaults[enumIndex].path)
+        defaultFilePath = self.exportInfo.location_presets[enumIndex].path
+        print("Obtained location default: ", self.exportInfo.location_presets[enumIndex].path)
 
         if defaultFilePath == "":
             return {'2'}
@@ -154,23 +155,7 @@ class CAP_Export_Assets(Operator):
         print("Obtaining File...")
         print("File Enumerator = ", locationDefault)
 
-        if int(locationDefault) == 0:
-            return "WARNING: " + objectName + " has no location preset defined, please define one!"
-
-
         path = self.GetFilePath(context, locationDefault, objectName)
-
-        if path == "":
-            return "WARNING: Welp, something went wrong.  Contact the developer for assistance!."
-
-        if path == {'1'}:
-            return "WARNING: " + objectName + " is not using a location preset.  Please set one."
-
-        if path == {'2'}:
-            return "WARNING: " + objectName + " is using an empty location preset.  A file path is required to export."
-
-        if path == {'3'}:
-            return "WARNING: " + objectName + " is using a location preset with a relative file path name, please tick off the Relative Path option when choosing the file path."
 
         print("Current Path: ", path)
 
@@ -179,21 +164,32 @@ class CAP_Export_Assets(Operator):
         # if a sub-directory needs creating in the location default
         if subDirectory != "" or useObjectDirectory is True or useBlendDirectory is True:
             newPath = ""
+            slash = "/"
+            if platform.system() == 'Windows':
+                slash = "\\"
 
             if useBlendDirectory is True:
-                print(bpy.data.filepath)
-                pathSplit = bpy.data.filepath.rsplit("/")
-                blendFile = pathSplit.pop()
-                blendSplit = blendFile.rsplit(".blend")
-                blendName = blendSplit[0]
+                print(bpy.path.basename(bpy.context.blend_data.filepath))
+                blendName = bpy.path.basename(bpy.context.blend_data.filepath)
+                if self.replaceInvalidChars is True:
+                    blendName = self.ReplaceSystemChar(context, blendName)
 
-                newPath = path + blendName + "/"
+                #pathSplit = bpy.data.filepath.rsplit(slash)
+                #blendFile = pathSplit.pop()
+                #blendSplit = blendFile.rsplit(".blend")
+                #blendName = blendSplit[0]
+
+                newPath = path + blendName + slash
 
             if useObjectDirectory is True:
-                newPath = newPath + objectName + "/"
+                if self.replaceInvalidChars is True:
+                    objectName = self.ReplaceSystemChar(context, objectName)
+                newPath = newPath + objectName + slash
 
             if subDirectory.replace(" ", "") != "":
-                newPath = newPath + subDirectory + "/"
+                if self.replaceInvalidChars is True:
+                    subDirectory = self.ReplaceSystemChar(context, subDirectory)
+                newPath = newPath + subDirectory + slash
 
             if newPath == "":
                 newPath = path
@@ -377,11 +373,72 @@ class CAP_Export_Assets(Operator):
 
         print("Rawr")
 
+    def ReplaceSystemChar(self, context, name):
+        print("Checking Directory...", name)
+        returnName = name
+        if platform.system() == 'Windows':
+            invalidCharacters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
+            for char in invalidCharacters:
+                returnName = returnName.replace(char, "_")
+
+        elif platform.system() == 'Darwin':
+            invalidCharacters = [":", "/"]
+            for char in invalidCharacters:
+                returnName = returnName.replace(char, "_")
+
+        elif platform.system() == 'linux' or platform.system() == 'linux2':
+            invalidCharacters = [":", "/"]
+            for char in invalidCharacters:
+                returnName = returnName.replace(char, "_")
+
+        return returnName
+
+    def CheckSystemChar(self, context, name):
+        print("Checking Directory...", name)
+        if platform.system() == 'Windows':
+            invalidCharacters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
+            invalidCaptured = []
+            for char in invalidCharacters:
+                if name.find(char) != -1:
+                    invalidCaptured.append(char)
+
+        elif platform.system() == 'Darwin':
+            invalidCharacters = [":", "/"]
+            invalidCaptured = []
+            for char in invalidCharacters:
+                if name.find(char) != -1:
+                    invalidCaptured.append(char)
+
+        elif platform.system() == 'linux' or platform.system() == 'linux2':
+            invalidCharacters = [":", "/"]
+            invalidCaptured = []
+            for char in invalidCharacters:
+                if name.find(char) != -1:
+                    invalidCaptured.append(char)
+
+        print("Invalid characters found...", invalidCaptured)
+        return invalidCaptured
+
     def CheckForErrors(self, context):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        # Check all active file presets for valid directory names
+        # These lists will be analysed later
+        nameCheck = []
+        for export in exp.file_presets:
+            if export.use_blend_directory is True:
+                blendName = bpy.path.basename(bpy.context.blend_data.filepath)
+                nameCheck.append([" Blend Name", blendName, " Preset", export.name])
+            for ePass in export.passes:
+                if ePass.sub_directory != "":
+                    nameCheck.append([" Pass Folder", ePass.sub_directory, " Preset", export.name])
+                if ePass.file_suffix != "":
+                    nameCheck.append([" File Suffix", ePass.file_suffix, " Preset", export.name])
+
+        print("names found...", nameCheck)
 
         # Checks for any easily-preventable errors
         for object in context.scene.objects:
@@ -394,6 +451,12 @@ class CAP_Export_Assets(Operator):
                     FocusObject(object)
                     return statement
 
+                # Check Export Sub-Directory
+                export = exp.file_presets[expKey]
+                if export.use_sub_directory is True:
+                    objName = object.name
+                    nameCheck.append([" Object Name", objName, " Preset", export.name])
+
                 # Check Location Default
                 if int(object.CAPObj.location_default) == 0:
                     statement =  "The selected object " + object.name + " has no location preset defined, please define one!"
@@ -402,40 +465,88 @@ class CAP_Export_Assets(Operator):
 
                 self.exportCount += 1
 
-        for group in GetSceneGroups(context.scene):
+        # If we're using Unity export options, ensure that every object mesh has a single user
+        if export.x_unity_rotation_fix is True:
+            for item in context.scene.objects:
+                data = item.data
+                if data is not None:
+                    print(data.users)
+                    if data.users > 1:
+                        FocusObject(item)
+                        statement = "Sorry, but currently, this Unity Export Preset requires that all scene objects be single-user only.  Please ensure all objects have only one user, before using it."
+                        return statement
+
+
+        # Check all scene groups for potential errors
+        for group in GetSceneGroups(context.scene, True):
             if group.CAPGrp.enable_export is True:
 
                 # Check Export Key
                 expKey = int(group.CAPGrp.export_default) - 1
                 if expKey == -1:
-                    statement = "The group " + group.name + " has no export default selected.  Please define!"
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for item in group.objects:
+                        SelectObject(item)
+                    statement = "The selected group " + group.name + " has no export default selected.  Please define!"
                     return statement
+
+                # Check Export Sub-Directory
+                export = exp.file_presets[expKey]
+                if export.use_sub_directory is True:
+                    name = group.name
+                    nameCheck.append([" Group Name", name, " Preset", export.name])
 
                 # Check Location Default
                 if int(group.CAPGrp.location_default) == 0:
-                    statement =  "The selected object " + group.name + " has no location preset defined, please define one!"
+                    bpy.ops.object.select_all(action='DESELECT')
+                    for item in group.objects:
+                        SelectObject(item)
+                    statement =  "The selected group " + group.name + " has no location preset defined, please define one!"
                     return statement
 
                 self.exportCount += 1
 
-        # Check Paths
+        # Check Paths to ensure the chatacters contained are valid.
         i = 0
-        while i < len(exp.location_defaults):
+        while i < len(exp.location_presets):
             enumIndex = i
             filePath = ""
             enumIndex -= 1
 
-            defaultFilePath = exp.location_defaults[enumIndex].path
+            defaultFilePath = exp.location_presets[enumIndex].path
+            print("Checking File Paths...", defaultFilePath)
 
             if defaultFilePath == "":
-                statement = "The path for " + exp.location_defaults[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
+                statement = "The path for " + exp.location_presets[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
                 return statement
 
             if defaultFilePath.find('//') != -1:
-                statement =  "The path " + exp.location_defaults[enumIndex].name + " is using a relative file path name, please turn off the Relative Path option when choosing a file path in the file browser."
+                statement =  "The path " + exp.location_presets[enumIndex].name + "is using a relative file path name, please turn off the Relative Path option when choosing a file path in the file browser."
                 return statement
 
             i += 1
+
+        # Check all collected names for invalid characters
+        if self.replaceInvalidChars is False:
+            for name in nameCheck:
+                print("Checking Directory...", name)
+                result = self.CheckSystemChar(context, name[1])
+                returnStatement = ""
+
+                if len(result) != 0:
+                    characterlead = ", is using the invalid file character "
+                    end = ".  Please remove the invalid character from the path name."
+
+                    if len(result) > 1:
+                        characterlead = ", is using the invalid file characters "
+                        end = ".  Please remove the invalid characters from the path name."
+
+                    while len(result) != 0:
+                        text = result.pop()
+                        returnStatement += text + " "
+
+                    statement = "The" + name[0] + " " + name[1] + ", belonging to the export, " + name[3] + characterlead + returnStatement + end
+                    return statement
 
         return None
 
@@ -488,8 +599,6 @@ class CAP_Export_Assets(Operator):
 
         print(">>>> CHECKED ANIMATION <<<<")
 
-
-
     ###############################################################
     # EXECUTE
     ###############################################################
@@ -498,6 +607,7 @@ class CAP_Export_Assets(Operator):
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
         self.exportInfo = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        self.replaceInvalidChars = addon_prefs.substitute_directories
 
         self.exportCount = 0
         self.exportedObjects = 0
@@ -540,7 +650,7 @@ class CAP_Export_Assets(Operator):
                     return {'FINISHED'}
 
 
-                exportDefault = self.exportInfo.export_defaults[expKey]
+                exportDefault = self.exportInfo.file_presets[expKey]
                 useBlendDirectory = exportDefault.use_blend_directory
                 useObjectDirectory = exportDefault.use_sub_directory
                 self.GetExportInfo(exportDefault)
@@ -589,7 +699,7 @@ class CAP_Export_Assets(Operator):
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
                     objectUseTags = objPass.object_use_tags
-                    self.exportAnim = False
+                    self.exportAnim = objPass.export_animation
                     self.meshSmooth = self.GetNormals(rootObject.CAPObj.normals)
 
                     activeTags = []
@@ -689,7 +799,32 @@ class CAP_Export_Assets(Operator):
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     if useSceneOrigin is False:
-                        MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+                        # If Unity needs the rotation fix, we'll do it here.  Scale has to be handled in Unity
+                        # however...
+                        if exportDefault.x_unity_rotation_fix is True:
+                            RotateAll(context, -90, (True, False, False))
+                            bpy.ops.object.select_all(action='SELECT')
+                            bpy.ops.object.transform_apply(
+                                location=False,
+                                rotation=True,
+                                scale=True
+                                )
+                            RotateAll(context, 90, (True, False, False))
+                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+
+                        # Otherwise, just move the objects
+                        else:
+                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+
+                    elif exportDefault.x_unity_rotation_fix is True:
+                        RotateAll(context, -90, (True, False, False))
+                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.transform_apply(
+                            location=False,
+                            rotation=True,
+                            scale=True
+                            )
+                        RotateAll(context, 90, (True, False, False))
 
                     print(">>> Asset List Count...", len(foundObjects))
 
@@ -747,7 +882,25 @@ class CAP_Export_Assets(Operator):
 
                     # Move objects back
                     if useSceneOrigin is False:
-                        MoveAll(rootObject, context, rootObjectLocation)
+                        if exportDefault.x_unity_rotation_fix is True:
+                            MoveAll(rootObject, context, rootObjectLocation)
+                            bpy.ops.object.select_all(action='SELECT')
+                            bpy.ops.object.transform_apply(
+                                location=False,
+                                rotation=True,
+                                scale=True
+                                )
+                        else:
+                            MoveAll(rootObject, context, rootObjectLocation)
+
+                    elif exportDefault.x_unity_rotation_fix is True:
+                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.transform_apply(
+                            location=False,
+                            rotation=True,
+                            scale=True
+                            )
+
 
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
@@ -764,7 +917,7 @@ class CAP_Export_Assets(Operator):
         # OBJECT CYCLE
         ###############################################################
         # Now hold up, its group time!
-        for group in GetSceneGroups(context.scene):
+        for group in GetSceneGroups(context.scene, True):
             if group.CAPGrp.enable_export is True:
 
                 print("-"*79)
@@ -807,7 +960,7 @@ class CAP_Export_Assets(Operator):
                 # Collect hidden defaults to restore afterwards.
                 objectName = group.name
 
-                exportDefault = self.exportInfo.export_defaults[expKey]
+                exportDefault = self.exportInfo.file_presets[expKey]
                 useBlendDirectory = exportDefault.use_blend_directory
                 useObjectDirectory = exportDefault.use_sub_directory
                 self.GetExportInfo(exportDefault)
@@ -859,7 +1012,7 @@ class CAP_Export_Assets(Operator):
                     self.applyModifiers = objPass.apply_modifiers
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
-                    self.exportAnim = False
+                    self.exportAnim = objPass.export_animation
                     self.meshSmooth = self.GetNormals(group.CAPGrp.normals)
 
                     hasTriangulation = False
@@ -955,7 +1108,24 @@ class CAP_Export_Assets(Operator):
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
                     if rootObject != None:
-                        MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+                        # If Unity needs the rotation fix, first scale the objects, then get their new location
+                        # and move them
+                        if exportDefault.x_unity_rotation_fix is True:
+                            RotateAll(context, -90, (True, False, False))
+                            bpy.ops.object.select_all(action='SELECT')
+                            bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
+                            RotateAll(context, 90, (True, False, False))
+                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+
+                        # Otherwise, just move the objects
+                        else:
+                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+
+                    elif exportDefault.x_unity_rotation_fix is True:
+                        RotateAll(context, -90, (True, False, False))
+                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
+                        RotateAll(context, 90, (True, False, False))
 
                     # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                     # ////////////////////////////////////////////////////////////////////////////
@@ -1022,7 +1192,16 @@ class CAP_Export_Assets(Operator):
 
                     # Move objects back
                     if rootObject != None:
-                        MoveAll(rootObject, context, rootObjectLocation)
+                        if exportDefault.x_unity_rotation_fix is True:
+                            MoveAll(rootObject, context, rootObjectLocation)
+                            bpy.ops.object.select_all(action='SELECT')
+                            bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
+                        else:
+                            MoveAll(rootObject, context, rootObjectLocation)
+
+                    elif exportDefault.x_unity_rotation_fix is True:
+                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
 
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")

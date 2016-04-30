@@ -1,5 +1,5 @@
 import bpy, bmesh, time
-from math import *
+from math import pi, radians, degrees
 from mathutils import Vector
 
 #//////////////////// - BASIC DEFINITIONS - ///////////////////////
@@ -13,10 +13,24 @@ def FocusObject(target):
     if target.hide_select is True:
         target.hide_select = False
 
+    # If the mode is not object, we have to change it before using the
+    # Select All command
+    #bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    #print(target.mode)
+    #prevMode = ''
+    #if target.mode != 'OBJECT':
+        #prevMode = target.mode
+        #bpy.context.scene.objects.active = bpy.data.objects[target.name]
+        #bpy.ops.object.mode_set(mode='OBJECT')
+
     #### Select and make target active
     bpy.ops.object.select_all(action='DESELECT')
     bpy.context.scene.objects.active = bpy.data.objects[target.name]
     bpy.ops.object.select_pattern(pattern=target.name)
+
+    # Set the mode back
+    #if prevMode != '':
+        #bpy.ops.object.mode_set(mode=prevMode)
 
 def SelectObject(target):
 
@@ -104,6 +118,16 @@ def DeleteObjectByMemory(target):
         bpy.data.objects.remove(ob)
 
     return
+
+def SwitchObjectMode(newMode, target):
+    # Switches the object mode if it is currently not equal to the
+    # current object mode.
+    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    prevMode = target.mode
+    if target.mode != newMode:
+        bpy.context.scene.objects.active = bpy.data.objects[target.name]
+        bpy.ops.object.mode_set(mode='OBJECT')
+        return prevMode
 
 def MoveObject(target, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
@@ -346,7 +370,8 @@ def MoveAll(target, context, location):
         gpencil_strokes=False,
         texture_space=False,
         remove_on_cancel=False,
-        release_confirm=False)
+        release_confirm=False
+        )
 
     print("Root Object", target.name, "Moved... ", rootLocation)
 
@@ -357,6 +382,69 @@ def MoveAll(target, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     target.lock_location = lockTransform
 
+def RotateAll(context, rotation, constraintAxis):
+
+    print(">>>> Rotating EVERYTHING <<<<")
+
+    # Prevent auto keyframing and location lock from being active
+    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+
+    bpy.ops.object.select_all(action='SELECT')
+
+    print("DEGREES TO RADIANS MOFO: ", str(radians(rotation)))
+
+    bpy.ops.transform.rotate(
+        value=radians(rotation),
+        axis=(0.0, 0.0, 0.0),
+        constraint_axis=constraintAxis,
+        constraint_orientation='GLOBAL',
+        mirror=False, proportional='DISABLED',
+        proportional_edit_falloff='SMOOTH',
+        proportional_size=1.0,
+        snap=False,
+        snap_target='CLOSEST',
+        snap_point=(0.0, 0.0, 0.0),
+        snap_align=False,
+        snap_normal=(0.0, 0.0, 0.0),
+        gpencil_strokes=False,
+        release_confirm=False
+        )
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+
+def ScaleAll(context, scale, constraintAxis):
+
+    print(">>>> Scaling EVERYTHING <<<<")
+
+    # Prevent auto keyframing and location lock from being active
+    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+
+    bpy.ops.object.select_all(action='SELECT')
+
+    bpy.ops.transform.resize(
+        value=scale,
+        constraint_axis=constraintAxis,
+        constraint_orientation='GLOBAL',
+        mirror=False,
+        proportional='DISABLED',
+        proportional_edit_falloff='SMOOTH',
+        proportional_size=1.0,
+        snap=False,
+        snap_target='CLOSEST',
+        snap_point=(0.0, 0.0, 0.0),
+        snap_align=False,
+        snap_normal=(0.0, 0.0, 0.0),
+        gpencil_strokes=False,
+        texture_space=False,
+        remove_on_cancel=False,
+        release_confirm=False
+        )
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
 
 def CheckSuffix(string, suffix):
 
@@ -954,7 +1042,7 @@ def FindWorldSpaceObjectLocation(target, context):
 
     return cursorLocCopy
 
-def GetSceneGroups(scene):
+def GetSceneGroups(scene, hasObjects):
     groups = []
 
     for item in scene.objects:
@@ -965,7 +1053,8 @@ def GetSceneGroups(scene):
                 if found_group.name == group.name:
                     groupAdded = True
 
-            if groupAdded == False:
-                groups.append(group)
+            if hasObjects is False or len(group.objects) > 0:
+                if groupAdded == False:
+                    groups.append(group)
 
     return groups

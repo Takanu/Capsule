@@ -48,7 +48,7 @@ class Group_UIList(UIList):
         scn = context.scene.CAPScn
         groupData = None
 
-        for group in GetSceneGroups(context.scene):
+        for group in GetSceneGroups(context.scene, True):
             if group.name == item.name:
                 groupData = group
 
@@ -117,16 +117,12 @@ class Action_UIList(UIList):
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
 
-class CAP_SelectionObject(Panel):
+class CAP_Selection(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
-    bl_label = "Export"
+    bl_label = "Selection"
     bl_category = "Capsule"
-
-    @classmethod
-    def poll(cls, context):
-        return True
 
     def draw(self, context):
 
@@ -134,7 +130,9 @@ class CAP_SelectionObject(Panel):
         addon_prefs = user_preferences.addons[__package__].preferences
 
         # UI Prompt for when the .blend Capsule data can no longer be found.
-        if addon_prefs.data_missing is True:
+        try:
+            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        except KeyError:
             layout = self.layout
             col_export = layout.column(align=True)
             col_export.label("No Capsule for this .blend file has been found,")
@@ -145,35 +143,15 @@ class CAP_SelectionObject(Panel):
             col_export.separator()
             return
 
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
         scn = context.scene.CAPScn
+        selectTab = int(str(scn.selection_switch))
 
         layout = self.layout
+        col_selection_title_tab = layout.row(align=True)
+        col_selection_title_tab.prop(scn, "selection_switch", expand=True)
 
-        col_export = layout.column(align=True)
-        col_export.operator("scene.cap_export")
-        col_export.separator()
-        object_switch = layout.row(align=True)
-        object_switch.prop(scn, "object_switch", expand=True)
-
-
-        #/////////////////////////////////////////////////////////////////
-        #/////////////// OBJECT SELECTION UI /////////////////////////////
-        #/////////////////////////////////////////////////////////////////
-        obType = int(str(scn.object_switch))
-        if obType == 1:
-            col_box = layout.box()
-            col_location = col_box.column(align=True)
-            col_location.label("Overview")
-            col_location.separator()
-            col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
-            col_location.operator("scene.cap_clearlist", icon="X")
-            layout.separator()
-
-            col_selection_box = layout.box()
-            col_selection_title = col_selection_box.column(align=True)
-            col_selection_title.label("Selection")
-
+        if selectTab == 1:
             # Get the currently active object, whatever that might be.
             obj = None
             ob = None
@@ -201,11 +179,11 @@ class CAP_SelectionObject(Panel):
             # Now we can build the UI
             if ob != None:
                 if addon_prefs.object_multi_edit is False or len(context.selected_objects) == 1 or (context.active_object is not None and len(context.selected_objects) == 0):
-                    col_selection_item_box = col_selection_box.box()
+                    col_selection_item_box = layout.box()
                     col_export = col_selection_item_box.column(align=True)
                     col_export.alignment = 'EXPAND'
                     col_export.label(text=ob.name, icon="OBJECT_DATA")
-                    col_export.separator()
+                    #col_export.separator()
 
                 elif len(context.selected_objects) > 1:
                     objectCount = 0
@@ -218,50 +196,43 @@ class CAP_SelectionObject(Panel):
 
                     if objectCount == 1:
                         if type is 1:
-                            col_selection_item_box = col_selection_box.box()
-                            col_export = col_selection_item_box.column(align=True)
+                            col_selection_item_box = layout.box()
+                            col_export = layout.column(align=True)
                             col_export.label(text=selected[0].name, icon="OBJECT_DATA")
-                            col_export.separator()
+                            #col_export.separator()
 
                     else:
-                        col_selection_item_box = col_selection_box.box()
+                        col_selection_item_box = layout.box()
                         col_export = col_selection_item_box.column(align=True)
                         objectLabel = str(objectCount) + " objects selected"
                         col_export.label(text=objectLabel, icon="OBJECT_DATA")
-                        col_export.separator()
+                        #col_export.separator()
 
             if ob != None:
-                obj_settings = col_selection_box.column(align=True)
+                obj_settings = layout.column(align=True)
+                obj_settings.separator()
                 obj_settings.prop(obj, "enable_export")
                 obj_settings.prop(obj, "use_scene_origin")
                 obj_settings.separator()
                 obj_settings.separator()
-                obj_settings.label(text="Location")
+                obj_settings.label(text="Location:")
                 obj_settings.separator()
                 obj_settings.prop(obj, "location_default", icon="FILESEL", text="")
                 obj_settings.separator()
-                obj_settings.label(text="Export Settings:")
+                obj_settings.label(text="Export Preset:")
                 obj_settings.separator()
                 obj_settings.prop(obj, "export_default", text="")
                 obj_settings.separator()
-                obj_settings.label(text="Mesh Normal Export:")
+                obj_settings.label(text="Mesh Normals:")
                 obj_settings.separator()
                 obj_settings.prop(obj, "normals", text="")
                 obj_settings.separator()
 
             # If no object was eventually found, bring up warning labels.
             else:
-                object_info = col_selection_box.column(align=True)
-                if addon_prefs.object_multi_edit is False:
-                    if len(scn.object_list) < (scn.object_list_index + 1) and len(scn.object_list) != 0:
-                        object_info.label(text="Please select an object from the ")
-                        object_info.label(text="list to view it's settings.")
-                    else:
-                        object_info.label(text="No objects in the list, select ")
-                        object_info.label(text="one from the scene to edit export settings.")
-                else:
-                    object_info.label(text="No objects selected.  Please select an ")
-                    object_info.label(text="object to edit it, or change selection mode.")
+                object_info = layout.column(align=True)
+                object_info.separator()
+                object_info.label(text="No objects selected.")
 
             layout.separator()
 
@@ -269,19 +240,7 @@ class CAP_SelectionObject(Panel):
         #/////////////////////////////////////////////////////////////////
         #////////////////////////// GROUP UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
-        else:
-            col_box = layout.box()
-            col_location = col_box.column(align=True)
-            col_location.label("Overview")
-            col_location.separator()
-            col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
-            col_location.separator()
-            col_location.operator("scene.cap_clearlist", icon="X")
-
-            layout.separator()
-            col_selection_box = layout.box()
-            col_selection_title = col_selection_box.column(align=True)
-            col_selection_title.label("Selection")
+        elif selectTab is 2:
 
             # Get the first group pointer we need
             grp = None
@@ -292,13 +251,13 @@ class CAP_SelectionObject(Panel):
                 if len(scn.group_list) > 0:
                     entry = scn.group_list[scn.group_list_index]
 
-                    for group in GetSceneGroups(context.scene):
+                    for group in GetSceneGroups(context.scene, True):
                         if group.name == entry.name:
                             grp = group.CAPGrp
                             gr = group
 
                 if gr is not None:
-                    col_selection_item_box = col_selection_box.box()
+                    col_selection_item_box = layout.box()
                     group_label = col_selection_item_box.column(align=True)
                     group_label.alignment = 'EXPAND'
                     group_label.label(text=gr.name, icon="MOD_ARRAY")
@@ -336,7 +295,7 @@ class CAP_SelectionObject(Panel):
                     groupLabel = gr.name + " group selected."
 
                 if groupLabel != "":
-                    col_selection_item_box = col_selection_box.box()
+                    col_selection_item_box = layout.box()
                     group_label = col_selection_item_box.column(align=True)
                     group_label.alignment = 'EXPAND'
                     group_label.label(text=groupLabel, icon="MOD_ARRAY")
@@ -346,23 +305,24 @@ class CAP_SelectionObject(Panel):
             #Get the group so we can obtain preference data from it
             #With Multi-Edit, we have to find a flexible approach to obtaining group data
             if grp != None:
-                rawr = col_selection_box.column(align=True)
+                rawr = layout.column(align=True)
+                rawr.separator()
                 rawr.prop(grp, "enable_export", text="Enable Export")
                 rawr.separator()
                 rawr.separator()
                 rawr.label(text="Origin Object:")
 
-                rawr_row = col_selection_box.row(align=True)
+                rawr_row = layout.row(align=True)
                 rawr_row.prop(grp, "root_object", icon="OBJECT_DATA", text="")
                 rawr_row.operator("scene.cap_setroot", text="", icon="EYEDROPPER")
                 rawr_row.operator("scene.cap_clearroot", text="", icon="X")
 
-                rawr_other = col_selection_box.column(align=True)
+                rawr_other = layout.column(align=True)
                 rawr_other.label(text="Location:")
                 rawr_other.separator()
                 rawr_other.prop(grp, "location_default", icon="FILESEL", text="")
                 rawr_other.separator()
-                rawr_other.label(text="Export Settings:")
+                rawr_other.label(text="Export Preset:")
                 rawr_other.separator()
                 rawr_other.prop(grp, "export_default", text="")
                 rawr_other.separator()
@@ -372,15 +332,16 @@ class CAP_SelectionObject(Panel):
 
             # If no group was eventually found, bring up warning labels.
             else:
-                group_info = col_selection_box.column(align=True)
-                if addon_prefs.group_multi_edit is False:
-                    group_info.label(text="No groups found, press refresh to find ")
-                    group_info.label(text="new groups, or change selection mode.")
-                else:
-                    group_info.label(text="No groups selected.  Please select a group ")
-                    group_info.label(text="to edit it, or change selection mode.")
+                group_info = layout.column(align=True)
+                group_info.separator()
+                group_info.label(text="No groups selected.")
 
             layout.separator()
+
+
+
+
+
 
 
         #////////////////////////// ANIMATION UI /////////////////////////
@@ -397,7 +358,49 @@ class CAP_SelectionObject(Panel):
 
         #layout.separator()
 
+class CAP_List(Panel):
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "TOOLS"
+    bl_context = "objectmode"
+    bl_label = "Export List"
+    bl_category = "Capsule"
 
+    @classmethod
+    def poll(cls, context):
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        try:
+            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        except KeyError:
+            return False
+        return True
+
+    def draw(self, context):
+
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        scn = context.scene.CAPScn
+
+        layout = self.layout
+        listTab = int(str(scn.list_switch))
+
+        list_switch = layout.row(align=True)
+        list_switch.prop(scn, "list_switch", expand=True)
+
+        col_location = layout.column(align=True)
+
+        if listTab == 1:
+            col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
+        elif listTab == 2:
+            col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
+
+        col_location_options = layout.row(align=True)
+        col_location_options.operator("scene.cap_clearlist", icon="X")
+        col_location_options.operator("scene.cap_refreshlist", icon="FILE_REFRESH")
+
+        col_export = layout.column(align=True)
+        col_export.operator("scene.cap_export")
+        layout.separator()
 
 
 class CAP_Location(Panel):
@@ -406,6 +409,17 @@ class CAP_Location(Panel):
     bl_context = "objectmode"
     bl_label = "Locations"
     bl_category = "Capsule"
+
+    @classmethod
+    def poll(cls, context):
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+
+        try:
+            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        except KeyError:
+            return False
+        return True
 
     def draw(self, context):
         layout = self.layout
@@ -417,7 +431,7 @@ class CAP_Location(Panel):
         ob = context.object
 
         col_location = layout.row(align=True)
-        col_location.template_list("Path_Default_UIList", "default", exp, "location_defaults", exp, "location_defaults_index", rows=3, maxrows=6)
+        col_location.template_list("Path_Default_UIList", "default", exp, "location_presets", exp, "location_presets_index", rows=3, maxrows=6)
 
         col_location.separator()
 
@@ -427,12 +441,14 @@ class CAP_Location(Panel):
         #row_location.operator("scene.cap_shiftup", text="", icon="TRIA_UP")
         #row_location.operator("scene.cap_shiftdown", text="", icon="TRIA_DOWN")
 
-        file = layout.row(align=True)
+        file = layout.column(align=True)
         file.alignment = 'EXPAND'
 
         count = 0
-        for i, item in enumerate(exp.location_defaults, 1):
+        for i, item in enumerate(exp.location_presets, 1):
             count += 1
 
-        if exp.location_defaults_index > -1 and exp.location_defaults_index < count:
-            file.prop(exp.location_defaults[exp.location_defaults_index], "path", text="Location")
+        if exp.location_presets_index > -1 and exp.location_presets_index < count:
+            file.label("File Path:")
+            file.separator()
+            file.prop(exp.location_presets[exp.location_presets_index], "path", text="")

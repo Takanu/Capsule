@@ -230,7 +230,7 @@ def Focus_Group(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    for group in GetSceneGroups(context.scene):
+    for group in GetSceneGroups(context.scene, True):
         if group.name == self.name:
 
             bpy.ops.object.select_all(action='DESELECT')
@@ -265,7 +265,7 @@ def Select_Group(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    for group in GetSceneGroups(context.scene):
+    for group in GetSceneGroups(context.scene, True):
         if group.name == self.name:
 
             #bpy.ops.object.select_all(action='DESELECT')
@@ -491,24 +491,20 @@ def Update_GroupNormals(self, context):
 def Update_ObjectItemName(self, context):
 
     print("Finding object name to replace")
-
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
     scn = context.scene.CAPScn
 
     # Set the name of the item to the group name
-    for object in context.scene.objects:
-        if object.name == self.prev_name:
+    for item in context.scene.objects:
+        if item.name == self.prev_name:
+            print("Found object name ", item.name)
+            item.name = self.name
+            self.prev_name = item.name
 
-            print("Found object name ", object.name)
-            object.name = self.name
-            self.prev_name = object.name
-
-            print("object Name = ", object.name)
+            print("object Name = ", item.name)
             print("List Name = ", self.name)
             print("Prev Name = ", self.prev_name)
 
-        return None
+    return None
 
 def Update_ObjectItemExport(self, context):
 
@@ -534,7 +530,7 @@ def Update_ObjectItemExport(self, context):
 def Update_GroupItemName(self, context):
 
     # Set the name of the item to the group name
-    for group in GetSceneGroups(context.scene):
+    for group in GetSceneGroups(context.scene, True):
         print("Finding group name to replace")
         if group.name == self.prev_name:
 
@@ -560,7 +556,7 @@ def Update_GroupItemExport(self, context):
     if scn.enable_sel_active == False:
 
         # Set the name of the item to the group name
-        for group in GetSceneGroups(context.scene):
+        for group in GetSceneGroups(context.scene, True):
             print("Finding group name to replace")
             if group.name == self.name:
                 print("Found object name ", group.name)
@@ -610,6 +606,7 @@ def Update_ObjectRemoveFromList(self, context):
                     scn.enable_sel_active = False
                     scn.enable_list_active = False
                     return
+
         i += 1
 
 
@@ -623,7 +620,7 @@ def Update_GroupRemoveFromList(self, context):
     for item in scn.group_list:
         if item.name == self.name:
             # Search through scene groups to untick export
-            for sceneGroup in GetSceneGroups(context.scene):
+            for sceneGroup in GetSceneGroups(context.scene, True):
                 if sceneGroup.name == self.name:
                     print("Deleting", sceneGroup.name, "from the list.")
                     scn.enable_list_active = True
@@ -637,13 +634,8 @@ def Update_GroupRemoveFromList(self, context):
                     return
         i += 1
 
-def SelectObjectList(scene, name):
-    ui = scene.CAPUI
-    scn = scene.CAPScn
-
 
 def UpdateObjectList(scene, name, enableExport):
-    ui = scene.CAPUI
     scn = scene.CAPScn
 
     # Check a list entry for the object doesn't already exist.
@@ -661,7 +653,6 @@ def UpdateObjectList(scene, name, enableExport):
         entry.enable_export = enableExport
 
 def UpdateGroupList(scene, name, enableExport):
-    ui = scene.CAPUI
     scn = scene.CAPScn
 
     # Check a list entry for the group doesn't already exist.
