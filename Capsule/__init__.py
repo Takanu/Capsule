@@ -2,7 +2,7 @@
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
-    "author": "Crocadillian (BA) / Takanu (GitHub)",
+    "author": "Crocadillian (BA) / Takanu (GitHub), special thanks to Acidhawk and Asahd <3",
     "version": (0, 999),
     "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > GEX",
@@ -95,13 +95,10 @@ def DrawAnimationWarning(self, context):
         layout.label("Hey!  The animation feature is currently experimental, and may result in")
         layout.label("objects being repositioned after exporting, and in the FBX file.")
         layout.separator()
-        layout.label("The animation features should work fine if you're exporting the following:")
-        layout.label(" - Armature Animations")
-        layout.label(" - Any other animations, so long as you do not request the plugin to centre")
-        layout.label("the object being animated.")
-        layout.separator()
-        layout.label("If any objects have been repositioned after export, simply use the undo tool.")
-        layout.label("Bear in mind though, that they probably didn't export correctly.")
+        layout.label("The animation features should work fine if you're exporting armature animations,")
+        layout.label("any other kinds of object animations are unlikely to export correctly, and if")
+        layout.label("attempted, you may find your scene translated slightly.  If this happens though,")
+        layout.label("simply use the undo tool.")
         layout.separator()
         layout.label("Hopefully i'll have this fully functional in the next version :)")
 
@@ -217,7 +214,7 @@ class CAP_ExportPass(PropertyGroup):
 
     apply_modifiers = BoolProperty(
         name="Apply Modifiers",
-        description="If enabled, all modifiers on every object in the pass will be applied before export.",
+        description="If enabled, all modifiers on every object in the pass will be applied.",
         default=False
         )
 
@@ -227,9 +224,9 @@ class CAP_ExportPass(PropertyGroup):
         default=False
         )
 
-    object_use_tags = BoolProperty(
-        name="(Object Only) Use All Tags",
-        description="If Export Invidiual is also enabled, this option allows the inclusion of all tagged objects associated with a single object.",
+    use_tags_on_objects = BoolProperty(
+        name="Use Tags for Objects",
+        description="If enabled, active tag filters will also apply to any single-object exports in this pass, as well as those in the scene that share the same name - which will also be exported with it.",
         default=False
         )
 
@@ -863,10 +860,6 @@ class CAP_AddonPreferences(AddonPreferences):
                     options_ui.prop(currentPass, "apply_modifiers")
                     options_ui.prop(currentPass, "triangulate")
                     options_ui.prop(currentPass, "export_individual")
-                    options_object_tags = options_ui.column(align=True)
-                    options_object_tags.prop(currentPass, "object_use_tags")
-                    if currentPass.export_individual is False:
-                        options_object_tags.enabled = False
                     options_ui.separator()
 
                     pass_options.separator()
@@ -875,7 +868,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
                     # Tag Filters
                     tag_filter = pass_options.column(align=True)
-                    tag_filter.label(text="Tag Filters")
+                    tag_filter.label(text="Filter by Tag")
                     tag_filter.separator()
 
                     for passTag in currentPass.tags:
@@ -884,11 +877,13 @@ class CAP_AddonPreferences(AddonPreferences):
 
                     tag_filter.separator()
 
-                    #pass_options.separator()
+                    # Tag Options
+                    tag_options = pass_options.column(align=True)
+                    tag_options.label(text="Tag Options")
+                    tag_options.separator()
 
-                    #tag_filter.prop(addon_prefs, "component_dropdown", text="Filter By Tags")
-                    #tag_filter.template_list("GEX_TagFilter_UIList", "default", currentPass, "tags", currentPass, "tags_index", rows=3, maxrows=6)
-                    #tag_filter.separator()
+                    tag_options.prop(currentPass, "use_tags_on_objects")
+                    tag_options.separator()
 
             else:
                 unselected = pass_box.column(align=True)
@@ -961,24 +956,17 @@ def CheckSelectedObject(scene):
 
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__name__].preferences
+    #print("SCENE UPDATE")
 
     if bpy.context.active_object is not None:
         if bpy.context.active_object.name != addon_prefs.prev_selected_object:
-            if addon_prefs.object_multi_edit is False:
-                print("Objects selected, turning Multi-Edit on.")
-                addon_prefs.object_multi_edit = True
-            if addon_prefs.group_multi_edit is False:
-                print("Objects selected, turning Multi-Edit on.")
-                addon_prefs.group_multi_edit = True
+            addon_prefs.object_multi_edit = True
+            addon_prefs.group_multi_edit = True
             addon_prefs.prev_selected_object = bpy.context.active_object.name
 
     if len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
-        if addon_prefs.object_multi_edit is False:
-            print("Objects selected, turning Multi-Edit on.")
-            addon_prefs.object_multi_edit = True
-        if addon_prefs.group_multi_edit is False:
-            print("Objects selected, turning Multi-Edit on.")
-            addon_prefs.group_multi_edit = True
+        addon_prefs.object_multi_edit = True
+        addon_prefs.group_multi_edit = True
         addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
 
 

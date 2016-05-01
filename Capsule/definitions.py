@@ -15,13 +15,13 @@ def FocusObject(target):
 
     # If the mode is not object, we have to change it before using the
     # Select All command
-    #bpy.context.scene.objects.active = bpy.data.objects[target.name]
-    #print(target.mode)
-    #prevMode = ''
-    #if target.mode != 'OBJECT':
-        #prevMode = target.mode
-        #bpy.context.scene.objects.active = bpy.data.objects[target.name]
-        #bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    print(target.mode)
+    prevMode = ''
+    if target.mode != 'OBJECT':
+        prevMode = target.mode
+        bpy.context.scene.objects.active = bpy.data.objects[target.name]
+        bpy.ops.object.mode_set(mode='OBJECT')
 
     #### Select and make target active
     bpy.ops.object.select_all(action='DESELECT')
@@ -29,8 +29,8 @@ def FocusObject(target):
     bpy.ops.object.select_pattern(pattern=target.name)
 
     # Set the mode back
-    #if prevMode != '':
-        #bpy.ops.object.mode_set(mode=prevMode)
+    if prevMode != '':
+        bpy.ops.object.mode_set(mode=prevMode)
 
 def SelectObject(target):
 
@@ -738,6 +738,15 @@ def CompareObjectWithTag(context, object, tag):
 
     print("Object doesn't match tag...")
     return False
+
+def FindObjectsWithName(context, object_name):
+    objects_found = []
+
+    for object in context.scene.objects:
+        if object.name.find(object_name) != -1:
+            objects_found.append(object)
+
+    return objects_found
 
 def FindObjectWithTag(context, object_name, tag):
 

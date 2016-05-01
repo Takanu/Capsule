@@ -3,17 +3,18 @@ from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, RotateAll, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, RotateAll, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
 
 
 
 class CAP_Export_Assets(Operator):
-    """Updates the origin point based on the option selected, for all selected objects"""
+    """Exports all objects and groups in the scene that are marked for export."""
 
     bl_idname = "scene.cap_export"
     bl_label = "Export"
 
     def ExportFBX(self, filePath):
+        # Calls the FBX Export API to make the export happen
 
         print("Exporting", "*"*70)
         bpy.ops.export_scene.fbx(check_existing=False,
@@ -52,6 +53,8 @@ class CAP_Export_Assets(Operator):
         use_metadata=False)
 
     def PrepareExportIndividual(self, context, targets, path, suffix):
+        # Prepares export for multiple FBX files, each containing a separate
+        # object.
         print(">>> Individual Pass <<<")
         for item in targets:
             print("-"*70)
@@ -79,6 +82,7 @@ class CAP_Export_Assets(Operator):
             #print("tempLoc - ", tempLoc)
 
     def PrepareExportCombined(self, targets, path, exportName, suffix):
+        # Prepares export for an FBX file comprising of multiple objects
         print(">>> Exporting Combined Pass <<<")
         print("Checking export preferences...")
 
@@ -174,11 +178,6 @@ class CAP_Export_Assets(Operator):
                 if self.replaceInvalidChars is True:
                     blendName = self.ReplaceSystemChar(context, blendName)
 
-                #pathSplit = bpy.data.filepath.rsplit(slash)
-                #blendFile = pathSplit.pop()
-                #blendSplit = blendFile.rsplit(".blend")
-                #blendName = blendSplit[0]
-
                 newPath = path + blendName + slash
 
             if useObjectDirectory is True:
@@ -206,7 +205,9 @@ class CAP_Export_Assets(Operator):
 
         return path
 
+    # CHANGE ME PLZ
     def GetNormals(self, enum):
+        # I should change this, this is redundant.
 
         if enum == '1':
             return 'EDGE'
@@ -216,6 +217,8 @@ class CAP_Export_Assets(Operator):
             return 'OFF'
 
     def GetExportInfo(self, exportDefault):
+        # Stores a whole load of export-related settings for re-use throughout
+        # the operator
 
         self.exportTypes = exportDefault.export_types
         self.bundle_textures = exportDefault.bundle_textures
@@ -248,7 +251,9 @@ class CAP_Export_Assets(Operator):
         self.bake_anim_simplify_factor = exportDefault.bake_anim_simplify_factor
 
     def SetupScene(self, context):
-        # Keep a record of the selected and active objects to restore later
+        # Stores various scene settings and display features to restore later
+        # when the plugin is finished
+
         self.active = None
         self.selected = []
 
@@ -322,12 +327,16 @@ class CAP_Export_Assets(Operator):
             item.lock_rotation = (False, False, False)
             item.lock_scale = (False, False, False)
 
+        # If any armatures are in any modes different to that
+
         # Now we can unhide and deselect everything
         bpy.ops.object.hide_view_clear()
         bpy.ops.object.select_all(action='DESELECT')
         print("Rawr")
 
     def RestoreScene(self, context):
+        # Restores all previously held scene settings and display features
+        # after the operator is done shuffling it
 
         # Restore Constraint Defaults
         for entry in self.constraintList:
@@ -374,6 +383,8 @@ class CAP_Export_Assets(Operator):
         print("Rawr")
 
     def ReplaceSystemChar(self, context, name):
+        # Replaces invalid directory characters in names
+
         print("Checking Directory...", name)
         returnName = name
         if platform.system() == 'Windows':
@@ -394,6 +405,8 @@ class CAP_Export_Assets(Operator):
         return returnName
 
     def CheckSystemChar(self, context, name):
+        # Checks for invalid directory characters in names
+
         print("Checking Directory...", name)
         if platform.system() == 'Windows':
             invalidCharacters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
@@ -420,6 +433,8 @@ class CAP_Export_Assets(Operator):
         return invalidCaptured
 
     def CheckForErrors(self, context):
+        # Ensures that the scene is setup with correct settings, before proceeding
+        # with the export.
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
@@ -551,6 +566,8 @@ class CAP_Export_Assets(Operator):
         return None
 
     def CheckAnimation(self, context):
+        # Not currently used until further notice
+
         for item in context.scene.objects:
             print(item.name)
             print(item.animation_data)
@@ -698,21 +715,16 @@ class CAP_Export_Assets(Operator):
                     self.applyModifiers = objPass.apply_modifiers
                     useTriangulate = objPass.triangulate
                     exportIndividual = objPass.export_individual
-                    objectUseTags = objPass.object_use_tags
+                    objectUseTags = objPass.use_tags_on_objects
                     self.exportAnim = objPass.export_animation
                     self.meshSmooth = self.GetNormals(rootObject.CAPObj.normals)
 
                     activeTags = []
-                    foundObjects = []
                     i = 0
 
-                    if exportIndividual is True and objectUseTags is True:
-                        for passTag in objPass.tags:
-                            activeTags.append(exportDefault.tags[i])
-                            i += 1
-
-                    # Create a list for every tag in use
-                    else:
+                    # If the user wishes object exports to use tags, we need to
+                    # create a list for every tag in use
+                    if objectUseTags is True:
                         print("Processing tags...")
                         for passTag in objPass.tags:
                             if passTag.use_tag is True:
@@ -721,11 +733,11 @@ class CAP_Export_Assets(Operator):
 
                             i += 1
 
-                    # Also set file path name
+                    # Collect information on path names for later
                     path = ""                                # Path given from the location default
                     fileName = ""                            # File name for the object (without tag suffixes)
                     suffix = objPass.file_suffix             # Additional file name suffix
-                    subDirectory = objPass.sub_directory    # Whether a sub-directory needs to be created
+                    subDirectory = objPass.sub_directory     # Whether a sub-directory needs to be created
 
 
                     # Lets see if the root object can be exported...
@@ -762,33 +774,58 @@ class CAP_Export_Assets(Operator):
                     # only for the tags that are active
 
                     print(">>>> Collecting Objects <<<<")
+                    foundObjects = []
 
-                    if len(activeTags) > 0:
-                        print(">>>> Tags On, searching... <<<")
+                    # We first want to collect all objects that share the same name,
+                    # then if any tags are on, we filter those results
+                    if objectUseTags is True:
+                        results = FindObjectsWithName(context, objectName)
+                        while len(results) != 0:
+                            item = results.pop()
+                            if item.name != rootObject.name:
+                                foundObjects.append(item)
 
-                        # For each tag, try to search for an object that matches the tag
-                        for tag in activeTags:
-                            if FindObjectWithTag(context, objectName, tag) is not None:
-                                item = FindObjectWithTag(context, objectName, tag)
+                        print("Objects found...", foundObjects)
 
-                                if item != None:
-                                    if item.name != rootObject.name:
-                                        if exportDefault.filter_render is False or (exportDefault.filter_render is True and item.hide_render is False):
-                                            foundObjects.append(item)
+                        # If we have any active tags, we then need to filter our results
+                        if len(activeTags) > 0:
+                            print(">>>> Tags On, searching... <<<")
+                            results = []
 
-                                            print("Tag", tag.name, "Found...", item.name)
+                            # For each tag, try to search for an object that matches the tag
+                            for tag in activeTags:
+                                print(tag.name)
+                                for item in foundObjects:
+                                    print(item)
+                                    if CompareObjectWithTag(context, item, tag) is True:
+                                        results.append(item)
 
-                                            # If the active tag has the ability to replace names, do it here.
-                                            if tag.x_ue4_collision_naming is True and exportIndividual is False:
-                                                print("SUPER SECRET REPLACE NAME FUNCTION USED!")
-                                                renameObjectList.append(item)
-                                                renameNameList.append(item.name)
+                                        # If the active tag has the ability to replace names, do it here.
+                                        if tag.x_ue4_collision_naming is True and exportIndividual is False:
+                                            print("SUPER SECRET REPLACE NAME FUNCTION USED!")
+                                            renameObjectList.append(item)
+                                            renameNameList.append(item.name)
 
-                                                item.name = item.name.replace(tag.name_filter, "")
-                                                item.name = "UCX_" + item.name + exportDefault.tags[1].name_filter
+                                            item.name = item.name.replace(tag.name_filter, "")
+                                            item.name = "UCX_" + item.name + exportDefault.tags[1].name_filter
 
-                                                print("Name replaced...", item.name)
+                                            print("Name replaced...", item.name)
 
+                            foundObjects.clear()
+                            for item in results:
+                                foundObjects.append(item)
+
+                        # If Filter by Rendering is on, we need to check our results against that
+                        if exportDefault.filter_render is True:
+                            results = []
+
+                            while len(foundObjects) != 0:
+                                item = foundObjects.pop()
+                                if item.hide_render is False:
+                                    results.append(item)
+
+                            for item in results:
+                                foundObjects.append(item)
 
                     # Debug check for found objects
                     print("Checking found objects...")

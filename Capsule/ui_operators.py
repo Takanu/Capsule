@@ -9,7 +9,7 @@ from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObj
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
 
 class CAP_Add_Path(Operator):
-    """Creates a new Location, that lets you define a file path for exports to go to."""
+    """Creates a new location."""
 
     bl_idname = "scene.cap_addpath"
     bl_label = "Add"
@@ -38,7 +38,7 @@ class CAP_Add_Path(Operator):
         return {'FINISHED'}
 
 class CAP_Delete_Path(Operator):
-    """Deletes the selected Location from the list."""
+    """Deletes the selected location from the list."""
 
     bl_idname = "scene.cap_deletepath"
     bl_label = "Remove"
@@ -56,7 +56,7 @@ class CAP_Delete_Path(Operator):
 
 
 class CAP_Add_Export(Operator):
-    """Creates a new Export Preset."""
+    """Creates a new file preset."""
 
     bl_idname = "scene.cap_addexport"
     bl_label = "Add"
@@ -78,7 +78,7 @@ class CAP_Add_Export(Operator):
         return {'FINISHED'}
 
 class CAP_Delete_Export(Operator):
-    """Deletes the selected Export Preset from the list."""
+    """Deletes the selected file preset from the list."""
 
     bl_idname = "scene.cap_deleteexport"
     bl_label = "Delete Export Preset"
@@ -112,7 +112,7 @@ class CAP_Delete_Export(Operator):
 
 
 class CAP_Add_Tag(Operator):
-    """Creates a new Tag."""
+    """Creates a new tag."""
 
     bl_idname = "scene.cap_addtag"
     bl_label = "Add"
@@ -142,7 +142,7 @@ class CAP_Add_Tag(Operator):
         return {'FINISHED'}
 
 class CAP_Delete_Tag(Operator):
-    """Deletes the selected Tag from the list."""
+    """Deletes the selected tag from the list."""
 
     bl_idname = "scene.cap_deletetag"
     bl_label = "Remove"
@@ -184,7 +184,7 @@ class CAP_Delete_Tag(Operator):
 
 
 class CAP_Add_Pass(Operator):
-    """Creates a new Pass."""
+    """Creates a new pass."""
 
     bl_idname = "scene.cap_addpass"
     bl_label = "Add"
@@ -213,7 +213,7 @@ class CAP_Add_Pass(Operator):
         return {'FINISHED'}
 
 class CAP_Delete_Pass(Operator):
-    """Deletes the selected Pass from the list."""
+    """Deletes the selected pass from the list."""
 
     bl_idname = "scene.cap_deletepass"
     bl_label = "Remove"
@@ -392,7 +392,7 @@ class CAP_Clear_Root_Object(Operator):
 
 
 class CAP_Clear_List(Operator):
-    """Deletes all objects from the export list, and un-tags them for export"""
+    """Deletes all objects from the export list, and un-marks them for export"""
 
     bl_idname = "scene.cap_clearlist"
     bl_label = "Delete All"
@@ -634,7 +634,7 @@ class CAP_Refresh_Actions(Operator):
         return {'FINISHED'}
 
 class CAP_Tutorial_Tags(Operator):
-    """Deletes the selected Export Preset from the list."""
+    """Deletes the selected file preset from the list."""
 
     bl_idname = "cap_tutorial.tags"
     bl_label = "Tags let you automatically split objects in your passes by defining an object suffix/prefix and/or object type, that objects in the pass it's used in need to match in order to be included for export, enabiling you to create multiple different versions of an object or group export, without having to manually define them."
@@ -653,7 +653,7 @@ class CAP_Tutorial_Tags(Operator):
         return {'FINISHED'}
 
 class CAP_Create_ExportData(Operator):
-    """Creates a new empty object from which Export Preset and Location data for the blend file is stored."""
+    """Creates a new empty object for which Capsule data is stored, and where both file presets and other scene data is stored."""
 
     bl_idname = "cap.exportdata_create"
     bl_label = "Create Capsule Data"
@@ -688,7 +688,7 @@ class CAP_Create_ExportData(Operator):
 
 
 class CAP_Add_Stored_Presets(Operator):
-    """Adds the currently selected Global Preset into the usable Export Presets for this .blend file."""
+    """Adds the currently selected saved preset into the file presets list, enabling it's use for exports in this .blend file."""
     bl_idname = "cap.create_current_preset"
     bl_label = "Default Presets"
 
@@ -706,7 +706,7 @@ class CAP_Add_Stored_Presets(Operator):
         return {'FINISHED'}
 
 class CAP_Delete_Presets(Operator):
-    """Deletes the currently selected Global Preset."""
+    """Deletes the currently selected saved preset."""
     bl_idname = "cap.delete_global_preset"
     bl_label = "Store Preset"
 
@@ -735,7 +735,7 @@ class CAP_Delete_Presets(Operator):
         return {'FINISHED'}
 
 class CAP_Store_Presets(Operator):
-    """Stores the currently selected Export Preset as Plugin data, to enable it's use in other .blend files."""
+    """Stores the currently selected export preset as a saved preset, to enable it's use in across .blend files."""
     bl_idname = "cap.add_global_preset"
     bl_label = "Store Preset"
 
@@ -1003,7 +1003,8 @@ def CopyPreset(old_preset, new_preset):
         new_pass.export_animation = old_pass.export_animation
         new_pass.apply_modifiers = old_pass.apply_modifiers
         new_pass.triangulate = old_pass.triangulate
-        new_pass.object_use_tags = old_pass.object_use_tags
+
+        new_pass.use_tags_on_objects = old_pass.use_tags_on_objects
 
     new_preset.passes_index = old_preset.passes_index
 

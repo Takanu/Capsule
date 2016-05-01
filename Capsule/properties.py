@@ -268,7 +268,7 @@ class CAP_Group_Preferences(PropertyGroup):
 
     location_default = EnumProperty(
         name="Select Location Default",
-        description="Defines the file path that the group will be exported to.",
+        description="Defines the Location that the group will be exported to.",
         items=GetLocationDefaults,
         update=Update_GroupLocationDefault
         )

@@ -27,10 +27,8 @@ class Object_UIList(UIList):
         layout.prop(item, "enable_export", text="")
 
         # A switch to change the extra tool on the Object list entries.
-        if addon_prefs.list_feature == 'focus':
-            layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
-        elif addon_prefs.list_feature == 'sel':
-            layout.prop(item, "sel", text="", emboss=False, icon='RESTRICT_SELECT_OFF')
+        if addon_prefs.list_feature != 'none':
+            layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
 
         layout.prop(item, "remove", text="", icon="X", emboss=False)
 
@@ -39,35 +37,25 @@ class Object_UIList(UIList):
         # Nothing much to say here, it's usual UI code...
         row = layout.row()
 
-
 class Group_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
-        groupData = None
 
-        for group in GetSceneGroups(context.scene, True):
-            if group.name == item.name:
-                groupData = group
+        layout.prop(item, "name", text="", emboss=False)
+        layout.prop(item, "enable_export", text="")
 
-        if groupData is not None:
-            layout.prop(item, "name", text="", emboss=False)
-            layout.prop(groupData.CAPGrp, "enable_export", text="")
+        # A switch to change the extra tool on the Group list entries.
+        if addon_prefs.list_feature != 'none':
+            layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
 
-            # A switch to change the extra tool on the Group list entries.
-            if addon_prefs.list_feature == 'focus':
-                layout.prop(item, "focus", text="", emboss=False, icon='FULLSCREEN_EXIT')
-            elif addon_prefs.list_feature == 'sel':
-                layout.prop(item, "sel", text="", emboss=False, icon='RESTRICT_SELECT_OFF')
-
-            layout.prop(item, "remove", text="", icon="X", emboss=False)
+        layout.prop(item, "remove", text="", icon="X", emboss=False)
 
     def draw_filter(self, context, layout):
         # Nothing much to say here, it's usual UI code...
         row = layout.row()
-
 
 class Path_Default_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -376,7 +364,6 @@ class CAP_List(Panel):
         return True
 
     def draw(self, context):
-
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
