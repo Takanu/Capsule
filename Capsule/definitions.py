@@ -126,7 +126,7 @@ def SwitchObjectMode(newMode, target):
     prevMode = target.mode
     if target.mode != newMode:
         bpy.context.scene.objects.active = bpy.data.objects[target.name]
-        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.ops.object.mode_set(mode=newMode)
         return prevMode
 
 def MoveObject(target, context, location):

@@ -3,8 +3,7 @@ from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, MoveObject, MoveObjects, MoveAll, RotateAll, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
-
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, SwitchObjectMode, MoveObject, MoveObjects, MoveAll, RotateAll, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
 
 
 class CAP_Export_Assets(Operator):
@@ -316,10 +315,20 @@ class CAP_Export_Assets(Operator):
 
         # If an object has locked Location/Rotation/Scale values, store them and turn it on
         self.translateList = []
-
+        print("Checking locked objects")
         for item in context.scene.objects:
-            if item.lock_location != (False, False, False) or item.lock_rotation != (False, False, False) or item.lock_scale != (False, False, False):
-                entry = {'object_name': item.name, 'lock_location': item.lock_location, 'lock_rotation': item.lock_rotation, 'lock_scale': item.lock_scale}
+            boolList = []
+            for i, x in enumerate(item.lock_location):
+                boolList.append(item.lock_location[i])
+            for i, x in enumerate(item.lock_rotation):
+                boolList.append(item.lock_rotation[i])
+            for i, x in enumerate(item.lock_scale):
+                boolList.append(item.lock_scale[i])
+
+            if True in boolList:
+                print("Found object for lock preservation")
+                print(item)
+                entry = {'object_name': item.name, 'lock_list': boolList}
                 self.translateList.append(entry)
 
         for item in context.scene.objects:
@@ -327,7 +336,14 @@ class CAP_Export_Assets(Operator):
             item.lock_rotation = (False, False, False)
             item.lock_scale = (False, False, False)
 
-        # If any armatures are in any modes different to that
+        # If any armatures are in any non-object modes, we need to change this
+        self.armatureMode = []
+        for item in context.scene.objects:
+            if item.type == 'ARMATURE':
+                mode = SwitchObjectMode('OBJECT', item)
+                if mode != None:
+                    entry = {'object_name': item.name, 'mode': mode}
+                    self.armatureMode.append(entry)
 
         # Now we can unhide and deselect everything
         bpy.ops.object.hide_view_clear()
@@ -361,14 +377,25 @@ class CAP_Export_Assets(Operator):
             i += 1
 
         # If an object has locked Location/Rotation/Scale values, store them and turn it on
-        self.translateList = []
-
         while len(self.translateList) != 0:
             entry = self.translateList.pop()
             item = bpy.data.objects[entry['object_name']]
-            item.lock_location = entry['lock_location']
-            item.lock_rotation = entry['lock_location']
-            item.lock_scale = entry['lock_location']
+            boolList = entry['lock_list']
+
+            item.lock_location[0] = boolList[0]
+            item.lock_location[1] = boolList[1]
+            item.lock_location[2] = boolList[2]
+            item.lock_rotation[0] = boolList[3]
+            item.lock_rotation[1] = boolList[4]
+            item.lock_rotation[2] = boolList[5]
+            item.lock_scale[0] = boolList[6]
+            item.lock_scale[1] = boolList[7]
+            item.lock_scale[2] = boolList[8]
+
+        # Restore armature modes
+        while len(self.armatureMode) != 0:
+            entry = self.armatureMode.pop()
+            mode = SwitchObjectMode(entry['mode'], bpy.data.objects[entry['object_name']])
 
         # Re-select the objects previously selected
         if self.active is not None:
