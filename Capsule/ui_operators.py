@@ -803,6 +803,7 @@ def CreatePresetBasicExport(exp):
     export.axis_forward = "-Z"
     export.axis_up = "Y"
     export.global_scale = 1.0
+    export.apply_unit_scale = True
     export.x_global_user_deletable = False
 
     passOne = export.passes.add()
@@ -822,6 +823,7 @@ def CreatePresetUE4Standard(exp):
     export.axis_forward = "-Z"
     export.axis_up = "Y"
     export.global_scale = 1.0
+    export.apply_unit_scale = True
     export.export_types = {'MESH', 'ARMATURE'}
 
     export.tangent_space = True
