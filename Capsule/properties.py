@@ -251,6 +251,12 @@ class CAP_Object_Preferences(PropertyGroup):
         update=Update_Normals
         )
 
+    in_export_list = BoolProperty(
+        name="",
+        description="(Internal Only) Prevents refreshes of the Export List from removing items not marked for export.",
+        default=False
+        )
+
 class CAP_Group_Preferences(PropertyGroup):
     enable_export = BoolProperty(
         name="Export Group",
@@ -289,6 +295,12 @@ class CAP_Group_Preferences(PropertyGroup):
         ('3', 'Normals Only', 'Exports the current custom normals of the model.')
         ),
         update=Update_GroupNormals
+        )
+        
+    in_export_list = BoolProperty(
+        name="",
+        description="(Internal Only) Prevents refreshes of the Export List from removing items not marked for export.",
+        default=False
         )
 
 def GetExportPresets(scene, context):

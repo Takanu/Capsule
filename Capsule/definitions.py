@@ -198,7 +198,6 @@ def MoveObject(target, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     target.lock_location = lockTransform
 
-
 def MoveObjects(targetLead, targets, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
@@ -993,7 +992,6 @@ def AddParent(child, parent):
     FocusObject(child)
     bpy.ops.view3D.snap_selected_to_cursor()
     bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
-
 
 def ClearParent(child):
     # Prepare the 3D cursor so it can keep the object in it's current location

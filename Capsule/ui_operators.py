@@ -433,7 +433,7 @@ class CAP_Refresh_List(Operator):
         if objectTab == 1:
             scn.object_list.clear()
             for obj in context.scene.objects:
-                if obj.CAPObj.enable_export is True:
+                if obj.CAPObj.in_export_list is True:
                     entry = scn.object_list.add()
                     entry.name = obj.name
                     entry.prev_name = obj.name
@@ -443,7 +443,7 @@ class CAP_Refresh_List(Operator):
         elif objectTab == 2:
             scn.group_list.clear()
             for group in GetSceneGroups(context.scene, True):
-                if group.CAPGrp.enable_export is True:
+                if group.CAPGrp.in_export_list is True:
                         entry = scn.group_list.add()
                         entry.name = group.name
                         entry.prev_name = group.name
@@ -769,8 +769,16 @@ def DeletePresets():
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
     exp = addon_prefs.saved_presets
+    presetsToKeep = []
 
-    exp.clear()
+    i = len(exp) - 1
+
+    while i != -1:
+        item = exp[i]
+        if item.x_global_user_deletable is False:
+            exp.remove(i)
+        i -= 1
+
 
 def CreatePresets():
     # -------------------------------------------------------------------------
@@ -779,11 +787,11 @@ def CreatePresets():
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
     exp = addon_prefs.saved_presets
+    print("Adding presets")
 
     CreatePresetBasicExport(exp)
     CreatePresetUE4Standard(exp)
     CreatePresetUnity5Standard(exp)
-
 
 def CreatePresetBasicExport(exp):
     # -------------------------------------------------------------------------
@@ -1003,7 +1011,6 @@ def CopyPreset(old_preset, new_preset):
         new_pass.export_animation = old_pass.export_animation
         new_pass.apply_modifiers = old_pass.apply_modifiers
         new_pass.triangulate = old_pass.triangulate
-
         new_pass.use_tags_on_objects = old_pass.use_tags_on_objects
 
     new_preset.passes_index = old_preset.passes_index

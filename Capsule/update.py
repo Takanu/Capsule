@@ -13,11 +13,12 @@ def Update_EnableExport(self, context):
 
     # If this was called from the actual UI element rather than another function,
     # we need to do stuff!
+    print(scn.enable_list_active, scn.enable_sel_active)
     if scn.enable_list_active == False and scn.enable_sel_active == False:
         print("Called from UI element")
         scn.enable_sel_active = True
         collected = []
-        name = ""
+        target = None
         value = False
 
         # If the selection has come from the scene, get data from inside the scene
@@ -31,23 +32,23 @@ def Update_EnableExport(self, context):
                         collected.append(sel)
 
                 # Obtain the value changed
-                name = context.active_object.name
+                target = context.active_object
                 value = self.enable_export
 
         # Otherwise, get information from the list
         else:
             item = scn.object_list[scn.object_list_index]
             print("Item Found:", item.name)
-            name = item.name
+            target = scene.objects[item.name]
             value = self.enable_export
 
         # Update the list associated with the object
-        UpdateObjectList(context.scene, name, value)
+        UpdateObjectList(context.scene, target, value)
 
         # Run through any collected objects to also update them.
         for item in collected:
             item.CAPObj.enable_export = value
-            UpdateObjectList(context.scene, item.name, value)
+            UpdateObjectList(context.scene, item, value)
 
         scn.enable_sel_active = False
         scn.enable_list_active = False
@@ -291,7 +292,7 @@ def Update_GroupExport(self, context):
         print("Called from UI element")
         scn.enable_sel_active = True
         collected = []
-        name = ""
+        target = None
         value = False
 
         if addon_prefs.group_multi_edit is True:
@@ -316,23 +317,27 @@ def Update_GroupExport(self, context):
                             collected.append(group)
 
                 collected.remove(currentGroup)
-                name = currentGroup.name
+                target = currentGroup
                 value = self.enable_export
 
         # Otherwise, get information from the list
         else:
             item = scn.group_list[scn.group_list_index]
             print("Item Found:", item.name)
-            name = item.name
+            for item in scene.objects:
+                for group in item.users_group:
+                    if group.name == item.name:
+                        target = group
+
             value = self.enable_export
 
         # Obtain the value changed
-        UpdateGroupList(context.scene, name, value)
+        UpdateGroupList(context.scene, target, value)
 
         # Run through the objects
         for group in collected:
             group.CAPGrp.enable_export = value
-            UpdateGroupList(context.scene, group.name, self.enable_export)
+            UpdateGroupList(context.scene, group, self.enable_export)
 
         scn.enable_sel_active = False
         scn.enable_list_active = False
@@ -600,6 +605,7 @@ def Update_ObjectRemoveFromList(self, context):
                     scn.enable_list_active = True
 
                     sceneObj.CAPObj.enable_export = False
+                    sceneObj.CAPObj.in_export_list = False
                     context.scene.CAPScn.object_list.remove(i)
                     scn.object_list_index = i
 
@@ -626,6 +632,7 @@ def Update_GroupRemoveFromList(self, context):
                     scn.enable_list_active = True
 
                     sceneGroup.CAPGrp.enable_export = False
+                    sceneGroup.CAPGrp.in_export_list = False
                     context.scene.CAPScn.group_list.remove(i)
                     scn.group_list_index = i
 
@@ -635,36 +642,40 @@ def Update_GroupRemoveFromList(self, context):
         i += 1
 
 
-def UpdateObjectList(scene, name, enableExport):
+def UpdateObjectList(scene, object, enableExport):
     scn = scene.CAPScn
 
     # Check a list entry for the object doesn't already exist.
     for item in scene.CAPScn.object_list:
-        if item.name == name:
-            print("Changing", name, "'s export from list.'")
+        if item.name == object.name:
+            print("Changing", object.name, "'s export from list.'")
             item.enable_export = enableExport
             return
 
+    # If an entry couldn't be found in the list, add it.
     if enableExport is True:
-        print("Adding", name, "to list.")
+        print("Adding", object.name, "to list.")
         entry = scn.object_list.add()
-        entry.name = name
-        entry.prev_name = name
+        entry.name = object.name
+        entry.prev_name = object.name
         entry.enable_export = enableExport
 
-def UpdateGroupList(scene, name, enableExport):
+        object.CAPObj.in_export_list = True
+
+def UpdateGroupList(scene, group, enableExport):
     scn = scene.CAPScn
 
     # Check a list entry for the group doesn't already exist.
     for item in scene.CAPScn.group_list:
-        if item.name == name:
-            print("Changing", name, "'s export from list.'")
+        if item.name == group.name:
+            print("Changing", group.name, "'s export from list.'")
             item.enable_export = enableExport
             return
 
     if enableExport is True:
-        print("Adding", name, "to list.")
+        print("Adding", group.name, "to list.")
         entry = scn.group_list.add()
-        entry.name = name
-        entry.prev_name = name
+        entry.name = group.name
+        entry.prev_name = group.name
         entry.enable_export = enableExport
+        group.CAPGrp.in_export_list = True

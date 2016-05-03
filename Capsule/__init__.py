@@ -3,7 +3,7 @@
 bl_info = {
     "name": "Capsule",
     "author": "Crocadillian (BA) / Takanu (GitHub), special thanks to Acidhawk and Asahd <3",
-    "version": (0, 999),
+    "version": (0, 999, 2),
     "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > GEX",
     "wiki_url": "http://blenderartists.org/forum/showthread.php?373523-GEX-0-85-(15-11-2015)-One-Click-Batch-FBX-Exports",
@@ -11,6 +11,10 @@ bl_info = {
     "tracker_url": "",
     "category": "Import-Export"
 }
+
+global ignorePresets
+ignorePresets = False
+print(ignorePresets)
 
 # Start importing all the addon files
 # The init file just gets things started, no code needs to be placed here.
@@ -28,6 +32,8 @@ from bpy.app.handlers import persistent
 print("Checking modules...")
 
 if "bpy" in locals():
+    global ignorePresets
+    ignorePresets = True
     import imp
     print("------------------Reloading Plugin------------------")
     if "definitions" in locals():
@@ -958,6 +964,7 @@ def CheckSelectedObject(scene):
     addon_prefs = user_preferences.addons[__name__].preferences
     #print("SCENE UPDATE")
 
+
     if bpy.context.active_object is not None:
         if bpy.context.active_object.name != addon_prefs.prev_selected_object:
             addon_prefs.object_multi_edit = True
@@ -972,6 +979,7 @@ def CheckSelectedObject(scene):
 
 def register():
     print("Registering Stuff")
+    global ignorePresets
     bpy.utils.register_module(__name__)
 
     bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAP_Scene_Preferences)
@@ -980,14 +988,19 @@ def register():
     bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAP_Action_Preferences)
     bpy.types.Object.CAPStm = PointerProperty(type=properties.CAP_Object_StateMachine)
     bpy.types.Object.CAPExp = PointerProperty(type=CAP_ExportPresets)
-    ui_operators.CreatePresets()
+
+    print(ignorePresets)
+    if ignorePresets == False:
+        ui_operators.CreatePresets()
+        ignorePresets = True
 
     bpy.app.handlers.load_pre.append(CreateDefaultData)
     bpy.app.handlers.scene_update_post.append(CheckSelectedObject)
 
 def unregister():
     print("Unregistering Stuff")
-    ui_operators.DeletePresets()
+    global ignorePresets
+    ignorePresets = False
 
     bpy.app.handlers.load_pre.remove(CreateDefaultData)
     bpy.app.handlers.scene_update_post.remove(CheckSelectedObject)
