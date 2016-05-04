@@ -3,7 +3,7 @@ from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, SwitchObjectMode, MoveObject, MoveObjects, MoveAll, RotateAll, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, GetSceneGroups
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, SwitchObjectMode, MoveObject, MoveBone, MoveObjects, MoveAll, RotateAll, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, FindWorldSpaceBoneLocation, GetSceneGroups
 
 
 class CAP_Export_Assets(Operator):
@@ -311,8 +311,6 @@ class CAP_Export_Assets(Operator):
                 boolList.append(item.lock_scale[i])
 
             if True in boolList:
-                print("Found object for lock preservation")
-                print(item)
                 entry = {'object_name': item.name, 'lock_list': boolList}
                 self.translateList.append(entry)
 
@@ -335,10 +333,12 @@ class CAP_Export_Assets(Operator):
         self.constraintList = []
         self.constraintObjects = []
 
+        print("Searching for constraints...")
         con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS', 'FOLLOW_PATH'}
         for item in context.scene.objects:
             i = 0
             for constraint in item.constraints:
+                print("Searching constraint...", item.name, " - ", constraint)
                 if constraint.type in con_types_target:
                     print("----Constraint Found: ", item.name, constraint.name)
 
@@ -387,14 +387,16 @@ class CAP_Export_Assets(Operator):
         bpy.ops.object.select_all(action='DESELECT')
         print("Rawr")
 
-    def SetupArmatureConstraints(self, context, targets):
+    def SetupArmatureConstraints(self, context):
         # We need to do similar constraint evaluation for armatures
         # Find translate constraints. mute them and move the affected bones
         # to make the plugin movement successful.
+        print(">>> Inside SetupArmatureConstraints <<<")
         self.armatureConstraintList = []
         self.armatureConstraintObjects = []
         con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS', 'FOLLOW_PATH'}
-        for item in targets:
+        for item in context.scene.objects:
+            print("Searching target ", item.name, "...")
             if item.type == 'ARMATURE':
                 for bone in item.pose.bones:
                     i = 0
@@ -403,15 +405,9 @@ class CAP_Export_Assets(Operator):
                             print("Found Constraint!", item.name, bone.name, constraint)
                             if item not in self.armatureConstraintObjects:
                                 print("Item not in Constraint Objects List, processing...")
-                                # Snap the cursor to the current object location
-                                bpy.ops.object.select_all(action='DESELECT')
-                                bpy.data.objects[item.name].data.bones.active = bpy.data.objects[item.name].pose.bones[bone.name].bone
-                                bpy.ops.view3d.snap_cursor_to_selected()
-
                                 # Record the current object location for later
                                 print("BoneLocation", bone.location)
-                                cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
-                                trueLocation = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+                                trueLocation = FindWorldSpaceBoneLocation(item, context, bone)
                                 constraintLocation = Vector((bone.location[0], bone.location[1], bone.location[2]))
                                 print("TrueLocation", trueLocation)
                                 print("constraintLocation", constraintLocation)
@@ -446,9 +442,10 @@ class CAP_Export_Assets(Operator):
             item = context.scene.objects[entry['object_name']]
             for bone in item.pose.bones:
                 if bone.name == entry['bone_name']:
-                    print("Moving Bone...", item.name, bone.name)
-                    bone.location = entry['true_location']
+                    print("Moving Bone...", item.name, bone.name, entry['true_location'])
+                    MoveBone(item, bone, context, entry['true_location'])
                     print("New Bone Location = ", bone.location)
+                    return
 
         context.scene.tool_settings.use_keyframe_insert_auto = autoKey
 
@@ -519,7 +516,7 @@ class CAP_Export_Assets(Operator):
 
         print("Rawr")
 
-    def RestoreArmatureConstraints(self, context, targets):
+    def RestoreArmatureConstraints(self, context):
         # Restore constraint object positions
         for entry in self.armatureConstraintObjects:
             item = context.scene.objects[entry['object_name']]
@@ -833,6 +830,11 @@ class CAP_Export_Assets(Operator):
 
                 print("Root Type is...", rootType)
 
+                # If they asked us not preserve armature constraints, we can
+                # do our jerb and ensure they don't screw things up beyond this code
+                if self.preserve_armature_constraints is False:
+                    self.SetupArmatureConstraints(context)
+
                 # Need to get the movement location.  If the user wants to use the scene origin though,
                 # just make it 0
                 rootObjectLocation = Vector((0.0, 0.0, 0.0))
@@ -995,11 +997,6 @@ class CAP_Export_Assets(Operator):
 
                     if useSceneOrigin is False:
 
-                        # If they asked us not preserve armature constraints, we can
-                        # do our jerb.
-                        if self.preserve_armature_constraints is False:
-                            self.SetupArmatureConstraints(context, movedObjects)
-
                         # If Unity needs the rotation fix, we'll do it here.  Scale has to be handled in Unity
                         # however...
                         if exportDefault.x_unity_rotation_fix is True:
@@ -1089,8 +1086,6 @@ class CAP_Export_Assets(Operator):
                                 rotation=True,
                                 scale=True
                                 )
-                        if self.preserve_armature_constraints is False:
-                            self.RestoreArmatureConstraints(context, movedObjects)
 
                     elif exportDefault.x_unity_rotation_fix is True:
                         bpy.ops.object.select_all(action='SELECT')
@@ -1103,6 +1098,9 @@ class CAP_Export_Assets(Operator):
 
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
+
+                if self.preserve_armature_constraints is False:
+                    self.RestoreArmatureConstraints(context)
 
                 # Count up exported objects
                 if len(exportDefault.passes) > 0:
@@ -1170,6 +1168,11 @@ class CAP_Export_Assets(Operator):
                 if rootObject != None:
                     rootType = IdentifyObjectTag(context, rootObject, exportDefault)
                     print("Root type is...", rootType)
+
+                # If they asked us not preserve armature constraints, we can
+                # do our jerb and ensure the scene is properly set up.
+                if self.preserve_armature_constraints is False:
+                    self.SetupArmatureConstraints(context)
 
                 # Get the root object location for later use
                 rootObjectLocation = Vector((0.0, 0.0, 0.0))
@@ -1312,11 +1315,6 @@ class CAP_Export_Assets(Operator):
 
                     if rootObject != None:
 
-                        # If they asked us not preserve armature constraints, we can
-                        # do our jerb.
-                        if self.preserve_armature_constraints is False:
-                            self.SetupArmatureConstraints(context, movedObjects)
-
                         # If Unity needs the rotation fix, first scale the objects, then get their new location
                         # and move them
                         if exportDefault.x_unity_rotation_fix is True:
@@ -1405,15 +1403,15 @@ class CAP_Export_Assets(Operator):
                             bpy.ops.object.select_all(action='SELECT')
                             bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
 
-                        if self.preserve_armature_constraints is False:
-                            self.RestoreArmatureConstraints(context, movedObjects)
-
                     elif exportDefault.x_unity_rotation_fix is True:
                         bpy.ops.object.select_all(action='SELECT')
                         bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
 
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
+
+                if self.preserve_armature_constraints is False:
+                    self.RestoreArmatureConstraints(context)
 
                 if len(exportDefault.passes) > 0:
                     self.exportedGroups += 1
