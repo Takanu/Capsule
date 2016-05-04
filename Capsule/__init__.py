@@ -342,7 +342,7 @@ class CAP_ExportPreset(PropertyGroup):
 
     tangent_space = BoolProperty(
         name="Tangent Space",
-        description="Exports the mesh tangent vectors.",
+        description="Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
         default=False
         )
 

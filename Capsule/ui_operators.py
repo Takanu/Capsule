@@ -826,7 +826,6 @@ def CreatePresetUE4Standard(exp):
     export.apply_unit_scale = True
     export.export_types = {'MESH', 'ARMATURE'}
 
-    export.tangent_space = True
     export.bake_anim_use_all_bones = True
     export.bake_anim_use_all_actions = True
     export.bake_anim_force_startend_keying = True
@@ -926,7 +925,6 @@ def CreatePresetUnity5Standard(exp):
     export.axis_up = "Y"
     export.global_scale = 1.0
     export.apply_unit_scale = True
-    export.tangent_space = True
     export.export_types = {'MESH', 'ARMATURE'}
 
     export.bake_anim_use_all_bones = True

@@ -266,6 +266,10 @@ class CAP_Export_Assets(Operator):
 
         self.active = context.active_object
 
+        # Save the current cursor location
+        cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+        self.cursorLocation = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
         # Keep a record of the current object mode
         mode = bpy.context.mode
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -293,25 +297,48 @@ class CAP_Export_Assets(Operator):
         for item in context.scene.objects:
             item.hide_select = False
 
-        # For each object, find certain offending constraints, and turn them off for now
+        # Find objects affected by specific constraints, and work out how much
+        # they need to be moved by, in order to keep the scene representative
         self.constraintList = []
+        self.constraintObjects = []
 
-        con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS'}
-
+        con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS', 'FOLLOW_PATH'}
         for item in context.scene.objects:
             i = 0
             for constraint in item.constraints:
                 if constraint.type in con_types_target:
-                    copyLocation = Vector((0.0, 0.0, 0.0))
-                    copyLocation[0] = item.location[0]
+
+                    if item not in self.constraintObjects:
+                        # Snap the cursor to the current object location
+                        FocusObject(item)
+                        bpy.ops.view3d.snap_cursor_to_selected()
+
+                        # Record the current object location for later
+                        cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+                        trueLocation = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+                        constraintLocation = Vector((item.location[0], item.location[1], item.location[2]))
+
+                        entry = {'object_name': item.name, 'true_location': trueLocation, 'constraint_location': constraintLocation}
+                        self.constraintObjects.append(entry)
+
 
                     entry = {'object_name': item.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
                     self.constraintList.append(entry)
 
+                    # Mute the constraint
                     constraint.mute = True
                     constraint.influence = 0.0
 
+                    item.location = bpy.data.scenes[bpy.context.scene.name].cursor_location
+
                 i += 1
+
+        # Now all problematic constraints have been turned off, we can safely move
+        # objects to their initial positions
+        for entry in self.constraintObjects:
+            item = context.scene.objects[entry['object_name']]
+            item.location = entry['true_location']
+
 
         # If an object has locked Location/Rotation/Scale values, store them and turn it on
         self.translateList = []
@@ -353,6 +380,11 @@ class CAP_Export_Assets(Operator):
     def RestoreScene(self, context):
         # Restores all previously held scene settings and display features
         # after the operator is done shuffling it
+
+        # Restore constraint object positions
+        for entry in self.constraintObjects:
+            item = context.scene.objects[entry['object_name']]
+            item.location = entry['constraint_location']
 
         # Restore Constraint Defaults
         for entry in self.constraintList:
@@ -406,6 +438,9 @@ class CAP_Export_Assets(Operator):
 
         if self.active is None and len(self.selected) == 0:
             bpy.ops.object.select_all(action='DESELECT')
+
+        # Restore the 3D cursor
+        bpy.data.scenes[bpy.context.scene.name].cursor_location = self.cursorLocation
 
         print("Rawr")
 
@@ -666,8 +701,8 @@ class CAP_Export_Assets(Operator):
 
         # Setup and store scene variables, to be restored when complete
         self.SetupScene(context)
+        return {'FINISHED'}
         context.window_manager.progress_begin(0, self.exportCount)
-
 
 
 
