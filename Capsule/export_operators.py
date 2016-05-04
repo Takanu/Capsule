@@ -236,6 +236,7 @@ class CAP_Export_Assets(Operator):
 
         self.use_armature_deform_only = exportDefault.use_armature_deform_only
         self.add_leaf_bones = exportDefault.add_leaf_bones
+        self.preserve_armature_constraints = exportDefault.preserve_armature_constraints
         self.primary_bone_axis = exportDefault.primary_bone_axis
         self.secondary_bone_axis = exportDefault.secondary_bone_axis
         self.armature_nodetype = exportDefault.armature_nodetype
@@ -297,49 +298,6 @@ class CAP_Export_Assets(Operator):
         for item in context.scene.objects:
             item.hide_select = False
 
-        # Find objects affected by specific constraints, and work out how much
-        # they need to be moved by, in order to keep the scene representative
-        self.constraintList = []
-        self.constraintObjects = []
-
-        con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS', 'FOLLOW_PATH'}
-        for item in context.scene.objects:
-            i = 0
-            for constraint in item.constraints:
-                if constraint.type in con_types_target:
-
-                    if item not in self.constraintObjects:
-                        # Snap the cursor to the current object location
-                        FocusObject(item)
-                        bpy.ops.view3d.snap_cursor_to_selected()
-
-                        # Record the current object location for later
-                        cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
-                        trueLocation = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
-                        constraintLocation = Vector((item.location[0], item.location[1], item.location[2]))
-
-                        entry = {'object_name': item.name, 'true_location': trueLocation, 'constraint_location': constraintLocation}
-                        self.constraintObjects.append(entry)
-
-
-                    entry = {'object_name': item.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
-                    self.constraintList.append(entry)
-
-                    # Mute the constraint
-                    constraint.mute = True
-                    constraint.influence = 0.0
-
-                    item.location = bpy.data.scenes[bpy.context.scene.name].cursor_location
-
-                i += 1
-
-        # Now all problematic constraints have been turned off, we can safely move
-        # objects to their initial positions
-        for entry in self.constraintObjects:
-            item = context.scene.objects[entry['object_name']]
-            item.location = entry['true_location']
-
-
         # If an object has locked Location/Rotation/Scale values, store them and turn it on
         self.translateList = []
         print("Checking locked objects")
@@ -372,10 +330,127 @@ class CAP_Export_Assets(Operator):
                     entry = {'object_name': item.name, 'mode': mode}
                     self.armatureMode.append(entry)
 
+        # Find objects affected by specific constraints, and work out how much
+        # they need to be moved by, in order to keep the scene representative
+        self.constraintList = []
+        self.constraintObjects = []
+
+        con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS', 'FOLLOW_PATH'}
+        for item in context.scene.objects:
+            i = 0
+            for constraint in item.constraints:
+                if constraint.type in con_types_target:
+                    print("----Constraint Found: ", item.name, constraint.name)
+
+                    if item not in self.constraintObjects:
+                        # Record the current object location for later
+                        cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+                        trueLocation = FindWorldSpaceObjectLocation(item, context)
+                        constraintLocation = Vector((item.location[0], item.location[1], item.location[2]))
+
+                        entry = {'object_name': item.name, 'true_location': trueLocation, 'constraint_location': constraintLocation}
+                        self.constraintObjects.append(entry)
+
+                    entry = {'object_name': item.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
+                    self.constraintList.append(entry)
+
+                i += 1
+
+        # NOW WE CAN FUCKING MUTE THEM
+        for entry in self.constraintList:
+            item = context.scene.objects[entry['object_name']]
+            constraint = item.constraints[entry['index']]
+
+            # Mute the constraint
+            constraint.mute = True
+            constraint.influence = 0.0
+
+
+        print(self.constraintList)
+        print(self.constraintObjects)
+
+        # Now all problematic constraints have been turned off, we can safely move
+        # objects to their initial positions
+        autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+        context.scene.tool_settings.use_keyframe_insert_auto = False
+
+        for entry in self.constraintObjects:
+            item = context.scene.objects[entry['object_name']]
+            #print("Moving Object...", item.name, item.location)
+            MoveObject(item, context, entry['true_location'])
+            #print("Object Moved...", item.location)
+
+        context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+
         # Now we can unhide and deselect everything
         bpy.ops.object.hide_view_clear()
         bpy.ops.object.select_all(action='DESELECT')
         print("Rawr")
+
+    def SetupArmatureConstraints(self, context, targets):
+        # We need to do similar constraint evaluation for armatures
+        # Find translate constraints. mute them and move the affected bones
+        # to make the plugin movement successful.
+        self.armatureConstraintList = []
+        self.armatureConstraintObjects = []
+        con_types_target = {'COPY_LOCATION', 'COPY_TRANSFORMS', 'FOLLOW_PATH'}
+        for item in targets:
+            if item.type == 'ARMATURE':
+                for bone in item.pose.bones:
+                    i = 0
+                    for constraint in bone.constraints:
+                        if constraint.type in con_types_target:
+                            print("Found Constraint!", item.name, bone.name, constraint)
+                            if item not in self.armatureConstraintObjects:
+                                print("Item not in Constraint Objects List, processing...")
+                                # Snap the cursor to the current object location
+                                bpy.ops.object.select_all(action='DESELECT')
+                                bpy.data.objects[item.name].data.bones.active = bpy.data.objects[item.name].pose.bones[bone.name].bone
+                                bpy.ops.view3d.snap_cursor_to_selected()
+
+                                # Record the current object location for later
+                                print("BoneLocation", bone.location)
+                                cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+                                trueLocation = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+                                constraintLocation = Vector((bone.location[0], bone.location[1], bone.location[2]))
+                                print("TrueLocation", trueLocation)
+                                print("constraintLocation", constraintLocation)
+
+                                entry = {'object_name': item.name, 'bone_name': bone.name, 'true_location': trueLocation, 'constraint_location': constraintLocation}
+                                self.armatureConstraintObjects.append(entry)
+
+                            entry = {'object_name': item.name, 'bone_name': bone.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
+                            self.armatureConstraintList.append(entry)
+
+                        i += 1
+
+
+        # NOW WE CAN FUCKING MUTE THEM
+        for entry in self.armatureConstraintList:
+            item = context.scene.objects[entry['object_name']]
+            for bone in item.pose.bones:
+                if bone.name == entry['bone_name']:
+                    constraint = bone.constraints[entry['index']]
+
+                    # Mute the constraint
+                    constraint.mute = True
+                    constraint.influence = 0.0
+
+
+        # Now all problematic constraints have been turned off, we can safely move
+        # objects to their initial positions
+        autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+        context.scene.tool_settings.use_keyframe_insert_auto = False
+
+        for entry in self.armatureConstraintObjects:
+            item = context.scene.objects[entry['object_name']]
+            for bone in item.pose.bones:
+                if bone.name == entry['bone_name']:
+                    print("Moving Bone...", item.name, bone.name)
+                    bone.location = entry['true_location']
+                    print("New Bone Location = ", bone.location)
+
+        context.scene.tool_settings.use_keyframe_insert_auto = autoKey
 
     def RestoreScene(self, context):
         # Restores all previously held scene settings and display features
@@ -443,6 +518,25 @@ class CAP_Export_Assets(Operator):
         bpy.data.scenes[bpy.context.scene.name].cursor_location = self.cursorLocation
 
         print("Rawr")
+
+    def RestoreArmatureConstraints(self, context, targets):
+        # Restore constraint object positions
+        for entry in self.armatureConstraintObjects:
+            item = context.scene.objects[entry['object_name']]
+            for bone in item.pose.bones:
+                if bone.name == entry['bone_name']:
+                    print("Moving Bone...", item.name, bone.name)
+                    bone.location = entry['constraint_location']
+                    print("New Bone Location = ", bone.location)
+
+        # Restore Constraint Defaults
+        for entry in self.armatureConstraintList:
+            item = bpy.data.objects[entry['object_name']]
+            for bone in item.pose.bones:
+                if bone.name == entry['bone_name']:
+                    index = entry['index']
+                    bone.constraints[index].mute = entry['enabled']
+                    bone.constraints[index].influence = entry['influence']
 
     def ReplaceSystemChar(self, context, name):
         # Replaces invalid directory characters in names
@@ -701,7 +795,6 @@ class CAP_Export_Assets(Operator):
 
         # Setup and store scene variables, to be restored when complete
         self.SetupScene(context)
-        return {'FINISHED'}
         context.window_manager.progress_begin(0, self.exportCount)
 
 
@@ -897,7 +990,16 @@ class CAP_Export_Assets(Operator):
 
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
+                    movedObjects = foundObjects
+                    movedObjects.append(rootObject)
+
                     if useSceneOrigin is False:
+
+                        # If they asked us not preserve armature constraints, we can
+                        # do our jerb.
+                        if self.preserve_armature_constraints is False:
+                            self.SetupArmatureConstraints(context, movedObjects)
+
                         # If Unity needs the rotation fix, we'll do it here.  Scale has to be handled in Unity
                         # however...
                         if exportDefault.x_unity_rotation_fix is True:
@@ -909,11 +1011,8 @@ class CAP_Export_Assets(Operator):
                                 scale=True
                                 )
                             RotateAll(context, 90, (True, False, False))
-                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
-                        # Otherwise, just move the objects
-                        else:
-                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+                        MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
                     elif exportDefault.x_unity_rotation_fix is True:
                         RotateAll(context, -90, (True, False, False))
@@ -981,16 +1080,17 @@ class CAP_Export_Assets(Operator):
 
                     # Move objects back
                     if useSceneOrigin is False:
+                        MoveAll(rootObject, context, rootObjectLocation)
+
                         if exportDefault.x_unity_rotation_fix is True:
-                            MoveAll(rootObject, context, rootObjectLocation)
                             bpy.ops.object.select_all(action='SELECT')
                             bpy.ops.object.transform_apply(
                                 location=False,
                                 rotation=True,
                                 scale=True
                                 )
-                        else:
-                            MoveAll(rootObject, context, rootObjectLocation)
+                        if self.preserve_armature_constraints is False:
+                            self.RestoreArmatureConstraints(context, movedObjects)
 
                     elif exportDefault.x_unity_rotation_fix is True:
                         bpy.ops.object.select_all(action='SELECT')
@@ -1013,7 +1113,7 @@ class CAP_Export_Assets(Operator):
 
 
         ###############################################################
-        # OBJECT CYCLE
+        # GROUP CYCLE
         ###############################################################
         # Now hold up, its group time!
         for group in GetSceneGroups(context.scene, True):
@@ -1206,7 +1306,17 @@ class CAP_Export_Assets(Operator):
 
                     # /////////// - OBJECT MOVEMENT - ///////////////////////////////////////////////////
                     # ///////////////////////////////////////////////////////////////////////////////////
+                    movedObjects = objectList
                     if rootObject != None:
+                        movedObjects.append(rootObject)
+
+                    if rootObject != None:
+
+                        # If they asked us not preserve armature constraints, we can
+                        # do our jerb.
+                        if self.preserve_armature_constraints is False:
+                            self.SetupArmatureConstraints(context, movedObjects)
+
                         # If Unity needs the rotation fix, first scale the objects, then get their new location
                         # and move them
                         if exportDefault.x_unity_rotation_fix is True:
@@ -1214,17 +1324,15 @@ class CAP_Export_Assets(Operator):
                             bpy.ops.object.select_all(action='SELECT')
                             bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
                             RotateAll(context, 90, (True, False, False))
-                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
-                        # Otherwise, just move the objects
-                        else:
-                            MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
+                        MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))
 
                     elif exportDefault.x_unity_rotation_fix is True:
                         RotateAll(context, -90, (True, False, False))
                         bpy.ops.object.select_all(action='SELECT')
                         bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
                         RotateAll(context, 90, (True, False, False))
+
 
                     # /////////// - MODIFIERS - ///////////////////////////////////////////////////
                     # ////////////////////////////////////////////////////////////////////////////
@@ -1291,12 +1399,14 @@ class CAP_Export_Assets(Operator):
 
                     # Move objects back
                     if rootObject != None:
+                        MoveAll(rootObject, context, rootObjectLocation)
+
                         if exportDefault.x_unity_rotation_fix is True:
-                            MoveAll(rootObject, context, rootObjectLocation)
                             bpy.ops.object.select_all(action='SELECT')
                             bpy.ops.object.transform_apply(location=False,rotation=True,scale=True)
-                        else:
-                            MoveAll(rootObject, context, rootObjectLocation)
+
+                        if self.preserve_armature_constraints is False:
+                            self.RestoreArmatureConstraints(context, movedObjects)
 
                     elif exportDefault.x_unity_rotation_fix is True:
                         bpy.ops.object.select_all(action='SELECT')

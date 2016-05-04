@@ -358,6 +358,13 @@ class CAP_ExportPreset(PropertyGroup):
         default=False
         )
 
+    preserve_armature_constraints = BoolProperty(
+        name="Preserve Armature Constraints",
+        description="If enabled, Capsule will not mute specific bone constraints during the export process.  Turn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
+        default=False
+        )
+
+
     primary_bone_axis = EnumProperty(
         name="Primary Bone Axis",
         description="Defines the primary bone axis for the export.",
@@ -706,6 +713,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     export_1 = export_main.column(align=True)
                     export_1.prop(currentExp, "use_armature_deform_only")
                     export_1.prop(currentExp, "add_leaf_bones")
+                    export_1.prop(currentExp, "preserve_armature_constraints")
 
                     export_main.separator()
                     export_main.separator()
