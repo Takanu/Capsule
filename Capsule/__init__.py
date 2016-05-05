@@ -3,7 +3,7 @@
 bl_info = {
     "name": "Capsule",
     "author": "Crocadillian (BA) / Takanu (GitHub), special thanks to Acidhawk and Asahd <3",
-    "version": (0, 999, 2),
+    "version": (0, 999, 3),
     "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > GEX",
     "wiki_url": "http://blenderartists.org/forum/showthread.php?373523-GEX-0-85-(15-11-2015)-One-Click-Batch-FBX-Exports",
@@ -360,8 +360,8 @@ class CAP_ExportPreset(PropertyGroup):
 
     preserve_armature_constraints = BoolProperty(
         name="Preserve Armature Constraints",
-        description="If enabled, Capsule will not mute specific bone constraints during the export process.  Turn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
-        default=False
+        description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  Turn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
+        default=True
         )
 
 
