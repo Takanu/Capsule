@@ -4,7 +4,7 @@ from math import pi, radians, degrees
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, SwitchObjectMode, MoveObjects, RotateObjects, MoveBone, MoveObjects, MoveAll, RotateAll, RotateAllSafe, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, FindWorldSpaceBoneLocation, GetSceneGroups
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, SwitchObjectMode, MoveObjects, RotateObjectSafe, MoveBone, MoveObjects, MoveAll, RotateAll, RotateAllSafe, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, FindWorldSpaceBoneLocation, GetSceneGroups
 
 
 class CAP_Export_Assets(Operator):
@@ -1007,18 +1007,37 @@ class CAP_Export_Assets(Operator):
                     # ///////////////////////////////////////////////////////////////////////////////////
                     movedObjects = foundObjects
                     movedObjects.append(rootObject)
+                    forwardRotations = []
+                    reverseRotations = []
 
+                    # We need to record rotations in case they need to be restored
+                    # for when Unity completely destroys them <3
+                    for item in movedObjects:
+                        forwardRot = (degrees(item.rotation_euler[0]), degrees(item.rotation_euler[1]), degrees(item.rotation_euler[2]))
+                        reverseRot = (degrees(-item.rotation_euler[0]), degrees(-item.rotation_euler[1]), degrees(-item.rotation_euler[2]))
+                        print("COLLECTING ROTATIONS...", forwardRot)
+                        forwardRotations.append(forwardRot)
+                        reverseRotations.append(reverseRot)
+
+                    # If the user wanted to reset the rotation, time to add more
+                    # annoying levels of complexity to the mix and reset the rotation!
                     if self.reset_rotation is True:
                         reverseRotation = (-rootObjectRotation[0], -rootObjectRotation[1], -rootObjectRotation[2])
                         RotateAllSafe(rootObject, context, reverseRotation, False)
 
+                    # If the user wanted unity, time to stomp on the rotation
+                    # only the objects being exported should be applied
                     if exportDefault.x_unity_rotation_fix is True:
                         RotateAllSafe(rootObject, context, (-90, 0, 0), True)
-                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.select_all(action='DESELECT')
+                        for item in movedObjects:
+                            SelectObject(item)
+                            ActivateObject(item)
+
                         bpy.ops.object.transform_apply(
                             location=False,
                             rotation=True,
-                            scale=True
+                            scale=False
                             )
                         RotateAllSafe(rootObject, context, (90, 0, 0), True)
 
@@ -1080,18 +1099,39 @@ class CAP_Export_Assets(Operator):
                                     self.RemoveTriangulate(item)
 
                     # Move objects back
+                    if self.reset_rotation is True:
+                        RotateAllSafe(rootObject, context, rootObjectRotation, True)
+
                     if useSceneOrigin is False:
                         MoveAll(rootObject, context, rootObjectLocation)
 
                     if exportDefault.x_unity_rotation_fix is True:
-                        bpy.ops.object.select_all(action='SELECT')
+                        bpy.ops.object.select_all(action='DESELECT')
+
+                        for item in movedObjects:
+                            SelectObject(item)
+                            ActivateObject(item)
                         bpy.ops.object.transform_apply(
                             location=False,
                             rotation=True,
-                            scale=True
+                            scale=False
                             )
-                    if self.reset_rotation is True:
-                        RotateAllSafe(rootObject, context, rootObjectRotation, True)
+
+                        for i, item in enumerate(movedObjects):
+                            RotateObjectSafe(item, context, reverseRotations[i], False)
+
+                        bpy.ops.object.select_all(action='DESELECT')
+                        for item in movedObjects:
+                            SelectObject(item)
+                            ActivateObject(item)
+                        bpy.ops.object.transform_apply(
+                            location=False,
+                            rotation=True,
+                            scale=False
+                            )
+
+                        for i, item in enumerate(movedObjects):
+                            RotateObjectSafe(item, context, forwardRotations[i], True)
 
                     self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
