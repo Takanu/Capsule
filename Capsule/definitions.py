@@ -261,20 +261,15 @@ def MoveBone(target, bone, context, location):
     #context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     #target.lock_location = lockTransform
 
-
 def MoveObjects(targetLead, targets, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
-    copyLocation = Vector((0.0, 0.0, 0.0))
-    copyLocation[0] = location[0]
-    copyLocation[1] = location[1]
-    copyLocation[2] = location[2]
+    copyLocation = Vector((location[0], location[1], location[2]))
 
     print(">>>> Moving Objects <<<<")
     print("Objects being moved...", targets)
     print("Total Count...", len(targets))
-
     print("Movement Location:",copyLocation)
 
     # Prevent auto keyframing and location lock from being active
@@ -373,6 +368,72 @@ def MoveObjects(targetLead, targets, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     targetLead.lock_location = lockTransform
 
+def RotateObjects(targetLead, targets, context, rotation):
+
+    # Prevent auto keyframing and location lock from being active
+    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+
+    bpy.ops.object.select_all(action='SELECT')
+    ActivateObject(target)
+
+    # For each rotation vector element that isn't zero, rotate it in that axis
+    if rotation[0] != 0:
+        bpy.ops.transform.rotate(
+            value=radians(rotation[0]),
+            axis=(0.0, 0.0, 0.0),
+            constraint_axis=(True, False, False),
+            constraint_orientation='GLOBAL',
+            mirror=False, proportional='DISABLED',
+            proportional_edit_falloff='SMOOTH',
+            proportional_size=1.0,
+            snap=False,
+            snap_target='CLOSEST',
+            snap_point=(0.0, 0.0, 0.0),
+            snap_align=False,
+            snap_normal=(0.0, 0.0, 0.0),
+            gpencil_strokes=False,
+            release_confirm=False
+            )
+    if rotation[1] != 0:
+        bpy.ops.transform.rotate(
+            value=radians(rotation[1]),
+            axis=(0.0, 0.0, 0.0),
+            constraint_axis=(False, True, False),
+            constraint_orientation='GLOBAL',
+            mirror=False, proportional='DISABLED',
+            proportional_edit_falloff='SMOOTH',
+            proportional_size=1.0,
+            snap=False,
+            snap_target='CLOSEST',
+            snap_point=(0.0, 0.0, 0.0),
+            snap_align=False,
+            snap_normal=(0.0, 0.0, 0.0),
+            gpencil_strokes=False,
+            release_confirm=False
+            )
+
+    if rotation[2] != 0:
+        bpy.ops.transform.rotate(
+            value=radians(rotation[2]),
+            axis=(0.0, 0.0, 0.0),
+            constraint_axis=(False, False, True),
+            constraint_orientation='GLOBAL',
+            mirror=False, proportional='DISABLED',
+            proportional_edit_falloff='SMOOTH',
+            proportional_size=1.0,
+            snap=False,
+            snap_target='CLOSEST',
+            snap_point=(0.0, 0.0, 0.0),
+            snap_align=False,
+            snap_normal=(0.0, 0.0, 0.0),
+            gpencil_strokes=False,
+            release_confirm=False
+            )
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+
 def MoveAll(target, context, location):
     # This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
@@ -445,37 +506,134 @@ def MoveAll(target, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
     target.lock_location = lockTransform
 
-def RotateAll(context, rotation, constraintAxis):
+def RotateAll(target, context, rotation, constraintAxis):
 
-    print(">>>> Rotating EVERYTHING <<<<")
+    print(">>> Rotating Scene <<<")
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
 
     bpy.ops.object.select_all(action='SELECT')
+    ActivateObject(target)
 
-    print("DEGREES TO RADIANS MOFO: ", str(radians(rotation)))
+    # Set the pivot to be the target object
+    backupPivot = 'CURSOR'
+    backupAlign = False
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            backupPivot = area.spaces[0].pivot_point
+            backupAlign = area.spaces[0].use_pivot_point_align
+            area.spaces[0].pivot_point = 'ACTIVE_ELEMENT'
+            area.spaces[0].use_pivot_point_align = False
 
     bpy.ops.transform.rotate(
         value=radians(rotation),
-        axis=(0.0, 0.0, 0.0),
+        axis=(1.0, 1.0, 1.0),
         constraint_axis=constraintAxis,
         constraint_orientation='GLOBAL',
-        mirror=False, proportional='DISABLED',
-        proportional_edit_falloff='SMOOTH',
-        proportional_size=1.0,
-        snap=False,
-        snap_target='CLOSEST',
-        snap_point=(0.0, 0.0, 0.0),
-        snap_align=False,
-        snap_normal=(0.0, 0.0, 0.0),
-        gpencil_strokes=False,
-        release_confirm=False
+        release_confirm=True
         )
+
+    # Restore the pivot
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            area.spaces[0].pivot_point = backupPivot
+            area.spaces[0].use_pivot_point_align = backupAlign
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+
+def RotateAllSafe(target, context, rotation, forward):
+
+    print(">>> RotateAllQuaternion Used - Rotating... <<<")
+
+    # Prevent auto keyframing and location lock from being active
+    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+
+    bpy.ops.object.select_all(action='SELECT')
+    ActivateObject(target)
+
+    # Obtain the current rotation mode
+    order = target.rotation_mode
+    print("Euler Mode...", order)
+
+    # Sort out how we're going to filter through the rotation order
+    rotationOrder = []
+    rotationComponents = []
+    axisX = [0, (1.0, 0.0, 0.0), (True, False, False)]
+    axisY = [1, (0.0, 1.0, 0.0), (False, True, False)]
+    axisZ = [2, (0.0, 0.0, 1.0), (False, False, True)]
+
+    if order == 'ZYX':
+        if forward is True:
+            rotationComponents = [axisZ, axisY, axisX]
+        else:
+            rotationComponents = [axisX, axisY, axisZ]
+    elif order == 'ZXY':
+        if forward is True:
+            rotationComponents = [axisZ, axisX, axisY]
+        else:
+            rotationComponents = [axisY, axisX, axisZ]
+    elif order == 'YZX':
+        if forward is True:
+            rotationComponents = [axisY, axisZ, axisX]
+        else:
+            rotationComponents = [axisX, axisZ, axisY]
+    elif order == 'YXZ':
+        if forward is True:
+            rotationComponents = [axisY, axisX, axisZ]
+        else:
+            rotationComponents = [axisZ, axisX, axisY]
+    elif order == 'XZY':
+        if forward is True:
+            rotationComponents = [axisX, axisZ, axisY]
+        else:
+            rotationComponents = [axisY, axisZ, axisX]
+    elif order == 'XYZ':
+        if forward is True:
+            rotationComponents = [axisX, axisY, axisZ]
+        else:
+            rotationComponents = [axisZ, axisY, axisX]
+
+
+    # Set the pivot to be the target object
+    backupPivot = 'CURSOR'
+    backupAlign = False
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            backupPivot = area.spaces[0].pivot_point
+            backupAlign = area.spaces[0].use_pivot_point_align
+            area.spaces[0].pivot_point = 'ACTIVE_ELEMENT'
+            area.spaces[0].use_pivot_point_align = False
+
+    print("Rotating Target...", target, rotation)
+    print("Target Rotation...", rotation)
+
+    # Rotate in Euler order
+    for i, item in enumerate(rotationComponents):
+        if rotation[item[0]] != 1:
+            print("Rotating...", rotation[item[0]])
+            bpy.ops.transform.rotate(
+                value=radians(rotation[item[0]]),
+                axis=item[1],
+                constraint_axis=item[2],
+                constraint_orientation='GLOBAL',
+                release_confirm=True
+                )
+
+            print("Rotated in the", item[0], "axis...", degrees(target.rotation_euler[item[0]]))
+
+    # Restore the pivot
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            area.spaces[0].pivot_point = backupPivot
+            area.spaces[0].use_pivot_point_align = backupAlign
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+
 
 def ScaleAll(context, scale, constraintAxis):
 

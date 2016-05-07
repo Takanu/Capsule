@@ -407,12 +407,14 @@ class CAP_Clear_List(Operator):
             for object in context.scene.objects:
                 obj = object.CAPObj
                 obj.enable_export = False
+                obj.in_export_list = False
             scn.object_list.clear()
 
         elif objectTab == 2:
             for group in GetSceneGroups(context.scene, True):
                 grp = group.CAPGrp
                 grp.enable_export = False
+                grp.in_export_list = False
             scn.group_list.clear()
 
 

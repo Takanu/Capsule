@@ -20,10 +20,10 @@
 bl_info = {
     "name": "Capsule",
     "author": "Crocadillian (BA) / Takanu (GitHub), special thanks to Acidhawk and Asahd <3",
-    "version": (0, 999, 3),
+    "version": (0, 999, 4),
     "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > GEX",
-    "wiki_url": "http://blenderartists.org/forum/showthread.php?373523-GEX-0-85-(15-11-2015)-One-Click-Batch-FBX-Exports",
+    "wiki_url": "https://github.com/Takanu/Capsule",
     "description": "Provides tools for batch exporting objects from Blender using FBX.",
     "tracker_url": "",
     "category": "Import-Export"
@@ -319,6 +319,13 @@ class CAP_ExportPreset(PropertyGroup):
         description="Bakes the space transform of meshes from Blender into the FBX file, when the target world space does not align with the one Blender has. (WARNING - Known broken on armatures/animations, use at your own peril!)",
         default=False
         )
+
+    reset_rotation = BoolProperty(
+        name="Reset Rotation",
+        description="If enabled, the plugin will reset the rotation of objects and groups when exported.  For groups, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a group to be reset.  Currently this doesn't work with rotation-influencing constraints, and will be disabled on Objects and Groups that use them.",
+        default=False
+        )
+
 
     axis_up = EnumProperty(
         name="Axis Up",
@@ -687,13 +694,16 @@ class CAP_AddonPreferences(AddonPreferences):
                     export_main.separator()
 
                     export_1 = export_main.column(align=True)
-                    export_1.prop(currentExp, "bake_space_transform")
-                    export_1.separator()
-
                     export_scale = export_1.row(align=True)
                     export_scale.prop(currentExp, "global_scale")
                     export_scale.prop(currentExp, "apply_unit_scale", text="", icon='NDOF_TRANS')
                     export_1.separator()
+
+                    export_1.prop(currentExp, "bake_space_transform")
+                    export_1.prop(currentExp, "reset_rotation")
+
+                    export_1.separator()
+
 
                     export_main.separator()
                     export_main.separator()
