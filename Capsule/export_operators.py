@@ -853,7 +853,7 @@ class CAP_Export_Assets(Operator):
                 # Need to get the movement location.  If the user wants to use the scene origin though,
                 # just make it 0
                 rootObjectLocation = Vector((0.0, 0.0, 0.0))
-                rootObjectRotation = (degrees(rootObject.rotation_euler[0]), degrees(rootObject.rotation_euler[1]), degrees(rootObject.rotation_euler[2]))
+                rootObjectRotation = (rootObject.rotation_euler[0], rootObject.rotation_euler[1], rootObject.rotation_euler[2])
 
                 if useSceneOrigin is False:
                     tempROL = FindWorldSpaceObjectLocation(rootObject, context)
@@ -1013,8 +1013,8 @@ class CAP_Export_Assets(Operator):
                     # We need to record rotations in case they need to be restored
                     # for when Unity completely destroys them <3
                     for item in movedObjects:
-                        forwardRot = (degrees(item.rotation_euler[0]), degrees(item.rotation_euler[1]), degrees(item.rotation_euler[2]))
-                        reverseRot = (degrees(-item.rotation_euler[0]), degrees(-item.rotation_euler[1]), degrees(-item.rotation_euler[2]))
+                        forwardRot = (item.rotation_euler[0], item.rotation_euler[1], item.rotation_euler[2])
+                        reverseRot = (-item.rotation_euler[0], -item.rotation_euler[1], -item.rotation_euler[2])
                         print("COLLECTING ROTATIONS...", forwardRot)
                         forwardRotations.append(forwardRot)
                         reverseRotations.append(reverseRot)
@@ -1028,7 +1028,7 @@ class CAP_Export_Assets(Operator):
                     # If the user wanted unity, time to stomp on the rotation
                     # only the objects being exported should be applied
                     if exportDefault.x_unity_rotation_fix is True:
-                        RotateAllSafe(rootObject, context, (-90, 0, 0), True)
+                        RotateAllSafe(rootObject, context, (degrees(-90), 0, 0), True)
                         bpy.ops.object.select_all(action='DESELECT')
                         for item in movedObjects:
                             SelectObject(item)
@@ -1039,7 +1039,7 @@ class CAP_Export_Assets(Operator):
                             rotation=True,
                             scale=False
                             )
-                        RotateAllSafe(rootObject, context, (90, 0, 0), True)
+                        RotateAllSafe(rootObject, context, (degrees(90), 0, 0), True)
 
                     if useSceneOrigin is False:
                         MoveAll(rootObject, context, Vector((0.0, 0.0, 0.0)))

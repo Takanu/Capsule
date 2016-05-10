@@ -437,9 +437,10 @@ def RotateObjectSafe(target, context, rotation, forward):
     # Rotate in Euler order
     for i, item in enumerate(rotationComponents):
         if rotation[item[0]] != 1:
+
             print("Rotating...", rotation[item[0]])
             bpy.ops.transform.rotate(
-                value=radians(rotation[item[0]]),
+                value=rotation[item[0]],
                 axis=item[1],
                 constraint_axis=item[2],
                 constraint_orientation='GLOBAL',
@@ -637,9 +638,10 @@ def RotateAllSafe(target, context, rotation, forward):
     # Rotate in Euler order
     for i, item in enumerate(rotationComponents):
         if rotation[item[0]] != 1:
+
             print("Rotating...", rotation[item[0]])
             bpy.ops.transform.rotate(
-                value=radians(rotation[item[0]]),
+                value=rotation[item[0]],
                 axis=item[1],
                 constraint_axis=item[2],
                 constraint_orientation='GLOBAL',

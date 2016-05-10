@@ -700,6 +700,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     export_1.separator()
 
                     export_1.prop(currentExp, "bake_space_transform")
+                    #
                     export_1.prop(currentExp, "reset_rotation")
 
                     export_1.separator()
