@@ -20,7 +20,7 @@
 bl_info = {
     "name": "Capsule",
     "author": "Crocadillian (BA) / Takanu (GitHub), special thanks to Acidhawk and Asahd <3",
-    "version": (0, 999, 5),
+    "version": (1, 0),
     "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > GEX",
     "wiki_url": "https://github.com/Takanu/Capsule",
