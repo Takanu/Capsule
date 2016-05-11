@@ -4,7 +4,7 @@ from math import pi, radians, degrees
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, SwitchObjectMode, MoveObjects, RotateObjectSafe, MoveBone, MoveObjects, MoveAll, RotateAll, RotateAllSafe, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, FindWorldSpaceBoneLocation, GetSceneGroups
+from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, SwitchObjectMode, MoveObject, MoveObjects, RotateObjectSafe, MoveBone, MoveObjects, MoveAll, RotateAll, RotateAllSafe, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, FindWorldSpaceBoneLocation, GetSceneGroups
 
 
 class CAP_Export_Assets(Operator):
@@ -53,6 +53,8 @@ class CAP_Export_Assets(Operator):
         batch_mode='OFF',
         use_batch_own_dir=False,
         use_metadata=False)
+
+        self.exportedFiles += 1
 
     def PrepareExportIndividual(self, context, targets, path, suffix):
         # Prepares export for multiple FBX files, each containing a separate
@@ -890,7 +892,7 @@ class CAP_Export_Assets(Operator):
         self.exportCount = 0
         self.exportedObjects = 0
         self.exportedGroups = 0
-        self.exportedPasses = 0
+        self.exportedFiles = 0
 
         print("")
         print("")
@@ -1166,7 +1168,6 @@ class CAP_Export_Assets(Operator):
                         self.FinishSceneMovement(context, sceneOrigin, movedObjects, ROLoc, RORot)
                         DeleteObject(sceneOrigin)
 
-                    self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
 
                 if self.preserve_armature_constraints is False:
@@ -1457,7 +1458,6 @@ class CAP_Export_Assets(Operator):
                         self.FinishSceneMovement(context, sceneOrigin, movedObjects, ROLoc, RORot)
                         DeleteObject(sceneOrigin)
 
-                    self.exportedPasses += 1
                     print(">>> Pass Complete <<<")
 
                 if len(exportDefault.passes) > 0:
@@ -1474,7 +1474,7 @@ class CAP_Export_Assets(Operator):
         textGroupSingle = " group"
         textGroupMultiple = " groups"
 
-        output = "Finished exporting "
+        output = "Finished processing "
 
         if self.exportedObjects > 1:
             output += str(self.exportedObjects) + " objects"
@@ -1491,10 +1491,10 @@ class CAP_Export_Assets(Operator):
         output += ".  "
         output += "Total of "
 
-        if self.exportedPasses > 1:
-            output += str(self.exportedPasses) + " passes."
-        elif self.exportedPasses == 1:
-            output += str(self.exportedPasses) + " pass."
+        if self.exportedFiles > 1:
+            output += str(self.exportedFiles) + " files exported."
+        elif self.exportedFiles == 1:
+            output += str(self.exportedFiles) + " file."
 
         # Output a nice report
         if self.exportedObjects == 0 and self.exportedGroups == 0:
