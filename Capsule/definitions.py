@@ -267,11 +267,6 @@ def MoveObjects(targetLead, targets, context, location):
 
     copyLocation = Vector((location[0], location[1], location[2]))
 
-    print(">>>> Moving Objects <<<<")
-    print("Objects being moved...", targets)
-    print("Total Count...", len(targets))
-    print("Movement Location:",copyLocation)
-
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
     lockTransform = targetLead.lock_location
@@ -289,21 +284,12 @@ def MoveObjects(targetLead, targets, context, location):
     bpy.ops.view3d.snap_cursor_to_selected()
     rootLocation = Vector((0.0, 0.0, 0.0))
 
-    print("Movement Location:",copyLocation)
-
-    print("RAWR")
-
     for area in context.screen.areas:
         if area.type == 'VIEW_3D':
             rootLocation = area.spaces[0].cursor_location
 
-    print("Root Location:", rootLocation)
-    print("Movement Location:",copyLocation)
-
     # Calculate the movement difference
     locationDiff = copyLocation - rootLocation
-
-    print("Final Movement", locationDiff)
 
     targetsToRemove = []
 
@@ -328,8 +314,6 @@ def MoveObjects(targetLead, targets, context, location):
         if target in targets:
             targets.remove(target)
 
-    print("Child Check Complete.")
-
     bpy.ops.object.select_all(action='DESELECT')
 
     # Lets try moving all the fucking objects this time
@@ -337,8 +321,6 @@ def MoveObjects(targetLead, targets, context, location):
 
     for item in targets:
         SelectObject(item)
-
-    print("Targets to be moved...", targets)
 
     bpy.ops.transform.translate(
         value=locationDiff,
@@ -358,9 +340,6 @@ def MoveObjects(targetLead, targets, context, location):
         remove_on_cancel=False,
         release_confirm=False)
 
-    print("Root Object", targetLead.name, "Moved... ", targetLead.location)
-    print("Location difference found:", locationDiff)
-
     # Position the cursor back to it's original location
     bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
 
@@ -370,8 +349,6 @@ def MoveObjects(targetLead, targets, context, location):
 
 def RotateObjectSafe(target, context, rotation, forward):
 
-    print(">>> RotateObjectsSafe Used - Rotating... <<<")
-
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
@@ -380,7 +357,6 @@ def RotateObjectSafe(target, context, rotation, forward):
 
     # Obtain the current rotation mode
     order = target.rotation_mode
-    print("Euler Mode...", order)
 
     # Sort out how we're going to filter through the rotation order
     rotationOrder = []
@@ -431,14 +407,10 @@ def RotateObjectSafe(target, context, rotation, forward):
             area.spaces[0].pivot_point = 'ACTIVE_ELEMENT'
             area.spaces[0].use_pivot_point_align = False
 
-    print("Rotating Target...", target, rotation)
-    print("Target Rotation...", rotation)
-
     # Rotate in Euler order
     for i, item in enumerate(rotationComponents):
         if rotation[item[0]] != 1:
 
-            print("Rotating...", rotation[item[0]])
             bpy.ops.transform.rotate(
                 value=rotation[item[0]],
                 axis=item[1],
@@ -446,8 +418,6 @@ def RotateObjectSafe(target, context, rotation, forward):
                 constraint_orientation='GLOBAL',
                 release_confirm=True
                 )
-
-            print("Rotated in the", item[0], "axis...", degrees(target.rotation_euler[item[0]]))
 
     # Restore the pivot
     for area in context.screen.areas:
@@ -466,8 +436,6 @@ def MoveAll(target, context, location):
     copyLocation[0] = location[0]
     copyLocation[1] = location[1]
     copyLocation[2] = location[2]
-
-    print(">>>> Moving EVERYTHING <<<<")
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
@@ -491,16 +459,11 @@ def MoveAll(target, context, location):
             print(area.spaces[0].cursor_location)
             rootLocation = area.spaces[0].cursor_location
 
-    print("Root Location:", rootLocation)
-    print("Movement Location:",copyLocation)
-
     # Calculate the movement difference
     locationDiff = copyLocation - rootLocation
-    print("Final Movement", locationDiff)
 
     bpy.ops.object.select_all(action='SELECT')
     ActivateObject(target)
-    print("Selected Objects for movement...", len(bpy.context.selected_objects))
 
     bpy.ops.transform.translate(
         value=locationDiff,
@@ -521,8 +484,6 @@ def MoveAll(target, context, location):
         release_confirm=False
         )
 
-    print("Root Object", target.name, "Moved... ", rootLocation)
-
     # Position the cursor back to it's original location
     bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
 
@@ -531,8 +492,6 @@ def MoveAll(target, context, location):
     target.lock_location = lockTransform
 
 def RotateAll(target, context, rotation, constraintAxis):
-
-    print(">>> Rotating Scene <<<")
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
@@ -570,8 +529,6 @@ def RotateAll(target, context, rotation, constraintAxis):
 
 def RotateAllSafe(target, context, rotation, forward):
 
-    print(">>> RotateAllQuaternion Used - Rotating... <<<")
-
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
@@ -581,7 +538,6 @@ def RotateAllSafe(target, context, rotation, forward):
 
     # Obtain the current rotation mode
     order = target.rotation_mode
-    print("Euler Mode...", order)
 
     # Sort out how we're going to filter through the rotation order
     rotationOrder = []
@@ -632,14 +588,10 @@ def RotateAllSafe(target, context, rotation, forward):
             area.spaces[0].pivot_point = 'ACTIVE_ELEMENT'
             area.spaces[0].use_pivot_point_align = False
 
-    print("Rotating Target...", target, rotation)
-    print("Target Rotation...", rotation)
-
     # Rotate in Euler order
     for i, item in enumerate(rotationComponents):
         if rotation[item[0]] != 1:
 
-            print("Rotating...", rotation[item[0]])
             bpy.ops.transform.rotate(
                 value=rotation[item[0]],
                 axis=item[1],
@@ -647,8 +599,6 @@ def RotateAllSafe(target, context, rotation, forward):
                 constraint_orientation='GLOBAL',
                 release_confirm=True
                 )
-
-            print("Rotated in the", item[0], "axis...", degrees(target.rotation_euler[item[0]]))
 
     # Restore the pivot
     for area in context.screen.areas:
@@ -659,10 +609,7 @@ def RotateAllSafe(target, context, rotation, forward):
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
 
-
 def ScaleAll(context, scale, constraintAxis):
-
-    print(">>>> Scaling EVERYTHING <<<<")
 
     # Prevent auto keyframing and location lock from being active
     autoKey = context.scene.tool_settings.use_keyframe_insert_auto
