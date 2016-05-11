@@ -1032,6 +1032,8 @@ def CopyPreset(old_preset, new_preset):
 
     new_preset.global_scale = old_preset.global_scale
     new_preset.bake_space_transform = old_preset.bake_space_transform
+    new_preset.reset_rotation = old_preset.reset_rotation
+    
     new_preset.axis_up = old_preset.axis_up
     new_preset.axis_forward = old_preset.axis_forward
     new_preset.apply_unit_scale = old_preset.apply_unit_scale
