@@ -68,22 +68,16 @@ class CAP_Export_Assets(Operator):
 
             # For the time being, manually move the object back and forth to
             # the world origin point.
-            tempLoc = Vector((0.0, 0.0, 0.0))
-            tempLoc[0] = item.location[0]
-            tempLoc[1] = item.location[1]
-            tempLoc[2] = item.location[2]
+            tempLoc = FindWorldSpaceObjectLocation(item, context)
+
             #print("Moving location to centre...")
             MoveObject(item, context, (0.0, 0.0, 0.0))
 
             bpy.ops.object.select_all(action='DESELECT')
             FocusObject(item)
-
             self.ExportFBX(individualFilePath)
-
-            #print("Moving location back to root-orientated centre...")
-            #print("tempLoc - ", tempLoc)
             MoveObject(item, context, tempLoc)
-            #print("tempLoc - ", tempLoc)
+
 
     def PrepareExportCombined(self, targets, path, exportName, suffix):
         # Prepares export for an FBX file comprising of multiple objects
