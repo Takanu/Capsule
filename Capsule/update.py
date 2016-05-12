@@ -594,6 +594,7 @@ def Update_ObjectRemoveFromList(self, context):
     scn = context.scene.CAPScn
     # To avoid issues within the list, the selected list item needs to be preserved.
     backupListIndex = scn.object_list_index
+    backupListLength = len(scn.object_list)
 
     # Search through the object list to find a matching name
     for item in scn.object_list:
@@ -606,12 +607,22 @@ def Update_ObjectRemoveFromList(self, context):
 
                     sceneObj.CAPObj.enable_export = False
                     sceneObj.CAPObj.in_export_list = False
-                    context.scene.CAPScn.object_list.remove(i)
-                    scn.object_list_index = i
 
-                    scn.enable_sel_active = False
-                    scn.enable_list_active = False
-                    return
+            # Whether or not we find a successful match in the scene,
+            # remove it from the list
+            context.scene.CAPScn.object_list.remove(i)
+
+            # Set the new list index
+            scn.object_list_index = i
+
+            # If the index is more than the list, bring it down one
+            # to ensure a list item gets selected
+            if i == (backupListLength - 1):
+                scn.object_list_index = i - 1
+
+            scn.enable_sel_active = False
+            scn.enable_list_active = False
+            return
 
         i += 1
 
@@ -622,6 +633,7 @@ def Update_GroupRemoveFromList(self, context):
     scn = context.scene.CAPScn
     # To avoid issues within the list, the selected list item needs to be preserved.
     backupListIndex = scn.group_list_index
+    backupListLength = len(scn.group_list)
 
     for item in scn.group_list:
         if item.name == self.name:
@@ -633,12 +645,22 @@ def Update_GroupRemoveFromList(self, context):
 
                     sceneGroup.CAPGrp.enable_export = False
                     sceneGroup.CAPGrp.in_export_list = False
-                    context.scene.CAPScn.group_list.remove(i)
-                    scn.group_list_index = i
 
-                    scn.enable_sel_active = False
-                    scn.enable_list_active = False
-                    return
+            # Whether or not we find a successful match in the scene,
+            # remove it from the list
+            context.scene.CAPScn.group_list.remove(i)
+
+            # If the index is more than the list, bring it down one
+            # to ensure a list item gets selected
+            scn.group_list_index = i
+
+            if i == (backupListLength - 1):
+                scn.group_list_index = i - 1
+
+            scn.enable_sel_active = False
+            scn.enable_list_active = False
+            return
+
         i += 1
 
 

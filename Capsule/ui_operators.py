@@ -417,6 +417,8 @@ class CAP_Clear_List(Operator):
                 grp.in_export_list = False
             scn.group_list.clear()
 
+        scn.enable_sel_active = False
+        scn.enable_list_active = False
 
         return {'FINISHED'}
 
@@ -451,6 +453,8 @@ class CAP_Refresh_List(Operator):
                         entry.prev_name = group.name
                         entry.enable_export = group.CAPGrp.enable_export
 
+        scn.enable_sel_active = False
+        scn.enable_list_active = False
 
         return {'FINISHED'}
 
