@@ -898,7 +898,7 @@ def CreatePresetUE4Standard(exp):
         newPassTag = passOne.tags.add()
         newPassTag.name = tag.name
         newPassTag.index = len(export.tags) - 1
-        newPassTag.use_tag = True
+        #newPassTag.use_tag = True
 
     passTwo = export.passes.add()
     passTwo.name = "Game-Ready Pass"
@@ -915,8 +915,8 @@ def CreatePresetUE4Standard(exp):
         newPassTag.name = tag.name
         newPassTag.index = len(export.tags) - 1
 
-        if i != 0:
-            newPassTag.use_tag = True
+        #if i != 0:
+            #newPassTag.use_tag = True
 
         i += 1
 
@@ -984,7 +984,7 @@ def CreatePresetUnity5Standard(exp):
         newPassTag = passOne.tags.add()
         newPassTag.name = tag.name
         newPassTag.index = len(export.tags) - 1
-        newPassTag.use_tag = True
+        #newPassTag.use_tag = True
 
 def CopyPreset(old_preset, new_preset):
 
