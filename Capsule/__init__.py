@@ -29,10 +29,6 @@ bl_info = {
     "category": "Import-Export"
 }
 
-global ignorePresets
-ignorePresets = False
-print(ignorePresets)
-
 # Start importing all the addon files
 # The init file just gets things started, no code needs to be placed here.
 import bpy
@@ -49,8 +45,6 @@ from bpy.app.handlers import persistent
 print("Checking modules...")
 
 if "bpy" in locals():
-    global ignorePresets
-    ignorePresets = True
     import imp
     print("------------------Reloading Plugin------------------")
     if "definitions" in locals():
@@ -516,6 +510,7 @@ class CAP_AddonPreferences(AddonPreferences):
     )
 
     # Storage for the Global Presets, and it's enum UI list.
+    sort_presets = CollectionProperty(type=CAP_ExportPreset)
     saved_presets = CollectionProperty(type=CAP_ExportPreset)
     saved_presets_index = IntProperty()
 
@@ -939,11 +934,11 @@ class CAP_AddonPreferences(AddonPreferences):
 
         if addon_prefs.options_dropdown is False:
             optionsUI.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            optionsUI.label("Plugin Options")
+            optionsUI.label("Extra Settings")
 
         else:
             optionsUI.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            optionsUI.label("Plugin Options")
+            optionsUI.label("Extra Settings")
             options_main = options_box.row(align=True)
             options_main.separator()
 
@@ -999,7 +994,6 @@ def CheckSelectedObject(scene):
     addon_prefs = user_preferences.addons[__name__].preferences
     #print("SCENE UPDATE")
 
-
     if bpy.context.active_object is not None:
         if bpy.context.active_object.name != addon_prefs.prev_selected_object:
             addon_prefs.object_multi_edit = True
@@ -1014,7 +1008,6 @@ def CheckSelectedObject(scene):
 
 def register():
     print("Registering Stuff")
-    global ignorePresets
     bpy.utils.register_module(__name__)
 
     bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAP_Scene_Preferences)
@@ -1024,18 +1017,14 @@ def register():
     bpy.types.Object.CAPStm = PointerProperty(type=properties.CAP_Object_StateMachine)
     bpy.types.Object.CAPExp = PointerProperty(type=CAP_ExportPresets)
 
-    print(ignorePresets)
-    if ignorePresets == False:
-        ui_operators.CreatePresets()
-        ignorePresets = True
+    ui_operators.CreatePresets()
 
     bpy.app.handlers.load_pre.append(CreateDefaultData)
     bpy.app.handlers.scene_update_post.append(CheckSelectedObject)
 
 def unregister():
     print("Unregistering Stuff")
-    global ignorePresets
-    ignorePresets = False
+    ui_operators.DeletePresets()
 
     bpy.app.handlers.load_pre.remove(CreateDefaultData)
     bpy.app.handlers.scene_update_post.remove(CheckSelectedObject)

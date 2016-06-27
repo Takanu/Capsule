@@ -738,6 +738,10 @@ class CAP_Delete_Presets(Operator):
         # Obtain the selected preset
         addon_prefs.saved_presets.remove(addon_prefs.saved_presets_index)
 
+        # Decrement the list selection
+        if addon_prefs.saved_presets_index > 0:
+            addon_prefs.saved_presets_index -= 1
+
         return {'FINISHED'}
 
 class CAP_Store_Presets(Operator):
@@ -772,16 +776,20 @@ class CAP_Store_Presets(Operator):
         return {'FINISHED'}
 
 def DeletePresets():
+    print(">>>>>>>>>> Deleting presets...")
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
     exp = addon_prefs.saved_presets
     presetsToKeep = []
 
     i = len(exp) - 1
+    print("i = ", i)
 
     while i != -1:
         item = exp[i]
+        print("item = ", item)
         if item.x_global_user_deletable is False:
+            print("Removing default exp...", exp[i])
             exp.remove(i)
         i -= 1
 
@@ -793,11 +801,49 @@ def CreatePresets():
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
     exp = addon_prefs.saved_presets
-    print("Adding presets")
+    sort = addon_prefs.sort_presets
+    print(">>>>>>>>>> Adding presets...")
 
+    # Erase the previous sort entries (delayed)
+    print("Clearing sort presets")
+    x = 0
+    lenX = len(sort)
+    while x < lenX:
+        print("Deleting sort preset...", sort[0])
+        sort.remove(0)
+        x += 1
+
+    # Copy all the currently-saved presets to a temporary sort preset location.
+    i = 0
+    lenI = len(exp)
+    print("lenI = ", lenI)
+    print("Saving Presets...")
+    print(exp)
+    while i < lenI:
+        if exp[0].x_global_user_deletable is True:
+            print("Copying user-defined preset...", exp[0])
+            newPreset = sort.add()
+            CopyPreset(exp[0], newPreset)
+
+        print("Deleting preset...", exp[0])
+        exp.remove(0)
+        i += 1
+
+    # Create the new presets
     CreatePresetBasicExport(exp)
     CreatePresetUE4Standard(exp)
     CreatePresetUnity5Standard(exp)
+
+    # Add the copied presets back
+    i = 0
+    lenI = len(sort)
+    print(sort)
+    while i < lenI:
+        print("Adding back preset...", sort[0])
+        newPreset = exp.add()
+        CopyPreset(sort[0], newPreset)
+        sort.remove(0)
+        i += 1
 
 def CreatePresetBasicExport(exp):
     # -------------------------------------------------------------------------
