@@ -206,6 +206,13 @@ class CAP_ExportPass(PropertyGroup):
         name="Pass Name",
         description="The name of the selected pass."
         )
+
+    enable = BoolProperty(
+        name="Enable Pass",
+        description="Lets you enable or disable the pass for use when exporting objects.",
+        default=True
+    )
+
     file_suffix = StringProperty(
         name="File Suffix",
         description="An optional string that if used, will be appended to all the names of files produced through this pass."

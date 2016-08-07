@@ -1046,6 +1046,7 @@ def CopyPreset(old_preset, new_preset):
         new_pass = new_preset.passes.add()
 
         new_pass.name = old_pass.name
+        new_pass.enable = old_pass.enable
         new_pass.file_suffix = old_pass.file_suffix
         new_pass.sub_directory = old_pass.sub_directory
 

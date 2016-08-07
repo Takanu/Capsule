@@ -880,6 +880,16 @@ class CAP_Export_Assets(Operator):
         scn = context.scene.CAPScn
         user_preferences = context.user_preferences
         addon_prefs = user_preferences.addons[__package__].preferences
+        exp = None
+
+        # For the new pie menu, we need to see if any data exists before continuing
+        try:
+            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        except KeyError:
+            self.report({'WARNING'}, "No Capsule Data for this blend file exists.  Please create it using the Toolshelf or Addon Preferences menu.")
+            return {'FINISHED'}
+
+        # Now the checks over, it's time to continue
         self.exportInfo = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         self.replaceInvalidChars = addon_prefs.substitute_directories
 
@@ -967,6 +977,11 @@ class CAP_Export_Assets(Operator):
 
 
                 for objPass in exportDefault.passes:
+
+                    # If the pass isn't enabled, skip it
+                    if objPass.enable is False:
+                        continue
+
                     print("-"*109)
                     print("NEW PASS", "-"*100)
                     print("-"*109)
@@ -1247,6 +1262,10 @@ class CAP_Export_Assets(Operator):
 
                 #/////////////////// - PASSES - /////////////////////////////////////////////////
                 for objPass in exportDefault.passes:
+
+                    # If the pass isn't enabled, skip it
+                    if objPass.enable is False:
+                        continue
 
                     print("-"*59)
                     print("NEW PASS", "-"*50)

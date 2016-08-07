@@ -260,25 +260,16 @@ class CAP_PieMainMenu(Menu):
     bl_idname = "pie.capsule_main"
     bl_label = "Capsule Export"
 
-    @classmethod
-    def poll(cls, context):
-        has_sel = False
-        if len(context.selected_objects) > 0:
-            has_sel = True
-
-        return has_sel
-
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
-        # 4 - LEFT
-        pie.operator("wm.call_menu_pie", text="Object Settings", icon="OBJECT_DATA").name = "pie.capsule_object"
-        # 6 - RIGHT
-        pie.operator("wm.call_menu_pie", text="Group Settings", icon="GROUP").name = "pie.capsule_group"
-        # 2 - BOTTOM
-        pie.operator("scene.cap_export", text="Export with Capsule", icon="EXPORT")
-        # 8 - TOP
-        # 7 - TOP - LEFT
-        # 1 - BOTTOM - LEFT
-        # 9 - TOP - RIGHT
-        # 3 - BOTTOM - RIGHT
+
+        has_sel = False
+        if len(context.selected_objects) > 0:
+            pie.operator("wm.call_menu_pie", text="Object Settings", icon="OBJECT_DATA").name = "pie.capsule_object"
+            # 6 - RIGHT
+            pie.operator("wm.call_menu_pie", text="Group Settings", icon="GROUP").name = "pie.capsule_group"
+            # 2 - BOTTOM
+            pie.operator("scene.cap_export", text="Export with Capsule", icon="EXPORT")
+        else:
+            pie.operator("scene.cap_export", text="Export with Capsule", icon="EXPORT")

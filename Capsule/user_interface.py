@@ -85,6 +85,7 @@ class Pass_Default_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
+        layout.prop(item, "enable", text="")
         layout.prop(item, "name", text="", emboss=False)
 
 class Action_UIList(UIList):
