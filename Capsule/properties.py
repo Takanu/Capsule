@@ -2,7 +2,6 @@
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
-
 from .update import Update_EnableExport, Update_SceneOrigin, Update_LocationDefault, Update_ExportDefault, Update_Normals, Update_ObjectItemName, Update_ObjectItemExport, Update_GroupItemName, Update_GroupItemExport, Update_ActionItemName, Focus_Object, Focus_Group, Select_Object, Select_Group, Update_GroupExport, Update_GroupRootObject, Update_GroupExportDefault, Update_GroupLocationDefault, Update_GroupNormals, Update_GroupListSelect, Update_ObjectListSelect, Update_ObjectRemoveFromList, Update_GroupRemoveFromList
 
 class ObjectItem(PropertyGroup):
@@ -296,7 +295,7 @@ class CAP_Group_Preferences(PropertyGroup):
         ),
         update=Update_GroupNormals
         )
-        
+
     in_export_list = BoolProperty(
         name="",
         description="(Internal Only) Prevents refreshes of the Export List from removing items not marked for export.",
