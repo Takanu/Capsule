@@ -19,8 +19,8 @@
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
-    "author": "Crocadillian (BA) / Takanu (GitHub), special thanks to Acidhawk and Asahd <3",
-    "version": (1, 0, 2),
+    "author": "Takanu Kyriako/Crocadillian, special thanks to CW and AY <3“,
+    "version": (1, 0, 5),
     "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
