@@ -138,7 +138,7 @@ class CAP_Export_Assets(Operator):
                             bpy.ops.object.modifier_remove(modifier=modifier.name)
 
     def GetFilePath(self, context, locationEnum, fileName):
-        # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
+        # Get the file extension.  If the index is incorrect (as in, the user didnt set the path)
         enumIndex = int(locationEnum)
         filePath = ""
 
@@ -157,6 +157,7 @@ class CAP_Export_Assets(Operator):
 
         return filePath
 
+    # Using various export and OS settings, calculates the correct file path for exports.
     def CalculateFilePath(self, context, locationDefault, objectName, subDirectory):
 
         # Does the proper calculation and error handling for the file path, in conjunction with GetFilePath()

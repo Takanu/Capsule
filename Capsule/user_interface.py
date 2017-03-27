@@ -388,6 +388,8 @@ class CAP_List(Panel):
 
         col_export = layout.column(align=True)
         col_export.operator("scene.cap_export")
+        col_export.separator()
+        #col_export.operator("testcap.duplicate")
         layout.separator()
 
 

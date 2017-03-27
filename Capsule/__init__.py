@@ -19,8 +19,8 @@
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
-    "author": "Takanu Kyriako/Crocadillian - special thanks to CW and AY <3",
-    "version": (1, 0, 6),
+    "author": "Crocadillian (BA) / Takanu (GitHub), special thanks to Acidhawk and Asahd <3",
+    "version": (1, 0, 7),
     "blender": (2, 7, 7),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
@@ -39,6 +39,7 @@ from . import export_operators
 from . import export_menu
 from . import ui_operators
 from . import update
+from . import test_ops
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.app.handlers import persistent
@@ -62,6 +63,8 @@ if "bpy" in locals():
         imp.reload(ui_operators)
     if "update" in locals():
         imp.reload(update)
+    if "test_ops" in locals():
+        imp.reload(test_ops)
 
 print("Importing modules...")
 
@@ -974,6 +977,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             options_main.separator()
 
+# Builds the default empty datablocks for the file
 @persistent
 def CreateDefaultData(scene):
 
@@ -997,6 +1001,8 @@ def CreateDefaultData(scene):
     defaultDatablock.hide_select = True
     defaultDatablock.CAPExp.is_storage_object = True
 
+
+# ....not sure
 @persistent
 def CheckSelectedObject(scene):
 
@@ -1019,7 +1025,7 @@ def CheckSelectedObject(scene):
 addon_keymaps = []
 
 def register():
-    print("Registering Stuff")
+    print("Registering Properties")
     bpy.utils.register_module(__name__)
 
     bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAP_Scene_Preferences)
