@@ -2,6 +2,11 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import Menu, Operator
 
+from .update import CAP_Update_ObjectExport, UpdateObjectList
+from .update_groups import CAP_Update_GroupExport, UpdateGroupList
+
+from . import tk_utils
+
 class CAP_PieWarning(Operator):
     bl_idname = "capsule.pie_warning"
     bl_label = ""
@@ -12,27 +17,32 @@ class CAP_PieWarning(Operator):
         self.report({'WARNING'}, self.label)
         return {"FINISHED"}
 
-class CAP_ToggleObjectExport(Operator):
+class CAP_ToggleExport(Operator):
     bl_idname = "capsule.toggle_export"
     bl_label = "Toggle Export"
 
     args = StringProperty(default="")
 
     def execute(self, context):
+
+        print("*" * 40)
         scn = context.scene.CAPScn
         sel = context.selected_objects
         args = self.args.split(".")
-        scn.enable_sel_active = True
 
         if args[0] == "OBJECT":
-            if args[1] == "True":
-                context.active_object.CAPObj.enable_export = True
-            else:
-                context.active_object.CAPObj.enable_export = False
+
+            for item in sel:
+                if args[1] == "True":
+                    item.CAPObj.enable_export = True
+                    UpdateObjectList(context.scene, item, True)
+                else:
+                    item.CAPObj.enable_export = False
+                    UpdateObjectList(context.scene, item, False)
         else:
-            enable = False
+            isEnabled = False
             if args[1] == "True":
-                enable = True
+                isEnabled = True
 
             groups_found = []
             for item in context.selected_objects:
@@ -49,7 +59,8 @@ class CAP_ToggleObjectExport(Operator):
 
 
             for group in groups_found:
-                group.CAPGrp.enable_export = enable
+                group.CAPGrp.enable_export = isEnabled
+                UpdateGroupList(context.scene, group, isEnabled)
 
         scn.enable_sel_active = False
         return {'FINISHED'}
@@ -110,6 +121,9 @@ class CAP_PieLocationObject(Menu):
             i += 1
 
 class CAP_PieLocationGroup(Menu):
+    """
+    A pie-specific operator for toggling the export status of the currently selected groups.
+    """
     bl_idname = "pie.location_group"
     bl_label = "Select Location"
 
@@ -128,6 +142,9 @@ class CAP_PieLocationGroup(Menu):
             i += 1
 
 class CAP_ExportSelectObject(Operator):
+    """
+    A pie-specific operator for toggling the export status of the currently selected objects.
+    """
     bl_idname = "capsule.export_select_object"
     bl_label = "Toggle Export"
 
@@ -139,6 +156,9 @@ class CAP_ExportSelectObject(Operator):
         return {'FINISHED'}
 
 class CAP_ExportSelectGroup(Operator):
+    """
+    A pie-specific operator for toggling the export status of the currently selected groups.
+    """
     bl_idname = "capsule.export_select_group"
     bl_label = "Toggle Export"
 
@@ -165,6 +185,9 @@ class CAP_ExportSelectGroup(Operator):
         return {'FINISHED'}
 
 class CAP_PieExportObject(Menu):
+    """
+    Displays the export default options for objects.
+    """
     bl_idname = "pie.export_object"
     bl_label = "Select Location"
 
@@ -183,6 +206,9 @@ class CAP_PieExportObject(Menu):
             i += 1
 
 class CAP_PieExportGroup(Menu):
+    """
+    Displays the export default options for groups.
+    """
     bl_idname = "pie.export_group"
     bl_label = "Select Location"
 
@@ -201,6 +227,9 @@ class CAP_PieExportGroup(Menu):
             i += 1
 
 class CAP_PieObjectMenu(Menu):
+    """
+    Pie menus to display object-specific Capsule options and settings.
+    """
     bl_idname = "pie.capsule_object"
     bl_label = "Capsule Object Settings"
 
@@ -229,6 +258,9 @@ class CAP_PieObjectMenu(Menu):
         # 3 - BOTTOM - RIGHT
 
 class CAP_PieGroupMenu(Menu):
+    """
+    Pie menus to display group-specific Capsule options and settings.
+    """
     bl_idname = "pie.capsule_group"
     bl_label = "Capsule Group Settings"
 
@@ -257,6 +289,10 @@ class CAP_PieGroupMenu(Menu):
         # 3 - BOTTOM - RIGHT
 
 class CAP_PieMainMenu(Menu):
+    """
+    Pie menus for the base menu that appears when E is used.
+    """
+
     bl_idname = "pie.capsule_main"
     bl_label = "Capsule Export"
 

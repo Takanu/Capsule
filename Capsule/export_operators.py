@@ -1,13 +1,13 @@
+
 import bpy, bmesh, os, platform
 from mathutils import Vector
 from math import pi, radians, degrees
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .definitions import SelectObject, FocusObject, ActivateObject, DuplicateObject, DuplicateObjects, DeleteObject, SwitchObjectMode, MoveObject, MoveObjects, RotateObjectSafe, MoveBone, MoveObjects, MoveAll, RotateAll, RotateAllSafe, ScaleAll, CheckSuffix, CheckPrefix, CheckForTags, RemoveObjectTag, IdentifyObjectTag, CompareObjectWithTag, FindObjectWithTag, FindObjectsWithName, GetDependencies, AddParent, ClearParent, FindWorldSpaceObjectLocation, FindWorldSpaceBoneLocation, GetSceneGroups
+from . import tk_utils
 
-
-class CAP_Export_Assets(Operator):
+class CAP_ExportAssets(Operator):
     """Exports all objects and groups in the scene that are marked for export."""
 
     bl_idname = "scene.cap_export"
@@ -138,7 +138,7 @@ class CAP_Export_Assets(Operator):
                             bpy.ops.object.modifier_remove(modifier=modifier.name)
 
     def GetFilePath(self, context, locationEnum, fileName):
-        # Get the file extension.  If the index is incorrect (as in, the user didnt set the path)
+        # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
         enumIndex = int(locationEnum)
         filePath = ""
 
@@ -157,7 +157,6 @@ class CAP_Export_Assets(Operator):
 
         return filePath
 
-    # Using various export and OS settings, calculates the correct file path for exports.
     def CalculateFilePath(self, context, locationDefault, objectName, subDirectory):
 
         # Does the proper calculation and error handling for the file path, in conjunction with GetFilePath()
@@ -1512,7 +1511,7 @@ class CAP_Export_Assets(Operator):
 
         # Output a nice report
         if self.exportedObjects == 0 and self.exportedGroups == 0:
-            self.report({'WARNING'}, 'No objects were exported.  Ensure you have objects tagges for export, and passes in your export presets.')
+            self.report({'WARNING'}, 'No objects were exported.  Ensure you have objects tagged for export, and at least one pass in your export presets.')
 
         else:
             self.report({'INFO'}, output)

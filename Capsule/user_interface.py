@@ -3,7 +3,8 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty
 from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
-from .definitions import GetSceneGroups
+
+from .tk_utils import select
 
 class GEX_Name_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -388,8 +389,6 @@ class CAP_List(Panel):
 
         col_export = layout.column(align=True)
         col_export.operator("scene.cap_export")
-        col_export.separator()
-        #col_export.operator("testcap.duplicate")
         layout.separator()
 
 

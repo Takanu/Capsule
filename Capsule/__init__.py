@@ -19,12 +19,12 @@
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
-    "author": "Crocadillian (BA) / Takanu (GitHub), special thanks to Acidhawk and Asahd <3",
-    "version": (1, 0, 7),
-    "blender": (2, 7, 7),
+    "author": "Takanu Kyriako - special thanks to CW and AY <3",
+    "version": (1, 1, 0),
+    "blender": (2, 7, 9),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
-    "description": "Provides tools for batch exporting objects from Blender using FBX.",
+    "description": "Batch export your assets from Blender into multiple files and formats, just the way you need them.",
     "tracker_url": "",
     "category": "Import-Export"
 }
@@ -32,44 +32,49 @@ bl_info = {
 # Start importing all the addon files
 # The init file just gets things started, no code needs to be placed here.
 import bpy
-from . import definitions
+from . import tk_utils
 from . import properties
 from . import user_interface
 from . import export_operators
+from . import export_presets
 from . import export_menu
 from . import ui_operators
 from . import update
-from . import test_ops
+from . import update_groups
+
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.app.handlers import persistent
 
+# This sequence checks the files currently loaded? (CHECKME)
 print("Checking modules...")
 
 if "bpy" in locals():
     import imp
     print("------------------Reloading Plugin------------------")
-    if "definitions" in locals():
-        imp.reload(definitions)
+    if "tk_utils" in locals():
+        imp.reload(tk_utils)
     if "properties" in locals():
         imp.reload(properties)
     if "user_interface" in locals():
         imp.reload(user_interface)
     if "export_operators" in locals():
         imp.reload(export_operators)
+    if "export_presets" in locals():
+        imp.reload(export_presets)
     if "export_menu" in locals():
         imp.reload(export_menu)
     if "ui_operators" in locals():
         imp.reload(ui_operators)
     if "update" in locals():
         imp.reload(update)
-    if "test_ops" in locals():
-        imp.reload(test_ops)
+    if "update_groups" in locals():
+        imp.reload(update_groups)
 
 print("Importing modules...")
 
 
-def Update_TagName(self, context):
+def CAP_Update_TagName(self, context):
 
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
@@ -125,7 +130,7 @@ def DrawAnimationWarning(self, context):
         layout.separator()
         layout.label("Hopefully i'll have this fully functional in the next version :)")
 
-def Update_AnimationWarning(self, context):
+def CAP_Update_AnimationWarning(self, context):
     if self.export_animation_prev is False and self.export_animation is True:
         bpy.context.window_manager.popup_menu(DrawAnimationWarning, title="Animation Warning", icon='INFO')
     self.export_animation_prev = self.export_animation
@@ -136,7 +141,7 @@ class CAP_ExportTag(PropertyGroup):
     name = StringProperty(
         name="Tag Name",
         description="The name of the tag.",
-        update=Update_TagName
+        update=CAP_Update_TagName
         )
 
     name_filter = StringProperty(
@@ -178,6 +183,7 @@ class CAP_ExportTag(PropertyGroup):
     # Special preference to rename objects during export, to make UE4/Unity export more seamless.
     x_ue4_collision_naming = BoolProperty(default=False)
 
+
 class CAP_ExportPassTag(PropertyGroup):
     # The Export Tag reference, used inside Export Passes to list the available tags.
     # Also specified for that pass, whether or not it is to be used.
@@ -204,6 +210,7 @@ class CAP_ExportPassTag(PropertyGroup):
         )
 
 class CAP_ExportPass(PropertyGroup):
+    # Used to define properties for a single export pass.
 
     name = StringProperty(
         name="Pass Name",
@@ -238,7 +245,7 @@ class CAP_ExportPass(PropertyGroup):
         name="Export Animation",
         description="(EXPERIMENTAL) If ticked, animations found in objects or groups in this pass, will be exported.",
         default=False,
-        update=Update_AnimationWarning
+        update=CAP_Update_AnimationWarning
         )
     export_animation_prev = BoolProperty(default=False)
 
@@ -261,6 +268,10 @@ class CAP_ExportPass(PropertyGroup):
         )
 
 class CAP_ExportPreset(PropertyGroup):
+    # Used to define properties for a single export preset.
+    # Export presets include Capsule-specific features as well as .FBX exporter features
+    # and any defined Passes and Tags.
+
     name = StringProperty(
         name = "Preset Name",
         description="The name of the export preset.",
@@ -493,6 +504,8 @@ class CAP_ExportPreset(PropertyGroup):
     x_unity_rotation_fix = BoolProperty(default=False)
 
 class CAP_LocationDefault(PropertyGroup):
+    # Defines a single location default, assigned to specific objects to define where they should be exported to.
+
     name = StringProperty(
         name="",
         description="The name of the file path default."
@@ -503,6 +516,7 @@ class CAP_LocationDefault(PropertyGroup):
         default="",
         subtype="FILE_PATH"
         )
+
 
 class CAP_ExportPresets(PropertyGroup):
     file_presets = CollectionProperty(type=CAP_ExportPreset)
@@ -544,13 +558,15 @@ class CAP_AddonPreferences(AddonPreferences):
         ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
         ),)
 
+    # not currently accessible through any menu, this is now an internally-managed state.
     object_multi_edit = BoolProperty(
         name="Group Multi-Edit Mode",
         description="Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
         default=True,
         update=UpdateObjectSelectMode
         )
-
+    
+    # not currently accessible through any menu, this is now an internally-managed state.
     group_multi_edit = BoolProperty(
         name="Group Multi-Edit Mode",
         description="Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
@@ -647,7 +663,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
 
             filepresets_box = export_box.box()
-            filepresets_box.label("File Presets")
+            filepresets_box.label("Current File Presets")
 
             row_defaults = filepresets_box.row(align=True)
             col_defaultslist = row_defaults.column(align=True)
@@ -977,7 +993,6 @@ class CAP_AddonPreferences(AddonPreferences):
 
             options_main.separator()
 
-# Builds the default empty datablocks for the file
 @persistent
 def CreateDefaultData(scene):
 
@@ -1001,8 +1016,6 @@ def CreateDefaultData(scene):
     defaultDatablock.hide_select = True
     defaultDatablock.CAPExp.is_storage_object = True
 
-
-# ....not sure
 @persistent
 def CheckSelectedObject(scene):
 
@@ -1025,7 +1038,7 @@ def CheckSelectedObject(scene):
 addon_keymaps = []
 
 def register():
-    print("Registering Properties")
+    print("Registering Stuff")
     bpy.utils.register_module(__name__)
 
     bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAP_Scene_Preferences)
@@ -1035,7 +1048,7 @@ def register():
     bpy.types.Object.CAPStm = PointerProperty(type=properties.CAP_Object_StateMachine)
     bpy.types.Object.CAPExp = PointerProperty(type=CAP_ExportPresets)
 
-    ui_operators.CreatePresets()
+    export_presets.CreatePresets()
 
     bpy.app.handlers.load_pre.append(CreateDefaultData)
     bpy.app.handlers.scene_update_post.append(CheckSelectedObject)
@@ -1053,7 +1066,7 @@ def register():
 
 def unregister():
     print("Unregistering Stuff")
-    ui_operators.DeletePresets()
+    export_presets.DeletePresets()
 
     bpy.app.handlers.load_pre.remove(CreateDefaultData)
     bpy.app.handlers.scene_update_post.remove(CheckSelectedObject)
