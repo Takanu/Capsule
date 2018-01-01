@@ -32,11 +32,14 @@ bl_info = {
 # Start importing all the addon files
 # The init file just gets things started, no code needs to be placed here.
 import bpy
+from . import export_formats
 from . import tk_utils
 from . import properties
 from . import user_interface
 from . import export_operators
 from . import export_presets
+from . import export_properties
+from . import export_utils
 from . import export_menu
 from . import ui_operators
 from . import update
@@ -45,6 +48,10 @@ from . import update_groups
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.app.handlers import persistent
+
+from .export_properties import CAP_ExportTag, CAP_ExportPassTag, CAP_ExportPass, CAP_ExportPreset, CAP_LocationDefault, CAP_ExportPresets
+from .export_formats import CAP_ExportFormat, CAP_ExportFormat_FBX
+
 
 # This sequence checks the files currently loaded? (CHECKME)
 print("Checking modules...")
@@ -62,6 +69,10 @@ if "bpy" in locals():
         imp.reload(export_operators)
     if "export_presets" in locals():
         imp.reload(export_presets)
+    if "export_properties" in locals():
+        imp.reload(export_properties)
+    if "export_utils" in locals():
+        imp.reload(export_utils)
     if "export_menu" in locals():
         imp.reload(export_menu)
     if "ui_operators" in locals():
@@ -74,22 +85,6 @@ if "bpy" in locals():
 print("Importing modules...")
 
 
-def CAP_Update_TagName(self, context):
-
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
-
-    if addon_prefs.plugin_is_ready is True:
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-        currentTag = exp.tags[exp.tags_index]
-        tag_name = currentTag.name
-
-        # Get tags in all current passes, and edit them
-        for expPass in export.passes:
-            passTag = expPass.tags[export.tags_index]
-            passTag.name = tag_name
-
-    return None
 
 def GetGlobalPresets(scene, context):
 
@@ -118,413 +113,6 @@ def UpdateGroupSelectMode(self, context):
     if self.group_multi_edit is True:
         context.scene.CAPScn.group_list_index = -1
 
-def DrawAnimationWarning(self, context):
-        layout = self.layout
-        layout.label("Hey!  The animation feature is currently experimental, and may result in")
-        layout.label("objects being repositioned after exporting, and in the FBX file.")
-        layout.separator()
-        layout.label("The animation features should work fine if you're exporting armature animations,")
-        layout.label("any other kinds of object animations are unlikely to export correctly, and if")
-        layout.label("attempted, you may find your scene translated slightly.  If this happens though,")
-        layout.label("simply use the undo tool.")
-        layout.separator()
-        layout.label("Hopefully i'll have this fully functional in the next version :)")
-
-def CAP_Update_AnimationWarning(self, context):
-    if self.export_animation_prev is False and self.export_animation is True:
-        bpy.context.window_manager.popup_menu(DrawAnimationWarning, title="Animation Warning", icon='INFO')
-    self.export_animation_prev = self.export_animation
-
-class CAP_ExportTag(PropertyGroup):
-    # The main Export Tag collection property, used for storing the actual tags used in an Export Preset
-
-    name = StringProperty(
-        name="Tag Name",
-        description="The name of the tag.",
-        update=CAP_Update_TagName
-        )
-
-    name_filter = StringProperty(
-        name="Tag",
-        description="The text you wish to use as a filter, when sorting through object names."
-        )
-
-    name_filter_type = EnumProperty(
-        name="Tag Type",
-        description="Where the name filter is being looked for.",
-        items=(
-        ('1', 'Suffix', ''),
-        ('2', 'Prefix', ''),),
-        )
-
-    object_type = EnumProperty(
-        name="Object Type",
-        items=(
-            ('1', 'All', 'Applies to all object types.'),
-            ('2', 'Mesh', 'Applies to mesh object types only.'),
-            ('3', 'Curve', 'Applies to curve object types only.'),
-            ('4', 'Surface', 'Applies to surface object types only.'),
-            ('5', 'Metaball', 'Applies to metaball object types only.'),
-            ('6', 'Font', 'Applies to font object types only.'),
-            ('7', 'Armature', 'Applies to armature object types only.'),
-            ('8', 'Lattice', 'Applies to lattice object types only.'),
-            ('9', 'Empty', 'Applies to empty object types only.'),
-            ('10', 'Camera', 'Applies to camera object types only.'),
-            ('11', 'Lamp', 'Applies to lamp object types only.'),
-            ('12', 'Speaker', 'Applies to speaker object types only.')
-            ),
-        default='1'
-        )
-
-    # Special preferences for special export presets.
-    x_user_deletable = BoolProperty(default=True)
-    x_user_editable_type = BoolProperty(default=True)
-
-    # Special preference to rename objects during export, to make UE4/Unity export more seamless.
-    x_ue4_collision_naming = BoolProperty(default=False)
-
-
-class CAP_ExportPassTag(PropertyGroup):
-    # The Export Tag reference, used inside Export Passes to list the available tags.
-    # Also specified for that pass, whether or not it is to be used.
-
-    name = StringProperty(
-        name="Tag Name",
-        description="The name of the tag.",
-        default=""
-        )
-    prev_name = StringProperty(
-        name="Previous Tag Name",
-        description="A backup tag name designed to prevent editing of tag names when viewing them. (Internal Only)",
-        default=""
-        )
-    index = IntProperty(
-        name="Tag Index",
-        description="Where the tag is located in the Export Preset, so it can be looked up later (Internal Only)",
-        default=0
-        )
-    use_tag = BoolProperty(
-        name="",
-        description="Determines whether or not the tag gets used in the pass.",
-        default=False
-        )
-
-class CAP_ExportPass(PropertyGroup):
-    # Used to define properties for a single export pass.
-
-    name = StringProperty(
-        name="Pass Name",
-        description="The name of the selected pass."
-        )
-
-    enable = BoolProperty(
-        name="Enable Pass",
-        description="Lets you enable or disable the pass for use when exporting objects.",
-        default=True
-    )
-
-    file_suffix = StringProperty(
-        name="File Suffix",
-        description="An optional string that if used, will be appended to all the names of files produced through this pass."
-        )
-    sub_directory = StringProperty(
-        name="Sub-Directory",
-        description="If enabled, a folder will be created inside the currently defined file path (and any other defined folders for the File Preset), where all exports from this pass will be placed into."
-        )
-
-    tags = CollectionProperty(type=CAP_ExportPassTag)
-    tags_index = IntProperty(default=0)
-
-    export_individual = BoolProperty(
-        name="Export Individual",
-        description="If enabled, the pass will export every individual object available in the pass into individual files, rather than a single file.",
-        default=False
-        )
-
-    export_animation = BoolProperty(
-        name="Export Animation",
-        description="(EXPERIMENTAL) If ticked, animations found in objects or groups in this pass, will be exported.",
-        default=False,
-        update=CAP_Update_AnimationWarning
-        )
-    export_animation_prev = BoolProperty(default=False)
-
-    apply_modifiers = BoolProperty(
-        name="Apply Modifiers",
-        description="If enabled, all modifiers on every object in the pass will be applied.",
-        default=False
-        )
-
-    triangulate = BoolProperty(
-        name="Triangulate Export",
-        description="If enabled, all objects in the pass will be triangulated automatically using optimal triangulation settings, unless a Triangulation modifier is already present.",
-        default=False
-        )
-
-    use_tags_on_objects = BoolProperty(
-        name="Use Tags for Objects",
-        description="If enabled, active tag filters will also apply to any single-object exports in this pass, as well as those in the scene that share the same name - which will also be exported with it.",
-        default=False
-        )
-
-class CAP_ExportPreset(PropertyGroup):
-    # Used to define properties for a single export preset.
-    # Export presets include Capsule-specific features as well as .FBX exporter features
-    # and any defined Passes and Tags.
-
-    name = StringProperty(
-        name = "Preset Name",
-        description="The name of the export preset.",
-        default=""
-        )
-
-    description = StringProperty(
-        name = "Description",
-        description="(Internal Use Only) TBA",
-        default=""
-        )
-
-    use_blend_directory = BoolProperty(
-        name="Add Blend File Directory",
-        description="If enabled, a folder will be created inside the currently defined file path, where all exports from this blend file will be placed into.  Useful for exporting multiple .blend file contents to the same destination.",
-        default=False
-        )
-
-    use_sub_directory = BoolProperty(
-        name="Add Object Directory",
-        description="If enabled, a folder will be created inside the currently defined file path (and inside the Blend Folder if enabled), for every object or group created, where it's export results will be placed into.  Useful for complex object or group exports, with multiple passes.",
-        default=False
-        )
-
-    bundle_textures = BoolProperty(
-        name="Bundle Textures",
-        description="If enabled, allows any textures that are packed in the .blend file and applied to an object or group that's tagged for export, to be bundled with it inside the FBX file.",
-        default=False
-        )
-
-    filter_render = BoolProperty(
-        name="Filter by Rendering",
-        description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
-        )
-
-    export_types = EnumProperty(
-        name="Object Types",
-        options={'ENUM_FLAG'},
-        items=(('MESH', "Mesh", ""),
-            ('ARMATURE', "Armature", ""),
-            ('CAMERA', "Camera", ""),
-            ('LAMP', "Lamp", ""),
-            ('EMPTY', "Empty", ""),
-            ('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),),
-        description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule.",
-        default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'OTHER'},
-        )
-
-
-    passes = CollectionProperty(type=CAP_ExportPass)
-    passes_index = IntProperty(default=0)
-    tags = CollectionProperty(type=CAP_ExportTag)
-    tags_index = IntProperty(default=0)
-
-    global_scale = FloatProperty(
-        name="Global Scale",
-        description="The exported scale of the objects.",
-        default=1.0
-        )
-
-    bake_space_transform = BoolProperty(
-        name="Bake Space Transform (Experimental)",
-        description="Bakes the space transform of meshes from Blender into the FBX file, when the target world space does not align with the one Blender has. (WARNING - Known broken on armatures/animations, use at your own peril!)",
-        default=False
-        )
-
-    reset_rotation = BoolProperty(
-        name="Reset Rotation",
-        description="If enabled, the plugin will reset the rotation of objects and groups when exported.  For groups, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a group to be reset.  Currently this doesn't work with rotation-influencing constraints, and will be disabled on Objects and Groups that use them.",
-        default=False
-        )
-
-
-    axis_up = EnumProperty(
-        name="Axis Up",
-        description="What the Up Axis will be defined as when the model is exported.",
-        items=(
-            ('X', 'X', ''),
-            ('Y', 'Y', ''),
-            ('Z', 'Z', ''),
-            ('-X', '-X', ''),
-            ('-Y', '-Y', ''),
-            ('-Z', '-Z', ''))
-            )
-
-
-    axis_forward = EnumProperty(
-        name="Axis Forward",
-        description="What the Forward Axis will be defined as when the model is exported.",
-        items=(
-            ('X', 'X', ''),
-            ('Y', 'Y', ''),
-            ('Z', 'Z', ''),
-            ('-X', '-X', ''),
-            ('-Y', '-Y', ''),
-            ('-Z', '-Z', ''))
-            )
-
-    apply_unit_scale = BoolProperty(
-        name="Apply Unit Scale",
-        description="Scales the Blender Units system to match the FBX unit measurement (centimetres).",
-        default=False
-        )
-
-    loose_edges = BoolProperty(
-        name="Loose Edges",
-        description="Makes any separate edges a two-verted polygon.",
-        default=False
-        )
-
-    tangent_space = BoolProperty(
-        name="Tangent Space",
-        description="Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
-        default=False
-        )
-
-    use_armature_deform_only = BoolProperty(
-        name="Only Include Deform Bones",
-        description="Makes any separate edges a two-verted polygon.",
-        default=False
-        )
-
-    add_leaf_bones = BoolProperty(
-        name="Add Leaf Bones",
-        description="Appends an extra bone to the end of each bone chain.",
-        default=False
-        )
-
-    preserve_armature_constraints = BoolProperty(
-        name="Preserve Armature Constraints",
-        description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  Turn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
-        default=True
-        )
-
-
-    primary_bone_axis = EnumProperty(
-        name="Primary Bone Axis",
-        description="Defines the primary bone axis for the export.",
-        items=(
-            ('X', 'X', ''),
-            ('Y', 'Y', ''),
-            ('Z', 'Z', ''),
-            ('-X', '-X', ''),
-            ('-Y', '-Y', ''),
-            ('-Z', '-Z', '')),
-            default='Y'
-            )
-
-    secondary_bone_axis = EnumProperty(
-        name="Secondary Bone Axis",
-        description="Defines the secondary bone axis for the export.",
-        items=(
-            ('X', 'X', ''),
-            ('Y', 'Y', ''),
-            ('Z', 'Z', ''),
-            ('-X', '-X', ''),
-            ('-Y', '-Y', ''),
-            ('-Z', '-Z', '')),
-        default='X'
-        )
-
-    armature_nodetype = EnumProperty(
-        name="FBX Armature NodeType",
-        description="Defines the type of FBX object Armatures will be exported as.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender.",
-        items=(
-            ('Null', 'Null', ''),
-            ('Root', 'Root', ''),
-            ('LimbNode', 'LimbNode', ''))
-            )
-
-
-    bake_anim_use_all_bones = BoolProperty(
-        name="Key All Bones",
-        description="If enabled, this forces the export of one key animation for all bones (required for target apps like UE4).",
-        default=False)
-
-    bake_anim_use_nla_strips = BoolProperty(
-        name="Use NLA Strips",
-        description="If enabled, NLA strips will be exported as animation data.",
-        default=False
-        )
-
-    bake_anim_use_all_actions = BoolProperty(
-        name="Use All Actions",
-        description="If enabled, all animation actions in the group or object will be exported.",
-        default=False
-        )
-
-    bake_anim_force_startend_keying = BoolProperty(
-        name="Start/End Keying",
-        description="If enabled, this option fully keys the start and end positions of an animation.  Use this if the exported animations playback with incorrect starting positions.",
-        default=False
-        )
-
-    use_default_take = BoolProperty(
-        name="Use Default Take",
-        description="If enabled, uses the currently viewed pose/translation of the object as a starting pose for exported animations (excluding certain keyframes).",
-        default=False
-        )
-
-    optimise_keyframes = BoolProperty(
-        name="Optimise Keyframes",
-        description="If enabled, removes double keyframes from exported animations.",
-        default=False
-        )
-
-    bake_anim_step = FloatProperty(
-        name="Sampling Rate",
-        description="Defines how often, in frames, the export process should evaluate keyframes.",
-        default=1,
-        min=0,
-        max=100,
-        soft_min=0.1,
-        soft_max=10
-        )
-
-    bake_anim_simplify_factor = FloatProperty(
-        name="Simplify Factor",
-        description="A measure for how much when exported, animations should be simplified.  Setting this value to 0 will disable simplification.  The higher the value, the greater the simplification.",
-        default=1,
-        min=0,
-        max=100,
-        soft_min=0,
-        soft_max=10
-        )
-
-    # A special system variable that defines whether it can be deleted from the Global Presets list.
-    x_global_user_deletable = BoolProperty(default=True)
-    # A secret fix embedded in the Unity 5 export option, to fix rotated objects.
-    x_unity_rotation_fix = BoolProperty(default=False)
-
-class CAP_LocationDefault(PropertyGroup):
-    # Defines a single location default, assigned to specific objects to define where they should be exported to.
-
-    name = StringProperty(
-        name="",
-        description="The name of the file path default."
-        )
-
-    path = StringProperty(name="",
-        description="The file path to export the object to.",
-        default="",
-        subtype="FILE_PATH"
-        )
-
-
-class CAP_ExportPresets(PropertyGroup):
-    file_presets = CollectionProperty(type=CAP_ExportPreset)
-    file_presets_index = IntProperty(default=0)
-    is_storage_object = BoolProperty(default=False)
-
-    location_presets = CollectionProperty(type=CAP_LocationDefault)
-    location_presets_index = IntProperty(default=0)
 
 class CAP_AddonPreferences(AddonPreferences):
     bl_idname = __name__
@@ -546,17 +134,6 @@ class CAP_AddonPreferences(AddonPreferences):
     tags_dropdown = BoolProperty(default = False)
     passes_dropdown = BoolProperty(default = False)
     options_dropdown = BoolProperty(default = False)
-
-    export_preset_options = EnumProperty(
-        name="Export Options",
-        description="",
-        items=(
-        ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
-        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
-        ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
-        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
-        ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
-        ),)
 
     # not currently accessible through any menu, this is now an internally-managed state.
     object_multi_edit = BoolProperty(
@@ -667,7 +244,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             row_defaults = filepresets_box.row(align=True)
             col_defaultslist = row_defaults.column(align=True)
-            col_defaultslist.template_list("Export_Default_UIList", "default", exp, "file_presets", exp, "file_presets_index", rows=3, maxrows=6)
+            col_defaultslist.template_list("Export_Default_UIList", "default", exp, "file_presets", exp, "file_presets_listindex", rows=3, maxrows=6)
             col_defaultslist.operator("cap.add_global_preset", text="Add to Saved Presets", icon="FORWARD")
 
             col_defaultslist_options = row_defaults.column(align=True)
@@ -675,146 +252,43 @@ class CAP_AddonPreferences(AddonPreferences):
             col_defaultslist_options.operator("scene.cap_deleteexport", text="", icon="ZOOMOUT")
 
 
-            if len(exp.file_presets) > 0 and (exp.file_presets_index) < len(exp.file_presets):
+            if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
 
-                currentExp = exp.file_presets[exp.file_presets_index]
+                currentExp = exp.file_presets[exp.file_presets_listindex]
 
-                export_settings = filepresets_box.column(align=True)
-                export_settings.separator()
-                export_tabs = export_settings.row(align=True)
-                export_tabs.prop(addon_prefs, "export_preset_options", expand=True)
+                filepresets_box.label("Basic Settings")
+                filepresets_options = filepresets_box.row(align=True)
+                filepresets_options.separator()
 
-                export_separator = filepresets_box.column(align=True)
-                #export_separator.separator()
+                filepresets_options_2 = filepresets_options.column(align=True)
+                filepresets_options_2.prop(currentExp, "format_type")
 
+                filepresets_options.separator()
+                filepresets_options.separator()
+                filepresets_options.separator()
 
-                if addon_prefs.export_preset_options == 'Export':
-                    export_main = filepresets_box.row(align=True)
-                    export_main.separator()
+                filepresets_options_1 = filepresets_options.column(align=True)
+                filepresets_options_1.prop(currentExp, "use_blend_directory")
+                filepresets_options_1.prop(currentExp, "use_sub_directory")
+                filepresets_options_1.prop(currentExp, "filter_render")
 
-                    export_1 = export_main.column(align=True)
-                    export_1.label("Additional Options")
-                    export_1.separator()
-                    export_1.prop(currentExp, "use_blend_directory")
-                    export_1.prop(currentExp, "use_sub_directory")
-                    export_1.prop(currentExp, "filter_render")
-                    export_1.prop(currentExp, "bundle_textures")
-
-                    export_main.separator()
-                    export_main.separator()
-                    export_main.separator()
-
-                    export_2 = export_main.column(align=True)
-                    export_2.label("Exportable Object Types")
-                    export_2.separator()
-                    #export_types = export_1.row(align=True)
-                    export_2.prop(currentExp, "export_types")
-                    export_2.separator()
-
-                    export_main.separator()
-
-                if addon_prefs.export_preset_options == 'Transform':
-                    export_main = filepresets_box.row(align=True)
-                    export_main.separator()
-
-                    export_1 = export_main.column(align=True)
-                    export_scale = export_1.row(align=True)
-                    export_scale.prop(currentExp, "global_scale")
-                    export_scale.prop(currentExp, "apply_unit_scale", text="", icon='NDOF_TRANS')
-                    export_1.separator()
-
-                    export_1.prop(currentExp, "bake_space_transform")
-                    #export_1.prop(currentExp, "reset_rotation")
-
-                    export_1.separator()
+                filepresets_options.separator()
 
 
-                    export_main.separator()
-                    export_main.separator()
-                    export_main.separator()
+                filepresets_box.label("Format Type Settings")
+                #filepresets_box.separator()
 
-                    export_2 = export_main.column(align=True)
-                    export_2_row = export_2.row(align=True)
-                    export_2_row.alignment = 'RIGHT'
+                if currentExp.format_type == 'FBX':
 
-                    export_2_label = export_2_row.column(align=True)
-                    export_2_label.alignment = 'RIGHT'
-                    export_2_label.label("Axis Up:")
-                    export_2_label.label("Axis Forward:")
-
-                    export_2_dropdowns = export_2_row.column(align=True)
-                    export_2_dropdowns.alignment = 'EXPAND'
-                    export_2_dropdowns.prop(currentExp, "axis_up", text="")
-                    export_2_dropdowns.prop(currentExp, "axis_forward", text="")
-                    export_2_dropdowns.separator()
-
-                    export_main.separator()
-
-                elif addon_prefs.export_preset_options == 'Geometry':
-                    export_main = filepresets_box.row(align=True)
-                    export_main.separator()
-                    export_1 = export_main.column(align=True)
-                    export_1.prop(currentExp, "loose_edges")
-                    export_1.prop(currentExp, "tangent_space")
-                    export_1.separator()
-
-                elif addon_prefs.export_preset_options == 'Armature':
-                    export_main = filepresets_box.row(align=True)
-                    export_main.separator()
-                    export_1 = export_main.column(align=True)
-                    export_1.prop(currentExp, "use_armature_deform_only")
-                    export_1.prop(currentExp, "add_leaf_bones")
-                    export_1.prop(currentExp, "preserve_armature_constraints")
-
-                    export_main.separator()
-                    export_main.separator()
-                    export_main.separator()
-
-                    export_2 = export_main.row(align=True)
-                    export_2.alignment = 'RIGHT'
-                    export_2_label = export_2.column(align=True)
-                    export_2_label.alignment = 'RIGHT'
-                    export_2_label.label("Primary Bone Axis:")
-                    export_2_label.label("Secondary Bone Axis:")
-                    export_2_label.label("Armature Node Type:")
-
-                    export_2_dropdowns = export_2.column(align=True)
-                    export_2_dropdowns.alignment = 'EXPAND'
-                    export_2_dropdowns.prop(currentExp, "primary_bone_axis", text="")
-                    export_2_dropdowns.prop(currentExp, "secondary_bone_axis", text="")
-                    export_2_dropdowns.prop(currentExp, "armature_nodetype", text="")
-                    export_2_dropdowns.separator()
-
-                    export_main.separator()
-
-                elif addon_prefs.export_preset_options == 'Animation':
-                    export_main = filepresets_box.row(align=True)
-                    export_main.separator()
-
-                    export_1 = export_main.column(align=True)
-                    export_1.prop(currentExp, "bake_anim_use_all_bones")
-                    export_1.prop(currentExp, "bake_anim_use_nla_strips")
-                    export_1.prop(currentExp, "bake_anim_use_all_actions")
-                    export_1.prop(currentExp, "bake_anim_force_startend_keying")
-                    export_1.prop(currentExp, "optimise_keyframes")
-                    export_1.prop(currentExp, "use_default_take")
-                    export_1.separator()
-
-                    export_main.separator()
-                    export_main.separator()
-                    export_main.separator()
-
-                    export_2 = export_main.column(align=True)
-                    export_2.prop(currentExp, "bake_anim_step")
-                    export_2.prop(currentExp, "bake_anim_simplify_factor")
-                    export_2.separator()
-
-                    export_main.separator()
+                    for item in exp.file_presets_data_fbx:
+                        if item.instance_id == currentExp.instance_id:
+                            CAP_ExportFormat_FBX.draw_addon_preferences(filepresets_box, item, exp)
 
             else:
                 preset_unselected = filepresets_box.column(align=True)
                 preset_unselected.label("Select a preset in order to view preset settings.")
                 preset_unselected.separator()
+                return
 
 
         #---------------------------------------------------------
@@ -831,9 +305,9 @@ class CAP_AddonPreferences(AddonPreferences):
             tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             tag_title.label("Tags")
 
-            if len(exp.file_presets) > 0 and (exp.file_presets_index) < len(exp.file_presets):
+            if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
 
-                currentExp = exp.file_presets[exp.file_presets_index]
+                currentExp = exp.file_presets[exp.file_presets_listindex]
 
                 tagUI_row = tag_box.row(align=True)
                 tagUI_row.template_list("Tag_Default_UIList", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
@@ -881,9 +355,9 @@ class CAP_AddonPreferences(AddonPreferences):
             passUI.label("Passes")
 
 
-            if len(exp.file_presets) > 0 and (exp.file_presets_index) < len(exp.file_presets):
+            if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
 
-                currentExp = exp.file_presets[exp.file_presets_index]
+                currentExp = exp.file_presets[exp.file_presets_listindex]
 
                 row_passes = pass_box.row(align=True)
                 row_passes.template_list("Pass_Default_UIList", "default", currentExp, "passes", currentExp, "passes_index", rows=3, maxrows=6)
@@ -995,6 +469,9 @@ class CAP_AddonPreferences(AddonPreferences):
 
 @persistent
 def CreateDefaultData(scene):
+    """
+    Attempts to create a Default Data object (a plain axis with a very specific name) to store export preference information in.  If one already exists, it will exit early.
+    """
 
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__name__].preferences
@@ -1009,15 +486,22 @@ def CreateDefaultData(scene):
     bpy.ops.object.select_all(action='DESELECT')
     bpy.ops.object.empty_add(type='PLAIN_AXES')
 
+    # set it's properties
     defaultDatablock = bpy.context.scene.objects.active
     defaultDatablock.name = addon_prefs.default_datablock
+    defaultDatablock.CAPExp.is_storage_object = True
+
+    # hide it!
     defaultDatablock.hide = True
     defaultDatablock.hide_render = True
     defaultDatablock.hide_select = True
-    defaultDatablock.CAPExp.is_storage_object = True
+    
 
 @persistent
 def CheckSelectedObject(scene):
+    """
+    A scene handler used to configure the status of previously selected objects and multi-edit opportunities behind the scenes.
+    """
 
     user_preferences = bpy.context.user_preferences
     addon_prefs = user_preferences.addons[__name__].preferences
@@ -1038,6 +522,9 @@ def CheckSelectedObject(scene):
 addon_keymaps = []
 
 def register():
+    """
+    Registers itself and any extra pointer properties, handlers and keymaps to Blender.
+    """
     print("Registering Stuff")
     bpy.utils.register_module(__name__)
 
@@ -1065,6 +552,9 @@ def register():
 
 
 def unregister():
+    """
+    Unregisters itself and any extra pointer properties, handlers and keymaps from Blender.
+    """
     print("Unregistering Stuff")
     export_presets.DeletePresets()
 

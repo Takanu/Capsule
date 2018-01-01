@@ -13,8 +13,10 @@ class CAP_ExportAssets(Operator):
     bl_idname = "scene.cap_export"
     bl_label = "Export"
 
-    def ExportFBX(self, filePath):
-        # Calls the FBX Export API to make the export happen
+    def Export_FBX(self, filePath):
+        """
+        Calls the FBX Export API to make the export happen
+        """
 
         print("APPLY UNIT SCALE, IS IT FUCKING ON?", self.apply_unit_scale)
 
@@ -57,8 +59,10 @@ class CAP_ExportAssets(Operator):
         self.exportedFiles += 1
 
     def PrepareExportIndividual(self, context, targets, path, suffix):
-        # Prepares export for multiple FBX files, each containing a separate
-        # object.
+        """
+        Prepares export for multiple FBX files, each containing a separate object.
+        """
+
         print(">>> Individual Pass <<<")
         for item in targets:
             print("-"*70)
@@ -75,12 +79,15 @@ class CAP_ExportAssets(Operator):
 
             bpy.ops.object.select_all(action='DESELECT')
             FocusObject(item)
-            self.ExportFBX(individualFilePath)
+            self.Export_FBX(individualFilePath)
             MoveObject(item, context, tempLoc)
 
 
     def PrepareExportCombined(self, targets, path, exportName, suffix):
-        # Prepares export for an FBX file comprising of multiple objects
+        """
+        Prepares export for an FBX file comprising of multiple objects
+        """
+
         print(">>> Exporting Combined Pass <<<")
         print("Checking export preferences...")
 
@@ -98,47 +105,13 @@ class CAP_ExportAssets(Operator):
         objectFilePath = path + exportName + suffix + ".fbx"
         print("Final File Path.", objectFilePath)
 
-        self.ExportFBX(objectFilePath)
-
-    def AddTriangulate(self, targetList):
-
-        modType = {'TRIANGULATE'}
-
-        for item in targetList:
-            if item.type == 'MESH':
-                stm = item.CAPStm
-                stm.has_triangulate = False
-
-                for modifier in item.modifiers:
-                    if modifier.type in modType:
-                        stm.has_triangulate = True
-
-                # if we didn't find any triangulation, add it!
-                if stm.has_triangulate == False:
-                    FocusObject(item)
-                    bpy.ops.object.modifier_add(type='TRIANGULATE')
-
-                    for modifier in item.modifiers:
-                        if modifier.type in modType:
-                            #print("Triangulation Found")
-                            modifier.quad_method = 'FIXED_ALTERNATE'
-                            modifier.ngon_method = 'CLIP'
-                            stm.has_triangulate = False
-
-    def RemoveTriangulate(self, targetList):
-
-        modType = {'TRIANGULATE'}
-
-        for item in targetList:
-            if item.type == 'MESH':
-                if item.CAPStm.has_triangulate is False:
-                    for modifier in item.modifiers:
-                        if modifier.type in modType:
-                            FocusObject(item)
-                            bpy.ops.object.modifier_remove(modifier=modifier.name)
+        self.Export_FBX(objectFilePath)
 
     def GetFilePath(self, context, locationEnum, fileName):
-        # Get the file extension.  If the index is incorrect (as in, the user didnt set the fucking path)
+        """
+        Attempts to fetch and retrieve the selected file path for 'CalculateFilePath'
+        """
+
         enumIndex = int(locationEnum)
         filePath = ""
 
@@ -158,8 +131,10 @@ class CAP_ExportAssets(Operator):
         return filePath
 
     def CalculateFilePath(self, context, locationDefault, objectName, subDirectory):
+        """
+        Attempts to create a file path based on the given location default and export settings.
+        """
 
-        # Does the proper calculation and error handling for the file path, in conjunction with GetFilePath()
         print("Obtaining File...")
         print("File Enumerator = ", locationDefault)
 
@@ -225,6 +200,11 @@ class CAP_ExportAssets(Operator):
             return 'OFF'
 
     def GetExportInfo(self, exportDefault):
+        """
+        Builds a list of export information 
+        FIXME - This needs to be export-parameter-agnostic.
+        """
+
         # Stores a whole load of export-related settings for re-use throughout
         # the operator
 
@@ -269,8 +249,10 @@ class CAP_ExportAssets(Operator):
         self.x_unity_rotation_fix = exportDefault.x_unity_rotation_fix
 
     def SetupScene(self, context):
-        # Stores various scene settings and display features to restore later
-        # when the plugin is finished
+        """
+        Stores important scene information while also preparing it for the export process.
+        States stored here will be restored with the 'RestoreScene' function.
+        """
 
         self.active = None
         self.selected = []
@@ -400,8 +382,9 @@ class CAP_ExportAssets(Operator):
         bpy.ops.object.select_all(action='DESELECT')
 
     def RestoreScene(self, context):
-        # Restores all previously held scene settings and display features
-        # after the operator is done shuffling it
+        """
+        Restores all scene information preserved with the 'SetupScene' function.
+        """
 
         # Restore constraint object positions
         for entry in self.constraintObjects:
@@ -639,56 +622,6 @@ class CAP_ExportAssets(Operator):
                     bone.constraints[index].mute = entry['enabled']
                     bone.constraints[index].influence = entry['influence']
 
-    def ReplaceSystemChar(self, context, name):
-        # Replaces invalid directory characters in names
-
-        print("Checking Directory...", name)
-        returnName = name
-        if platform.system() == 'Windows':
-            invalidCharacters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
-            for char in invalidCharacters:
-                returnName = returnName.replace(char, "_")
-
-        elif platform.system() == 'Darwin':
-            invalidCharacters = [":", "/"]
-            for char in invalidCharacters:
-                returnName = returnName.replace(char, "_")
-
-        elif platform.system() == 'linux' or platform.system() == 'linux2':
-            invalidCharacters = [":", "/"]
-            for char in invalidCharacters:
-                returnName = returnName.replace(char, "_")
-
-        return returnName
-
-    def CheckSystemChar(self, context, name):
-        # Checks for invalid directory characters in names
-
-        print("Checking Directory...", name)
-        if platform.system() == 'Windows':
-            invalidCharacters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
-            invalidCaptured = []
-            for char in invalidCharacters:
-                if name.find(char) != -1:
-                    invalidCaptured.append(char)
-
-        elif platform.system() == 'Darwin':
-            invalidCharacters = [":", "/"]
-            invalidCaptured = []
-            for char in invalidCharacters:
-                if name.find(char) != -1:
-                    invalidCaptured.append(char)
-
-        elif platform.system() == 'linux' or platform.system() == 'linux2':
-            invalidCharacters = [":", "/"]
-            invalidCaptured = []
-            for char in invalidCharacters:
-                if name.find(char) != -1:
-                    invalidCaptured.append(char)
-
-        print("Invalid characters found...", invalidCaptured)
-        return invalidCaptured
-
     def CheckForErrors(self, context):
         # Ensures that the scene is setup with correct settings, before proceeding
         # with the export.
@@ -821,57 +754,6 @@ class CAP_ExportAssets(Operator):
                     return statement
 
         return None
-
-    def CheckAnimation(self, context):
-        # Not currently used until further notice
-
-        for item in context.scene.objects:
-            print(item.name)
-            print(item.animation_data)
-
-            if item.animation_data is not None:
-                print(item.animation_data.action)
-                print(item.animation_data.drivers)
-                print(item.animation_data.nla_tracks)
-
-                for driver in item.animation_data.drivers:
-                    print("------Driver:", driver)
-                    print(len(driver.driver.variables))
-
-                    for variable in driver.driver.variables:
-                        print("---Variable:", variable.name)
-                        print(len(variable.targets))
-
-                        for target in variable.targets:
-                            print("-Target:", target)
-                            print("Bone Target.....", target.bone_target)
-                            print("Data Path.......", target.data_path)
-                            print("ID..............", target.id)
-                            print("ID Type.........", target.id_type)
-                            print("Transform Space.", target.transform_space)
-                            print("Transform Type..", target.transform_type)
-
-                if item.animation_data.action is not None:
-                    action = item.animation_data.action
-                    print("FCurves......", action.fcurves)
-                    print("Frame Range..", action.frame_range)
-                    print("Groups.......", action.groups)
-                    print("ID Root......", action.id_root)
-
-                    for curve in action.fcurves:
-                        print(curve.driver.data_path)
-                        #for variable in curve.driver.variables:
-                            #for target in variable.targets:
-                                #print("-Target:", target)
-                                #print("Bone Target.....", target.bone_target)
-                                #print("Data Path.......", target.data_path)
-                            #    print("ID..............", target.id)
-                            #    print("ID Type.........", target.id_type)
-                            #    print("Transform Space.", target.transform_space)
-                            #    print("Transform Type..", target.transform_type)
-
-
-        print(">>>> CHECKED ANIMATION <<<<")
 
     ###############################################################
     # EXECUTE

@@ -420,7 +420,7 @@ class CAP_Location(Panel):
         ob = context.object
 
         col_location = layout.row(align=True)
-        col_location.template_list("Path_Default_UIList", "default", exp, "location_presets", exp, "location_presets_index", rows=3, maxrows=6)
+        col_location.template_list("Path_Default_UIList", "default", exp, "location_presets", exp, "location_presets_listindex", rows=3, maxrows=6)
 
         col_location.separator()
 
@@ -437,7 +437,7 @@ class CAP_Location(Panel):
         for i, item in enumerate(exp.location_presets, 1):
             count += 1
 
-        if exp.location_presets_index > -1 and exp.location_presets_index < count:
+        if exp.location_presets_listindex > -1 and exp.location_presets_listindex < count:
             file.label("File Path:")
             file.separator()
-            file.prop(exp.location_presets[exp.location_presets_index], "path", text="")
+            file.prop(exp.location_presets[exp.location_presets_listindex], "path", text="")

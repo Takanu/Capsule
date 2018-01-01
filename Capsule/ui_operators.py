@@ -1,11 +1,13 @@
 
-import bpy, bmesh
+import bpy, bmesh, random
+
 from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
 from .tk_utils import groups as group_utils
 from .tk_utils import select as select_utils
+from .export_formats import CAP_ExportFormat, CAP_ExportFormat_FBX
 from . import export_presets
 
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
@@ -52,7 +54,7 @@ class CAP_Delete_Path(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        exp.location_presets.remove(exp.location_presets_index)
+        exp.location_presets.remove(exp.location_presets_listindex)
 
         return {'FINISHED'}
 
@@ -63,6 +65,15 @@ class CAP_Add_Export(Operator):
     bl_idname = "scene.cap_addexport"
     bl_label = "Add"
 
+    def get_unique_id(self, context, exp):
+        newID = random.randrange(0, 1000000)
+
+        for preset in exp.file_presets:
+            if preset.instance_id == newID:
+                newID = self.get_unique_id(context, exp)
+
+        return newID
+
     def execute(self, context):
         print(self)
 
@@ -70,12 +81,21 @@ class CAP_Add_Export(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
+
+        # make the new file preset
         newDefault = exp.file_presets.add()
         newDefault.name = "Export " + str(len(exp.file_presets))
         newDefault.path = ""
 
+        # use the memory id of the new file preset as a unique id to retrieve the 
+        newDefault.instance_id = self.get_unique_id(context, exp)
+
+        # add a new, default CAP_FormatData to the collection
+        newFBXpreset = exp.file_presets_data_fbx.add()
+        newFBXpreset.instance_id = newDefault.instance_id
+
         # Ensure the tag index keeps within a window
-        exp.file_presets_index = len(exp.file_presets) - 1
+        exp.file_presets_listindex = len(exp.file_presets) - 1
 
         return {'FINISHED'}
 
@@ -105,10 +125,20 @@ class CAP_Delete_Export(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        exp.file_presets.remove(exp.file_presets_index)
+        # remove the data from both lists
+        id_to_remove = exp.file_presets[exp.file_presets_listindex].instance_id
+        exp.file_presets.remove(exp.file_presets_listindex)
 
-        if exp.file_presets_index > 0:
-            exp.file_presets_index -= 1
+        # find the format data associated with the preset
+        i = 0
+        for item in exp.file_presets_data_fbx:
+            if item.instance_id == id_to_remove:
+                exp.file_presets_data_fbx[i]
+                continue
+
+        # ensure the selected list index is within the list bounds
+        if exp.file_presets_listindex > 0:
+            exp.file_presets_listindex -= 1
 
         return {'FINISHED'}
 
@@ -128,7 +158,7 @@ class CAP_Add_Tag(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Add the tag into the main list
-        export = exp.file_presets[exp.file_presets_index]
+        export = exp.file_presets[exp.file_presets_listindex]
         newTag = export.tags.add()
         newTag.name = "Tag " + str(len(export.tags))
 
@@ -155,7 +185,7 @@ class CAP_Delete_Tag(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.file_presets[exp.file_presets_index]
+        export = exp.file_presets[exp.file_presets_listindex]
         if len(export.tags) > 0:
             currentTag = export.tags[export.tags_index]
 
@@ -172,7 +202,7 @@ class CAP_Delete_Tag(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.file_presets[exp.file_presets_index]
+        export = exp.file_presets[exp.file_presets_listindex]
         export.tags.remove(export.tags_index)
 
         for expPass in export.passes:
@@ -198,7 +228,7 @@ class CAP_Add_Pass(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.file_presets[exp.file_presets_index]
+        export = exp.file_presets[exp.file_presets_listindex]
         newPass = export.passes.add()
         newPass.name = "Pass " + str(len(export.passes))
         newPass.path = ""
@@ -226,7 +256,7 @@ class CAP_Delete_Pass(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.file_presets[exp.file_presets_index]
+        export = exp.file_presets[exp.file_presets_listindex]
         if len(export.passes) > 0:
             return True
 
@@ -239,7 +269,7 @@ class CAP_Delete_Pass(Operator):
         addon_prefs = user_preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        export = exp.file_presets[exp.file_presets_index]
+        export = exp.file_presets[exp.file_presets_listindex]
         export.passes.remove(export.passes_index)
 
         if export.passes_index > 0:
@@ -773,7 +803,7 @@ class CAP_Store_Presets(Operator):
 
         # Obtain the selected preset
         new_preset = addon_prefs.saved_presets.add()
-        export_presets.CopyPreset(exp.file_presets[exp.file_presets_index], new_preset)
+        export_presets.CopyPreset(exp.file_presets[exp.file_presets_listindex], new_preset)
 
         return {'FINISHED'}
 
