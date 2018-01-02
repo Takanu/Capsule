@@ -88,7 +88,7 @@ def CAP_Update_FocusGroup(self, context):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    for group in groups_utils.GetSceneGroups(context.scene, True):
+    for group in group_utils.GetSceneGroups(context.scene, True):
         if group.name == self.name:
 
             bpy.ops.object.select_all(action='DESELECT')

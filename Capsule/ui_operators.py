@@ -7,7 +7,7 @@ from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, Po
 
 from .tk_utils import groups as group_utils
 from .tk_utils import select as select_utils
-from .export_formats import CAP_ExportFormat, CAP_ExportFormat_FBX
+from .export_formats import CAP_ExportFormat
 from . import export_presets
 
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
@@ -87,20 +87,6 @@ class CAP_Add_Export(Operator):
         newDefault.name = "Export " + str(len(exp.file_presets))
         newDefault.path = ""
 
-        # use the memory id of the new file preset as a unique id to retrieve the 
-        new_id = self.get_unique_id(context, exp)
-        newDefault.instance_id = new_id
-
-        # add a new file format for every type available
-        newFBXpreset = exp.file_presets_data_fbx.add()
-        newFBXpreset.instance_id = new_id
-
-        newOBJpreset = exp.file_presets_data_obj.add()
-        newOBJpreset.instance_id = new_id
-
-        newGLTFpreset = exp.file_presets_data_gltf.add()
-        newGLTFpreset.instance_id = new_id
-
         # Ensure the tag index keeps within a window
         exp.file_presets_listindex = len(exp.file_presets) - 1
 
@@ -133,27 +119,7 @@ class CAP_Delete_Export(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # remove the data from both lists
-        id_to_remove = exp.file_presets[exp.file_presets_listindex].instance_id
         exp.file_presets.remove(exp.file_presets_listindex)
-
-        # find the format data associated with the preset
-        i = 0
-        for item in exp.file_presets_data_fbx:
-            if item.instance_id == id_to_remove:
-                exp.file_presets_data_fbx[i]
-                continue
-
-        i = 0
-        for item in exp.file_presets_data_obj:
-            if item.instance_id == id_to_remove:
-                exp.file_presets_data_obj[i]
-                continue
-
-        i = 0
-        for item in exp.file_presets_data_gltf:
-            if item.instance_id == id_to_remove:
-                exp.file_presets_data_gltf[i]
-                continue
 
         # ensure the selected list index is within the list bounds
         if exp.file_presets_listindex > 0:
@@ -576,7 +542,6 @@ class CAP_Reset_Defaults(Operator):
 
         # Figure out if an object already exists, if yes, DELETE IT
         for object in bpy.data.objects:
-            print(object)
             if object.name == addon_prefs.default_datablock:
                 DeleteObject(object)
 
@@ -749,6 +714,18 @@ class CAP_Add_Stored_Presets(Operator):
     bl_idname = "cap.create_current_preset"
     bl_label = "Default Presets"
 
+    @classmethod
+    def poll(cls, context):
+        user_preferences = context.user_preferences
+        addon_prefs = user_preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        if len(addon_prefs.saved_presets) > 0:
+            return True
+
+        else:
+            return False
+
     def execute(self, context):
 
         # Get the current export data
@@ -774,6 +751,7 @@ class CAP_Delete_Presets(Operator):
 
         if len(addon_prefs.saved_presets) > 0:
             export = addon_prefs.saved_presets[addon_prefs.saved_presets_index]
+            
             if export.x_global_user_deletable is True:
                 return True
 

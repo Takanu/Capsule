@@ -85,9 +85,6 @@ class CAP_ExportTag(PropertyGroup):
     x_user_deletable = BoolProperty(default=True)
     x_user_editable_type = BoolProperty(default=True)
 
-    # Special preference to rename objects during export, to make UE4/Unity export more seamless.
-    x_ue4_collision_naming = BoolProperty(default=False)
-
 
 class CAP_ExportPassTag(PropertyGroup):
     # The Export Tag reference, used inside Export Passes to list the available tags.
@@ -194,17 +191,6 @@ class CAP_ExportPreset(PropertyGroup):
         default=""
         )
 
-    format_type = EnumProperty(
-        name="Format Type",
-        items=
-            (
-            ('FBX', "FBX", "Export assets in an .fbx format."),
-            ('OBJ', "OBJ", "Export assets in an .obj format."),
-            ('GLTF', "GLTF", "Export assets in a .gltf format."),
-            ),
-        description="Defines what file type objects with this preset will export to and the export options available for this preset.",
-        )
-
     use_blend_directory = BoolProperty(
         name="Add Blend File Directory",
         description="If enabled, a folder will be created inside the currently defined file path, where all exports from this blend file will be placed into.  Useful for exporting multiple .blend file contents to the same destination.",
@@ -222,24 +208,35 @@ class CAP_ExportPreset(PropertyGroup):
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
         )
 
-    export_types = EnumProperty(
-        name="Object Types",
-        options={'ENUM_FLAG'},
-        items=(('MESH', "Mesh", ""),
-            ('ARMATURE', "Armature", ""),
-            ('CAMERA', "Camera", ""),
-            ('LAMP', "Lamp", ""),
-            ('EMPTY', "Empty", ""),
-            ('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),),
-        description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule.",
-        default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'OTHER'},
-        )
-
 
     passes = CollectionProperty(type=CAP_ExportPass)
     passes_index = IntProperty(default=0)
     tags = CollectionProperty(type=CAP_ExportTag)
     tags_index = IntProperty(default=0)
+
+    format_type = EnumProperty(
+        name="Format Type",
+        items=
+            (
+            ('FBX', "FBX", "Export assets in an .fbx format."),
+            ('OBJ', "OBJ", "Export assets in an .obj format."),
+            ('GLTF', "GLTF", "Export assets in a .gltf format."),
+            ),
+        description="Defines what file type objects with this preset will export to and the export options available for this preset.",
+        )
+
+    # the data stored for FBX presets.
+    data_fbx = PointerProperty(type=CAP_FormatData_FBX)
+
+    # the data stored for OBJ presets.
+    data_obj = PointerProperty(type=CAP_FormatData_OBJ)
+
+    # the data stored for GLTF presets.
+    data_gltf = PointerProperty(type=CAP_FormatData_GLTF)
+
+    # A special system variable that defines whether it can be deleted from the Global Presets list.
+    x_global_user_deletable = BoolProperty(default=True)
+
 
 class CAP_LocationDefault(PropertyGroup):
     # Defines a single location default, assigned to specific objects to define where they should be exported to.
@@ -264,14 +261,17 @@ class CAP_ExportPresets(PropertyGroup):
     # the available file presets
     file_presets = CollectionProperty(type=CAP_ExportPreset)
 
-    # the data stored for FBX presets.
-    file_presets_data_fbx = CollectionProperty(type=CAP_FormatData_FBX)
+    # the preset selected on the list panel, when viewed from the AddonPreferences window.
+    file_presets_listindex = IntProperty(default=0)
 
-    # the data stored for OBJ presets.
-    file_presets_data_obj = CollectionProperty(type=CAP_FormatData_OBJ)
+    # if true, this object is the empty created for the purposes of storing preset data.
+    is_storage_object = BoolProperty(default=False)
 
-    # the data stored for GLTF presets.
-    file_presets_data_gltf = CollectionProperty(type=CAP_FormatData_GLTF)
+    # the available location presets created by the user
+    location_presets = CollectionProperty(type=CAP_LocationDefault)
+
+    # the location selected on the Locations panel, inside the 3D view
+    location_presets_listindex = IntProperty(default=0)
 
     fbx_menu_options = EnumProperty(
         name="Export Options",
@@ -304,15 +304,3 @@ class CAP_ExportPresets(PropertyGroup):
         #('Extensions', 'Extensions', 'A tab containing options for how armature objects are interpreted in the export.'),
         ),
         )
-
-    # the preset selected on the list panel, when viewed from the AddonPreferences window.
-    file_presets_listindex = IntProperty(default=0)
-
-    # if true, this object is the empty created for the purposes of storing preset data.
-    is_storage_object = BoolProperty(default=False)
-
-    # the available location presets created by the user
-    location_presets = CollectionProperty(type=CAP_LocationDefault)
-
-    # the location selected on the Locations panel, inside the 3D view
-    location_presets_listindex = IntProperty(default=0)

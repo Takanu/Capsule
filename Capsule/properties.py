@@ -271,17 +271,6 @@ class CAP_Object_Preferences(PropertyGroup):
         update=CAP_Update_ExportDefault
         )
 
-    normals = EnumProperty(
-        name="Normal Export Type",
-        description="Defines how the object's mesh normals are exported.",
-        items=(
-        ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
-        ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
-        ('3', 'Normals Only', 'Exports the current custom normals of the model.')
-        ),
-        update=CAP_Update_Normals
-        )
-
     in_export_list = BoolProperty(
         name="",
         description="(Internal Only) Prevents refreshes of the Export List from removing items not marked for export.",
@@ -319,17 +308,6 @@ class CAP_Group_Preferences(PropertyGroup):
         description="Defines the export settings used on the group.",
         items=GetExportDefaults,
         update=CAP_Update_GroupExportDefault
-        )
-
-    normals = EnumProperty(
-        name="Normal Export Type",
-        description="Defines how the group's mesh normals are exported.",
-        items=(
-        ('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
-        ('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
-        ('3', 'Normals Only', 'Exports the current custom normals of the model.')
-        ),
-        update=CAP_Update_GroupNormals
         )
 
     in_export_list = BoolProperty(

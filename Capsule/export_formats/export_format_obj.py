@@ -117,19 +117,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		default=False,
 		)
 
-
-
-
-
-class CAP_ExportFormat_OBJ(CAP_ExportFormat):
-	"""
-	Defines how the FBX format inside Capsule.
-	"""
-
-	def __init__(self):
-		self.type = 'OBJ'
-
-	def draw_addon_preferences(layout, exportData, exp):
+	def draw_addon_preferences(self, layout, exportData, exp):
 		"""
 		Draws the panel that represents all the options that the export format has.
 		"""
@@ -226,12 +214,4 @@ class CAP_ExportFormat_OBJ(CAP_ExportFormat):
 
 			export_main.separator()
 
-	def draw_selection_preferences(self, layout):
-		"""
-		Draws the panel that represents all the options that the export format 
-location_presets_listindex		has for specific selections of objects and groups.
-		"""
-
-		column = layout.column(align=True)
-		column.label("This export type is undefined, someone let a base class here! D:")
-		return
+	

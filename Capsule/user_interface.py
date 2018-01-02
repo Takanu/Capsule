@@ -5,6 +5,7 @@ from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
 
 from .tk_utils import select
+from .tk_utils import groups as group_utils
 
 class GEX_Name_UIList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -213,10 +214,10 @@ class CAP_Selection(Panel):
                 obj_settings.separator()
                 obj_settings.prop(obj, "export_default", text="")
                 obj_settings.separator()
-                obj_settings.label(text="Mesh Normals:")
-                obj_settings.separator()
-                obj_settings.prop(obj, "normals", text="")
-                obj_settings.separator()
+                #obj_settings.label(text="Mesh Normals:")
+                #obj_settings.separator()
+                #obj_settings.prop(obj, "normals", text="")
+                #obj_settings.separator()
 
             # If no object was eventually found, bring up warning labels.
             else:
@@ -241,7 +242,7 @@ class CAP_Selection(Panel):
                 if len(scn.group_list) > 0:
                     entry = scn.group_list[scn.group_list_index]
 
-                    for group in GetSceneGroups(context.scene, True):
+                    for group in group_utils.GetSceneGroups(context.scene, True):
                         if group.name == entry.name:
                             grp = group.CAPGrp
                             gr = group
@@ -315,10 +316,10 @@ class CAP_Selection(Panel):
                 rawr_other.label(text="Export Preset:")
                 rawr_other.separator()
                 rawr_other.prop(grp, "export_default", text="")
-                rawr_other.separator()
-                rawr_other.label(text="Mesh Normal Export:")
-                rawr_other.separator()
-                rawr_other.prop(grp, "normals", text="")
+                #rawr_other.separator()
+                #rawr_other.label(text="Mesh Normal Export:")
+                #rawr_other.separator()
+                #rawr_other.prop(grp, "normals", text="")
 
             # If no group was eventually found, bring up warning labels.
             else:

@@ -24,7 +24,7 @@ bl_info = {
     "blender": (2, 7, 9),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
-    "description": "Batch export your assets from Blender into multiple files and formats, just the way you need them.",
+    "description": "Batch export assets into multiple files and formats.",
     "tracker_url": "",
     "category": "Import-Export"
 }
@@ -50,7 +50,7 @@ from bpy.types import AddonPreferences, PropertyGroup
 from bpy.app.handlers import persistent
 
 from .export_properties import CAP_ExportTag, CAP_ExportPassTag, CAP_ExportPass, CAP_ExportPreset, CAP_LocationDefault, CAP_ExportPresets
-from .export_formats import CAP_ExportFormat, CAP_ExportFormat_FBX, CAP_ExportFormat_OBJ, CAP_ExportFormat_GLTF
+from .export_formats import CAP_ExportFormat
 
 
 # This sequence checks the files currently loaded? (CHECKME)
@@ -136,6 +136,8 @@ class CAP_AddonPreferences(AddonPreferences):
     options_dropdown = BoolProperty(default = False)
 
     # not currently accessible through any menu, this is now an internally-managed state.
+    # used to turn off multi-selection editing when an object is selected from the export list,
+    # or potentially for other operations.
     object_multi_edit = BoolProperty(
         name="Group Multi-Edit Mode",
         description="Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
@@ -144,6 +146,8 @@ class CAP_AddonPreferences(AddonPreferences):
         )
     
     # not currently accessible through any menu, this is now an internally-managed state.
+    # used to turn off multi-selection editing when an object is selected from the export list,
+    # or potentially for other operations.
     group_multi_edit = BoolProperty(
         name="Group Multi-Edit Mode",
         description="Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
@@ -258,16 +262,25 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 filepresets_box.label("Basic Settings")
                 filepresets_options = filepresets_box.row(align=True)
-                filepresets_options.separator()
 
-                filepresets_options_2 = filepresets_options.column(align=True)
-                filepresets_options_2.prop(currentExp, "format_type")
+                filepresets_options_2_col = filepresets_options.row(align=True)
+                filepresets_options_2_col.alignment = 'LEFT'
+
+                filepresets_options_2_label = filepresets_options_2_col.column(align=True)
+                filepresets_options_2_label.alignment = 'LEFT'
+                filepresets_options_2_label.label("Format Type:")
+
+                filepresets_options_2_dropdowns = filepresets_options_2_col.column(align=True)
+                filepresets_options_2_dropdowns.alignment = 'EXPAND'
+                filepresets_options_2_dropdowns.prop(currentExp, "format_type", text="")
+                filepresets_options_2_dropdowns.separator()
 
                 filepresets_options.separator()
                 filepresets_options.separator()
                 filepresets_options.separator()
 
                 filepresets_options_1 = filepresets_options.column(align=True)
+                filepresets_options_1.alignment = 'EXPAND'
                 filepresets_options_1.prop(currentExp, "use_blend_directory")
                 filepresets_options_1.prop(currentExp, "use_sub_directory")
                 filepresets_options_1.prop(currentExp, "filter_render")
@@ -279,16 +292,13 @@ class CAP_AddonPreferences(AddonPreferences):
                 #filepresets_box.separator()
 
                 if currentExp.format_type == 'FBX':
-                    data = exp.file_presets_data_fbx[exp.file_presets_listindex]
-                    CAP_ExportFormat_FBX.draw_addon_preferences(filepresets_box, data, exp)
+                    currentExp.data_fbx.draw_addon_preferences(filepresets_box, currentExp.data_fbx, exp)
 
                 elif currentExp.format_type == 'OBJ':
-                    data = exp.file_presets_data_obj[exp.file_presets_listindex]
-                    CAP_ExportFormat_OBJ.draw_addon_preferences(filepresets_box, data, exp)
+                    currentExp.data_obj.draw_addon_preferences(filepresets_box, currentExp.data_obj, exp)
 
                 elif currentExp.format_type == 'GLTF':
-                    data = exp.file_presets_data_gltf[exp.file_presets_listindex]
-                    CAP_ExportFormat_GLTF.draw_addon_preferences(filepresets_box, data, exp)
+                    currentExp.data_gltf.draw_addon_preferences(filepresets_box, currentExp.data_gltf, exp)
 
             else:
                 preset_unselected = filepresets_box.column(align=True)

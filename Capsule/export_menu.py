@@ -11,7 +11,7 @@ class CAP_PieWarning(Operator):
     bl_idname = "capsule.pie_warning"
     bl_label = ""
 
-    label = StringProperty(defaut="")
+    label = StringProperty(default="")
 
     def execute(self, context):
         self.report({'WARNING'}, self.label)

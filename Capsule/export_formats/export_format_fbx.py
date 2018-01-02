@@ -90,6 +90,16 @@ class CAP_FormatData_FBX(PropertyGroup):
 		default=False
 		)
 
+	normals = EnumProperty(
+		name="Normal Export Type",
+		description="Defines how mesh normals are exported.",
+		items=(
+			('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
+			('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
+			('3', 'Normals Only', 'Exports the current custom normals of the model.')
+			),
+		)
+
 	tangent_space = BoolProperty(
 		name="Tangent Space",
 		description="Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
@@ -206,20 +216,12 @@ class CAP_FormatData_FBX(PropertyGroup):
 		soft_max=10
 		)
 
-	# A special system variable that defines whether it can be deleted from the Global Presets list.
-	x_global_user_deletable = BoolProperty(default=True)
 	# A secret fix embedded in the Unity 5 export option, to fix rotated objects.
 	x_unity_rotation_fix = BoolProperty(default=False)
 
-class CAP_ExportFormat_FBX(CAP_ExportFormat):
-	"""
-	Defines how the FBX format inside Capsule.
-	"""
 
-	def __init__(self):
-		self.type = 'FBX'
 
-	def draw_addon_preferences(layout, exportData, exp):
+	def draw_addon_preferences(self, layout, exportData, exp):
 		"""
 		Draws the panel that represents all the options that the export format has.
 		"""
@@ -308,6 +310,19 @@ class CAP_ExportFormat_FBX(CAP_ExportFormat):
 			export_1.prop(exportData, "tangent_space")
 			export_1.separator()
 
+			export_2 = export_main.row(align=True)
+			export_2.alignment = 'RIGHT'
+			export_2_label = export_2.column(align=True)
+			export_2_label.alignment = 'RIGHT'
+			export_2_label.label("Normals:")
+
+			export_2_dropdowns = export_2.column(align=True)
+			export_2_dropdowns.alignment = 'EXPAND'
+			export_2_dropdowns.prop(exportData, "normals", text="")
+			export_2_dropdowns.separator()
+
+			export_main.separator()
+
 		elif exp.fbx_menu_options == 'Armature':
 			export_main = filepresets_box.row(align=True)
 			export_main.separator()
@@ -362,13 +377,3 @@ class CAP_ExportFormat_FBX(CAP_ExportFormat):
 			export_main.separator()
 
 
-
-	def draw_selection_preferences(self, layout):
-		"""
-		Draws the panel that represents all the options that the export format 
-location_presets_listindex		has for specific selections of objects and groups.
-		"""
-
-		column = layout.column(align=True)
-		column.label("This export type is undefined, someone let a base class here! D:")
-		return
