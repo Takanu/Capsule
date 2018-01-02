@@ -50,7 +50,7 @@ from bpy.types import AddonPreferences, PropertyGroup
 from bpy.app.handlers import persistent
 
 from .export_properties import CAP_ExportTag, CAP_ExportPassTag, CAP_ExportPass, CAP_ExportPreset, CAP_LocationDefault, CAP_ExportPresets
-from .export_formats import CAP_ExportFormat, CAP_ExportFormat_FBX
+from .export_formats import CAP_ExportFormat, CAP_ExportFormat_FBX, CAP_ExportFormat_OBJ, CAP_ExportFormat_GLTF
 
 
 # This sequence checks the files currently loaded? (CHECKME)
@@ -279,10 +279,16 @@ class CAP_AddonPreferences(AddonPreferences):
                 #filepresets_box.separator()
 
                 if currentExp.format_type == 'FBX':
+                    data = exp.file_presets_data_fbx[exp.file_presets_listindex]
+                    CAP_ExportFormat_FBX.draw_addon_preferences(filepresets_box, data, exp)
 
-                    for item in exp.file_presets_data_fbx:
-                        if item.instance_id == currentExp.instance_id:
-                            CAP_ExportFormat_FBX.draw_addon_preferences(filepresets_box, item, exp)
+                elif currentExp.format_type == 'OBJ':
+                    data = exp.file_presets_data_obj[exp.file_presets_listindex]
+                    CAP_ExportFormat_OBJ.draw_addon_preferences(filepresets_box, data, exp)
+
+                elif currentExp.format_type == 'GLTF':
+                    data = exp.file_presets_data_gltf[exp.file_presets_listindex]
+                    CAP_ExportFormat_GLTF.draw_addon_preferences(filepresets_box, data, exp)
 
             else:
                 preset_unselected = filepresets_box.column(align=True)

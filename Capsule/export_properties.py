@@ -2,7 +2,7 @@
 import bpy
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
-from .export_formats import CAP_ExportFormat, CAP_FormatData_FBX
+from .export_formats import CAP_ExportFormat, CAP_FormatData_FBX, CAP_FormatData_OBJ, CAP_FormatData_GLTF
 
 def CAP_Update_TagName(self, context):
 
@@ -200,7 +200,7 @@ class CAP_ExportPreset(PropertyGroup):
             (
             ('FBX', "FBX", "Export assets in an .fbx format."),
             ('OBJ', "OBJ", "Export assets in an .obj format."),
-            ('glTF', "glTF", "Export assets in a .gltf format."),
+            ('GLTF', "GLTF", "Export assets in a .gltf format."),
             ),
         description="Defines what file type objects with this preset will export to and the export options available for this preset.",
         )
@@ -267,6 +267,12 @@ class CAP_ExportPresets(PropertyGroup):
     # the data stored for FBX presets.
     file_presets_data_fbx = CollectionProperty(type=CAP_FormatData_FBX)
 
+    # the data stored for OBJ presets.
+    file_presets_data_obj = CollectionProperty(type=CAP_FormatData_OBJ)
+
+    # the data stored for GLTF presets.
+    file_presets_data_gltf = CollectionProperty(type=CAP_FormatData_GLTF)
+
     fbx_menu_options = EnumProperty(
         name="Export Options",
         description="",
@@ -277,6 +283,27 @@ class CAP_ExportPresets(PropertyGroup):
         ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
         ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
         ),)
+
+    obj_menu_options = EnumProperty(
+        name="Export Options",
+        description="",
+        items=(
+        ('Export', 'Export', 'A tab containing general export paramaters.'),
+        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
+        ('Object', 'Geometry', 'A tab containing options for how object geometry, materials and other associated assets are exported.'),
+        ),
+    )
+
+    gltf_menu_options = EnumProperty(
+        name="Export Options",
+        description="",
+        items=(
+        ('Export', 'Export', 'A tab containing general export paramaters.'),
+        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
+        ('Object', 'Object', 'A tab containing options for how object geometry is interpreted in the export.'),
+        #('Extensions', 'Extensions', 'A tab containing options for how armature objects are interpreted in the export.'),
+        ),
+        )
 
     # the preset selected on the list panel, when viewed from the AddonPreferences window.
     file_presets_listindex = IntProperty(default=0)

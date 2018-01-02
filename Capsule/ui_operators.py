@@ -88,11 +88,18 @@ class CAP_Add_Export(Operator):
         newDefault.path = ""
 
         # use the memory id of the new file preset as a unique id to retrieve the 
-        newDefault.instance_id = self.get_unique_id(context, exp)
+        new_id = self.get_unique_id(context, exp)
+        newDefault.instance_id = new_id
 
-        # add a new, default CAP_FormatData to the collection
+        # add a new file format for every type available
         newFBXpreset = exp.file_presets_data_fbx.add()
-        newFBXpreset.instance_id = newDefault.instance_id
+        newFBXpreset.instance_id = new_id
+
+        newOBJpreset = exp.file_presets_data_obj.add()
+        newOBJpreset.instance_id = new_id
+
+        newGLTFpreset = exp.file_presets_data_gltf.add()
+        newGLTFpreset.instance_id = new_id
 
         # Ensure the tag index keeps within a window
         exp.file_presets_listindex = len(exp.file_presets) - 1
@@ -134,6 +141,18 @@ class CAP_Delete_Export(Operator):
         for item in exp.file_presets_data_fbx:
             if item.instance_id == id_to_remove:
                 exp.file_presets_data_fbx[i]
+                continue
+
+        i = 0
+        for item in exp.file_presets_data_obj:
+            if item.instance_id == id_to_remove:
+                exp.file_presets_data_obj[i]
+                continue
+
+        i = 0
+        for item in exp.file_presets_data_gltf:
+            if item.instance_id == id_to_remove:
+                exp.file_presets_data_gltf[i]
                 continue
 
         # ensure the selected list index is within the list bounds

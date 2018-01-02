@@ -16,11 +16,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 			default=False
 			)
 
-	filter_render = BoolProperty(
-		name="Filter by Rendering",
-		description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
-		)
-
 	export_types = EnumProperty(
 		name="Object Types",
 		options={'ENUM_FLAG'},
@@ -38,6 +33,17 @@ class CAP_FormatData_FBX(PropertyGroup):
 		name="Global Scale",
 		description="The exported scale of the objects.",
 		default=1.0
+		)
+
+	apply_scale_options = EnumProperty(
+		name="Apply Scale Options",
+		items=(
+			('FBX_SCALE_NONE', "All Local", "Apply custom scaling and units scaling to each object transformation, FBX scale remains at 1.0."),
+			('FBX_SCALE_UNITS', "FBX Units Scale", "Apply custom scaling to each object transformation, and units scaling to FBX scale."),
+			('FBX_SCALE_CUSTOM', "FBX Custom Scale", "Apply custom scaling to FBX scale, and units scaling to each object transformation."),
+			('FBX_SCALE_ALL', "FBX All", "Apply custom scaling and units scaling to FBX scale."),
+			),
+		description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule.",
 		)
 
 	bake_space_transform = BoolProperty(
@@ -77,12 +83,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('-Y', '-Y', ''),
 			('-Z', '-Z', ''))
 			)
-
-	apply_unit_scale = BoolProperty(
-		name="Apply Unit Scale",
-		description="Scales the Blender Units system to match the FBX unit measurement (centimetres).",
-		default=False
-		)
 
 	loose_edges = BoolProperty(
 		name="Loose Edges",
@@ -246,7 +246,6 @@ class CAP_ExportFormat_FBX(CAP_ExportFormat):
 			export_1 = export_main.column(align=True)
 			export_1.label("Additional Options")
 			export_1.separator()
-			export_1.prop(exportData, "filter_render")
 			export_1.prop(exportData, "bundle_textures")
 
 			export_main.separator()
@@ -269,11 +268,11 @@ class CAP_ExportFormat_FBX(CAP_ExportFormat):
 			export_1 = export_main.column(align=True)
 			export_scale = export_1.row(align=True)
 			export_scale.prop(exportData, "global_scale")
-			export_scale.prop(exportData, "apply_unit_scale", text="", icon='NDOF_TRANS')
+			#export_scale.prop(exportData, "apply_unit_scale", text="", icon='NDOF_TRANS')
 			export_1.separator()
 
 			export_1.prop(exportData, "bake_space_transform")
-			#export_1.prop(exportData, "reset_rotation")
+			
 
 			export_1.separator()
 
@@ -290,11 +289,13 @@ class CAP_ExportFormat_FBX(CAP_ExportFormat):
 			export_2_label.alignment = 'RIGHT'
 			export_2_label.label("Axis Up:")
 			export_2_label.label("Axis Forward:")
+			export_2_label.label("Apply Scale Options:")
 
 			export_2_dropdowns = export_2_row.column(align=True)
 			export_2_dropdowns.alignment = 'EXPAND'
 			export_2_dropdowns.prop(exportData, "axis_up", text="")
 			export_2_dropdowns.prop(exportData, "axis_forward", text="")
+			export_2_dropdowns.prop(exportData, "apply_scale_options", text="")
 			export_2_dropdowns.separator()
 
 			export_main.separator()
