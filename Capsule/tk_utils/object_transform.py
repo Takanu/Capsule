@@ -1,4 +1,8 @@
+
 import bpy
+from mathutils import Vector
+from .object_ops import SwitchObjectMode
+from .select import FocusObject, SelectObject, ActivateObject
 
 def MoveObject(target, context, location):
     """

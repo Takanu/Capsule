@@ -52,12 +52,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 		default=False
 		)
 
-	reset_rotation = BoolProperty(
-		name="Reset Rotation",
-		description="If enabled, the plugin will reset the rotation of objects and groups when exported.  For groups, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a group to be reset.  Currently this doesn't work with rotation-influencing constraints, and will be disabled on Objects and Groups that use them.",
-		default=False
-		)
-
 
 	axis_up = EnumProperty(
 		name="Axis Up",
@@ -68,8 +62,10 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
-			('-Z', '-Z', ''))
-			)
+			('-Z', '-Z', '')),
+		default='Y',
+		)
+
 
 
 	axis_forward = EnumProperty(
@@ -81,8 +77,9 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
-			('-Z', '-Z', ''))
-			)
+			('-Z', '-Z', '')),
+		default='-Z'
+		)
 
 	loose_edges = BoolProperty(
 		name="Loose Edges",
@@ -94,9 +91,9 @@ class CAP_FormatData_FBX(PropertyGroup):
 		name="Normal Export Type",
 		description="Defines how mesh normals are exported.",
 		items=(
-			('1', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
-			('2', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
-			('3', 'Normals Only', 'Exports the current custom normals of the model.')
+			('EDGE', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
+			('FACE', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
+			('OFF', 'Normals Only', 'Exports the current custom normals of the model.')
 			),
 		)
 
@@ -116,12 +113,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 		name="Add Leaf Bones",
 		description="Appends an extra bone to the end of each bone chain.",
 		default=False
-		)
-
-	preserve_armature_constraints = BoolProperty(
-		name="Preserve Armature Constraints",
-		description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  Turn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
-		default=True
 		)
 
 
@@ -329,7 +320,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_1 = export_main.column(align=True)
 			export_1.prop(exportData, "use_armature_deform_only")
 			export_1.prop(exportData, "add_leaf_bones")
-			export_1.prop(exportData, "preserve_armature_constraints")
 
 			export_main.separator()
 			export_main.separator()
@@ -375,5 +365,49 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_2.separator()
 
 			export_main.separator()
+
+
+	def export(self, exportPreset, exportPass, filePath):
+		"""
+		Calls the FBX Export API to make the export happen
+		"""
+
+		#print("APPLY UNIT SCALE, IS IT FUCKING ON?", self.apply_unit_scale)
+
+		print("Exporting", "*"*70)
+		bpy.ops.export_scene.fbx(check_existing=False,
+		filepath=filePath+ ".fbx",
+		filter_glob="*.fbx",
+		version='BIN7400',
+		use_selection=True,
+		global_scale=self.global_scale,
+		apply_scale_options=self.apply_scale_options,
+		axis_forward=self.axis_forward,
+		axis_up=self.axis_up,
+		bake_space_transform=self.bake_space_transform,
+		object_types=self.export_types,
+		use_mesh_modifiers=False,
+		mesh_smooth_type=self.normals,
+		use_mesh_edges=self.loose_edges,
+		use_tspace=self.tangent_space,
+		use_custom_props=False,
+		use_armature_deform_only=self.use_armature_deform_only,
+		add_leaf_bones=self.add_leaf_bones,
+		bake_anim=exportPass.export_animation,
+		bake_anim_use_all_bones=self.bake_anim_use_all_bones,
+		bake_anim_use_nla_strips=self.bake_anim_use_nla_strips,
+		bake_anim_use_all_actions=self.bake_anim_use_all_actions,
+		bake_anim_force_startend_keying=self.bake_anim_force_startend_keying,
+		#idk what this even is
+		use_anim=exportPass.export_animation,
+		use_anim_action_all=self.bake_anim_use_all_actions,
+		use_default_take=self.use_default_take,
+		use_anim_optimize=self.optimise_keyframes,
+		anim_optimize_precision=6.0,
+		path_mode='ABSOLUTE',
+		embed_textures=True,
+		batch_mode='OFF',
+		use_batch_own_dir=False,
+		use_metadata=False)
 
 

@@ -5,7 +5,9 @@ from mathutils import Vector
 from math import pi, radians, degrees
 from bpy.types import Operator
 
-def ReplaceSystemChar(self, context, name):
+from .tk_utils import select as select_utils
+
+def ReplaceSystemChar(context, name):
   # Replaces invalid directory characters in names
 
   print("Checking Directory...", name)
@@ -29,7 +31,7 @@ def ReplaceSystemChar(self, context, name):
 
 
 
-def CheckSystemChar(self, context, name):
+def CheckSystemChar(context, name):
   # Checks for invalid directory characters in names
 
   print("Checking Directory...", name)
@@ -59,7 +61,7 @@ def CheckSystemChar(self, context, name):
 
 
 
-def CheckAnimation(self, context):
+def CheckAnimation(context):
   # Not currently used until further notice
 
   for item in context.scene.objects:
@@ -110,7 +112,7 @@ def CheckAnimation(self, context):
 
   print(">>>> CHECKED ANIMATION <<<<")
 
-def AddTriangulate(self, targetList):
+def AddTriangulate(targetList):
   """
   Adds the triangulate modifier to any objects that don't yet have it.
   """
@@ -128,7 +130,7 @@ def AddTriangulate(self, targetList):
 
           # if we didn't find any triangulation, add it!
           if stm.has_triangulate == False:
-              FocusObject(item)
+              select_utils.FocusObject(item)
               bpy.ops.object.modifier_add(type='TRIANGULATE')
 
               for modifier in item.modifiers:
@@ -138,7 +140,7 @@ def AddTriangulate(self, targetList):
                       modifier.ngon_method = 'CLIP'
                       stm.has_triangulate = False
 
-def RemoveTriangulate(self, targetList):
+def RemoveTriangulate(targetList):
   """
   Adds the triangulate modifier from objects where it was added as an export option.
   """
@@ -149,7 +151,7 @@ def RemoveTriangulate(self, targetList):
           if item.CAPStm.has_triangulate is False:
               for modifier in item.modifiers:
                   if modifier.type in modType:
-                      FocusObject(item)
+                      select_utils.FocusObject(item)
                       bpy.ops.object.modifier_remove(modifier=modifier.name)
 
 

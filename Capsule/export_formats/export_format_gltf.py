@@ -1,5 +1,7 @@
 
 import bpy
+import mathutils
+
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.types import UILayout
@@ -220,5 +222,88 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_main.separator()
 		
+	def export(self, gltfModule, exportPreset, exportPass, filePath):
+		"""
+		Calls the GLTF Export API to make the export happen
+		"""
 
+		# filter data according to settings
+		data = {
+			# 'actions': list(bpy.data.actions) if self.enable_actions else [],
+			# 'cameras': list(bpy.data.cameras) if self.enable_cameras else [],
+			# 'lamps': list(bpy.data.lamps) if self.enable_lamps else [],
+			# 'images': list(bpy.data.images) if self.enable_textures else [],
+			'materials': list(bpy.data.materials), # if self.enable_materials else [],
+			'meshes': list(bpy.data.meshes), # if self.enable_meshes else [],
+			'objects': list(bpy.context.selected_objects),
+			'scenes': list(bpy.data.scenes),
+			'textures': list(bpy.data.textures) # if self.enable_textures else [],
+		}
+
+		# # Remove objects that point to disabled data
+		# if not self.enable_cameras:
+		#     data['objects'] = [
+		#         obj for obj in data['objects']
+		#         if not isinstance(obj.data, bpy.types.Camera)
+		#     ]
+		# if not self.enable_lamps:
+		#     data['objects'] = [
+		#         obj for obj in data['objects']
+		#         if not isinstance(obj.data, bpy.types.Lamp)
+		#     ]
+		# if not self.enable_meshes:
+		#     data['objects'] = [
+		#         obj for obj in data['objects']
+		#         if not isinstance(obj.data, bpy.types.Mesh)
+		#     ]
+
+		# if not settings['nodes_export_hidden']:
+		#     data = visible_only(data)
+
+		# if settings['nodes_selected_only']:
+		#     data = selected_only(data)
+
+		# if settings['blocks_prune_unused']:
+		#     data = used_only(data)
+
+		# for ext_exporter in self.ext_exporters:
+		#     ext_exporter.settings = getattr(
+		#         self,
+		#         'settings_' + ext_exporter.ext_meta['name'],
+		#         None
+		#     )
+
+		# def is_builtin_mat_ext(prop_name):
+		#     if Version(self.asset_version) < Version('2.0'):
+		#         return prop_name == 'KHR_technique_webgl'
+		#     return False
+
+		# settings['extension_exporters'] = [
+		#     self.ext_prop_to_exporter_map[prop.name]
+		#     for prop in self.extension_props
+		#     if prop.enable and not (self.materials_disable and is_builtin_mat_ext(prop.name))
+		# ]
+
+		SETTINGS = {
+			'gltf_output_dir': filePath + ".gltf",
+			'gltf_name': 'gltf',
+			'gltf_export_binary': False,
+			'buffers_embed_data': True,
+			'buffers_combine_data': False,
+			'nodes_export_hidden': False,
+			'nodes_global_matrix': mathutils.Matrix.Identity(4),
+			'nodes_selected_only': False,
+			'blocks_prune_unused': True,
+			'meshes_apply_modifiers': True,
+			'meshes_interleave_vertex_data': True,
+			'images_data_storage': 'COPY',
+			'asset_version': '2.0',
+			'asset_profile': 'WEB',
+			'images_allow_srgb': False,
+			'extension_exporters': [],
+			'animations_object_export': 'ACTIVE',
+			'animations_armature_export': 'ELIGIBLE',
+		}
+
+		gltfModule.export_gltf(data, SETTINGS)
 

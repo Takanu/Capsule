@@ -284,6 +284,8 @@ class CAP_AddonPreferences(AddonPreferences):
                 filepresets_options_1.prop(currentExp, "use_blend_directory")
                 filepresets_options_1.prop(currentExp, "use_sub_directory")
                 filepresets_options_1.prop(currentExp, "filter_render")
+                filepresets_options_1.prop(currentExp, "reset_rotation")
+                filepresets_options_1.prop(currentExp, "preserve_armature_constraints")
 
                 filepresets_options.separator()
 

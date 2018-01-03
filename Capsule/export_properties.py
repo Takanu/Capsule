@@ -208,6 +208,18 @@ class CAP_ExportPreset(PropertyGroup):
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
         )
 
+    reset_rotation = BoolProperty(
+        name="Reset Rotation",
+        description="If enabled, the plugin will reset the rotation of objects and groups when exported.  For groups, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a group to be reset.  Currently this doesn't work with rotation-influencing constraints, and will be disabled on Objects and Groups that use them.",
+        default=False
+        )
+
+    preserve_armature_constraints = BoolProperty(
+        name="Preserve Armature Constraints",
+        description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  Turn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
+        default=True
+        )
+
 
     passes = CollectionProperty(type=CAP_ExportPass)
     passes_index = IntProperty(default=0)
@@ -282,7 +294,8 @@ class CAP_ExportPresets(PropertyGroup):
         ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
         ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
         ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
-        ),)
+        ),
+    )
 
     obj_menu_options = EnumProperty(
         name="Export Options",
@@ -301,6 +314,5 @@ class CAP_ExportPresets(PropertyGroup):
         ('Export', 'Export', 'A tab containing general export paramaters.'),
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
         ('Object', 'Object', 'A tab containing options for how object geometry is interpreted in the export.'),
-        #('Extensions', 'Extensions', 'A tab containing options for how armature objects are interpreted in the export.'),
         ),
-        )
+    )

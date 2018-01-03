@@ -2,6 +2,9 @@ import bpy, bmesh, time
 from math import pi, radians, degrees
 from mathutils import Vector
 
+from .select import FocusObject
+from .object_ops import SwitchObjectMode
+
 #//////////////////// - BASIC DEFINITIONS - ///////////////////////
 
 def FindWorldSpaceObjectLocation(target, context):
