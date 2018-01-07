@@ -21,7 +21,7 @@ bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako - special thanks to CW and AY <3",
     "version": (1, 1, 0),
-    "blender": (2, 7, 9),
+    "blender": (2, 79, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
     "description": "Batch export assets into multiple files and formats.",
@@ -30,7 +30,7 @@ bl_info = {
 }
 
 # Start importing all the addon files
-# The init file just gets things started, no code needs to be placed here.
+# #FIXME: I dont have to import everything here.
 import bpy
 from . import export_formats
 from . import tk_utils
@@ -58,7 +58,7 @@ print("Checking modules...")
 
 if "bpy" in locals():
     import imp
-    print("------------------Reloading Plugin------------------")
+    print("------------------Reloading Capsule------------------")
     if "tk_utils" in locals():
         imp.reload(tk_utils)
     if "properties" in locals():
@@ -284,7 +284,10 @@ class CAP_AddonPreferences(AddonPreferences):
                 filepresets_options_1.prop(currentExp, "use_blend_directory")
                 filepresets_options_1.prop(currentExp, "use_sub_directory")
                 filepresets_options_1.prop(currentExp, "filter_render")
-                filepresets_options_1.prop(currentExp, "reset_rotation")
+
+                # this was removed from 1.01 onwards due to implementation issues.
+                # filepresets_options_1.prop(currentExp, "reset_rotation")
+
                 filepresets_options_1.prop(currentExp, "preserve_armature_constraints")
 
                 filepresets_options.separator()

@@ -220,22 +220,20 @@ def CreatePresetUnity5Standard(exp):
     # Unity 5 Standard Template
     # -------------------------------------------------------------------------
     export = exp.add()
-    export.name = "Unity 5 Standard"
+    export.name = "Unity 2017 Standard"
     export.description = "Creates an Export Preset for exporting FBX files for Unity 5, with optimised settings."
     export.x_global_user_deletable = False
 
     export.data_fbx.axis_forward = "Z"
     export.data_fbx.axis_up = "Y"
     export.data_fbx.global_scale = 1.0
-    export.data_fbx.apply_unit_scale = False
+    export.data_fbx.apply_scale_options = 'FBX_SCALE_UNITS'
     export.data_fbx.export_types = {'MESH', 'ARMATURE'}
 
     export.data_fbx.bake_anim_use_all_bones = True
     export.data_fbx.bake_anim_use_all_actions = True
     export.data_fbx.bake_anim_force_startend_keying = True
     export.data_fbx.optimise_keyframes = True
-
-    export.data_fbx.x_unity_rotation_fix = True
 
     tagLP = export.tags.add()
     tagLP.name = "Low-Poly"

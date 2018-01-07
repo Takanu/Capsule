@@ -405,7 +405,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		use_anim_optimize=self.optimise_keyframes,
 		anim_optimize_precision=6.0,
 		path_mode='ABSOLUTE',
-		embed_textures=True,
+		embed_textures=self.bundle_textures,
 		batch_mode='OFF',
 		use_batch_own_dir=False,
 		use_metadata=False)

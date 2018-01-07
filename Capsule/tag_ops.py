@@ -1,4 +1,6 @@
+
 import bpy
+from .tk_utils import text_ops
 
 def CheckForTags(context, string):
 
@@ -6,10 +8,10 @@ def CheckForTags(context, string):
     user_preferences = context.user_preferences
     addon_prefs = user_preferences.addons[__package__].preferences
 
-    hasLP = CheckSuffix(string, addon_prefs.lp_tag)
-    hasHP = CheckSuffix(string, addon_prefs.hp_tag)
-    hasCG = CheckSuffix(string, addon_prefs.cg_tag)
-    hasCX = CheckSuffix(string, addon_prefs.cx_tag)
+    hasLP = text_ops.CheckSuffix(string, addon_prefs.lp_tag)
+    hasHP = text_ops.CheckSuffix(string, addon_prefs.hp_tag)
+    hasCG = text_ops.CheckSuffix(string, addon_prefs.cg_tag)
+    hasCX = text_ops.CheckSuffix(string, addon_prefs.cx_tag)
 
     if hasLP is False and hasHP is False and hasCG is False and hasCX is False:
         return False
@@ -73,7 +75,7 @@ def RemoveObjectTag(context, object, export_default):
         if passed_type_filter is True:
             if tag.name_filter != "":
                 if tag.name_filter_type is '1':
-                    if CheckSuffix(object.name, tag.name_filter) is True:
+                    if text_ops.CheckSuffix(object.name, tag.name_filter) is True:
                         newString = object.name.replace(tag.name_filter, "")
                         print("Tag removed, new name:", newString)
                         return newString
@@ -111,7 +113,7 @@ def IdentifyObjectTag(context, object, export_default):
 
         if tag.name_filter != "":
             if tag.name_filter_type is '1':
-                if CheckSuffix(object.name, tag.name_filter) is True:
+                if text_ops.CheckSuffix(object.name, tag.name_filter) is True:
                     #print("Object matches name filter")
                     passed_name_filter = True
 
@@ -187,7 +189,7 @@ def CompareObjectWithTag(context, object, tag):
 
     if tag.name_filter != "":
         if tag.name_filter_type is '1':
-            if CheckSuffix(object.name, tag.name_filter) is True:
+            if text_ops.CheckSuffix(object.name, tag.name_filter) is True:
                 #print("Object matches name filter")
                 passed_name_filter = True
 

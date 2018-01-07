@@ -1,10 +1,29 @@
 
 import bpy
 import mathutils
+import os
+import json
 
-from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
-from bpy.types import AddonPreferences, PropertyGroup
 from bpy.types import UILayout
+
+from bpy.props import (
+	IntProperty, 
+	FloatProperty, 
+	BoolProperty, 
+	StringProperty, 
+	PointerProperty, 
+	CollectionProperty, 
+	EnumProperty
+)
+from bpy.types import (
+	AddonPreferences, 
+	PropertyGroup,
+)
+from bpy_extras.io_utils import (
+    ExportHelper,
+    orientation_helper_factory,
+    axis_conversion,
+)
 
 from .export_format import CAP_ExportFormat
 
@@ -19,7 +38,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		description="Change the version of gltf that will be exported.",
 		items=(
 			('1.0', '1.0', ''),
-    	('2.0', '2.0', ''),
+			('2.0', '2.0', ''),
 			)
 		)
 
@@ -82,8 +101,10 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
-			('-Z', '-Z', ''))
-			)
+			('-Z', '-Z', '')),
+		default='Y',
+		)
+
 
 
 	axis_forward = EnumProperty(
@@ -95,19 +116,20 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
-			('-Z', '-Z', ''))
-			)
+			('-Z', '-Z', '')),
+		default='Z'
+		)
 
 	# object
 
 	mesh_interleave_vertex_data = BoolProperty(
 		name="Interleave Vertex Data",
-		description="Store data for each vertex contiguously instead of each vertex property (e.g. position) contiguously.",
+		description="Store data for each vertex contiguously instead of each vertex property (e.g. position) contiguously.  (Do not use unless you're looking for importer bugs, most importers handle this poorly).",
 		default=False
 		)
 
 	materials_disable = BoolProperty(
-		name='Disab;e Material Export',
+		name='Disable Material Export',
 		description='Exports minimum default materials instead of full materials. Useful when using material extensions',
 		default=False
 		)
@@ -200,7 +222,10 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_main = filepresets_box.row(align=True)
 			export_main.separator()
 			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "mesh_interleave_vertex_data")
+
+			# commented out as this is more of a "few importers support it/easy way to fuck up exports" kinda deal.
+			# export_1.prop(exportData, "mesh_interleave_vertex_data")
+			
 			export_1.prop(exportData, "materials_disable")
 
 			export_main.separator()
@@ -222,40 +247,74 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_main.separator()
 		
-	def export(self, gltfModule, exportPreset, exportPass, filePath):
+	def export(self, gltfModule, exportPreset, exportPass, filePath, fileName):
 		"""
 		Calls the GLTF Export API to make the export happen
 		"""
 
-		# filter data according to settings
-		data = {
-			# 'actions': list(bpy.data.actions) if self.enable_actions else [],
-			# 'cameras': list(bpy.data.cameras) if self.enable_cameras else [],
-			# 'lamps': list(bpy.data.lamps) if self.enable_lamps else [],
-			# 'images': list(bpy.data.images) if self.enable_textures else [],
-			'materials': list(bpy.data.materials), # if self.enable_materials else [],
-			'meshes': list(bpy.data.meshes), # if self.enable_meshes else [],
-			'objects': list(bpy.context.selected_objects),
-			'scenes': list(bpy.data.scenes),
-			'textures': list(bpy.data.textures) # if self.enable_textures else [],
+		settings = {
+			'gltf_export_binary': False,
+			'buffers_embed_data': True,
+			'buffers_combine_data': False,
+			'nodes_export_hidden': False,
+			'nodes_selected_only': True,
+			'blocks_prune_unused': self.blocks_prune_unused,
+			'meshes_apply_modifiers': True,
+			'meshes_interleave_vertex_data': self.mesh_interleave_vertex_data,
+			'images_data_storage': self.images_data_storage,
+			'asset_version': '2.0',
+			'asset_profile': 'WEB',
+			'images_allow_srgb': False,
+			'extension_exporters': [],
+			'animations_object_export': 'ACTIVE',
+			'animations_armature_export': 'ELIGIBLE',
 		}
 
-		# # Remove objects that point to disabled data
-		# if not self.enable_cameras:
-		#     data['objects'] = [
-		#         obj for obj in data['objects']
-		#         if not isinstance(obj.data, bpy.types.Camera)
-		#     ]
-		# if not self.enable_lamps:
-		#     data['objects'] = [
-		#         obj for obj in data['objects']
-		#         if not isinstance(obj.data, bpy.types.Lamp)
-		#     ]
-		# if not self.enable_meshes:
-		#     data['objects'] = [
-		#         obj for obj in data['objects']
-		#         if not isinstance(obj.data, bpy.types.Mesh)
-		#     ]
+		# set the output directory
+		settings['gltf_output_dir'] = filePath
+
+		# set the output name
+		settings['gltf_name'] = os.path.splitext(filePath)[0]
+
+		# Calculate a global transform matrix to apply to a root node
+		settings['nodes_global_matrix'] = axis_conversion(
+			to_forward=self.axis_forward,
+			to_up=self.axis_up
+		).to_4x4()
+
+
+
+		# filter data according to settings
+		data = {
+			'actions': list(bpy.data.actions) if exportPass.export_animation else [],
+			'cameras': list(bpy.data.cameras) if self.enable_cameras else [],
+			'lamps': list(bpy.data.lamps) if self.enable_lamps else [],
+			'images': list(bpy.data.images) if self.enable_textures else [],
+			'materials': list(bpy.data.materials) if self.enable_materials else [],
+			'meshes': list(bpy.data.meshes) if self.enable_meshes else [],
+			'objects': list(bpy.context.selected_objects),
+			'scenes': list(bpy.data.scenes),
+			'textures': list(bpy.data.textures) if self.enable_textures else [],
+		}
+
+		# Remove objects that point to disabled data
+		if not self.enable_cameras:
+			data['objects'] = [
+				obj for obj in data['objects']
+				if not isinstance(obj.data, bpy.types.Camera)
+			]
+
+		if not self.enable_lamps:
+			data['objects'] = [
+				obj for obj in data['objects']
+				if not isinstance(obj.data, bpy.types.Lamp)
+			]
+
+		if not self.enable_meshes:
+			data['objects'] = [
+				obj for obj in data['objects']
+				if not isinstance(obj.data, bpy.types.Mesh)
+			]
 
 		# if not settings['nodes_export_hidden']:
 		#     data = visible_only(data)
@@ -263,8 +322,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		# if settings['nodes_selected_only']:
 		#     data = selected_only(data)
 
-		# if settings['blocks_prune_unused']:
-		#     data = used_only(data)
+		#if settings['blocks_prune_unused']:
+		#	data = used_only(data)
 
 		# for ext_exporter in self.ext_exporters:
 		#     ext_exporter.settings = getattr(
@@ -284,26 +343,19 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		#     if prop.enable and not (self.materials_disable and is_builtin_mat_ext(prop.name))
 		# ]
 
-		SETTINGS = {
-			'gltf_output_dir': filePath + ".gltf",
-			'gltf_name': 'gltf',
-			'gltf_export_binary': False,
-			'buffers_embed_data': True,
-			'buffers_combine_data': False,
-			'nodes_export_hidden': False,
-			'nodes_global_matrix': mathutils.Matrix.Identity(4),
-			'nodes_selected_only': False,
-			'blocks_prune_unused': True,
-			'meshes_apply_modifiers': True,
-			'meshes_interleave_vertex_data': True,
-			'images_data_storage': 'COPY',
-			'asset_version': '2.0',
-			'asset_profile': 'WEB',
-			'images_allow_srgb': False,
-			'extension_exporters': [],
-			'animations_object_export': 'ACTIVE',
-			'animations_armature_export': 'ELIGIBLE',
-		}
+		gltf = gltfModule.export_gltf(data, settings)
 
-		gltfModule.export_gltf(data, SETTINGS)
+		if self.gltf_export_binary:
+			with open(filePath + fileName + ".glb", 'wb') as fout:
+			    fout.write(gltf)
+		else:
+			with open(filePath + fileName + ".gltf", 'w') as fout:
+				# Figure out indentation
+				indent = 4 if self.pretty_print else None
 
+				# Dump the JSON
+				json.dump(gltf, fout, indent=indent, sort_keys=True, check_circular=False)
+
+				if self.pretty_print:
+					# Write a newline to the end of the file
+					fout.write('\n')
