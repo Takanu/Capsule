@@ -20,12 +20,12 @@ from bpy.types import (
 	PropertyGroup,
 )
 from bpy_extras.io_utils import (
-    ExportHelper,
-    orientation_helper_factory,
-    axis_conversion,
+	ExportHelper,
+	orientation_helper_factory,
+	axis_conversion,
 )
 
-from .export_format import CAP_ExportFormat
+from ..io_scene_gltf2 import gltf2_export
 
 class CAP_FormatData_GLTF(PropertyGroup):
 
@@ -33,121 +33,177 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	# export
 
-	asset_version = EnumProperty(
-		name="Export Version",
-		description="Change the version of gltf that will be exported.",
-		items=(
-			('1.0', '1.0', ''),
-			('2.0', '2.0', ''),
-			)
+	export_copyright = StringProperty(
+		name='Copyright Info',
+		description='',
+		default=''
 		)
 
-	gltf_export_binary = BoolProperty(
-		name='Export as binary',
-		description='Export to the binary glTF file format (.glb)',
+	export_embed_buffers = BoolProperty(
+		name='Embed Buffers',
+		description='',
 		default=False
 		)
 
-	pretty_print = BoolProperty(
-		name='Pretty-print / indent JSON',
-		description='Export JSON with indentation and a newline',
-		default=True
+	export_embed_images = BoolProperty(
+		name='Embed Images',
+		description='',
+		default=False
 		)
 
-	blocks_prune_unused = BoolProperty(
-		name='Prune Unused Resources',
-		description='Do not export any data-blocks that have no users or references',
-		default=True
-		)
-
-	enable_cameras = BoolProperty(
-		name='Cameras',
-		description='Enable the export of cameras',
-		default=True
-	  )
-
-	enable_lamps = BoolProperty(
-		name='Lamps',
-		description='Enable the export of lamps',
-		default=True
-		)
-
-	enable_materials = BoolProperty(
-		name='Materials',
-		description='Enable the export of materials',
-		default=True
-		)
-
-	enable_meshes = BoolProperty(
-		name='Meshes',
-		description='Enable the export of meshes',
-		default=True
-		)
-
-	enable_textures = BoolProperty(
-		name='Textures',
-		description='Enable the export of textures',
-		default=True
+	export_strip = BoolProperty(
+		name='Strip Delimiters',
+		description='',
+		default=False
 		)
 
 	# transform
 
-	axis_up = EnumProperty(
-		name="Axis Up",
-		description="What the Up Axis will be defined as when the model is exported.",
-		items=(
-			('X', 'X', ''),
-			('Y', 'Y', ''),
-			('Z', 'Z', ''),
-			('-X', '-X', ''),
-			('-Y', '-Y', ''),
-			('-Z', '-Z', '')),
-		default='Y',
+	export_y_up = BoolProperty(
+		name='Convert Z Up to Y Up',
+		description='',
+		default=True
 		)
 
+	# attributes
 
-
-	axis_forward = EnumProperty(
-		name="Axis Forward",
-		description="What the Forward Axis will be defined as when the model is exported.",
-		items=(
-			('X', 'X', ''),
-			('Y', 'Y', ''),
-			('Z', 'Z', ''),
-			('-X', '-X', ''),
-			('-Y', '-Y', ''),
-			('-Z', '-Z', '')),
-		default='Z'
+	export_indices = EnumProperty(
+		name='Maximum Indices',
+		items=(('UNSIGNED_BYTE', 'Unsigned Byte', ''),
+			('UNSIGNED_SHORT', 'Unsigned Short', ''),
+			('UNSIGNED_INT', 'Unsigned Integer', '')),
+		default='UNSIGNED_INT'
 		)
 
-	# object
-
-	mesh_interleave_vertex_data = BoolProperty(
-		name="Interleave Vertex Data",
-		description="Store data for each vertex contiguously instead of each vertex property (e.g. position) contiguously.  (Do not use unless you're looking for importer bugs, most importers handle this poorly).",
+	export_force_indices = BoolProperty(
+		name='Force Maximum Indices',
+		description='',
 		default=False
 		)
 
-	materials_disable = BoolProperty(
-		name='Disable Material Export',
-		description='Exports minimum default materials instead of full materials. Useful when using material extensions',
+	export_texcoords = BoolProperty(
+		name='Export Texture Coordinates',
+		description='',
+		default=True
+		)
+
+	export_normals = BoolProperty(
+		name='Export Normals',
+		description='',
+		default=True
+		)
+
+	export_tangents = BoolProperty(
+		name='Export Tangents',
+		description='',
+		default=True
+		)
+
+	export_materials = BoolProperty(
+		name='Export Materials',
+		description='',
+		default=True
+		)
+
+	export_colors = BoolProperty(
+		name='Export Colors',
+		description='',
+		default=True
+		)
+
+	export_cameras = BoolProperty(
+		name='Export Cameras',
+		description='',
 		default=False
 		)
 
-	images_data_storage = EnumProperty(
-		name='Storage',
-		items=(
-			('EMBED', 'Embed', 'Embed image data into the glTF file'),
-			('REFERENCE', 'Reference', 'Use the same filepath that Blender uses for images'),
-			('COPY', 'Copy', 'Copy images to output directory and use a relative reference')
-			),
-		default='COPY'
+	export_camera_infinite = BoolProperty(
+		name='Infinite Perspective Camera',
+		description='',
+		default=False
 		)
 
-	# extensions
+	# animation
 
-	# eh, not yet
+	export_frame_range = BoolProperty(
+		name='Export Within Playback Range',
+		description='',
+		default=True
+		)
 
+	export_move_keyframes = BoolProperty(
+		name='Move Start Keyframes To 0',
+		description='',
+		default=True
+		)
+
+	export_force_sampling = BoolProperty(
+		name='Force Sample Animations',
+		description='',
+		default=False
+		)
+
+	export_current_frame = BoolProperty(
+		name='Export Current Frame',
+		description='',
+		default=True
+		)
+
+	export_skins = BoolProperty(
+		name='Export Skinning',
+		description='',
+		default=False
+		)
+
+	export_bake_skins = BoolProperty(
+		name='Bake Skinning Constraints',
+		description='',
+		default=False
+		)
+
+	export_morph = BoolProperty(
+		name='Export Morphing',
+		description='',
+		default=True
+		)
+
+	export_morph_normal = BoolProperty(
+		name='Export Morphing Normals',
+		description='',
+		default=True
+		)
+
+	export_morph_tangent = BoolProperty(
+		name='Export Morphing Tangents',
+		description='',
+		default=True
+		)
+
+	# experimental features
+
+	export_lights_pbr = BoolProperty(
+		name='Export "KHR_lights_pbr"',
+		description='',
+		default=False
+		)
+
+	export_lights_cmn = BoolProperty(
+		name='Export "KHR_lights_cmn"',
+		description='',
+		default=False
+		)
+
+	export_common = BoolProperty(
+		name='Export "KHR_materials_cmnBlinnPhong"',
+		description='',
+		default=False
+		)
+
+	export_displacement = BoolProperty(
+		name='Export "KHR_materials_displacement"',
+		description='',
+		default=False
+		)
 
 
 	def draw_addon_preferences(self, layout, exportData, exp):
@@ -176,9 +232,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_1 = export_main.column(align=True)
 			export_1.label("Group Options")
 			export_1.separator()
-			export_1.prop(exportData, "gltf_export_binary")
-			export_1.prop(exportData, "pretty_print")
-			export_1.prop(exportData, "blocks_prune_unused")
+			export_1.prop(exportData, "export_embed_buffers")
+			export_1.prop(exportData, "export_embed_images")
+			export_1.prop(exportData, "export_strip")
+			export_1.separator()
+
+			export_1.prop(exportData, "export_copyright")
 			export_1.separator()
 
 			export_main.separator()
@@ -188,12 +247,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_2 = export_main.column(align=True)
 			export_2.label("Exportable Object Types")
 			export_2.separator()
-			export_2.prop(exportData, "enable_cameras", toggle=True)
-			export_2.prop(exportData, "enable_lamps", toggle=True)
-			export_2.prop(exportData, "enable_materials", toggle=True)
-			export_2.prop(exportData, "enable_meshes", toggle=True)
-			export_2.prop(exportData, "enable_textures", toggle=True)
-			export_2.separator()
 
 			export_main.separator()
 
@@ -202,160 +255,174 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_main.separator()
 
 			export_1 = export_main.column(align=True)
-			export_1_row = export_1.row(align=True)
-			export_1_row.alignment = 'CENTER'
-
-			export_1_label = export_1_row.column(align=True)
-			export_1_label.alignment = 'CENTER'
-			export_1_label.label("Axis Up:")
-			export_1_label.label("Axis Forward:")
-
-			export_1_dropdowns = export_1_row.column(align=True)
-			export_1_dropdowns.alignment = 'EXPAND'
-			export_1_dropdowns.prop(exportData, "axis_up", text="")
-			export_1_dropdowns.prop(exportData, "axis_forward", text="")
-			export_1_dropdowns.separator()
-
-			export_main.separator()
-
-		elif exp.gltf_menu_options == 'Object':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
-			export_1 = export_main.column(align=True)
-
-			# commented out as this is more of a "few importers support it/easy way to fuck up exports" kinda deal.
-			# export_1.prop(exportData, "mesh_interleave_vertex_data")
-			
-			export_1.prop(exportData, "materials_disable")
+			export_1.prop(exportData, "export_y_up")
+			export_1.separator()
 
 			export_main.separator()
 			export_main.separator()
 			export_main.separator()
 
 			export_2 = export_main.column(align=True)
-			export_2_row = export_2.row(align=True)
+			export_2.separator()
 
-			export_2_label = export_2_row.column(align=True)
-			export_2_label.alignment = 'RIGHT'
-			export_2_label.label("Image Storage:")
+			export_main.separator()
 
-			export_2_dropdowns = export_2_row.column(align=True)
-			export_2_dropdowns.alignment = 'EXPAND'
-			export_2_dropdowns.prop(exportData, "images_data_storage", text="")
-			export_2_dropdowns.separator()
+		elif exp.gltf_menu_options == 'Attributes':
+			export_main = filepresets_box.row(align=True)
+			export_main.separator()
+
+			export_1 = export_main.column(align=True)
+			export_1_row = export_1.row(align=True)
+			export_1_row.alignment = 'LEFT'
+
+			export_1_label = export_1_row.column(align=True)
+			export_1_label.alignment = 'LEFT'
+			export_1_label.label("Export Indices:")
+
+			export_1_dropdowns = export_1_row.column(align=True)
+			export_1_dropdowns.alignment = 'EXPAND'
+			export_1_dropdowns.prop(exportData, "export_indices", text="")
+			export_1_dropdowns.separator()
+
+			export_1.separator()
+			export_1.prop(exportData, "export_force_indices")
+
+			export_2 = export_main.column(align=True)
+			export_2.prop(exportData, "export_texcoords")
+			export_2.prop(exportData, "export_normals")
+			export_2.prop(exportData, "export_tangents")
+			export_2.prop(exportData, "export_materials")
+			export_2.prop(exportData, "export_colors")
+			export_2.separator()
+
+			export_main.separator()
+
+		elif exp.gltf_menu_options == 'Animation':
+			export_main = filepresets_box.row(align=True)
+			export_main.separator()
+
+			export_1 = export_main.column(align=True)
+			export_1.prop(exportData, "export_frame_range")
+			export_1.prop(exportData, "export_move_keyframes")
+			export_1.prop(exportData, "export_force_sampling")
+			export_1.prop(exportData, "export_current_frame")
+			export_1.prop(exportData, "export_skins")
+			export_1.prop(exportData, "export_bake_skins")
+			export_1.separator()
+
+			export_main.separator()
+			export_main.separator()
+			export_main.separator()
+
+			export_2 = export_main.column(align=True)
+			export_2.prop(exportData, "export_morph")
+			export_2.prop(exportData, "export_morph_normal")
+			export_2.prop(exportData, "export_morph_tangent")
+			export_2.separator()
+
+			export_main.separator()
+
+		elif exp.gltf_menu_options == 'Experimental':
+			export_main = filepresets_box.row(align=True)
+			export_main.separator()
+
+			export_1 = export_main.column(align=True)
+			export_1.prop(exportData, "export_lights_pbr")
+			export_1.prop(exportData, "export_lights_cmn")
+			export_1.prop(exportData, "export_common")
+			export_1.prop(exportData, "export_displacement")
+			export_1.separator()
+
+			export_main.separator()
+			export_main.separator()
+			export_main.separator()
+
+			export_2 = export_main.column(align=True)
 			export_2.separator()
 
 			export_main.separator()
 		
-	def export(self, gltfModule, exportPreset, exportPass, filePath, fileName):
+	def export(self, context, exportPreset, exportPass, filePath, fileName):
+
 		"""
-		Calls the GLTF Export API to make the export happen
+		Calls the GLTF Export module to make the export happen.
 		"""
 
-		settings = {
-			'gltf_export_binary': False,
-			'buffers_embed_data': True,
-			'buffers_combine_data': False,
-			'nodes_export_hidden': False,
-			'nodes_selected_only': True,
-			'blocks_prune_unused': self.blocks_prune_unused,
-			'meshes_apply_modifiers': True,
-			'meshes_interleave_vertex_data': self.mesh_interleave_vertex_data,
-			'images_data_storage': self.images_data_storage,
-			'asset_version': '2.0',
-			'asset_profile': 'WEB',
-			'images_allow_srgb': False,
-			'extension_exporters': [],
-			'animations_object_export': 'ACTIVE',
-			'animations_armature_export': 'ELIGIBLE',
-		}
+		export_settings = {}
 
-		# set the output directory
-		settings['gltf_output_dir'] = filePath
+		export_settings['gltf_filepath'] = filePath + fileName + ".gltf"
+		export_settings['gltf_filedirectory'] = os.path.dirname(export_settings['gltf_filepath']) + '/'
 
-		# set the output name
-		settings['gltf_name'] = os.path.splitext(filePath)[0]
+		export_settings['gltf_format'] = 'ASCII'
+		export_settings['gltf_copyright'] = self.export_copyright
+		export_settings['gltf_embed_buffers'] = self.export_embed_buffers
+		export_settings['gltf_embed_images'] = self.export_embed_images
+		export_settings['gltf_strip'] = self.export_strip
+		export_settings['gltf_indices'] = self.export_indices
+		export_settings['gltf_force_indices'] = self.export_force_indices
+		export_settings['gltf_texcoords'] = self.export_texcoords
+		export_settings['gltf_normals'] = self.export_normals
+		export_settings['gltf_tangents'] = self.export_tangents and self.export_normals
+		export_settings['gltf_materials'] = self.export_materials
+		export_settings['gltf_colors'] = self.export_colors
 
-		# Calculate a global transform matrix to apply to a root node
-		settings['nodes_global_matrix'] = axis_conversion(
-			to_forward=self.axis_forward,
-			to_up=self.axis_up
-		).to_4x4()
+		# FIXME : Re-introduce once the exporter-agnostic filtering tools are added
+		export_settings['gltf_cameras'] = False
 
-
-
-		# filter data according to settings
-		data = {
-			'actions': list(bpy.data.actions) if exportPass.export_animation else [],
-			'cameras': list(bpy.data.cameras) if self.enable_cameras else [],
-			'lamps': list(bpy.data.lamps) if self.enable_lamps else [],
-			'images': list(bpy.data.images) if self.enable_textures else [],
-			'materials': list(bpy.data.materials) if self.enable_materials else [],
-			'meshes': list(bpy.data.meshes) if self.enable_meshes else [],
-			'objects': list(bpy.context.selected_objects),
-			'scenes': list(bpy.data.scenes),
-			'textures': list(bpy.data.textures) if self.enable_textures else [],
-		}
-
-		# Remove objects that point to disabled data
-		if not self.enable_cameras:
-			data['objects'] = [
-				obj for obj in data['objects']
-				if not isinstance(obj.data, bpy.types.Camera)
-			]
-
-		if not self.enable_lamps:
-			data['objects'] = [
-				obj for obj in data['objects']
-				if not isinstance(obj.data, bpy.types.Lamp)
-			]
-
-		if not self.enable_meshes:
-			data['objects'] = [
-				obj for obj in data['objects']
-				if not isinstance(obj.data, bpy.types.Mesh)
-			]
-
-		# if not settings['nodes_export_hidden']:
-		#     data = visible_only(data)
-
-		# if settings['nodes_selected_only']:
-		#     data = selected_only(data)
-
-		#if settings['blocks_prune_unused']:
-		#	data = used_only(data)
-
-		# for ext_exporter in self.ext_exporters:
-		#     ext_exporter.settings = getattr(
-		#         self,
-		#         'settings_' + ext_exporter.ext_meta['name'],
-		#         None
-		#     )
-
-		# def is_builtin_mat_ext(prop_name):
-		#     if Version(self.asset_version) < Version('2.0'):
-		#         return prop_name == 'KHR_technique_webgl'
-		#     return False
-
-		# settings['extension_exporters'] = [
-		#     self.ext_prop_to_exporter_map[prop.name]
-		#     for prop in self.extension_props
-		#     if prop.enable and not (self.materials_disable and is_builtin_mat_ext(prop.name))
-		# ]
-
-		gltf = gltfModule.export_gltf(data, settings)
-
-		if self.gltf_export_binary:
-			with open(filePath + fileName + ".glb", 'wb') as fout:
-			    fout.write(gltf)
+		if self.export_cameras:
+			export_settings['gltf_camera_infinite'] = self.export_camera_infinite
 		else:
-			with open(filePath + fileName + ".gltf", 'w') as fout:
-				# Figure out indentation
-				indent = 4 if self.pretty_print else None
+			export_settings['gltf_camera_infinite'] = False
 
-				# Dump the JSON
-				json.dump(gltf, fout, indent=indent, sort_keys=True, check_circular=False)
+			export_settings['gltf_selected'] = True
 
-				if self.pretty_print:
-					# Write a newline to the end of the file
-					fout.write('\n')
+		# FIXME: Need to work out if layers refers to "export all objects regardless of layer", or "store layer metadata".
+		export_settings['gltf_layers'] = True
+		export_settings['gltf_extras'] = True
+		export_settings['gltf_yup'] = self.export_y_up
+		export_settings['gltf_apply'] = exportPass.apply_modifiers
+		export_settings['gltf_animations'] = exportPass.export_animation
+
+
+		if exportPass.export_animation:
+			export_settings['gltf_current_frame'] = False
+			export_settings['gltf_frame_range'] = self.export_frame_range
+			export_settings['gltf_move_keyframes'] = self.export_move_keyframes
+			export_settings['gltf_force_sampling'] = self.export_force_sampling
+		else:
+			export_settings['gltf_current_frame'] = self.export_current_frame
+			export_settings['gltf_frame_range'] = False
+			export_settings['gltf_move_keyframes'] = False
+			export_settings['gltf_force_sampling'] = False
+
+		export_settings['gltf_skins'] = self.export_skins
+
+
+		if self.export_skins:
+			export_settings['gltf_bake_skins'] = self.export_bake_skins
+		else:
+			export_settings['gltf_bake_skins'] = False
+			export_settings['gltf_morph'] = self.export_morph
+
+		if self.export_morph:
+			export_settings['gltf_morph_normal'] = self.export_morph_normal
+		else:
+			export_settings['gltf_morph_normal'] = False
+
+		if self.export_morph and self.export_morph_normal:
+			export_settings['gltf_morph_tangent'] = self.export_morph_tangent
+		else:
+			export_settings['gltf_morph_tangent'] = False
+
+
+		export_settings['gltf_lights_pbr'] = self.export_lights_pbr
+		export_settings['gltf_lights_cmn'] = self.export_lights_cmn
+		export_settings['gltf_common'] = self.export_common
+		export_settings['gltf_displacement'] = self.export_displacement
+
+
+		export_settings['gltf_uri'] = []
+		export_settings['gltf_binary'] = bytearray()
+		export_settings['gltf_binaryfilename'] = os.path.splitext(os.path.basename(filePath + fileName))[0] + '.bin'
+
+		gltf2_export.save(self, context, export_settings)

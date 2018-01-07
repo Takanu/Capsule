@@ -16,6 +16,11 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+
+# io_scene_gltf2 module taken from the Khronos official GLTF2 exporter for Blender, licensed as Apache 2.0
+# https://github.com/KhronosGroup/glTF-Blender-Exporter
+
+
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
@@ -45,11 +50,32 @@ from . import ui_operators
 from . import update
 from . import update_groups
 
-from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
-from bpy.types import AddonPreferences, PropertyGroup
+from bpy.props import (
+    IntProperty, 
+    FloatProperty, 
+    BoolProperty, 
+    StringProperty, 
+    PointerProperty, 
+    CollectionProperty, 
+    EnumProperty
+    )
+
+from bpy.types import (
+    AddonPreferences, 
+    PropertyGroup,
+    )
+
 from bpy.app.handlers import persistent
 
-from .export_properties import CAP_ExportTag, CAP_ExportPassTag, CAP_ExportPass, CAP_ExportPreset, CAP_LocationDefault, CAP_ExportPresets
+from .export_properties import (
+    CAP_ExportTag, 
+    CAP_ExportPassTag, 
+    CAP_ExportPass, 
+    CAP_ExportPreset, 
+    CAP_LocationDefault, 
+    CAP_ExportPresets,
+    )
+
 from .export_formats import CAP_ExportFormat
 
 
@@ -140,7 +166,7 @@ class CAP_AddonPreferences(AddonPreferences):
     # or potentially for other operations.
     object_multi_edit = BoolProperty(
         name="Group Multi-Edit Mode",
-        description="Allows you to edit export settings for all objects that the currently selected.  Turning this option off will let you edit the currently selected object on the list.",
+        description="Allows you to edit export settings for all objects that the currently selected.  \n\nTurning this option off will let you edit the currently selected object on the list.",
         default=True,
         update=UpdateObjectSelectMode
         )
@@ -150,7 +176,7 @@ class CAP_AddonPreferences(AddonPreferences):
     # or potentially for other operations.
     group_multi_edit = BoolProperty(
         name="Group Multi-Edit Mode",
-        description="Allows you to edit export settings for all groups that the currently selected objects belong to.  WARNING - One object can belong to multiple groups, please be careful when using this mode.",
+        description="Allows you to edit export settings for all groups that the currently selected objects belong to.  \n\nWARNING - One object can belong to multiple groups, please be careful when using this mode.",
         default=False,
         update=UpdateGroupSelectMode
         )
@@ -172,7 +198,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
     substitute_directories = BoolProperty(
         name="Substitute Invalid Folder Characters",
-        description="If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  If unticked, the plugin will prompt you with an error if your directories contain invalid characters.",
+        description="If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  \n\nIf unticked, the plugin will prompt you with an error if your directories contain invalid characters.",
         default=True
         )
 

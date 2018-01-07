@@ -55,10 +55,7 @@ class CAP_ExportAssets(Operator):
             
 
             elif self.exportPreset.format_type == 'GLTF':
-
-                # Obtain the module and check that we can export to it.
-                mod = sys.modules[self.GLTFModuleName]
-                self.exportPreset.data_gltf.export(mod.blendergltf, self.exportPreset, self.exportPass, individualFilePath)
+                self.exportPreset.data_gltf.export(context, self.exportPreset, self.exportPass, individualFilePath)
 
 
             # tick up the exports and move the object back.
@@ -67,7 +64,7 @@ class CAP_ExportAssets(Operator):
             object_transform.MoveObject(item, context, tempLoc)
 
 
-    def PrepareExportCombined(self, targets, path, exportName, suffix):
+    def PrepareExportCombined(self, context, targets, path, exportName, suffix):
         """
         Exports a selection of objects into a single file.
         """
@@ -97,11 +94,7 @@ class CAP_ExportAssets(Operator):
                 self.exportPreset.data_obj.export(self.exportPreset, self.exportPass, objectFilePath)
 
         elif self.exportPreset.format_type == 'GLTF':
-
-                # Obtain the module and check that we can export to it.
-                # The glTF exporter just needs the initial path with the export name separately.
-                mod = sys.modules[self.GLTFModuleName]
-                self.exportPreset.data_gltf.export(mod.blendergltf, self.exportPreset, self.exportPass, path, exportName + suffix)
+                self.exportPreset.data_gltf.export(context, self.exportPreset, self.exportPass, path, exportName + suffix)
 
         self.exportedFiles += 1
 
@@ -761,23 +754,25 @@ class CAP_ExportAssets(Operator):
                     return statement
 
         # Check that GLTF is installed if needed.
-        if gltfRequired == True:
-            print(bpy.context.user_preferences.addons.keys())
-            foundName = False
-            moduleName = ""
+        # Currently bundled with the plugin, leaving for later if needed
 
-            for mod_name in bpy.context.user_preferences.addons.keys():
-                print(mod_name)
+        # if gltfRequired == True:
+        #     print(bpy.context.user_preferences.addons.keys())
+        #     foundName = False
+        #     moduleName = ""
 
-                if "blendergltf" in mod_name:
-                    foundName = True
-                    self.GLTFModuleName = mod_name
-                    continue
+        #     for mod_name in bpy.context.user_preferences.addons.keys():
+        #         print(mod_name)
 
-            if foundName == False:
-                statement =  "In order to use the GLTF format, you need to install the plugin from GitHub.  View the Capsule GitHub for more info!"
-                select_utils.FocusObject(object)
-                return statement
+        #         if "blendergltf" in mod_name:
+        #             foundName = True
+        #             self.GLTFModuleName = mod_name
+        #             continue
+
+        #     if foundName == False:
+        #         statement =  "In order to use the GLTF format, you need to install the plugin from GitHub.  View the Capsule GitHub for more info!"
+        #         select_utils.FocusObject(object)
+        #         return statement
 
 
         return None
@@ -1092,7 +1087,7 @@ class CAP_ExportAssets(Operator):
                             self.PrepareExportIndividual(context, finalExportList, path, suffix)
 
                         else:
-                            self.PrepareExportCombined(finalExportList, path, object_name, suffix)
+                            self.PrepareExportCombined(context, finalExportList, path, object_name, suffix)
 
 
                     # /////////// - DELETE/RESTORE - ///////////////////
@@ -1388,7 +1383,7 @@ class CAP_ExportAssets(Operator):
                                 self.PrepareExportIndividual(context, finalExportList, path, suffix)
 
                             else:
-                                self.PrepareExportCombined(finalExportList, path, group.name, suffix)
+                                self.PrepareExportCombined(context, finalExportList, path, group.name, suffix)
 
                     bpy.ops.object.select_all(action='DESELECT')
 

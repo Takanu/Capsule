@@ -1,4 +1,6 @@
+
 import bpy
+from .select import FocusObject
 
 def DuplicateObject(target):
     """

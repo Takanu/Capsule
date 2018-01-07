@@ -165,7 +165,7 @@ class CAP_ExportPass(PropertyGroup):
 
     use_tags_on_objects = BoolProperty(
         name="Use Tags for Objects",
-        description="If enabled, active tag filters will also apply to any single-object exports in this pass, as well as those in the scene that share the same name - which will also be exported with it.",
+        description="If enabled, active tag filters will also apply to any single-object exports in this pass.\n\nAny other objects with matching names and valid, enabled tags will then be included in the export for this pass.",
         default=False
         )
 
@@ -193,13 +193,13 @@ class CAP_ExportPreset(PropertyGroup):
 
     use_blend_directory = BoolProperty(
         name="Add Blend File Directory",
-        description="If enabled, a folder will be created inside the currently defined file path, where all exports from this blend file will be placed into.  Useful for exporting multiple .blend file contents to the same destination.",
+        description="If enabled, a folder will be created inside the currently defined file path, where all exports from this blend file will be placed into.  \n\nUseful for exporting multiple .blend file contents to the same location.",
         default=False
         )
 
     use_sub_directory = BoolProperty(
         name="Add Object Directory",
-        description="If enabled, a folder will be created inside the currently defined file path (and inside the Blend Folder if enabled), for every object or group created, where it's export results will be placed into.  Useful for complex object or group exports, with multiple passes.",
+        description="If enabled, a folder will be created inside the currently defined file path (and inside the Blend Folder if enabled), for every object or group created, where it's export results will be placed into.  \n\nUseful for organising complex object or group exports, with multiple passes.",
         default=False
         )
 
@@ -208,15 +208,16 @@ class CAP_ExportPreset(PropertyGroup):
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
         )
 
+    # Currently disabled until further notice due to reliability issues.
     reset_rotation = BoolProperty(
         name="Reset Rotation",
-        description="If enabled, the plugin will reset the rotation of objects and groups when exported.  For groups, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a group to be reset.  Currently this doesn't work with rotation-influencing constraints, and will be disabled on Objects and Groups that use them.",
+        description="If enabled, the plugin will reset the rotation of objects and groups when exported.  For groups, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a group to be reset.  \n\nCurrently this doesn't work with rotation-influencing constraints, and will be disabled on Objects and Groups that use them.",
         default=False
         )
 
     preserve_armature_constraints = BoolProperty(
         name="Preserve Armature Constraints",
-        description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  Turn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
+        description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  \n\nTurn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
         default=True
         )
 
@@ -270,6 +271,9 @@ class CAP_ExportPresets(PropertyGroup):
     A property group passed onto the "default datablock", the empty object created in a blend file to store all the available export presets.
     """
 
+    # the version of Capsule this datablock was created with
+    version_number = FloatProperty(default=1.10)
+
     # the available file presets
     file_presets = CollectionProperty(type=CAP_ExportPreset)
 
@@ -313,6 +317,8 @@ class CAP_ExportPresets(PropertyGroup):
         items=(
         ('Export', 'Export', 'A tab containing general export paramaters.'),
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
-        ('Object', 'Object', 'A tab containing options for how object geometry is interpreted in the export.'),
+        ('Attributes', 'Attributes', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Animation', 'Animation', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Experimental', 'Experimental', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
         ),
     )

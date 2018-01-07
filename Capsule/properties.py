@@ -252,7 +252,7 @@ class CAP_Object_Preferences(PropertyGroup):
 
     use_scene_origin = BoolProperty(
         name="Use Scene Origin",
-        description="If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.",
+        description="If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly without this feature, use this feature <3",
         default=False,
         update=CAP_Update_SceneOrigin
         )
@@ -291,7 +291,7 @@ class CAP_Group_Preferences(PropertyGroup):
 
     root_object = StringProperty(
         name="Origin Object",
-        description="Defines the origin point of the exported group object.  If not defined, the origin will be the scene center point.",
+        description="Defines the origin point of the exported group object.  If not defined, the origin will be the scene center point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly with a defined root object, leave it blank <3",
         default="",
         update=CAP_Update_GroupRootObject
         )
