@@ -21,7 +21,7 @@ F E A T U R E S
 
 I N S T A L L A T I O N
 -----------------------
-- ZIP the Capsule folder
+- ZIP the folder named "Capsule".
 
 - Under Blender’s User Preferences Menu, in the Add-ons section, click, “Install From File”, and select the ZIP file.
 
