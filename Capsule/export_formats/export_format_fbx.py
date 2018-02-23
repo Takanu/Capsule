@@ -386,7 +386,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		axis_up=self.axis_up,
 		bake_space_transform=self.bake_space_transform,
 		object_types=self.export_types,
-		use_mesh_modifiers=False,
+		use_mesh_modifiers=exportPass.apply_modifiers,
 		mesh_smooth_type=self.normals,
 		use_mesh_edges=self.loose_edges,
 		use_tspace=self.tangent_space,
