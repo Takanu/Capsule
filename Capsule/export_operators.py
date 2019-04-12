@@ -240,13 +240,20 @@ class CAPSULE_OT_ExportAssets(Operator):
         mode = bpy.context.mode
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        # Ensure all layers are visible
-        self.layersBackup = []
-        for layer in context.scene.layers:
-            layerVisibility = layer
-            self.layersBackup.append(layerVisibility)
 
-        context.scene.layers = (True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True)
+
+        # not sure if I need this anymore with view layers, test and report back.
+        # ======================
+        # Ensure all layers are visible
+
+        # self.layersBackup = []
+        # for layer in context.scene.layers:
+        #     layerVisibility = layer
+        #     self.layersBackup.append(layerVisibility)
+
+        # context.scene.layers = (True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True)
+
+        # ======================
 
         # Record object visibility
         self.hiddenList = []
@@ -372,14 +379,17 @@ class CAPSULE_OT_ExportAssets(Operator):
             hide = self.hiddenList.pop()
             hide_select = self.selectList.pop()
 
-            item.hide = hide
+            item.hide_viewport = hide
             item.hide_select = hide_select
 
-        # Turn off all other layers
-        i = 0
-        while i < 20:
-            context.scene.layers[i] = self.layersBackup[i]
-            i += 1
+        # Not sure if I need this anymore with view layers.  Test and report back.
+        # ======================
+        # # Turn off all other layers
+        # i = 0
+        # while i < 20:
+        #     context.scene.layers[i] = self.layersBackup[i]
+        #     i += 1
+        
 
         # If an object has locked Location/Rotation/Scale values, store them and turn it on
         while len(self.translateList) != 0:

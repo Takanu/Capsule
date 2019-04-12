@@ -4,9 +4,9 @@ def FocusObject(target):
     """
     Focuses the given target in the 3D View while deselecting all other objects.
     """
-    # If the target isnt visible, MAKE IT FUCKING VISIBLE.
-    if target.hide is True:
-        target.hide = False
+    # If the target isnt visible, MAKE IT VISIBLE.
+    if target.hide_viewport is True:
+        target.hide_viewport = False
 
     if target.hide_select is True:
         target.hide_select = False
@@ -34,22 +34,22 @@ def SelectObject(target):
     """
     Selects the given target in the 3D View.  This does not make the object active.
     """
-    # If the target isnt visible, MAKE IT FUCKING VISIBLE.
-    if target.hide is True:
-        target.hide = False
+    # If the target isnt visible, MAKE IT VISIBLE.
+    if target.hide_viewport is True:
+        target.hide_viewport = False
 
     if target.hide_select is True:
         target.hide_select = False
 
-    target.select = True
+    target.select_set(true)
 
 def ActivateObject(target):
     """
     Makes the given object the one that is currently active in the 3D view.
     """
-    # If the target isnt visible, MAKE IT FUCKING VISIBLE.
-    if target.hide is True:
-        target.hide = False
+    # If the target isnt visible, MAKE IT VISIBLE.
+    if target.hide_viewport is True:
+        target.hide_viewport = False
 
     if target.hide_select is True:
         target.hide_select = False

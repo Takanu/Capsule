@@ -551,7 +551,7 @@ class CAPSULE_OT_Reset_Defaults(Operator):
 
         defaultDatablock = bpy.context.scene.objects.active
         defaultDatablock.name = addon_prefs.default_datablock
-        defaultDatablock.hide = True
+        defaultDatablock.hide_viewport = True
         defaultDatablock.hide_render = True
         defaultDatablock.hide_select = True
 
@@ -699,7 +699,7 @@ class CAPSULE_OT_Create_ExportData(Operator):
 
         defaultDatablock = bpy.context.scene.objects.active
         defaultDatablock.name = addon_prefs.default_datablock
-        defaultDatablock.hide = True
+        defaultDatablock.hide_viewport = True
         defaultDatablock.hide_render = True
         defaultDatablock.hide_select = True
         defaultDatablock.CAPExp.is_storage_object = True
