@@ -25,14 +25,13 @@ def CAP_Update_TagName(self, context):
 def DrawAnimationWarning(self, context):
         layout = self.layout
         layout.label("Hey!  The animation feature is currently experimental, and may result in")
-        layout.label("objects being repositioned after exporting, and in the FBX file.")
+        layout.label("objects being repositioned after exporting in the scene and in the FBX file.")
         layout.separator()
         layout.label("The animation features should work fine if you're exporting armature animations,")
         layout.label("any other kinds of object animations are unlikely to export correctly, and if")
-        layout.label("attempted, you may find your scene translated slightly.  If this happens though,")
+        layout.label("attempted you may find your scene translated slightly.  If this happens though")
         layout.label("simply use the undo tool.")
         layout.separator()
-        layout.label("Hopefully i'll have this fully functional in the next version :)")
 
 
 def CAP_Update_AnimationWarning(self, context):
@@ -43,18 +42,18 @@ def CAP_Update_AnimationWarning(self, context):
 class CAP_ExportTag(PropertyGroup):
     # The main Export Tag collection property, used for storing the actual tags used in an Export Preset
 
-    name = StringProperty(
+    name: StringProperty(
         name="Tag Name",
         description="The name of the tag.",
         update=CAP_Update_TagName
         )
 
-    name_filter = StringProperty(
+    name_filter: StringProperty(
         name="Tag",
         description="The text you wish to use as a filter, when sorting through object names."
         )
 
-    name_filter_type = EnumProperty(
+    name_filter_type: EnumProperty(
         name="Tag Type",
         description="Where the name filter is being looked for.",
         items=(
@@ -62,7 +61,7 @@ class CAP_ExportTag(PropertyGroup):
         ('2', 'Prefix', ''),),
         )
 
-    object_type = EnumProperty(
+    object_type: EnumProperty(
         name="Object Type",
         items=(
             ('1', 'All', 'Applies to all object types.'),
@@ -82,30 +81,30 @@ class CAP_ExportTag(PropertyGroup):
         )
 
     # Special preferences for special export presets.
-    x_user_deletable = BoolProperty(default=True)
-    x_user_editable_type = BoolProperty(default=True)
+    x_user_deletable: BoolProperty(default=True)
+    x_user_editable_type: BoolProperty(default=True)
 
 
 class CAP_ExportPassTag(PropertyGroup):
     # The Export Tag reference, used inside Export Passes to list the available tags.
     # Also specified for that pass, whether or not it is to be used.
 
-    name = StringProperty(
+    name: StringProperty(
         name="Tag Name",
         description="The name of the tag.",
         default=""
         )
-    prev_name = StringProperty(
+    prev_name: StringProperty(
         name="Previous Tag Name",
         description="A backup tag name designed to prevent editing of tag names when viewing them. (Internal Only)",
         default=""
         )
-    index = IntProperty(
+    index: IntProperty(
         name="Tag Index",
         description="Where the tag is located in the Export Preset, so it can be looked up later (Internal Only)",
         default=0
         )
-    use_tag = BoolProperty(
+    use_tag: BoolProperty(
         name="",
         description="Determines whether or not the tag gets used in the pass.",
         default=False
@@ -114,56 +113,56 @@ class CAP_ExportPassTag(PropertyGroup):
 class CAP_ExportPass(PropertyGroup):
     # Used to define properties for a single export pass.
 
-    name = StringProperty(
+    name: StringProperty(
         name="Pass Name",
         description="The name of the selected pass."
         )
 
-    enable = BoolProperty(
+    enable: BoolProperty(
         name="Enable Pass",
         description="Lets you enable or disable the pass for use when exporting objects.",
         default=True
     )
 
-    file_suffix = StringProperty(
+    file_suffix: StringProperty(
         name="File Suffix",
         description="An optional string that if used, will be appended to all the names of files produced through this pass."
         )
-    sub_directory = StringProperty(
+    sub_directory: StringProperty(
         name="Sub-Directory",
         description="If enabled, a folder will be created inside the currently defined file path (and any other defined folders for the File Preset), where all exports from this pass will be placed into."
         )
 
-    tags = CollectionProperty(type=CAP_ExportPassTag)
-    tags_index = IntProperty(default=0)
+    tags: CollectionProperty(type=CAP_ExportPassTag)
+    tags_index: IntProperty(default=0)
 
-    export_individual = BoolProperty(
+    export_individual: BoolProperty(
         name="Export Individual",
         description="If enabled, the pass will export every individual object available in the pass into individual files, rather than a single file.",
         default=False
         )
 
-    export_animation = BoolProperty(
+    export_animation: BoolProperty(
         name="Export Animation",
         description="(EXPERIMENTAL) If ticked, animations found in objects or groups in this pass, will be exported.",
         default=False,
         update=CAP_Update_AnimationWarning
         )
-    export_animation_prev = BoolProperty(default=False)
+    export_animation_prev: BoolProperty(default=False)
 
-    apply_modifiers = BoolProperty(
+    apply_modifiers: BoolProperty(
         name="Apply Modifiers",
         description="If enabled, all modifiers on every object in the pass will be applied.",
         default=False
         )
 
-    triangulate = BoolProperty(
+    triangulate: BoolProperty(
         name="Triangulate Export",
         description="If enabled, all objects in the pass will be triangulated automatically using optimal triangulation settings, unless a Triangulation modifier is already present.",
         default=False
         )
 
-    use_tags_on_objects = BoolProperty(
+    use_tags_on_objects: BoolProperty(
         name="Use Tags for Objects",
         description="If enabled, active tag filters will also apply to any single-object exports in this pass.\n\nAny other objects with matching names and valid, enabled tags will then be included in the export for this pass.",
         default=False
@@ -174,60 +173,60 @@ class CAP_ExportPreset(PropertyGroup):
     # Export presets include Capsule-specific features as well as .FBX exporter features
     # and any defined Passes and Tags.
 
-    name = StringProperty(
+    name: StringProperty(
         name = "Preset Name",
         description="The name of the export preset.",
         default=""
         )
 
-    instance_id = IntProperty(
+    instance_id: IntProperty(
         name = "Instance ID",
         description="INTERNAL ONLY - Unique ID used to pair with format data, that holds the full export settings for the chosen file type."
         )
 
-    description = StringProperty(
+    description: StringProperty(
         name = "Description",
         description="(Internal Use Only) TBA",
         default=""
         )
 
-    use_blend_directory = BoolProperty(
+    use_blend_directory: BoolProperty(
         name="Add Blend File Directory",
         description="If enabled, a folder will be created inside the currently defined file path, where all exports from this blend file will be placed into.  \n\nUseful for exporting multiple .blend file contents to the same location.",
         default=False
         )
 
-    use_sub_directory = BoolProperty(
+    use_sub_directory: BoolProperty(
         name="Add Object Directory",
         description="If enabled, a folder will be created inside the currently defined file path (and inside the Blend Folder if enabled), for every object or group created, where it's export results will be placed into.  \n\nUseful for organising complex object or group exports, with multiple passes.",
         default=False
         )
 
-    filter_render = BoolProperty(
+    filter_render: BoolProperty(
         name="Filter by Rendering",
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
         )
 
     # Currently disabled until further notice due to reliability issues.
-    reset_rotation = BoolProperty(
+    reset_rotation: BoolProperty(
         name="Reset Rotation",
         description="If enabled, the plugin will reset the rotation of objects and groups when exported.  For groups, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a group to be reset.  \n\nCurrently this doesn't work with rotation-influencing constraints, and will be disabled on Objects and Groups that use them.",
         default=False
         )
 
-    preserve_armature_constraints = BoolProperty(
+    preserve_armature_constraints: BoolProperty(
         name="Preserve Armature Constraints",
         description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  \n\nTurn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
         default=True
         )
 
 
-    passes = CollectionProperty(type=CAP_ExportPass)
-    passes_index = IntProperty(default=0)
-    tags = CollectionProperty(type=CAP_ExportTag)
-    tags_index = IntProperty(default=0)
+    passes: CollectionProperty(type=CAP_ExportPass)
+    passes_index: IntProperty(default=0)
+    tags: CollectionProperty(type=CAP_ExportTag)
+    tags_index: IntProperty(default=0)
 
-    format_type = EnumProperty(
+    format_type: EnumProperty(
         name="Format Type",
         items=
             (
@@ -239,27 +238,27 @@ class CAP_ExportPreset(PropertyGroup):
         )
 
     # the data stored for FBX presets.
-    data_fbx = PointerProperty(type=CAP_FormatData_FBX)
+    data_fbx: PointerProperty(type=CAP_FormatData_FBX)
 
     # the data stored for OBJ presets.
-    data_obj = PointerProperty(type=CAP_FormatData_OBJ)
+    data_obj: PointerProperty(type=CAP_FormatData_OBJ)
 
     # the data stored for GLTF presets.
-    data_gltf = PointerProperty(type=CAP_FormatData_GLTF)
+    data_gltf: PointerProperty(type=CAP_FormatData_GLTF)
 
     # A special system variable that defines whether it can be deleted from the Global Presets list.
-    x_global_user_deletable = BoolProperty(default=True)
+    x_global_user_deletable: BoolProperty(default=True)
 
 
 class CAP_LocationDefault(PropertyGroup):
     # Defines a single location default, assigned to specific objects to define where they should be exported to.
 
-    name = StringProperty(
+    name: StringProperty(
         name="",
         description="The name of the file path default."
         )
 
-    path = StringProperty(name="",
+    path: StringProperty(name="",
         description="The file path to export the object to.",
         default="",
         subtype="FILE_PATH"
@@ -272,24 +271,24 @@ class CAP_ExportPresets(PropertyGroup):
     """
 
     # the version of Capsule this datablock was created with
-    version_number = FloatProperty(default=1.10)
+    version_number: FloatProperty(default=1.10)
 
     # the available file presets
-    file_presets = CollectionProperty(type=CAP_ExportPreset)
+    file_presets: CollectionProperty(type=CAP_ExportPreset)
 
     # the preset selected on the list panel, when viewed from the AddonPreferences window.
-    file_presets_listindex = IntProperty(default=0)
+    file_presets_listindex: IntProperty(default=0)
 
     # if true, this object is the empty created for the purposes of storing preset data.
-    is_storage_object = BoolProperty(default=False)
+    is_storage_object: BoolProperty(default=False)
 
     # the available location presets created by the user
-    location_presets = CollectionProperty(type=CAP_LocationDefault)
+    location_presets: CollectionProperty(type=CAP_LocationDefault)
 
     # the location selected on the Locations panel, inside the 3D view
-    location_presets_listindex = IntProperty(default=0)
+    location_presets_listindex: IntProperty(default=0)
 
-    fbx_menu_options = EnumProperty(
+    fbx_menu_options: EnumProperty(
         name="Export Options",
         description="",
         items=(
@@ -301,7 +300,7 @@ class CAP_ExportPresets(PropertyGroup):
         ),
     )
 
-    obj_menu_options = EnumProperty(
+    obj_menu_options: EnumProperty(
         name="Export Options",
         description="",
         items=(
@@ -311,7 +310,7 @@ class CAP_ExportPresets(PropertyGroup):
         ),
     )
 
-    gltf_menu_options = EnumProperty(
+    gltf_menu_options: EnumProperty(
         name="Export Options",
         description="",
         items=(

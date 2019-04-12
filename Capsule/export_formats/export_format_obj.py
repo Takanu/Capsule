@@ -12,25 +12,25 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 	# export
 
-	use_blen_objects = BoolProperty(
+	use_blen_objects: BoolProperty(
 		name="Export Objects as OBJ Objects",
 		description="Exports an object as an OBJ object.  This along with Export Objects as OBJ Groups doesn't really matter to Blender, but may matter to the program you're exporting to.",
 		default=False,
 		)
 
-	group_by_group = BoolProperty(
+	group_by_group: BoolProperty(
 		name="Export Objects as OBJ Groups",
 		description="Exports an object as an OBJ group.  This along with Export Objects as OBJ Objects doesn't really matter to Blender, but may matter to the program you're exporting to.",
 		default=False,
 		)
 
-	group_by_material = BoolProperty(
+	group_by_material: BoolProperty(
 		name="Create OBJ Object by Material",
 		description="Exports objects into OBJ groups by the material assigned to them.",
 		default=False,
 		)
 
-	map_vertex_groups = BoolProperty(
+	map_vertex_groups: BoolProperty(
 		name="Map Vertex Groups to Polygroups",
 		description="The exporter will attempt to map your defined vertex groups into OBJ Polygroups, which is designed to group faces.  If you have any single vertices defined in a vertex group, you will still lose them when using this feature.",
 		default=False,
@@ -38,7 +38,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 	# transform
 
-	global_scale = FloatProperty(
+	global_scale: FloatProperty(
 		name="Global Scale",
 		description="The exported scale of the objects.",
 		default=1.0,
@@ -46,7 +46,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		soft_max=1000.0,
 		)
 
-	axis_up = EnumProperty(
+	axis_up: EnumProperty(
 		name="Axis Up",
 		description="What the Up Axis will be defined as when the model is exported.",
 		items=(
@@ -61,7 +61,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 
 
-	axis_forward = EnumProperty(
+	axis_forward: EnumProperty(
 		name="Axis Forward",
 		description="What the Forward Axis will be defined as when the model is exported.",
 		items=(
@@ -76,13 +76,13 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 	# mesh
 
-	use_smooth_groups = BoolProperty(
+	use_smooth_groups: BoolProperty(
 		name="Use Smoothing Groups",
 		description="Writes sharp edges as basic smoothing groups.",
 		default=False,
 		)
 
-	use_smooth_groups_bitflags = BoolProperty(
+	use_smooth_groups_bitflags: BoolProperty(
 		name="Use Bitflag Smoothing",
 		description="Writes smoothing groups IDs as bit flags (this produces at most 32 different smooth groups, usually much less).",
 		default=False,
@@ -90,31 +90,31 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 
 
-	use_normals = BoolProperty(
+	use_normals: BoolProperty(
 		name="Export Normals",
 		description="Export one normal per vertex and per face, to represent flat faces and sharp edges",
 		default=False,
 		)
 
-	use_materials = BoolProperty(
+	use_materials: BoolProperty(
 		name="Export Materials",
 		description="Export material information as a separate .MTL file.",
 		default=False,
 		)
 
-	use_uvs = BoolProperty(
+	use_uvs: BoolProperty(
 		name="Export UVs",
 		description="Same as ‘Smooth Groups’, but generate smooth groups IDs as bitflags (produces at most 32 different smooth groups, usually much less).",
 		default=False,
 		)
 
-	use_nurbs = BoolProperty(
+	use_nurbs: BoolProperty(
 		name="Preserve NURBS",
 		description="Write nurbs curves as OBJ nurbs rather than converting them to geometry.",
 		default=False,
 		)
 
-	keep_vertex_order = BoolProperty(
+	keep_vertex_order: BoolProperty(
 		name="Preserve Vertex Order",
 		description="Preserves the vertex order of your models when exporting.",
 		default=False,

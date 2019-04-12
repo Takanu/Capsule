@@ -119,7 +119,7 @@ def CAP_Update_FocusObject(self, context):
                                         'screen': bpy.context.screen, 
                                         'window': bpy.context.window}
 
-                            bpy.ops.view3d.view_selected(override)
+                            bpy.ops.view3d.view_selected()
     return None
 
 

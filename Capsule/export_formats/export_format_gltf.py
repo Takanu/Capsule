@@ -25,33 +25,31 @@ from bpy_extras.io_utils import (
 	axis_conversion,
 )
 
-from ..io_scene_gltf2 import gltf2_export
-
 class CAP_FormatData_GLTF(PropertyGroup):
 
-	instance_id = IntProperty(default=-1)
+	instance_id: IntProperty(default=-1)
 
 	# export
 
-	export_copyright = StringProperty(
+	export_copyright: StringProperty(
 		name='Copyright Info',
 		description='',
 		default=''
 		)
 
-	export_embed_buffers = BoolProperty(
+	export_embed_buffers: BoolProperty(
 		name='Embed Buffers',
 		description='',
 		default=False
 		)
 
-	export_embed_images = BoolProperty(
+	export_embed_images: BoolProperty(
 		name='Embed Images',
 		description='',
 		default=False
 		)
 
-	export_strip = BoolProperty(
+	export_strip: BoolProperty(
 		name='Strip Delimiters',
 		description='',
 		default=False
@@ -59,7 +57,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	# transform
 
-	export_y_up = BoolProperty(
+	export_y_up: BoolProperty(
 		name='Convert Z Up to Y Up',
 		description='',
 		default=True
@@ -67,7 +65,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	# attributes
 
-	export_indices = EnumProperty(
+	export_indices: EnumProperty(
 		name='Maximum Indices',
 		items=(('UNSIGNED_BYTE', 'Unsigned Byte', ''),
 			('UNSIGNED_SHORT', 'Unsigned Short', ''),
@@ -75,49 +73,49 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default='UNSIGNED_INT'
 		)
 
-	export_force_indices = BoolProperty(
+	export_force_indices: BoolProperty(
 		name='Force Maximum Indices',
 		description='',
 		default=False
 		)
 
-	export_texcoords = BoolProperty(
+	export_texcoords: BoolProperty(
 		name='Export Texture Coordinates',
 		description='',
 		default=True
 		)
 
-	export_normals = BoolProperty(
+	export_normals: BoolProperty(
 		name='Export Normals',
 		description='',
 		default=True
 		)
 
-	export_tangents = BoolProperty(
+	export_tangents: BoolProperty(
 		name='Export Tangents',
 		description='',
 		default=True
 		)
 
-	export_materials = BoolProperty(
+	export_materials: BoolProperty(
 		name='Export Materials',
 		description='',
 		default=True
 		)
 
-	export_colors = BoolProperty(
+	export_colors: BoolProperty(
 		name='Export Colors',
 		description='',
 		default=True
 		)
 
-	export_cameras = BoolProperty(
+	export_cameras: BoolProperty(
 		name='Export Cameras',
 		description='',
 		default=False
 		)
 
-	export_camera_infinite = BoolProperty(
+	export_camera_infinite: BoolProperty(
 		name='Infinite Perspective Camera',
 		description='',
 		default=False
@@ -125,55 +123,55 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	# animation
 
-	export_frame_range = BoolProperty(
+	export_frame_range: BoolProperty(
 		name='Export Within Playback Range',
 		description='',
 		default=True
 		)
 
-	export_move_keyframes = BoolProperty(
+	export_move_keyframes: BoolProperty(
 		name='Move Start Keyframes To 0',
 		description='',
 		default=True
 		)
 
-	export_force_sampling = BoolProperty(
+	export_force_sampling: BoolProperty(
 		name='Force Sample Animations',
 		description='',
 		default=False
 		)
 
-	export_current_frame = BoolProperty(
+	export_current_frame: BoolProperty(
 		name='Export Current Frame',
 		description='',
 		default=True
 		)
 
-	export_skins = BoolProperty(
+	export_skins: BoolProperty(
 		name='Export Skinning',
 		description='',
 		default=False
 		)
 
-	export_bake_skins = BoolProperty(
+	export_bake_skins: BoolProperty(
 		name='Bake Skinning Constraints',
 		description='',
 		default=False
 		)
 
-	export_morph = BoolProperty(
+	export_morph: BoolProperty(
 		name='Export Morphing',
 		description='',
 		default=True
 		)
 
-	export_morph_normal = BoolProperty(
+	export_morph_normal: BoolProperty(
 		name='Export Morphing Normals',
 		description='',
 		default=True
 		)
 
-	export_morph_tangent = BoolProperty(
+	export_morph_tangent: BoolProperty(
 		name='Export Morphing Tangents',
 		description='',
 		default=True
@@ -181,25 +179,25 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	# experimental features
 
-	export_lights_pbr = BoolProperty(
+	export_lights_pbr: BoolProperty(
 		name='Export "KHR_lights_pbr"',
 		description='',
 		default=False
 		)
 
-	export_lights_cmn = BoolProperty(
+	export_lights_cmn: BoolProperty(
 		name='Export "KHR_lights_cmn"',
 		description='',
 		default=False
 		)
 
-	export_common = BoolProperty(
+	export_common: BoolProperty(
 		name='Export "KHR_materials_cmnBlinnPhong"',
 		description='',
 		default=False
 		)
 
-	export_displacement = BoolProperty(
+	export_displacement: BoolProperty(
 		name='Export "KHR_materials_displacement"',
 		description='',
 		default=False
@@ -348,81 +346,86 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		Calls the GLTF Export module to make the export happen.
 		"""
 
-		export_settings = {}
+		# Needs updating to Blender 2.8's inbuilt GLTF exporter.
 
-		export_settings['gltf_filepath'] = filePath + fileName + ".gltf"
-		export_settings['gltf_filedirectory'] = os.path.dirname(export_settings['gltf_filepath']) + '/'
+		# export_settings = {}
 
-		export_settings['gltf_format'] = 'ASCII'
-		export_settings['gltf_copyright'] = self.export_copyright
-		export_settings['gltf_embed_buffers'] = self.export_embed_buffers
-		export_settings['gltf_embed_images'] = self.export_embed_images
-		export_settings['gltf_strip'] = self.export_strip
-		export_settings['gltf_indices'] = self.export_indices
-		export_settings['gltf_force_indices'] = self.export_force_indices
-		export_settings['gltf_texcoords'] = self.export_texcoords
-		export_settings['gltf_normals'] = self.export_normals
-		export_settings['gltf_tangents'] = self.export_tangents and self.export_normals
-		export_settings['gltf_materials'] = self.export_materials
-		export_settings['gltf_colors'] = self.export_colors
+		# export_settings['gltf_filepath'] = filePath + fileName + ".gltf"
+		# export_settings['gltf_filedirectory'] = os.path.dirname(export_settings['gltf_filepath']) + '/'
 
-		# FIXME : Re-introduce once the exporter-agnostic filtering tools are added
-		export_settings['gltf_cameras'] = False
+		# export_settings['gltf_format'] = 'ASCII'
+		# export_settings['gltf_copyright'] = self.export_copyright
+		# export_settings['gltf_embed_buffers'] = self.export_embed_buffers
+		# export_settings['gltf_embed_images'] = self.export_embed_images
+		# export_settings['gltf_strip'] = self.export_strip
+		# export_settings['gltf_indices'] = self.export_indices
+		# export_settings['gltf_force_indices'] = self.export_force_indices
+		# export_settings['gltf_texcoords'] = self.export_texcoords
+		# export_settings['gltf_normals'] = self.export_normals
+		# export_settings['gltf_tangents'] = self.export_tangents and self.export_normals
+		# export_settings['gltf_materials'] = self.export_materials
+		# export_settings['gltf_colors'] = self.export_colors
 
-		if self.export_cameras:
-			export_settings['gltf_camera_infinite'] = self.export_camera_infinite
-		else:
-			export_settings['gltf_camera_infinite'] = False
+		# # FIXME : Re-introduce once the exporter-agnostic filtering tools are added
+		# export_settings['gltf_cameras'] = False
 
-			export_settings['gltf_selected'] = True
+		# if self.export_cameras:
+		# 	export_settings['gltf_camera_infinite'] = self.export_camera_infinite
+		# else:
+		# 	export_settings['gltf_camera_infinite'] = False
 
-		# FIXME: Need to work out if layers refers to "export all objects regardless of layer", or "store layer metadata".
-		export_settings['gltf_layers'] = True
-		export_settings['gltf_extras'] = True
-		export_settings['gltf_yup'] = self.export_y_up
-		export_settings['gltf_apply'] = exportPass.apply_modifiers
-		export_settings['gltf_animations'] = exportPass.export_animation
+		# 	export_settings['gltf_selected'] = True
 
-
-		if exportPass.export_animation:
-			export_settings['gltf_current_frame'] = False
-			export_settings['gltf_frame_range'] = self.export_frame_range
-			export_settings['gltf_move_keyframes'] = self.export_move_keyframes
-			export_settings['gltf_force_sampling'] = self.export_force_sampling
-		else:
-			export_settings['gltf_current_frame'] = self.export_current_frame
-			export_settings['gltf_frame_range'] = False
-			export_settings['gltf_move_keyframes'] = False
-			export_settings['gltf_force_sampling'] = False
-
-		export_settings['gltf_skins'] = self.export_skins
+		# # FIXME: Need to work out if layers refers to "export all objects regardless of layer", or "store layer metadata".
+		# export_settings['gltf_layers'] = True
+		# export_settings['gltf_extras'] = True
+		# export_settings['gltf_yup'] = self.export_y_up
+		# export_settings['gltf_apply'] = exportPass.apply_modifiers
+		# export_settings['gltf_animations'] = exportPass.export_animation
 
 
-		if self.export_skins:
-			export_settings['gltf_bake_skins'] = self.export_bake_skins
-		else:
-			export_settings['gltf_bake_skins'] = False
-			export_settings['gltf_morph'] = self.export_morph
+		# if exportPass.export_animation:
+		# 	export_settings['gltf_current_frame'] = False
+		# 	export_settings['gltf_frame_range'] = self.export_frame_range
+		# 	export_settings['gltf_move_keyframes'] = self.export_move_keyframes
+		# 	export_settings['gltf_force_sampling'] = self.export_force_sampling
+		# else:
+		# 	export_settings['gltf_current_frame'] = self.export_current_frame
+		# 	export_settings['gltf_frame_range'] = False
+		# 	export_settings['gltf_move_keyframes'] = False
+		# 	export_settings['gltf_force_sampling'] = False
 
-		if self.export_morph:
-			export_settings['gltf_morph_normal'] = self.export_morph_normal
-		else:
-			export_settings['gltf_morph_normal'] = False
-
-		if self.export_morph and self.export_morph_normal:
-			export_settings['gltf_morph_tangent'] = self.export_morph_tangent
-		else:
-			export_settings['gltf_morph_tangent'] = False
+		# export_settings['gltf_skins'] = self.export_skins
+		# export_settings['gltf_morph'] = self.export_morph
 
 
-		export_settings['gltf_lights_pbr'] = self.export_lights_pbr
-		export_settings['gltf_lights_cmn'] = self.export_lights_cmn
-		export_settings['gltf_common'] = self.export_common
-		export_settings['gltf_displacement'] = self.export_displacement
+		# if self.export_skins:
+		# 	export_settings['gltf_bake_skins'] = self.export_bake_skins
+		# else:
+		# 	export_settings['gltf_bake_skins'] = False
+
+		# 	# Their exporter put this here when gltf_morph needs to be an accessible setting? 
+		# 	#export_settings['gltf_morph'] = self.export_morph
+
+		# if self.export_morph:
+		# 	export_settings['gltf_morph_normal'] = self.export_morph_normal
+		# else:
+		# 	export_settings['gltf_morph_normal'] = False
+
+		# if self.export_morph and self.export_morph_normal:
+		# 	export_settings['gltf_morph_tangent'] = self.export_morph_tangent
+		# else:
+		# 	export_settings['gltf_morph_tangent'] = False
 
 
-		export_settings['gltf_uri'] = []
-		export_settings['gltf_binary'] = bytearray()
-		export_settings['gltf_binaryfilename'] = os.path.splitext(os.path.basename(filePath + fileName))[0] + '.bin'
+		# export_settings['gltf_lights_pbr'] = self.export_lights_pbr
+		# export_settings['gltf_lights_cmn'] = self.export_lights_cmn
+		# export_settings['gltf_common'] = self.export_common
+		# export_settings['gltf_displacement'] = self.export_displacement
 
-		gltf2_export.save(self, context, export_settings)
+
+		# export_settings['gltf_uri'] = []
+		# export_settings['gltf_binary'] = bytearray()
+		# export_settings['gltf_binaryfilename'] = os.path.splitext(os.path.basename(filePath + fileName))[0] + '.bin'
+
+		# gltf2_export.save(self, context, export_settings)

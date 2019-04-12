@@ -24,9 +24,9 @@
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
-    "author": "Takanu Kyriako - special thanks to CW and AY <3",
+    "author": "Takanu Kyriako",
     "version": (1, 1, 0),
-    "blender": (2, 79, 0),
+    "blender": (2, 80, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
     "description": "Batch export assets into multiple files and formats.",
@@ -568,12 +568,19 @@ def CheckSelectedObject(scene):
 
 addon_keymaps = []
 
+classes = (
+    CAP_AddonPreferences,
+)
+
 def register():
     """
     Registers itself and any extra pointer properties, handlers and keymaps to Blender.
     """
     print("Registering Stuff")
-    bpy.utils.register_module(__name__)
+
+    from bpy.utils import register_class
+    for cls in classes:
+        register_class(cls)
 
     bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAP_Scene_Preferences)
     bpy.types.Object.CAPObj = PointerProperty(type=properties.CAP_Object_Preferences)
@@ -603,6 +610,9 @@ def unregister():
     Unregisters itself and any extra pointer properties, handlers and keymaps from Blender.
     """
     print("Unregistering Stuff")
+
+    from bpy.utils import unregister_class
+    
     export_presets.DeletePresets()
 
     bpy.app.handlers.load_pre.remove(CreateDefaultData)
@@ -615,7 +625,9 @@ def unregister():
     del bpy.types.Action.CAPAcn
     del bpy.types.Object.CAPStm
 
-    bpy.utils.unregister_module(__name__)
+    
+    for cls in reversed(classes):
+        unregister_class(cls)
 
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
@@ -626,7 +638,3 @@ def unregister():
                 if kmi.properties.name == "pie.capsule_main":
                     km.keymap_items.remove(kmi)
 
-
-# Only if i ever wanted to run the script in the text editor, which I don't
-if __name__ == "__main__":
-    register()

@@ -7,7 +7,7 @@ from bpy.types import UILayout
 # used to define the properties for different formats that Capsule can export to.
 
 class CAP_FormatData_Undefined(PropertyGroup):
-        test = BoolProperty(
+        test: BoolProperty(
            name="Test!",
            description="TEEEEEEST!",
            default=True,

@@ -8,15 +8,15 @@ from .export_format import CAP_ExportFormat
 
 class CAP_FormatData_FBX(PropertyGroup):
 
-	instance_id = IntProperty(default=-1)
+	instance_id: IntProperty(default=-1)
 
-	bundle_textures = BoolProperty(
+	bundle_textures: BoolProperty(
 			name="Bundle Textures",
 			description="If enabled, allows any textures that are packed in the .blend file and applied to an object or group that's tagged for export, to be bundled with it inside the FBX file.",
 			default=False
 			)
 
-	export_types = EnumProperty(
+	export_types: EnumProperty(
 		name="Object Types",
 		options={'ENUM_FLAG'},
 		items=(('MESH', "Mesh", ""),
@@ -29,13 +29,13 @@ class CAP_FormatData_FBX(PropertyGroup):
 		default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'OTHER'},
 		)
 
-	global_scale = FloatProperty(
+	global_scale: FloatProperty(
 		name="Global Scale",
 		description="The exported scale of the objects.",
 		default=1.0
 		)
 
-	apply_scale_options = EnumProperty(
+	apply_scale_options: EnumProperty(
 		name="Apply Scale Options",
 		items=(
 			('FBX_SCALE_NONE', "All Local", "Apply custom scaling and units scaling to each object transformation, FBX scale remains at 1.0."),
@@ -46,14 +46,14 @@ class CAP_FormatData_FBX(PropertyGroup):
 		description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule.",
 		)
 
-	bake_space_transform = BoolProperty(
+	bake_space_transform: BoolProperty(
 		name="Bake Space Transform (Experimental)",
 		description="Bakes the space transform of meshes from Blender into the FBX file, when the target world space does not align with the one Blender has. (WARNING - Known broken on armatures/animations, use at your own peril!)",
 		default=False
 		)
 
 
-	axis_up = EnumProperty(
+	axis_up: EnumProperty(
 		name="Axis Up",
 		description="What the Up Axis will be defined as when the model is exported.",
 		items=(
@@ -68,7 +68,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 
 
-	axis_forward = EnumProperty(
+	axis_forward: EnumProperty(
 		name="Axis Forward",
 		description="What the Forward Axis will be defined as when the model is exported.",
 		items=(
@@ -81,13 +81,13 @@ class CAP_FormatData_FBX(PropertyGroup):
 		default='-Z'
 		)
 
-	loose_edges = BoolProperty(
+	loose_edges: BoolProperty(
 		name="Loose Edges",
 		description="Makes any separate edges a two-verted polygon.",
 		default=False
 		)
 
-	normals = EnumProperty(
+	normals: EnumProperty(
 		name="Normal Export Type",
 		description="Defines how mesh normals are exported.",
 		items=(
@@ -97,26 +97,26 @@ class CAP_FormatData_FBX(PropertyGroup):
 			),
 		)
 
-	tangent_space = BoolProperty(
+	tangent_space: BoolProperty(
 		name="Tangent Space",
 		description="Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
 		default=False
 		)
 
-	use_armature_deform_only = BoolProperty(
+	use_armature_deform_only: BoolProperty(
 		name="Only Include Deform Bones",
 		description="Makes any separate edges a two-verted polygon.",
 		default=False
 		)
 
-	add_leaf_bones = BoolProperty(
+	add_leaf_bones: BoolProperty(
 		name="Add Leaf Bones",
 		description="Appends an extra bone to the end of each bone chain.",
 		default=False
 		)
 
 
-	primary_bone_axis = EnumProperty(
+	primary_bone_axis: EnumProperty(
 		name="Primary Bone Axis",
 		description="Defines the primary bone axis for the export.",
 		items=(
@@ -129,7 +129,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			default='Y'
 			)
 
-	secondary_bone_axis = EnumProperty(
+	secondary_bone_axis: EnumProperty(
 		name="Secondary Bone Axis",
 		description="Defines the secondary bone axis for the export.",
 		items=(
@@ -142,7 +142,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		default='X'
 		)
 
-	armature_nodetype = EnumProperty(
+	armature_nodetype: EnumProperty(
 		name="FBX Armature NodeType",
 		description="Defines the type of FBX object Armatures will be exported as.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender.",
 		items=(
@@ -152,42 +152,42 @@ class CAP_FormatData_FBX(PropertyGroup):
 			)
 
 
-	bake_anim_use_all_bones = BoolProperty(
+	bake_anim_use_all_bones: BoolProperty(
 		name="Key All Bones",
 		description="If enabled, this forces the export of one key animation for all bones (required for target apps like UE4).",
 		default=False)
 
-	bake_anim_use_nla_strips = BoolProperty(
+	bake_anim_use_nla_strips: BoolProperty(
 		name="Use NLA Strips",
 		description="If enabled, NLA strips will be exported as animation data.",
 		default=False
 		)
 
-	bake_anim_use_all_actions = BoolProperty(
+	bake_anim_use_all_actions: BoolProperty(
 		name="Use All Actions",
 		description="If enabled, all animation actions in the group or object will be exported.",
 		default=False
 		)
 
-	bake_anim_force_startend_keying = BoolProperty(
+	bake_anim_force_startend_keying: BoolProperty(
 		name="Start/End Keying",
 		description="If enabled, this option fully keys the start and end positions of an animation.  Use this if the exported animations playback with incorrect starting positions.",
 		default=False
 		)
 
-	use_default_take = BoolProperty(
+	use_default_take: BoolProperty(
 		name="Use Default Take",
 		description="If enabled, uses the currently viewed pose/translation of the object as a starting pose for exported animations (excluding certain keyframes).",
 		default=False
 		)
 
-	optimise_keyframes = BoolProperty(
+	optimise_keyframes: BoolProperty(
 		name="Optimise Keyframes",
 		description="If enabled, removes double keyframes from exported animations.",
 		default=False
 		)
 
-	bake_anim_step = FloatProperty(
+	bake_anim_step: FloatProperty(
 		name="Sampling Rate",
 		description="Defines how often, in frames, the export process should evaluate keyframes.",
 		default=1,
@@ -197,7 +197,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		soft_max=10
 		)
 
-	bake_anim_simplify_factor = FloatProperty(
+	bake_anim_simplify_factor: FloatProperty(
 		name="Simplify Factor",
 		description="A measure for how much when exported, animations should be simplified.  Setting this value to 0 will disable simplification.  The higher the value, the greater the simplification.",
 		default=1,
@@ -208,7 +208,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		)
 
 	# A secret fix embedded in the Unity 5 export option, to fix rotated objects.
-	x_unity_rotation_fix = BoolProperty(default=False)
+	x_unity_rotation_fix: BoolProperty(default=False)
 
 
 
@@ -386,7 +386,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		axis_up=self.axis_up,
 		bake_space_transform=self.bake_space_transform,
 		object_types=self.export_types,
-		use_mesh_modifiers=False,
+		use_mesh_modifiers=exportPass.apply_modifiers,
 		mesh_smooth_type=self.normals,
 		use_mesh_edges=self.loose_edges,
 		use_tspace=self.tangent_space,
