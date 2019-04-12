@@ -14,7 +14,7 @@ from .tk_utils import object_transform
 from . import tag_ops
 from .export_utils import ReplaceSystemChar, CheckSystemChar, CheckAnimation, AddTriangulate, RemoveTriangulate
 
-class CAP_ExportAssets(Operator):
+class CAPSULE_OT_ExportAssets(Operator):
     """Exports all objects and groups in the scene that are marked for export."""
 
     bl_idname = "scene.cap_export"

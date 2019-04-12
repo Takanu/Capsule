@@ -7,18 +7,18 @@ from rna_prop_ui import PropertyPanel
 from .tk_utils import select
 from .tk_utils import groups as group_utils
 
-class GEX_Name_UIList(UIList):
+class CAPSULE_UL_Name(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
             layout.prop(item, "name", text="", emboss=False)
 
-class GEX_TagFilter_UIList(UIList):
+class CAPSULE_UL_TagFilter(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
             layout.prop(item, "name", text="", emboss=False)
             layout.prop(item, "use_tag", text="")
 
-class Object_UIList(UIList):
+class CAPSULE_UL_Object(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         user_preferences = context.user_preferences
@@ -39,7 +39,7 @@ class Object_UIList(UIList):
         # Nothing much to say here, it's usual UI code...
         row = layout.row()
 
-class Group_UIList(UIList):
+class CAPSULE_UL_Group(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         user_preferences = context.user_preferences
@@ -59,38 +59,38 @@ class Group_UIList(UIList):
         # Nothing much to say here, it's usual UI code...
         row = layout.row()
 
-class Path_Default_UIList(UIList):
+class CAPSULE_UL_Path_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
         layout.prop(item, "name", text="", emboss=False)
 
-class Saved_Default_UIList(UIList):
+class CAPSULE_UL_Saved_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
         layout.prop(item, "name", text="", emboss=False)
 
-class Export_Default_UIList(UIList):
+class CAPSULE_UL_Export_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
         layout.prop(item, "name", text="", emboss=False)
 
-class Tag_Default_UIList(UIList):
+class CAPSULE_UL_Tag_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
         layout.prop(item, "name", text="", emboss=False)
 
-class Pass_Default_UIList(UIList):
+class CAPSULE_UL_Pass_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
         layout.prop(item, "enable", text="")
         layout.prop(item, "name", text="", emboss=False)
 
-class Action_UIList(UIList):
+class CAPSULE_UL_Action(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
@@ -108,7 +108,7 @@ class Action_UIList(UIList):
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
 
-class CAP_Selection(Panel):
+class CAPSULE_PT_Selection(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
@@ -340,7 +340,7 @@ class CAP_Selection(Panel):
         # Currently broken, un-comment at your own peril!
 
         #col_location = layout.row(align=True)
-        #col_location.template_list("Action_UIList", "rawr", ui, "action_list", ui, "action_list_index", rows=3, maxrows=10)
+        #col_location.template_list("CAPSULE_UL_Action", "rawr", ui, "action_list", ui, "action_list_index", rows=3, maxrows=10)
 
         #col_location.separator()
 
@@ -349,7 +349,7 @@ class CAP_Selection(Panel):
 
         #layout.separator()
 
-class CAP_List(Panel):
+class CAPSULE_PT_List(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
@@ -380,9 +380,9 @@ class CAP_List(Panel):
         col_location = layout.column(align=True)
 
         if listTab == 1:
-            col_location.template_list("Object_UIList", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
+            col_location.template_list("CAPSULE_UL_Object", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
         elif listTab == 2:
-            col_location.template_list("Group_UIList", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
+            col_location.template_list("CAPSULE_UL_Group", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
 
         col_location_options = layout.row(align=True)
         col_location_options.operator("scene.cap_clearlist", icon="X")
@@ -393,7 +393,7 @@ class CAP_List(Panel):
         layout.separator()
 
 
-class CAP_Location(Panel):
+class CAPSULE_PT_Location(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
@@ -421,7 +421,7 @@ class CAP_Location(Panel):
         ob = context.object
 
         col_location = layout.row(align=True)
-        col_location.template_list("Path_Default_UIList", "default", exp, "location_presets", exp, "location_presets_listindex", rows=3, maxrows=6)
+        col_location.template_list("CAPSULE_UL_Path_Default", "default", exp, "location_presets", exp, "location_presets_listindex", rows=3, maxrows=6)
 
         col_location.separator()
 

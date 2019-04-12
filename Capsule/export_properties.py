@@ -39,7 +39,7 @@ def CAP_Update_AnimationWarning(self, context):
         bpy.context.window_manager.popup_menu(DrawAnimationWarning, title="Animation Warning", icon='INFO')
     self.export_animation_prev = self.export_animation
 
-class CAP_ExportTag(PropertyGroup):
+class CAPSULE_ExportTag(PropertyGroup):
     # The main Export Tag collection property, used for storing the actual tags used in an Export Preset
 
     name: StringProperty(
@@ -85,7 +85,7 @@ class CAP_ExportTag(PropertyGroup):
     x_user_editable_type: BoolProperty(default=True)
 
 
-class CAP_ExportPassTag(PropertyGroup):
+class CAPSULE_ExportPassTag(PropertyGroup):
     # The Export Tag reference, used inside Export Passes to list the available tags.
     # Also specified for that pass, whether or not it is to be used.
 
@@ -110,7 +110,7 @@ class CAP_ExportPassTag(PropertyGroup):
         default=False
         )
 
-class CAP_ExportPass(PropertyGroup):
+class CAPSULE_ExportPass(PropertyGroup):
     # Used to define properties for a single export pass.
 
     name: StringProperty(
@@ -133,7 +133,7 @@ class CAP_ExportPass(PropertyGroup):
         description="If enabled, a folder will be created inside the currently defined file path (and any other defined folders for the File Preset), where all exports from this pass will be placed into."
         )
 
-    tags: CollectionProperty(type=CAP_ExportPassTag)
+    tags: CollectionProperty(type=CAPSULE_ExportPassTag)
     tags_index: IntProperty(default=0)
 
     export_individual: BoolProperty(
@@ -168,7 +168,7 @@ class CAP_ExportPass(PropertyGroup):
         default=False
         )
 
-class CAP_ExportPreset(PropertyGroup):
+class CAPSULE_ExportPreset(PropertyGroup):
     # Used to define properties for a single export preset.
     # Export presets include Capsule-specific features as well as .FBX exporter features
     # and any defined Passes and Tags.
@@ -221,9 +221,9 @@ class CAP_ExportPreset(PropertyGroup):
         )
 
 
-    passes: CollectionProperty(type=CAP_ExportPass)
+    passes: CollectionProperty(type=CAPSULE_ExportPass)
     passes_index: IntProperty(default=0)
-    tags: CollectionProperty(type=CAP_ExportTag)
+    tags: CollectionProperty(type=CAPSULE_ExportTag)
     tags_index: IntProperty(default=0)
 
     format_type: EnumProperty(
@@ -250,7 +250,7 @@ class CAP_ExportPreset(PropertyGroup):
     x_global_user_deletable: BoolProperty(default=True)
 
 
-class CAP_LocationDefault(PropertyGroup):
+class CAPSULE_LocationDefault(PropertyGroup):
     # Defines a single location default, assigned to specific objects to define where they should be exported to.
 
     name: StringProperty(
@@ -265,7 +265,7 @@ class CAP_LocationDefault(PropertyGroup):
         )
 
 
-class CAP_ExportPresets(PropertyGroup):
+class CAPSULE_ExportPresets(PropertyGroup):
     """
     A property group passed onto the "default datablock", the empty object created in a blend file to store all the available export presets.
     """
@@ -274,7 +274,7 @@ class CAP_ExportPresets(PropertyGroup):
     version_number: FloatProperty(default=1.10)
 
     # the available file presets
-    file_presets: CollectionProperty(type=CAP_ExportPreset)
+    file_presets: CollectionProperty(type=CAPSULE_ExportPreset)
 
     # the preset selected on the list panel, when viewed from the AddonPreferences window.
     file_presets_listindex: IntProperty(default=0)
@@ -283,7 +283,7 @@ class CAP_ExportPresets(PropertyGroup):
     is_storage_object: BoolProperty(default=False)
 
     # the available location presets created by the user
-    location_presets: CollectionProperty(type=CAP_LocationDefault)
+    location_presets: CollectionProperty(type=CAPSULE_LocationDefault)
 
     # the location selected on the Locations panel, inside the 3D view
     location_presets_listindex: IntProperty(default=0)

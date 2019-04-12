@@ -12,7 +12,7 @@ from . import export_presets
 
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
 
-class CAP_Add_Path(Operator):
+class CAPSULE_OT_Add_Path(Operator):
     """Create a new location."""
 
     bl_idname = "scene.cap_addpath"
@@ -41,7 +41,7 @@ class CAP_Add_Path(Operator):
 
         return {'FINISHED'}
 
-class CAP_Delete_Path(Operator):
+class CAPSULE_OT_Delete_Path(Operator):
     """Delete the selected location from the list."""
 
     bl_idname = "scene.cap_deletepath"
@@ -59,7 +59,7 @@ class CAP_Delete_Path(Operator):
         return {'FINISHED'}
 
 
-class CAP_Add_Export(Operator):
+class CAPSULE_OT_Add_Export(Operator):
     """Create a new file preset."""
 
     bl_idname = "scene.cap_addexport"
@@ -92,7 +92,7 @@ class CAP_Add_Export(Operator):
 
         return {'FINISHED'}
 
-class CAP_Delete_Export(Operator):
+class CAPSULE_OT_Delete_Export(Operator):
     """Delete the selected file preset from the list."""
 
     bl_idname = "scene.cap_deleteexport"
@@ -128,7 +128,7 @@ class CAP_Delete_Export(Operator):
         return {'FINISHED'}
 
 
-class CAP_Add_Tag(Operator):
+class CAPSULE_OT_Add_Tag(Operator):
     """Create a new tag."""
 
     bl_idname = "scene.cap_addtag"
@@ -158,7 +158,7 @@ class CAP_Add_Tag(Operator):
 
         return {'FINISHED'}
 
-class CAP_Delete_Tag(Operator):
+class CAPSULE_OT_Delete_Tag(Operator):
     """Delete the selected tag from the list."""
 
     bl_idname = "scene.cap_deletetag"
@@ -200,7 +200,7 @@ class CAP_Delete_Tag(Operator):
         return {'FINISHED'}
 
 
-class CAP_Add_Pass(Operator):
+class CAPSULE_OT_Add_Pass(Operator):
     """Create a new pass."""
 
     bl_idname = "scene.cap_addpass"
@@ -229,7 +229,7 @@ class CAP_Add_Pass(Operator):
 
         return {'FINISHED'}
 
-class CAP_Delete_Pass(Operator):
+class CAPSULE_OT_Delete_Pass(Operator):
     """Delete the selected pass from the list."""
 
     bl_idname = "scene.cap_deletepass"
@@ -262,7 +262,7 @@ class CAP_Delete_Pass(Operator):
 
         return {'FINISHED'}
 
-class CAP_Shift_Path_Up(Operator):
+class CAPSULE_OT_Shift_Path_Up(Operator):
     """Move the current entry in the list up by one"""
 
     bl_idname = "scene.cap_shiftup"
@@ -279,7 +279,7 @@ class CAP_Shift_Path_Up(Operator):
 
         return {'FINISHED'}
 
-class CAP_Shift_Path_Down(Operator):
+class CAPSULE_OT_Shift_Path_Down(Operator):
     """Move the current entry in the list down by one"""
 
     bl_idname = "scene.cap_shiftdown"
@@ -296,7 +296,7 @@ class CAP_Shift_Path_Down(Operator):
 
         return {'FINISHED'}
 
-class CAP_Set_Root_Object(Operator):
+class CAPSULE_OT_Set_Root_Object(Operator):
     """Allows you to set the Origin Object through an interactive tool.  Right-Click: Select the object you wish to be the origin point for the scene.  Esc - Quit the tool."""
 
     bl_idname = "scene.cap_setroot"
@@ -376,7 +376,7 @@ class CAP_Set_Root_Object(Operator):
         return {'FINISHED'}
 
 
-class CAP_Clear_Root_Object(Operator):
+class CAPSULE_OT_Clear_Root_Object(Operator):
     """Clear the currently chosen origin object for the group."""
 
     bl_idname = "scene.cap_clearroot"
@@ -408,7 +408,7 @@ class CAP_Clear_Root_Object(Operator):
         return {'FINISHED'}
 
 
-class CAP_Clear_List(Operator):
+class CAPSULE_OT_Clear_List(Operator):
     """Delete all objects from the export list, and un-mark them for export"""
 
     bl_idname = "scene.cap_clearlist"
@@ -439,7 +439,7 @@ class CAP_Clear_List(Operator):
 
         return {'FINISHED'}
 
-class CAP_Refresh_List(Operator):
+class CAPSULE_OT_Refresh_List(Operator):
     """Rebuild the list based on available objects or groups in the scene."""
 
     bl_idname = "scene.cap_refreshlist"
@@ -476,7 +476,7 @@ class CAP_Refresh_List(Operator):
         return {'FINISHED'}
 
 
-class CAP_Reset_Scene(Operator):
+class CAPSULE_OT_Reset_Scene(Operator):
     """Reset all object and group variables in the scene.  Use at your own peril!"""
 
     bl_idname = "scene.cap_resetsceneprops"
@@ -524,7 +524,7 @@ class CAP_Reset_Scene(Operator):
 
         return {'FINISHED'}
 
-class CAP_Reset_Defaults(Operator):
+class CAPSULE_OT_Reset_Defaults(Operator):
     """Reset all location and export defaults in the file"""
 
     bl_idname = "scene.cap_resetprefs"
@@ -558,7 +558,7 @@ class CAP_Reset_Defaults(Operator):
 
         return {'FINISHED'}
 
-class CAP_UI_Group_Separate(Operator):
+class CAPSULE_OT_UI_Group_Separate(Operator):
     """Toggle the drop-down menu for separate group export options"""
 
     bl_idname = "scene.cap_grpseparate"
@@ -577,7 +577,7 @@ class CAP_UI_Group_Separate(Operator):
 
         return {'FINISHED'}
 
-class CAP_UI_Group_Options(Operator):
+class CAPSULE_OT_UI_Group_Options(Operator):
     """Toggle the drop-down menu for separate group export options"""
 
     bl_idname = "scene.cap_grpoptions"
@@ -597,7 +597,7 @@ class CAP_UI_Group_Options(Operator):
         return {'FINISHED'}
 
 
-class CAP_Refresh_Actions(Operator):
+class CAPSULE_OT_Refresh_Actions(Operator):
     """Generate a list of groups to browse"""
 
     bl_idname = "scene.cap_refactions"
@@ -655,7 +655,7 @@ class CAP_Refresh_Actions(Operator):
 
         return {'FINISHED'}
 
-class CAP_Tutorial_Tags(Operator):
+class CAPSULE_OT_Tutorial_Tags(Operator):
     """Delete the selected file preset from the list."""
 
     bl_idname = "cap_tutorial.tags"
@@ -674,7 +674,7 @@ class CAP_Tutorial_Tags(Operator):
 
         return {'FINISHED'}
 
-class CAP_Create_ExportData(Operator):
+class CAPSULE_OT_Create_ExportData(Operator):
     """Create a new empty object for which Capsule data is stored, and where both file presets and other scene data is stored."""
 
     bl_idname = "cap.exportdata_create"
@@ -709,7 +709,7 @@ class CAP_Create_ExportData(Operator):
         return {'FINISHED'}
 
 
-class CAP_Add_Stored_Presets(Operator):
+class CAPSULE_OT_Add_Stored_Presets(Operator):
     """Add the currently selected saved preset into the file presets list, enabling it's use for exports in this .blend file."""
     bl_idname = "cap.create_current_preset"
     bl_label = "Default Presets"
@@ -739,7 +739,7 @@ class CAP_Add_Stored_Presets(Operator):
 
         return {'FINISHED'}
 
-class CAP_Delete_Presets(Operator):
+class CAPSULE_OT_Delete_Presets(Operator):
     """Delete the currently selected saved preset."""
     bl_idname = "cap.delete_global_preset"
     bl_label = "Store Preset"
@@ -773,7 +773,7 @@ class CAP_Delete_Presets(Operator):
 
         return {'FINISHED'}
 
-class CAP_Store_Presets(Operator):
+class CAPSULE_OT_Store_Presets(Operator):
     """Store the currently selected export preset as a saved preset, to enable it's use in across .blend files."""
     bl_idname = "cap.add_global_preset"
     bl_label = "Store Preset"

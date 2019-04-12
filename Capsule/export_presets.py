@@ -288,7 +288,7 @@ def CopyPreset(old_preset, new_preset):
     for key in old_preset.keys():
         new_preset[key] = old_preset[key]
 
-class CAP_DrawError(Operator):
+class CAPSULE_OT_DrawError(Operator):
     """
     ???
     """

@@ -148,7 +148,7 @@ def GetSelectedGroups(scene, context):
 
     return items
 
-class CAP_Scene_Preferences(PropertyGroup):
+class CAPSULE_Scene_Preferences(PropertyGroup):
     """
     A random assortment of scene-specific properties with some "weird" toggle stuff.
     """
@@ -350,7 +350,7 @@ classes = (
     ObjectListItem, 
     GroupListItem, 
     ActionListItem, 
-    CAP_Scene_Preferences, 
+    CAPSULE_Scene_Preferences, 
     CAP_Object_Preferences, 
     CAP_Group_Preferences, 
     CAP_Object_StateMachine, 
@@ -359,25 +359,24 @@ classes = (
 
 def register():
     print("Registering Properties")
-    for item in classes:
-        bpy.utils.register_class(item)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
-    # bpy.types.Scene.CAPScn = PointerProperty(type=CAP_Scene_Preferences)
-    # bpy.types.Object.CAPObj = PointerProperty(type=CAP_Object_Preferences)
-    # bpy.types.Group.CAPGrp = PointerProperty(type=CAP_Group_Preferences)
+    bpy.types.Scene.CAPScn = PointerProperty(type=CAPSULE_Scene_Preferences)
+    bpy.types.Object.CAPObj = PointerProperty(type=CAP_Object_Preferences)
+    bpy.types.Group.CAPGrp = PointerProperty(type=CAP_Group_Preferences)
     # bpy.types.Action.CAPAcn = PointerProperty(type=CAP_Action_Preferences)
-    # bpy.types.Scene.CAPUI = PointerProperty(type=CAP_UI_Preferences)
-    # bpy.types.Object.CAPStm = PointerProperty(type=CAP_Object_StateMachine)
+    bpy.types.Scene.CAPUI = PointerProperty(type=CAP_UI_Preferences)
+    bpy.types.Object.CAPStm = PointerProperty(type=CAP_Object_StateMachine)
 
 def unregister():
     print("Un-registering Properties")
-    # del bpy.types.Scene.CAPScn
-    # del bpy.types.Object.CAPObj
-    # del bpy.types.Group.CAPGrp
+    del bpy.types.Scene.CAPScn
+    del bpy.types.Object.CAPObj
+    del bpy.types.Group.CAPGrp
     # del bpy.types.Action.CAPAcn
-    # del bpy.types.Scene.CAPUI
-    # del bpy.types.Object.CAPStm
+    del bpy.types.Scene.CAPUI
+    del bpy.types.Object.CAPStm
 
-    i = len(classes) - 1
-    while i != -1:
-        bpy.utils.unregister_class(classes[i])
+    for cls in reversed(classes)
+        bpy.utils.unregister_class(cls)

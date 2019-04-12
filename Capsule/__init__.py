@@ -68,12 +68,12 @@ from bpy.types import (
 from bpy.app.handlers import persistent
 
 from .export_properties import (
-    CAP_ExportTag, 
-    CAP_ExportPassTag, 
-    CAP_ExportPass, 
-    CAP_ExportPreset, 
-    CAP_LocationDefault, 
-    CAP_ExportPresets,
+    CAPSULE_ExportTag, 
+    CAPSULE_ExportPassTag, 
+    CAPSULE_ExportPass, 
+    CAPSULE_ExportPreset, 
+    CAPSULE_LocationDefault, 
+    CAPSULE_ExportPresets,
     )
 
 from .export_formats import CAP_ExportFormat
@@ -151,8 +151,8 @@ class CAP_AddonPreferences(AddonPreferences):
     )
 
     # Storage for the Global Presets, and it's enum UI list.
-    sort_presets = CollectionProperty(type=CAP_ExportPreset)
-    saved_presets = CollectionProperty(type=CAP_ExportPreset)
+    sort_presets = CollectionProperty(type=CAPSULE_ExportPreset)
+    saved_presets = CollectionProperty(type=CAPSULE_ExportPreset)
     saved_presets_index = IntProperty()
 
     saved_presets_dropdown = BoolProperty(default=False)
@@ -262,7 +262,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 col_savedpresets = savedpresets_box.row(align=True)
                 col_savedpresets_list = col_savedpresets.column(align=True)
-                col_savedpresets_list.template_list("Saved_Default_UIList", "default", addon_prefs, "saved_presets", addon_prefs, "saved_presets_index", rows=3, maxrows=6)
+                col_savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_presets", addon_prefs, "saved_presets_index", rows=3, maxrows=6)
                 col_savedpresets_list.operator("cap.create_current_preset", text="Add to File Presets", icon="FORWARD")
 
                 col_savedpresets_options = col_savedpresets.column(align=True)
@@ -274,7 +274,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             row_defaults = filepresets_box.row(align=True)
             col_defaultslist = row_defaults.column(align=True)
-            col_defaultslist.template_list("Export_Default_UIList", "default", exp, "file_presets", exp, "file_presets_listindex", rows=3, maxrows=6)
+            col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", exp, "file_presets", exp, "file_presets_listindex", rows=3, maxrows=6)
             col_defaultslist.operator("cap.add_global_preset", text="Add to Saved Presets", icon="FORWARD")
 
             col_defaultslist_options = row_defaults.column(align=True)
@@ -357,7 +357,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 currentExp = exp.file_presets[exp.file_presets_listindex]
 
                 tagUI_row = tag_box.row(align=True)
-                tagUI_row.template_list("Tag_Default_UIList", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
+                tagUI_row.template_list("CAPSULE_UL_Tag_Default", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
 
                 tagUI_col = tagUI_row.column(align=True)
                 tagUI_col.operator("scene.cap_addtag", text="", icon="ZOOMIN")
@@ -407,7 +407,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 currentExp = exp.file_presets[exp.file_presets_listindex]
 
                 row_passes = pass_box.row(align=True)
-                row_passes.template_list("Pass_Default_UIList", "default", currentExp, "passes", currentExp, "passes_index", rows=3, maxrows=6)
+                row_passes.template_list("CAPSULE_UL_Pass_Default", "default", currentExp, "passes", currentExp, "passes_index", rows=3, maxrows=6)
 
                 row_passes.separator()
 
@@ -582,12 +582,12 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAP_Scene_Preferences)
+    bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAPSULE_Scene_Preferences)
     bpy.types.Object.CAPObj = PointerProperty(type=properties.CAP_Object_Preferences)
     bpy.types.Group.CAPGrp = PointerProperty(type=properties.CAP_Group_Preferences)
     bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAP_Action_Preferences)
     bpy.types.Object.CAPStm = PointerProperty(type=properties.CAP_Object_StateMachine)
-    bpy.types.Object.CAPExp = PointerProperty(type=CAP_ExportPresets)
+    bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
 
     export_presets.CreatePresets()
 

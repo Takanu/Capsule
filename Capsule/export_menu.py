@@ -7,7 +7,7 @@ from .update_groups import CAP_Update_GroupExport, UpdateGroupList
 
 from . import tk_utils
 
-class CAP_PieWarning(Operator):
+class CAPSULE_OT_PieWarning(Operator):
     bl_idname = "capsule.pie_warning"
     bl_label = ""
 
@@ -17,7 +17,7 @@ class CAP_PieWarning(Operator):
         self.report({'WARNING'}, self.label)
         return {"FINISHED"}
 
-class CAP_ToggleExport(Operator):
+class CAPSULE_OT_ToggleExport(Operator):
     bl_idname = "capsule.toggle_export"
     bl_label = "Toggle Export"
 
@@ -65,7 +65,7 @@ class CAP_ToggleExport(Operator):
         scn.enable_sel_active = False
         return {'FINISHED'}
 
-class CAP_LocationSelectObject(Operator):
+class CAPSULE_OT_LocationSelectObject(Operator):
     bl_idname = "capsule.location_select_object"
     bl_label = "Toggle Export"
 
@@ -76,7 +76,7 @@ class CAP_LocationSelectObject(Operator):
             context.active_object.CAPObj.location_default = str(self.loc + 1)
         return {'FINISHED'}
 
-class CAP_LocationSelectGroup(Operator):
+class CAPSULE_OT_LocationSelectGroup(Operator):
     bl_idname = "capsule.location_select_group"
     bl_label = "Toggle Export"
 
@@ -102,7 +102,7 @@ class CAP_LocationSelectGroup(Operator):
 
         return {'FINISHED'}
 
-class CAP_PieLocationObject(Menu):
+class CAPSULE_MT_PieLocationObject(Menu):
     bl_idname = "pie.location_object"
     bl_label = "Select Location"
 
@@ -120,7 +120,7 @@ class CAP_PieLocationObject(Menu):
             pie.operator("capsule.location_select_object", text=exp.location_presets[i].name, icon="FILE_FOLDER").loc = i
             i += 1
 
-class CAP_PieLocationGroup(Menu):
+class CAPSULE_MT_PieLocationGroup(Menu):
     """
     A pie-specific operator for toggling the export status of the currently selected groups.
     """
@@ -141,7 +141,7 @@ class CAP_PieLocationGroup(Menu):
             pie.operator("capsule.location_select_group", text=exp.location_presets[i].name, icon="FILE_FOLDER").loc = i
             i += 1
 
-class CAP_ExportSelectObject(Operator):
+class CAPSULE_OT_ExportSelectObject(Operator):
     """
     A pie-specific operator for toggling the export status of the currently selected objects.
     """
@@ -155,7 +155,7 @@ class CAP_ExportSelectObject(Operator):
             context.active_object.CAPObj.export_default = str(self.loc + 1)
         return {'FINISHED'}
 
-class CAP_ExportSelectGroup(Operator):
+class CAPSULE_OT_ExportSelectGroup(Operator):
     """
     A pie-specific operator for toggling the export status of the currently selected groups.
     """
@@ -184,7 +184,7 @@ class CAP_ExportSelectGroup(Operator):
 
         return {'FINISHED'}
 
-class CAP_PieExportObject(Menu):
+class CAPSULE_MT_PieExportObject(Menu):
     """
     Displays the export default options for objects.
     """
@@ -205,7 +205,7 @@ class CAP_PieExportObject(Menu):
             pie.operator("capsule.export_select_object", text=exp.file_presets[i].name, icon="SCRIPTWIN").loc = i
             i += 1
 
-class CAP_PieExportGroup(Menu):
+class CAPSULE_MT_PieExportGroup(Menu):
     """
     Displays the export default options for groups.
     """
@@ -226,7 +226,7 @@ class CAP_PieExportGroup(Menu):
             pie.operator("capsule.export_select_group", text=exp.file_presets[i].name, icon="SCRIPTWIN").loc = i
             i += 1
 
-class CAP_PieObjectMenu(Menu):
+class CAPSULE_OT_PieObjectMenu(Menu):
     """
     Pie menus to display object-specific Capsule options and settings.
     """
@@ -257,7 +257,7 @@ class CAP_PieObjectMenu(Menu):
         # 9 - TOP - RIGHT
         # 3 - BOTTOM - RIGHT
 
-class CAP_PieGroupMenu(Menu):
+class CAPSULE_OT_PieGroupMenu(Menu):
     """
     Pie menus to display group-specific Capsule options and settings.
     """
@@ -288,7 +288,7 @@ class CAP_PieGroupMenu(Menu):
         # 9 - TOP - RIGHT
         # 3 - BOTTOM - RIGHT
 
-class CAP_PieMainMenu(Menu):
+class CAPSULE_OT_PieMainMenu(Menu):
     """
     Pie menus for the base menu that appears when E is used.
     """
