@@ -62,7 +62,7 @@ def CheckSystemChar(context, name):
 
 
 def CheckAnimation(context):
-  # Not currently used until further notice
+  # Might end up in a future update, old code for fetching animation data.
 
   for item in context.scene.objects:
       print(item.name)

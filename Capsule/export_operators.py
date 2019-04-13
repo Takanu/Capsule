@@ -6,7 +6,7 @@ from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
 
-from .tk_utils import groups as group_utils
+from .tk_utils import collections as collection_utils
 from .tk_utils import select as select_utils
 from .tk_utils import locations as loc_utils
 from .tk_utils import object_ops
@@ -15,7 +15,7 @@ from . import tag_ops
 from .export_utils import ReplaceSystemChar, CheckSystemChar, CheckAnimation, AddTriangulate, RemoveTriangulate
 
 class CAPSULE_OT_ExportAssets(Operator):
-    """Exports all objects and groups in the scene that are marked for export."""
+    """Exports all objects and collections in the scene that are marked for export."""
 
     bl_idname = "scene.cap_export"
     bl_label = "Export"
@@ -692,31 +692,31 @@ class CAPSULE_OT_ExportAssets(Operator):
         #                 return statement
 
 
-        # Check all scene groups for potential errors
-        for group in group_utils.GetSceneGroups(context.scene, True):
-            if group.CAPGrp.enable_export is True:
+        # Check all scene collections for potential errors
+        for collection in collection_utils.GetSceneCollections(context.scene, True):
+            if collection.CAPCol.enable_export is True:
 
                 # Check Export Key
-                expKey = int(group.CAPGrp.export_default) - 1
+                expKey = int(collection.CAPCol.export_default) - 1
                 if expKey == -1:
                     bpy.ops.object.select_all(action='DESELECT')
-                    for item in group.objects:
+                    for item in collection.all_objects:
                         select_utils.SelectObject(item)
-                    statement = "The selected group " + group.name + " has no export default selected.  Please define!"
+                    statement = "The selected collection " + collection.name + " has no export default selected.  Please define!"
                     return statement
 
                 # Check Export Sub-Directory
                 export = exp.file_presets[expKey]
                 if export.use_sub_directory is True:
-                    name = group.name
-                    nameCheck.append([" Group Name", name, " Preset", export.name])
+                    name = collection.name
+                    nameCheck.append([" Collection Name", name, " Preset", export.name])
 
                 # Check Location Default
-                if int(group.CAPGrp.location_default) == 0:
+                if int(collection.CAPCol.location_default) == 0:
                     bpy.ops.object.select_all(action='DESELECT')
-                    for item in group.objects:
+                    for item in collection.all_objects:
                         select_utils.SelectObject(item)
-                    statement =  "The selected group " + group.name + " has no location preset defined, please define one!"
+                    statement =  "The selected collection " + collection.name + " has no location preset defined, please define one!"
                     return statement
 
                 self.exportCount += 1
@@ -810,7 +810,7 @@ class CAPSULE_OT_ExportAssets(Operator):
         # Set export counts here just in case
         self.exportCount = 0
         self.exportedObjects = 0
-        self.exportedGroups = 0
+        self.exportedCollections = 0
         self.exportedFiles = 0
 
         print("")
@@ -1133,35 +1133,35 @@ class CAPSULE_OT_ExportAssets(Operator):
 
 
         ###############################################################
-        # GROUP CYCLE
+        # COLLECTION CYCLE
         ###############################################################
-        # Now hold up, its group time!
-        for group in group_utils.GetSceneGroups(context.scene, True):
-            if group.CAPGrp.enable_export is True:
+        # Now hold up, its collection time!
+        for collection in collection_utils.GetSceneCollections(context.scene, True):
+            if collection.CAPCol.enable_export is True:
 
                 print("-"*79)
                 print("NEW JOB", "-"*70)
                 print("-"*79)
-                print(group.name)
+                print(collection.name)
 
                 # Before we do anything, check that a root object exists
                 self.root_object = None
                 self.root_object_name = ""
                 self.root_object_type = 0
                 self.use_scene_origin = False
-                rootObjectInGroup = False
+                rootObjectInCollection = False
 
-                # Find the root object in a group, if thats where it's located
-                for item in group.objects:
-                    if item.name == group.CAPGrp.root_object:
+                # Find the root object in a collection, if thats where it's located
+                for item in collection.all_objects:
+                    if item.name == collection.CAPCol.root_object:
                         self.root_object = item
                         self.root_object_name = item.name
-                        rootObjectInGroup = True
+                        rootObjectInCollection = True
 
                 # Otherwise, find it elsewhere
-                if rootObjectInGroup == False:
+                if rootObjectInCollection == False:
                     for item in context.scene.objects:
-                        if item.name == group.CAPGrp.root_object:
+                        if item.name == collection.CAPCol.root_object:
                             self.root_object = item
                             self.root_object_name = item.name
 
@@ -1170,16 +1170,16 @@ class CAPSULE_OT_ExportAssets(Operator):
                     print("No root object is currently being used, proceed!")
 
                 #Get the export default for the object
-                expKey = int(group.CAPGrp.export_default) - 1
+                expKey = int(collection.CAPCol.export_default) - 1
 
                 if expKey == -1:
-                    statement = "The group " + group.name + " has no export default selected.  Please define!"
+                    statement = "The collection " + collection.name + " has no export default selected.  Please define!"
                     self.report({'WARNING'}, statement)
                     self.RestoreScene(context)
                     return {'FINISHED'}
 
                 # Collect hidden defaults to restore afterwards.
-                object_name = group.name
+                object_name = collection.name
 
                 self.exportPreset = self.exportInfo.file_presets[expKey]
                 self.use_blend_directory = self.exportPreset.use_blend_directory
@@ -1214,7 +1214,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                     print("-"*59)
                     print("NEW PASS", "-"*50)
                     print("-"*59)
-                    print("Export pass", object_pass.name, "being used on the group", group.name)
+                    print("Export pass", object_pass.name, "being used on the collection", collection.name)
                     print("Root object.....", self.root_object_name)
 
                     activeTags = []
@@ -1254,7 +1254,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                     # Lets see if the root object can be exported...
                     expRoot = False
                     print("Checking Root Exportability...")
-                    if self.root_object != None and rootObjectInGroup is True:
+                    if self.root_object != None and rootObjectInCollection is True:
                         print("Well we have a root...")
                         if len(activeTags) == 0:
                             expRoot = True
@@ -1267,7 +1267,7 @@ class CAPSULE_OT_ExportAssets(Operator):
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    path = self.CalculateFilePath(context, group.CAPGrp.location_default, object_name, subDirectory)
+                    path = self.CalculateFilePath(context, collection.CAPCol.location_default, object_name, subDirectory)
 
                     if path.find("WARNING") == 0:
                         path = path.replace("WARNING: ", "")
@@ -1279,7 +1279,7 @@ class CAPSULE_OT_ExportAssets(Operator):
 
 
                     #/////////////////// - FIND OBJECTS - /////////////////////////////////////////////////
-                    # First we have to find all objects in the group that are of type MESHHH
+                    # First we have to find all objects in the collection that are of type MESHHH
                     # If auto-assignment is on, use the names to filter into lists, otherwise forget it.
 
                     print(">>>> Collecting Objects <<<<")
@@ -1291,7 +1291,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                             print("Current tag...", tag.name)
                             list = []
 
-                            for item in group.objects:
+                            for item in collection.all_objects:
                                 print("Found item...", item.name)
                                 checkItem = tag_ops.CompareObjectWithTag(context, item, tag)
 
@@ -1322,7 +1322,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                     # If not, export everything
                     else:
                         print("No tags found, processing objects...")
-                        for item in group.objects:
+                        for item in collection.all_objects:
                             if item.name != self.root_object_name:
                                 if self.exportPreset.filter_render == False:
                                     print("ITEM FOUND: ", item.name)
@@ -1393,7 +1393,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                                 self.PrepareExportIndividual(context, finalExportList, path, suffix)
 
                             else:
-                                self.PrepareExportCombined(context, finalExportList, path, group.name, suffix)
+                                self.PrepareExportCombined(context, finalExportList, path, collection.name, suffix)
 
                     bpy.ops.object.select_all(action='DESELECT')
 
@@ -1419,18 +1419,18 @@ class CAPSULE_OT_ExportAssets(Operator):
                     print(">>> Pass Complete <<<")
 
                 if len(self.exportPreset.passes) > 0:
-                    self.exportedGroups += 1
+                    self.exportedCollections += 1
                     self.exportCount += 1
                     context.window_manager.progress_update(self.exportCount)
 
-                    print(">>> Group Export Complete <<<")
+                    print(">>> Collection Export Complete <<<")
 
 
         self.RestoreScene(context)
         context.window_manager.progress_end()
 
-        textGroupSingle = " group"
-        textGroupMultiple = " groups"
+        textCollectionSingle = " collection"
+        textCollectionPlural = " collections"
 
         output = "Finished processing "
 
@@ -1439,12 +1439,12 @@ class CAPSULE_OT_ExportAssets(Operator):
         elif self.exportedObjects == 1:
             output += str(self.exportedObjects) + " object"
 
-        if self.exportedObjects > 0 and self.exportedGroups > 0:
+        if self.exportedObjects > 0 and self.exportedCollections > 0:
             output += " and "
-        if self.exportedGroups > 1:
-            output += str(self.exportedGroups) + " groups"
-        elif self.exportedGroups == 1:
-            output += str(self.exportedGroups) + " group"
+        if self.exportedCollections > 1:
+            output += str(self.exportedCollections) + " collections"
+        elif self.exportedCollections == 1:
+            output += str(self.exportedCollections) + " collection"
 
         output += ".  "
         output += "Total of "
@@ -1455,7 +1455,7 @@ class CAPSULE_OT_ExportAssets(Operator):
             output += str(self.exportedFiles) + " file."
 
         # Output a nice report
-        if self.exportedObjects == 0 and self.exportedGroups == 0:
+        if self.exportedObjects == 0 and self.exportedCollections == 0:
             self.report({'WARNING'}, 'No objects were exported.  Ensure you have objects tagged for export, and at least one pass in your export presets.')
 
         else:

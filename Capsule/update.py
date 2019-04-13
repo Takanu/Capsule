@@ -2,7 +2,7 @@
 import bpy, bmesh, time
 from math import *
 
-from .tk_utils import groups as group_utils
+from .tk_utils import collections as collection_utils
 from .tk_utils import select as select_utils
 
 def CAP_Update_ObjectExport(self, context):
@@ -149,7 +149,7 @@ def CAP_Update_ObjectListName(self, context):
     print("Finding object name to replace")
     scn = context.scene.CAPScn
 
-    # Set the name of the item to the group name
+    # Set the name of the item to the collection name
     for item in context.scene.objects:
         if item.name == self.prev_name:
             print("Found object name ", item.name)
@@ -177,7 +177,7 @@ def CAP_Update_ObjectListExport(self, context):
 
     if scn.enable_sel_active == False:
         print("Rawr")
-        # Set the name of the item to the group name
+        # Set the name of the item to the collection name
         for item in context.scene.objects:
             if item.name == self.name:
                 print("Found object name ", item.name)

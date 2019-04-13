@@ -5,7 +5,7 @@ from bpy.types import Menu, Panel, AddonPreferences, PropertyGroup, UIList
 from rna_prop_ui import PropertyPanel
 
 from .tk_utils import select
-from .tk_utils import groups as group_utils
+from .tk_utils import collections as collection_utils
 
 class CAPSULE_UL_Name(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -39,7 +39,7 @@ class CAPSULE_UL_Object(UIList):
         # Nothing much to say here, it's usual UI code...
         row = layout.row()
 
-class CAPSULE_UL_Group(UIList):
+class CAPSULE_UL_Collection(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         user_preferences = context.user_preferences
@@ -49,7 +49,7 @@ class CAPSULE_UL_Group(UIList):
         layout.prop(item, "name", text="", emboss=False)
         layout.prop(item, "enable_export", text="")
 
-        # A switch to change the extra tool on the Group list entries.
+        # A switch to change the extra tool on the Collection list entries.
         if addon_prefs.list_feature != 'none':
             layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
 
@@ -109,7 +109,7 @@ class CAPSULE_UL_Action(UIList):
 #//////////////////////// - USER INTERFACE - ////////////////////////
 
 class CAPSULE_PT_Selection(Panel):
-    bl_space_type = "VIEW_3D"
+    bl_space_type = "PROPERTIES"
     bl_region_type = "TOOLS"
     bl_context = "objectmode"
     bl_label = "Selection"
@@ -229,72 +229,62 @@ class CAPSULE_PT_Selection(Panel):
 
 
         #/////////////////////////////////////////////////////////////////
-        #////////////////////////// GROUP UI /////////////////////////////
+        #////////////////////////// COLLECTION UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
         elif selectTab is 2:
 
-            # Get the first group pointer we need
+            # Get the first collection pointer we need
             grp = None
             gr = None
 
-            # If the multi-edit isnt on, just grab the list group
-            if addon_prefs.group_multi_edit is False:
-                if len(scn.group_list) > 0:
-                    entry = scn.group_list[scn.group_list_index]
+            # If the multi-edit isnt on, just grab the list collection
+            if addon_prefs.collection_multi_edit is False:
+                if len(scn.collection_list) > 0:
+                    entry = scn.collection_list[scn.collection_list_index]
 
-                    for group in group_utils.GetSceneGroups(context.scene, True):
-                        if group.name == entry.name:
-                            grp = group.CAPGrp
-                            gr = group
+                    for collection in collection_utils.GetSceneCollections(context.scene, True):
+                        if collection.name == entry.name:
+                            grp = collection.CAPCol
+                            gr = collection
 
                 if gr is not None:
                     col_selection_item_box = layout.box()
-                    group_label = col_selection_item_box.column(align=True)
-                    group_label.alignment = 'EXPAND'
-                    group_label.label(text=gr.name, icon="MOD_ARRAY")
+                    collection_label = col_selection_item_box.column(align=True)
+                    collection_label.alignment = 'EXPAND'
+                    collection_label.label(text=gr.name, icon="MOD_ARRAY")
 
 
             # Otherwise, just find it in a selection
             elif context.active_object is not None or len(context.selected_objects) > 0:
-                groups_found = []
-                groupLabel = ""
-                for item in context.selected_objects:
-                    for group in item.users_group:
-                        groupAdded = False
+                collections_found = collection_utils.GetSelectedObjectCollections()
+                collection_label = ""
 
-                        for found_group in groups_found:
-                            if found_group.name == group.name:
-                                groupAdded = True
+                if len(collections_found) == 1:
+                    collection_label = collections_found[0].name + " collection found."
 
-                        if groupAdded == False:
-                            groups_found.append(group)
-
-                if len(groups_found) == 1:
-                    groupLabel = groups_found[0].name + " group selected."
-
-                elif len(groups_found) > 1:
-                    groupLabel = str(len(groups_found)) + " groups found."
+                elif len(collections_found) > 1:
+                    collection_label = str(len(collections_found)) + " collections found."
 
                 if context.active_object is not None:
-                    if len(context.active_object.users_group) > 0:
-                        for group in context.active_object.users_group:
-                            gr = group
-                            grp = group.CAPGrp
+                    if len(context.active_object.users_collection) > 0:
+                        for collection in context.active_object.users_collection:
+                            gr = collection
+                            grp = collection.CAPCol
                             break
 
-                if gr is not None and len(groups_found) == 0:
-                    groupLabel = gr.name + " group selected."
+                if gr is not None and len(collections_found) == 0:
+                    collection_label = gr.name + " collection selected."
 
-                if groupLabel != "":
+                if collection_label != "":
                     col_selection_item_box = layout.box()
-                    group_label = col_selection_item_box.column(align=True)
-                    group_label.alignment = 'EXPAND'
-                    group_label.label(text=groupLabel, icon="MOD_ARRAY")
+                    collection_label = col_selection_item_box.column(align=True)
+                    collection_label.alignment = 'EXPAND'
+                    collection_label.label(text=collection_label, icon="MOD_ARRAY")
 
 
 
-            #Get the group so we can obtain preference data from it
-            #With Multi-Edit, we have to find a flexible approach to obtaining group data
+            #Get the collection so we can obtain preference data from it
+            #With Multi-Edit, we have to find a flexible approach to obtaining collection data
             if grp != None:
                 rawr = layout.column(align=True)
                 rawr.separator()
@@ -321,11 +311,11 @@ class CAPSULE_PT_Selection(Panel):
                 #rawr_other.separator()
                 #rawr_other.prop(grp, "normals", text="")
 
-            # If no group was eventually found, bring up warning labels.
+            # If no collection was eventually found, bring up warning labels.
             else:
-                group_info = layout.column(align=True)
-                group_info.separator()
-                group_info.label(text="No groups selected.")
+                collection_info = layout.column(align=True)
+                collection_info.separator()
+                collection_info.label(text="No groups selected.")
 
             layout.separator()
 
@@ -382,7 +372,7 @@ class CAPSULE_PT_List(Panel):
         if listTab == 1:
             col_location.template_list("CAPSULE_UL_Object", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
         elif listTab == 2:
-            col_location.template_list("CAPSULE_UL_Group", "rawr", scn, "group_list", scn, "group_list_index", rows=3, maxrows=10)
+            col_location.template_list("CAPSULE_UL_Collection", "rawr", scn, "collection_list", scn, "collection_list_index", rows=3, maxrows=10)
 
         col_location_options = layout.row(align=True)
         col_location_options.operator("scene.cap_clearlist", icon="X")

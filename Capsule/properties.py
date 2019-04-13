@@ -5,7 +5,9 @@ from bpy.types import PropertyGroup
 
 from .update import CAP_Update_ObjectExport, CAP_Update_SceneOrigin, CAP_Update_LocationDefault, CAP_Update_ExportDefault, CAP_Update_Normals, CAP_Update_ObjectListName, CAP_Update_ObjectListExport, CAP_Update_ActionItemName, CAP_Update_FocusObject,  CAP_Update_SelectObject, CAP_Update_ObjectListSelect, CAP_Update_ObjectRemoveFromList
 
-from .update_groups import CAP_Update_GroupListName, CAP_Update_GroupListExport, CAP_Update_FocusGroup, CAP_Update_SelectGroup, CAP_Update_GroupExport, CAP_Update_GroupRootObject, CAP_Update_GroupExportDefault, CAP_Update_GroupLocationDefault, CAP_Update_GroupNormals, CAP_Update_GroupListSelect, CAP_Update_GroupRemoveFromList
+from .update_collections import CAP_Update_CollectionListName, CAP_Update_CollectionListExport, CAP_Update_FocusCollection, CAP_Update_SelectCollection, CAP_Update_CollectionExport, CAP_Update_CollectionRootObject, CAP_Update_CollectionExportDefault, CAP_Update_CollectionLocationDefault, CAP_Update_CollectionNormals, CAP_Update_CollectionListSelect, CAP_Update_CollectionRemoveFromList
+
+from .tk_utils import collections as collection_utils
 
 class ObjectListItem(PropertyGroup):
     """
@@ -13,7 +15,7 @@ class ObjectListItem(PropertyGroup):
     """
     name: StringProperty(
         name="",
-        description="The name of the group.",
+        description="The name of the object.",
         update=CAP_Update_ObjectListName
         )
 
@@ -50,14 +52,14 @@ class ObjectListItem(PropertyGroup):
         update=CAP_Update_ObjectRemoveFromList
         )
 
-class GroupListItem(PropertyGroup):
+class CollectionListItem(PropertyGroup):
     """
-    Defines a group as a list property, for use when displaying groups in the user interface.
+    Defines a collection as a list property, for use when displaying collections in the user interface.
     """
     name: StringProperty(
         name="",
-        description="The name of the group.",
-        update=CAP_Update_GroupListName
+        description="The name of the collection.",
+        update=CAP_Update_CollectionListName
         )
 
     prev_name: StringProperty(
@@ -67,30 +69,30 @@ class GroupListItem(PropertyGroup):
 
     enable_export: BoolProperty(
         name="",
-        description="Enables or disables the ability to export this group.",
+        description="Enables or disables the ability to export this collection.",
         default=False,
-        update=CAP_Update_GroupListExport
+        update=CAP_Update_CollectionListExport
         )
 
     sel: BoolProperty(
         name="Select",
-        description="Selects the group in the scene",
+        description="Selects the collection in the scene",
         default=True,
-        update=CAP_Update_SelectGroup
+        update=CAP_Update_SelectCollection
         )
 
     focus: BoolProperty(
         name="Focus Export",
-        description="Focuses the camera to the entire group.",
+        description="Focuses the camera to the entire collection.",
         default=True,
-        update=CAP_Update_FocusGroup
+        update=CAP_Update_FocusCollection
         )
 
     remove: BoolProperty(
         name="",
-        description="Removes the group from the list, and un-marks it for export.",
+        description="Removes the collection from the list, and un-marks it for export.",
         default=True,
-        update=CAP_Update_GroupRemoveFromList
+        update=CAP_Update_CollectionRemoveFromList
         )
 
 class ActionListItem(PropertyGroup):
@@ -110,7 +112,7 @@ class ActionListItem(PropertyGroup):
 
     anim_type: EnumProperty(
         name="Animation Data Type",
-        description="Switches the selection editing mode between individual, selected objects, and groups that can be browsed and edited through a list.",
+        description="Switches the selection editing mode between individual, selected objects and collections that can be browsed and edited through a list.",
         items=(
         ('1', 'Action Object', ''),
         ('2', 'NLA Object', ''),
@@ -118,33 +120,20 @@ class ActionListItem(PropertyGroup):
         ('4', 'NLA Armature', ''),),
         )
 
-def GetSelectedGroups(scene, context):
+def GetSelectedCollections(scene, context):
 
     items = [
         ("0", "None",  "", 0),
         ]
 
     scn = context.scene.CAPScn
-    scn.group_selected_list.clear()
-    groups_found = []
-
-    for item in context.selected_objects:
-        for group in item.users_group:
-            groupAdded = False
-
-            for found_group in groups_found:
-                if found_group.name == group.name:
-                    groupAdded = True
-
-            if groupAdded == False:
-                groups_found.append(group)
-
+    scn.collection_selected_list.clear()
     u = 1
 
-    for i,x in enumerate(groups_found):
+    for i,x in enumerate(collection_utils.GetSelectedObjectCollections()):
         items.append((str(i+1), x.name, x.name, i+1))
-        newGroup = scn.group_selected_list.add()
-        newGroup.name = x.name
+        new_collection_entry = scn.collection_selected_list.add()
+        new_collection_entry.name = x.name
 
     return items
 
@@ -153,24 +142,24 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
     A random assortment of scene-specific properties with some "weird" toggle stuff.
     """
 
-    # A collection that stores the list of groups that Capsule is currently displaying in the UI list.
-    group_list: CollectionProperty(type=GroupListItem)
+    # A collection that stores the list of collections that Capsule is currently displaying in the UI list.
+    collection_list: CollectionProperty(type=CollectionListItem)
 
     # ???
-    group_list_index: IntProperty(
+    collection_list_index: IntProperty(
         name="",
         description="",
-        update=CAP_Update_GroupListSelect
+        update=CAP_Update_CollectionListSelect
         )
 
     ## ???
-    group_selected_list: CollectionProperty(type=GroupListItem)
+    collection_selected_list: CollectionProperty(type=CollectionListItem)
 
     ## ???
-    group_selected_list_enum: EnumProperty(items=GetSelectedGroups)
+    collection_selected_list_enum: EnumProperty(items=GetSelectedCollections)
 
-    ## The index of the currently selected group from the UI list.  Will be -1 if not selected.
-    group_selected_list_index: IntProperty()
+    ## The index of the currently selected collection from the UI list.  Will be -1 if not selected.
+    collection_selected_list_index: IntProperty()
 
     # A collection that stores the list of objects that Capsule is currently displaying in the UI list.
     object_list: CollectionProperty(type=ObjectListItem)
@@ -189,18 +178,18 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
 
     list_switch: EnumProperty(
         name="Object Type Switch",
-        description="Switches the list display mode between objects and groups.",
+        description="Switches the list display mode between objects and collections.",
         items=(
         ('1', 'Objects', 'Displays the Export List for objects in the currently visible scene.'),
-        ('2', 'Groups', 'Displays the Export List for groups in the currently visible scene')),
+        ('2', 'Collections', 'Displays the Export List for collections in the currently visible scene')),
         )
 
     selection_switch: EnumProperty(
         name="Selection Switch",
-        description="Switches the selection editing mode between objects and groups.",
+        description="Switches the selection editing mode between objects and collections.",
         items=(
         ('1', 'Objects', 'Displays selected objects, and any associated export settings.'),
-        ('2', 'Groups', 'Displays selected groups, and any associated export settings.')),
+        ('2', 'Collections', 'Displays selected collections, and any associated export settings.')),
         )
 
 def GetLocationDefaults(scene, context):
@@ -237,7 +226,7 @@ def GetExportDefaults(scene, context):
 
     return items
 
-class CAP_Object_Preferences(PropertyGroup):
+class CAPSULE_Object_Preferences(PropertyGroup):
     """
     A special property block that all objects receive when Capsule is registered, allowing it to store
     required information to manage it as a potential export target.
@@ -277,37 +266,37 @@ class CAP_Object_Preferences(PropertyGroup):
         default=False
         )
 
-class CAP_Group_Preferences(PropertyGroup):
+class CAPSULE_Collection_Preferences(PropertyGroup):
     """
-    A special property block that all groups receive when Capsule is registered, allowing it to store
+    A special property block that all collections receive when Capsule is registered, allowing it to store
     required information to manage it as a potential export target.
     """
     enable_export: BoolProperty(
-        name="Export Group",
-        description="Enables or disables the ability to export this group.",
+        name="Export Collection",
+        description="Enables or disables the ability to export this collection.",
         default=False,
-        update=CAP_Update_GroupExport
+        update=CAP_Update_CollectionExport
         )
 
     root_object: StringProperty(
         name="Origin Object",
-        description="Defines the origin point of the exported group object.  If not defined, the origin will be the scene center point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly with a defined root object, leave it blank <3",
+        description="Defines the origin point of the exported collection object.  If not defined, the origin will be the scene's origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly with a defined root object, leave it blank <3",
         default="",
-        update=CAP_Update_GroupRootObject
+        update=CAP_Update_CollectionRootObject
         )
 
     location_default: EnumProperty(
         name="Select Location Default",
-        description="Defines the Location that the group will be exported to.",
+        description="Defines the Location that the collection will be exported to.",
         items=GetLocationDefaults,
-        update=CAP_Update_GroupLocationDefault
+        update=CAP_Update_CollectionLocationDefault
         )
 
     export_default: EnumProperty(
         name="Select Export Default",
-        description="Defines the export settings used on the group.",
+        description="Defines the export settings used on the collection.",
         items=GetExportDefaults,
-        update=CAP_Update_GroupExportDefault
+        update=CAP_Update_CollectionExportDefault
         )
 
     in_export_list: BoolProperty(
@@ -329,7 +318,7 @@ def GetExportPresets(scene, context):
 
     return items
 
-class CAP_Object_StateMachine(PropertyGroup):
+class CAPSULE_Object_StateMachine(PropertyGroup):
 
     has_triangulate: BoolProperty(
         name="Has Triangulation Modifier",
@@ -337,7 +326,7 @@ class CAP_Object_StateMachine(PropertyGroup):
         default=False
         )
 
-class CAP_Action_Preferences(PropertyGroup):
+class CAPSULE_Action_Preferences(PropertyGroup):
     export: BoolProperty(
         name="Export",
         description="Determines whether the action can be exported or not.",
@@ -348,13 +337,13 @@ class CAP_Action_Preferences(PropertyGroup):
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
 classes = (
     ObjectListItem, 
-    GroupListItem, 
+    CollectionListItem, 
     ActionListItem, 
     CAPSULE_Scene_Preferences, 
-    CAP_Object_Preferences, 
-    CAP_Group_Preferences, 
-    CAP_Object_StateMachine, 
-    CAP_Action_Preferences
+    CAPSULE_Object_Preferences, 
+    CAPSULE_Collection_Preferences, 
+    CAPSULE_Object_StateMachine, 
+    CAPSULE_Action_Preferences
 )
 
 def register():
@@ -363,17 +352,17 @@ def register():
         bpy.utils.register_class(cls)
 
     bpy.types.Scene.CAPScn = PointerProperty(type=CAPSULE_Scene_Preferences)
-    bpy.types.Object.CAPObj = PointerProperty(type=CAP_Object_Preferences)
-    bpy.types.Group.CAPGrp = PointerProperty(type=CAP_Group_Preferences)
-    # bpy.types.Action.CAPAcn = PointerProperty(type=CAP_Action_Preferences)
+    bpy.types.Object.CAPObj = PointerProperty(type=CAPSULE_Object_Preferences)
+    bpy.types.Collection.CAPCol = PointerProperty(type=CAPSULE_Collection_Preferences)
+    # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
     bpy.types.Scene.CAPUI = PointerProperty(type=CAP_UI_Preferences)
-    bpy.types.Object.CAPStm = PointerProperty(type=CAP_Object_StateMachine)
+    bpy.types.Object.CAPStm = PointerProperty(type=CAPSULE_Object_StateMachine)
 
 def unregister():
     print("Un-registering Properties")
     del bpy.types.Scene.CAPScn
     del bpy.types.Object.CAPObj
-    del bpy.types.Group.CAPGrp
+    del bpy.types.Collection.CAPCol
     # del bpy.types.Action.CAPAcn
     del bpy.types.Scene.CAPUI
     del bpy.types.Object.CAPStm

@@ -144,7 +144,7 @@ class CAPSULE_ExportPass(PropertyGroup):
 
     export_animation: BoolProperty(
         name="Export Animation",
-        description="(EXPERIMENTAL) If ticked, animations found in objects or groups in this pass, will be exported.",
+        description="(EXPERIMENTAL) If ticked, animations found in objects or collections in this pass, will be exported.",
         default=False,
         update=CAP_Update_AnimationWarning
         )
@@ -198,7 +198,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
 
     use_sub_directory: BoolProperty(
         name="Add Object Directory",
-        description="If enabled, a folder will be created inside the currently defined file path (and inside the Blend Folder if enabled), for every object or group created, where it's export results will be placed into.  \n\nUseful for organising complex object or group exports, with multiple passes.",
+        description="If enabled, a folder will be created inside the currently defined file path (and inside the Blend Folder if enabled), for every object or collection created, where it's export results will be placed into.  \n\nUseful for organising complex object or collection exports, with multiple passes.",
         default=False
         )
 
@@ -210,7 +210,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
     # Currently disabled until further notice due to reliability issues.
     reset_rotation: BoolProperty(
         name="Reset Rotation",
-        description="If enabled, the plugin will reset the rotation of objects and groups when exported.  For groups, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a group to be reset.  \n\nCurrently this doesn't work with rotation-influencing constraints, and will be disabled on Objects and Groups that use them.",
+        description="If enabled, the plugin will reset the rotation of objects and collections when exported.  For collections, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a collection to be reset.  \n\nCurrently this doesn't work with rotation-influencing constraints, and will be disabled on objects and collection that use them.",
         default=False
         )
 

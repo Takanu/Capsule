@@ -17,10 +17,6 @@
 # ##### END GPL LICENSE BLOCK #####
 
 
-# io_scene_gltf2 module taken from the Khronos official GLTF2 exporter for Blender, licensed as Apache 2.0
-# https://github.com/KhronosGroup/glTF-Blender-Exporter
-
-
 #This states the metadata for the plugin
 bl_info = {
     "name": "Capsule",
@@ -48,7 +44,7 @@ from . import export_utils
 from . import export_menu
 from . import ui_operators
 from . import update
-from . import update_groups
+from . import update_collections
 
 from bpy.props import (
     IntProperty, 
@@ -105,8 +101,8 @@ if "bpy" in locals():
         imp.reload(ui_operators)
     if "update" in locals():
         imp.reload(update)
-    if "update_groups" in locals():
-        imp.reload(update_groups)
+    if "update_collections" in locals():
+        imp.reload(update_collections)
 
 print("Importing modules...")
 
@@ -134,10 +130,10 @@ def UpdateObjectSelectMode(self, context):
     if self.object_multi_edit is True:
         context.scene.CAPScn.object_list_index = -1
 
-def UpdateGroupSelectMode(self, context):
+def UpdateCollectionSelectMode(self, context):
 
-    if self.group_multi_edit is True:
-        context.scene.CAPScn.group_list_index = -1
+    if self.collection_multi_edit is True:
+        context.scene.CAPScn.collection_list_index = -1
 
 
 class CAP_AddonPreferences(AddonPreferences):
@@ -147,7 +143,7 @@ class CAP_AddonPreferences(AddonPreferences):
     default_datablock = StringProperty(
         name="Dummy Datablock Name",
         description="The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
-        default=">Capsule Blend File Data<"
+        default="> CAPSULE DATA 1.2 <"
     )
 
     # Storage for the Global Presets, and it's enum UI list.
@@ -165,7 +161,7 @@ class CAP_AddonPreferences(AddonPreferences):
     # used to turn off multi-selection editing when an object is selected from the export list,
     # or potentially for other operations.
     object_multi_edit = BoolProperty(
-        name="Group Multi-Edit Mode",
+        name="Collection Multi-Edit Mode",
         description="Allows you to edit export settings for all objects that the currently selected.  \n\nTurning this option off will let you edit the currently selected object on the list.",
         default=True,
         update=UpdateObjectSelectMode
@@ -174,11 +170,11 @@ class CAP_AddonPreferences(AddonPreferences):
     # not currently accessible through any menu, this is now an internally-managed state.
     # used to turn off multi-selection editing when an object is selected from the export list,
     # or potentially for other operations.
-    group_multi_edit = BoolProperty(
-        name="Group Multi-Edit Mode",
-        description="Allows you to edit export settings for all groups that the currently selected objects belong to.  \n\nWARNING - One object can belong to multiple groups, please be careful when using this mode.",
+    collection_multi_edit = BoolProperty(
+        name="Collection Multi-Edit Mode",
+        description="Allows you to edit export settings for all collections that the currently selected objects belong to.  \n\nWARNING - One object can belong to multiple collections, please be careful when using this mode.",
         default=False,
-        update=UpdateGroupSelectMode
+        update=UpdateCollectionSelectMode
         )
 
     object_list_autorefresh = BoolProperty(
@@ -188,11 +184,11 @@ class CAP_AddonPreferences(AddonPreferences):
 
     list_feature = EnumProperty(
         name="Additional List Features",
-        description="Allows for the customisation of a secondary button next to each Object and Group Export list entry.",
+        description="Allows for the customisation of a secondary button next to each Object and Collection Export list entry.",
         items=(
             ('none', 'None', 'No extra option will be added to the list'),
-            ('sel', 'Select', 'Adds an option next to a list entry that allows you to select that Object or Group in the 3D View.'),
-            ('focus', 'Focus', 'Adds an option next to a list entry that allows you to select and focus the 3D view on that Object or Group.')),
+            ('sel', 'Select', 'Adds an option next to a list entry that allows you to select that Object or Collection in the 3D View.'),
+            ('focus', 'Focus', 'Adds an option next to a list entry that allows you to select and focus the 3D view on that Object or Collection.')),
         default='focus'
         )
 
@@ -557,12 +553,12 @@ def CheckSelectedObject(scene):
     if bpy.context.active_object is not None:
         if bpy.context.active_object.name != addon_prefs.prev_selected_object:
             addon_prefs.object_multi_edit = True
-            addon_prefs.group_multi_edit = True
+            addon_prefs.collection_multi_edit = True
             addon_prefs.prev_selected_object = bpy.context.active_object.name
 
     if len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
         addon_prefs.object_multi_edit = True
-        addon_prefs.group_multi_edit = True
+        addon_prefs.collection_multi_edit = True
         addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
 
 
@@ -583,10 +579,10 @@ def register():
         register_class(cls)
 
     bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAPSULE_Scene_Preferences)
-    bpy.types.Object.CAPObj = PointerProperty(type=properties.CAP_Object_Preferences)
-    bpy.types.Group.CAPGrp = PointerProperty(type=properties.CAP_Group_Preferences)
-    bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAP_Action_Preferences)
-    bpy.types.Object.CAPStm = PointerProperty(type=properties.CAP_Object_StateMachine)
+    bpy.types.Object.CAPObj = PointerProperty(type=properties.CAPSULE_Object_Preferences)
+    bpy.types.Collection.CAPCol = PointerProperty(type=properties.CAPSULE_Collection_Preferences)
+    bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAPSULE_Action_Preferences)
+    bpy.types.Object.CAPStm = PointerProperty(type=properties.CAPSULE_Object_StateMachine)
     bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
 
     export_presets.CreatePresets()
@@ -621,7 +617,7 @@ def unregister():
     del bpy.types.Object.CAPExp
     del bpy.types.Scene.CAPScn
     del bpy.types.Object.CAPObj
-    del bpy.types.Group.CAPGrp
+    del bpy.types.Collection.CAPCol
     del bpy.types.Action.CAPAcn
     del bpy.types.Object.CAPStm
 
