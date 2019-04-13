@@ -683,7 +683,7 @@ class CAPSULE_OT_Create_ExportData(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = bpy.context.user_preferences
+        user_preferences = bpy.context.preferences
         addon_prefs = user_preferences.addons[__package__].preferences
 
         # Figure out if an object already exists, if yes do nothing

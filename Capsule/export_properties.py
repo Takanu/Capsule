@@ -2,7 +2,7 @@
 import bpy
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
-from .export_formats import CAP_ExportFormat, CAP_FormatData_FBX, CAP_FormatData_OBJ, CAP_FormatData_GLTF
+from .export_formats import CAP_ExportFormat, CAP_FormatData_FBX, CAP_FormatData_OBJ#, CAP_FormatData_GLTF
 
 def CAP_Update_TagName(self, context):
 
@@ -244,7 +244,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
     data_obj: PointerProperty(type=CAP_FormatData_OBJ)
 
     # the data stored for GLTF presets.
-    data_gltf: PointerProperty(type=CAP_FormatData_GLTF)
+    data_gltf: PointerProperty(type=CAP_FormatData_OBJ)
 
     # A special system variable that defines whether it can be deleted from the Global Presets list.
     x_global_user_deletable: BoolProperty(default=True)
@@ -321,3 +321,28 @@ class CAPSULE_ExportPresets(PropertyGroup):
         ('Experimental', 'Experimental', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
         ),
     )
+
+# ////////////////////// - CLASS REGISTRATION - ////////////////////////
+classes = (
+    CAPSULE_ExportTag, 
+    CAPSULE_ExportPassTag, 
+    CAPSULE_ExportPass, 
+    CAPSULE_ExportPreset, 
+    CAPSULE_LocationDefault, 
+    CAPSULE_ExportPresets,
+)
+
+def register():
+    print("Registering Properties")
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+    bpy.types.Scene.CAPScn = PointerProperty(type=CAPSULE_Scene_Preferences)
+
+
+def unregister():
+    print("Un-registering Properties")
+    del bpy.types.Scene.CAPScn
+    
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)

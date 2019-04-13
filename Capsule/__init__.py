@@ -21,11 +21,11 @@
 bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
-    "version": (1, 1, 0),
+    "version": (1, 2, 0),
     "blender": (2, 80, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
-    "description": "Batch export assets into multiple files and formats.",
+    "description": "An export manager that helps you prepare export assets into multiple files and formats.",
     "tracker_url": "",
     "category": "Import-Export"
 }
@@ -140,27 +140,27 @@ class CAP_AddonPreferences(AddonPreferences):
     bl_idname = __name__
 
     # The name for the empty object that exists to store .blend file level Capsule data.
-    default_datablock = StringProperty(
+    default_datablock: StringProperty(
         name="Dummy Datablock Name",
         description="The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
         default="> CAPSULE DATA 1.2 <"
     )
 
     # Storage for the Global Presets, and it's enum UI list.
-    sort_presets = CollectionProperty(type=CAPSULE_ExportPreset)
-    saved_presets = CollectionProperty(type=CAPSULE_ExportPreset)
-    saved_presets_index = IntProperty()
+    sort_presets: CollectionProperty(type=export_properties.CAPSULE_ExportPreset)
+    saved_presets: CollectionProperty(type=export_properties.CAPSULE_ExportPreset)
+    saved_presets_index: IntProperty()
 
-    saved_presets_dropdown = BoolProperty(default=False)
-    presets_dropdown = BoolProperty(default = False)
-    tags_dropdown = BoolProperty(default = False)
-    passes_dropdown = BoolProperty(default = False)
-    options_dropdown = BoolProperty(default = False)
+    saved_presets_dropdown: BoolProperty(default=False)
+    presets_dropdown: BoolProperty(default = False)
+    tags_dropdown: BoolProperty(default = False)
+    passes_dropdown: BoolProperty(default = False)
+    options_dropdown: BoolProperty(default = False)
 
     # not currently accessible through any menu, this is now an internally-managed state.
     # used to turn off multi-selection editing when an object is selected from the export list,
     # or potentially for other operations.
-    object_multi_edit = BoolProperty(
+    object_multi_edit: BoolProperty(
         name="Collection Multi-Edit Mode",
         description="Allows you to edit export settings for all objects that the currently selected.  \n\nTurning this option off will let you edit the currently selected object on the list.",
         default=True,
@@ -170,19 +170,19 @@ class CAP_AddonPreferences(AddonPreferences):
     # not currently accessible through any menu, this is now an internally-managed state.
     # used to turn off multi-selection editing when an object is selected from the export list,
     # or potentially for other operations.
-    collection_multi_edit = BoolProperty(
+    collection_multi_edit: BoolProperty(
         name="Collection Multi-Edit Mode",
         description="Allows you to edit export settings for all collections that the currently selected objects belong to.  \n\nWARNING - One object can belong to multiple collections, please be careful when using this mode.",
         default=False,
         update=UpdateCollectionSelectMode
         )
 
-    object_list_autorefresh = BoolProperty(
+    object_list_autorefresh: BoolProperty(
         name="Object List Auto-Refresh",
         description="Determines whether or not an object on the object export list will automatically be removed when Enable Export is unticked.  If this option is disabled, a manual refresh button will appear next to the list."
         )
 
-    list_feature = EnumProperty(
+    list_feature: EnumProperty(
         name="Additional List Features",
         description="Allows for the customisation of a secondary button next to each Object and Collection Export list entry.",
         items=(
@@ -192,16 +192,16 @@ class CAP_AddonPreferences(AddonPreferences):
         default='focus'
         )
 
-    substitute_directories = BoolProperty(
+    substitute_directories: BoolProperty(
         name="Substitute Invalid Folder Characters",
         description="If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  \n\nIf unticked, the plugin will prompt you with an error if your directories contain invalid characters.",
         default=True
         )
 
-    data_missing = BoolProperty(default=False)
-    plugin_is_ready = BoolProperty(default=False)
-    prev_selected_object = StringProperty()
-    prev_selected_count = IntProperty()
+    data_missing: BoolProperty(default=False)
+    plugin_is_ready: BoolProperty(default=False)
+    prev_selected_object: StringProperty()
+    prev_selected_count: IntProperty()
 
     def draw(self, context):
         layout = self.layout
@@ -516,7 +516,7 @@ def CreateDefaultData(scene):
     Attempts to create a Default Data object (a plain axis with a very specific name) to store export preference information in.  If one already exists, it will exit early.
     """
 
-    user_preferences = bpy.context.user_preferences
+    user_preferences = bpy.context.preferences
     addon_prefs = user_preferences.addons[__name__].preferences
 
     # Figure out if an object already exists, if yes do nothing
@@ -546,7 +546,7 @@ def CheckSelectedObject(scene):
     A scene handler used to configure the status of previously selected objects and multi-edit opportunities behind the scenes.
     """
 
-    user_preferences = bpy.context.user_preferences
+    user_preferences = bpy.context.preferences
     addon_prefs = user_preferences.addons[__name__].preferences
     #print("SCENE UPDATE")
 
@@ -578,12 +578,12 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    bpy.types.Scene.CAPScn = PointerProperty(type=properties.CAPSULE_Scene_Preferences)
-    bpy.types.Object.CAPObj = PointerProperty(type=properties.CAPSULE_Object_Preferences)
-    bpy.types.Collection.CAPCol = PointerProperty(type=properties.CAPSULE_Collection_Preferences)
-    bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAPSULE_Action_Preferences)
-    bpy.types.Object.CAPStm = PointerProperty(type=properties.CAPSULE_Object_StateMachine)
-    bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
+    # bpy.types.Scene.CAPScn = PointerProperty(name='Capsule Scene Properties', type=properties.CAPSULE_Scene_Preferences)
+    # bpy.types.Object.CAPObj = PointerProperty(type=properties.CAPSULE_Object_Preferences)
+    # bpy.types.Collection.CAPCol = PointerProperty(type=properties.CAPSULE_Collection_Preferences)
+    # bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAPSULE_Action_Preferences)
+    # bpy.types.Object.CAPStm = PointerProperty(type=properties.CAPSULE_Object_StateMachine)
+    # bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
 
     export_presets.CreatePresets()
 
@@ -614,12 +614,12 @@ def unregister():
     bpy.app.handlers.load_pre.remove(CreateDefaultData)
     bpy.app.handlers.scene_update_post.remove(CheckSelectedObject)
 
-    del bpy.types.Object.CAPExp
-    del bpy.types.Scene.CAPScn
-    del bpy.types.Object.CAPObj
-    del bpy.types.Collection.CAPCol
-    del bpy.types.Action.CAPAcn
-    del bpy.types.Object.CAPStm
+    # del bpy.types.Object.CAPExp
+    # del bpy.types.Scene.CAPScn
+    # del bpy.types.Object.CAPObj
+    # del bpy.types.Collection.CAPCol
+    # del bpy.types.Action.CAPAcn
+    # del bpy.types.Object.CAPStm
 
     
     for cls in reversed(classes):

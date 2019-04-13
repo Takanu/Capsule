@@ -3,9 +3,34 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
 
-from .update import CAP_Update_ObjectExport, CAP_Update_SceneOrigin, CAP_Update_LocationDefault, CAP_Update_ExportDefault, CAP_Update_Normals, CAP_Update_ObjectListName, CAP_Update_ObjectListExport, CAP_Update_ActionItemName, CAP_Update_FocusObject,  CAP_Update_SelectObject, CAP_Update_ObjectListSelect, CAP_Update_ObjectRemoveFromList
+from .update import (
+    CAP_Update_ObjectExport, 
+    CAP_Update_SceneOrigin, 
+    CAP_Update_LocationDefault, 
+    CAP_Update_ExportDefault, 
+    CAP_Update_Normals, 
+    CAP_Update_ObjectListName, 
+    CAP_Update_ObjectListExport, 
+    CAP_Update_ActionItemName, 
+    CAP_Update_FocusObject,  
+    CAP_Update_SelectObject, 
+    CAP_Update_ObjectListSelect, 
+    CAP_Update_ObjectRemoveFromList
+)
 
-from .update_collections import CAP_Update_CollectionListName, CAP_Update_CollectionListExport, CAP_Update_FocusCollection, CAP_Update_SelectCollection, CAP_Update_CollectionExport, CAP_Update_CollectionRootObject, CAP_Update_CollectionExportDefault, CAP_Update_CollectionLocationDefault, CAP_Update_CollectionNormals, CAP_Update_CollectionListSelect, CAP_Update_CollectionRemoveFromList
+from .update_collections import (
+    CAP_Update_CollectionListName, 
+    CAP_Update_CollectionListExport, 
+    CAP_Update_FocusCollection, 
+    CAP_Update_SelectCollection, 
+    CAP_Update_CollectionExport,
+    CAP_Update_CollectionRootObject, 
+    CAP_Update_CollectionExportDefault, 
+    CAP_Update_CollectionLocationDefault, 
+    CAP_Update_CollectionNormals, 
+    CAP_Update_CollectionListSelect, 
+    CAP_Update_CollectionRemoveFromList
+)
 
 from .tk_utils import collections as collection_utils
 
@@ -351,21 +376,11 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.Scene.CAPScn = PointerProperty(type=CAPSULE_Scene_Preferences)
-    bpy.types.Object.CAPObj = PointerProperty(type=CAPSULE_Object_Preferences)
-    bpy.types.Collection.CAPCol = PointerProperty(type=CAPSULE_Collection_Preferences)
-    # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
-    bpy.types.Scene.CAPUI = PointerProperty(type=CAP_UI_Preferences)
-    bpy.types.Object.CAPStm = PointerProperty(type=CAPSULE_Object_StateMachine)
+    bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
 
 def unregister():
     print("Un-registering Properties")
-    del bpy.types.Scene.CAPScn
-    del bpy.types.Object.CAPObj
-    del bpy.types.Collection.CAPCol
-    # del bpy.types.Action.CAPAcn
-    del bpy.types.Scene.CAPUI
-    del bpy.types.Object.CAPStm
+    del bpy.types.Object.CAPExp
 
-    for cls in reversed(classes)
+    for cls in reversed(classes):
         bpy.utils.unregister_class(cls)

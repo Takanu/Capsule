@@ -1,8 +1,5 @@
 
 import bpy
-import mathutils
-import os
-import json
 
 from bpy.types import UILayout
 
@@ -345,6 +342,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		"""
 		Calls the GLTF Export module to make the export happen.
 		"""
+
+		print('nope.')
 
 		# Needs updating to Blender 2.8's inbuilt GLTF exporter.
 
