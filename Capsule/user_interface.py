@@ -21,8 +21,8 @@ class CAPSULE_UL_TagFilter(UIList):
 class CAPSULE_UL_Object(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
         layout.prop(item, "name", text="", emboss=False)
@@ -42,8 +42,8 @@ class CAPSULE_UL_Object(UIList):
 class CAPSULE_UL_Collection(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
         layout.prop(item, "name", text="", emboss=False)
@@ -108,17 +108,27 @@ class CAPSULE_UL_Action(UIList):
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
 
+class CAPSULE_PT_Header(Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = 'WINDOW'
+    bl_context = "render"
+    bl_label = "Capsule"
+
+    def draw(self, context):
+        pass
+
+
 class CAPSULE_PT_Selection(Panel):
     bl_space_type = "PROPERTIES"
-    bl_region_type = "TOOLS"
-    bl_context = "objectmode"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
     bl_label = "Selection"
-    bl_category = "Capsule"
+    bl_parent_id = "CAPSULE_PT_Header"
 
     def draw(self, context):
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
 
         # UI Prompt for when the .blend Capsule data can no longer be found.
         try:
@@ -340,16 +350,16 @@ class CAPSULE_PT_Selection(Panel):
         #layout.separator()
 
 class CAPSULE_PT_List(Panel):
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOLS"
-    bl_context = "objectmode"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
     bl_label = "Export List"
-    bl_category = "Capsule"
+    bl_parent_id = "CAPSULE_PT_Header"
 
     @classmethod
     def poll(cls, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
@@ -357,8 +367,8 @@ class CAPSULE_PT_List(Panel):
         return True
 
     def draw(self, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
         layout = self.layout
@@ -384,16 +394,16 @@ class CAPSULE_PT_List(Panel):
 
 
 class CAPSULE_PT_Location(Panel):
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "TOOLS"
-    bl_context = "objectmode"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
     bl_label = "Locations"
-    bl_category = "Capsule"
+    bl_parent_id = "CAPSULE_PT_Header"
 
     @classmethod
     def poll(cls, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
 
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
@@ -404,8 +414,8 @@ class CAPSULE_PT_Location(Panel):
     def draw(self, context):
         layout = self.layout
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         scn = context.scene.CAPScn
         ob = context.object
@@ -432,3 +442,9 @@ class CAPSULE_PT_Location(Panel):
             file.label("File Path:")
             file.separator()
             file.prop(exp.location_presets[exp.location_presets_listindex], "path", text="")
+
+# def register():
+#     bpy.utils.register_module(__name__)
+
+# def unregister():
+#     bpy.utils.unregister_module(__name__)

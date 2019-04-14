@@ -10,8 +10,8 @@ def DeletePresets():
     Removes all Export Presets that that can be deleted by the user from the saved presets list.
     """
     print(">>>>>>>>>> Deleting presets...")
-    user_preferences = bpy.context.preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = bpy.context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
     exp = addon_prefs.saved_presets
     presetsToKeep = []
 
@@ -35,8 +35,8 @@ def CreatePresets():
     # -------------------------------------------------------------------------
     # Basic Export All
     # -------------------------------------------------------------------------
-    user_preferences = bpy.context.preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = bpy.context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
     exp = addon_prefs.saved_presets
     sort = addon_prefs.sort_presets
     print(">>>>>>>>>> Adding presets...")
@@ -67,9 +67,9 @@ def CreatePresets():
         i += 1
 
     # Create the new presets
-    CreatePresetBasicExport(exp)
-    CreatePresetUE4Standard(exp)
-    CreatePresetUnity5Standard(exp)
+    # CreatePresetBasicExport(exp)
+    # CreatePresetUE4Standard(exp)
+    # CreatePresetUnity5Standard(exp)
 
     # Add the copied presets back
     i = 0

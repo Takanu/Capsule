@@ -25,7 +25,7 @@ bl_info = {
     "blender": (2, 80, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
-    "description": "An export manager that helps you prepare export assets into multiple files and formats.",
+    "description": "An export manager that helps you export 3D objects into multiple files and formats.",
     "tracker_url": "",
     "category": "Import-Export"
 }
@@ -33,18 +33,18 @@ bl_info = {
 # Start importing all the addon files
 # #FIXME: I dont have to import everything here.
 import bpy
-from . import export_formats
-from . import tk_utils
-from . import properties
-from . import user_interface
-from . import export_operators
-from . import export_presets
-from . import export_properties
-from . import export_utils
-from . import export_menu
-from . import ui_operators
-from . import update
-from . import update_collections
+from .export_formats import *
+from .tk_utils import *
+from .properties import *
+from .user_interface import *
+from .export_operators import *
+from .export_presets import *
+from .export_properties import *
+from .export_utils import *
+from .export_menu import *
+from .ui_operators import *
+from .update import *
+from .update_collections import *
 
 from bpy.props import (
     IntProperty, 
@@ -72,40 +72,39 @@ from .export_properties import (
     CAPSULE_ExportPresets,
     )
 
-from .export_formats import CAP_ExportFormat
-
 
 # This sequence checks the files currently loaded? (CHECKME)
-print("Checking modules...")
+# I actually don't know what this quite does anymore, commenting out for now.
 
-if "bpy" in locals():
-    import imp
-    print("------------------Reloading Capsule------------------")
-    if "tk_utils" in locals():
-        imp.reload(tk_utils)
-    if "properties" in locals():
-        imp.reload(properties)
-    if "user_interface" in locals():
-        imp.reload(user_interface)
-    if "export_operators" in locals():
-        imp.reload(export_operators)
-    if "export_presets" in locals():
-        imp.reload(export_presets)
-    if "export_properties" in locals():
-        imp.reload(export_properties)
-    if "export_utils" in locals():
-        imp.reload(export_utils)
-    if "export_menu" in locals():
-        imp.reload(export_menu)
-    if "ui_operators" in locals():
-        imp.reload(ui_operators)
-    if "update" in locals():
-        imp.reload(update)
-    if "update_collections" in locals():
-        imp.reload(update_collections)
+# print("Checking modules...")
 
-print("Importing modules...")
+# if "bpy" in locals():
+#     import imp
+#     print("------------------Reloading Capsule------------------")
+#     if "tk_utils" in locals():
+#         imp.reload(tk_utils)
+#     if "properties" in locals():
+#         imp.reload(properties)
+#     if "user_interface" in locals():
+#         imp.reload(user_interface)
+#     if "export_operators" in locals():
+#         imp.reload(export_operators)
+#     if "export_presets" in locals():
+#         imp.reload(export_presets)
+#     if "export_properties" in locals():
+#         imp.reload(export_properties)
+#     if "export_utils" in locals():
+#         imp.reload(export_utils)
+#     if "export_menu" in locals():
+#         imp.reload(export_menu)
+#     if "ui_operators" in locals():
+#         imp.reload(ui_operators)
+#     if "update" in locals():
+#         imp.reload(update)
+#     if "update_collections" in locals():
+#         imp.reload(update_collections)
 
+# print("Importing modules...")
 
 
 def GetGlobalPresets(scene, context):
@@ -114,8 +113,8 @@ def GetGlobalPresets(scene, context):
         ("0", "None",  "", 0),
         ]
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
     exp = addon_prefs.saved_presets
 
     u = 1
@@ -147,8 +146,8 @@ class CAP_AddonPreferences(AddonPreferences):
     )
 
     # Storage for the Global Presets, and it's enum UI list.
-    sort_presets: CollectionProperty(type=export_properties.CAPSULE_ExportPreset)
-    saved_presets: CollectionProperty(type=export_properties.CAPSULE_ExportPreset)
+    sort_presets: CollectionProperty(type=CAPSULE_ExportPreset)
+    saved_presets: CollectionProperty(type=CAPSULE_ExportPreset)
     saved_presets_index: IntProperty()
 
     saved_presets_dropdown: BoolProperty(default=False)
@@ -206,8 +205,8 @@ class CAP_AddonPreferences(AddonPreferences):
     def draw(self, context):
         layout = self.layout
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__name__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__name__].preferences
         exp = None
 
         # UI Prompt for when the .blend Capsule data can no longer be found.
@@ -216,8 +215,8 @@ class CAP_AddonPreferences(AddonPreferences):
         except KeyError:
             layout = self.layout
             col_export = layout.column(align=True)
-            col_export.label("No Capsule for this .blend file has been found,")
-            col_export.label("Please press the button below to generate new data.")
+            col_export.label(text="No Capsule for this .blend file has been found,")
+            col_export.label(text="Please press the button below to generate new data.")
             col_export.separator()
             col_export.separator()
             col_export.operator("cap.exportdata_create")
@@ -236,25 +235,25 @@ class CAP_AddonPreferences(AddonPreferences):
         if addon_prefs.presets_dropdown is False:
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
-            col_export_title.label("Export Presets")
+            col_export_title.label(text="Export Presets")
 
 
         else:
             col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
-            col_export_title.label("Export Presets")
+            col_export_title.label(text="Export Presets")
 
             if addon_prefs.saved_presets_dropdown is False:
                 savedpresets_box = export_box.box()
                 col_saved_title = savedpresets_box.row(align=True)
                 col_saved_title.prop(addon_prefs, "saved_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-                col_saved_title.label("Saved Presets")
+                col_saved_title.label(text="Saved Presets")
 
             else:
                 savedpresets_box = export_box.box()
                 col_saved_title = savedpresets_box.row(align=True)
                 col_saved_title.prop(addon_prefs, "saved_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-                col_saved_title.label("Saved Presets")
+                col_saved_title.label(text="Saved Presets")
 
                 col_savedpresets = savedpresets_box.row(align=True)
                 col_savedpresets_list = col_savedpresets.column(align=True)
@@ -266,7 +265,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
 
             filepresets_box = export_box.box()
-            filepresets_box.label("Current File Presets")
+            filepresets_box.label(text="Current File Presets")
 
             row_defaults = filepresets_box.row(align=True)
             col_defaultslist = row_defaults.column(align=True)
@@ -282,7 +281,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 currentExp = exp.file_presets[exp.file_presets_listindex]
 
-                filepresets_box.label("Basic Settings")
+                filepresets_box.label(text="Basic Settings")
                 filepresets_options = filepresets_box.row(align=True)
 
                 filepresets_options_2_col = filepresets_options.row(align=True)
@@ -290,7 +289,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 filepresets_options_2_label = filepresets_options_2_col.column(align=True)
                 filepresets_options_2_label.alignment = 'LEFT'
-                filepresets_options_2_label.label("Format Type:")
+                filepresets_options_2_label.label(text="Format Type:")
 
                 filepresets_options_2_dropdowns = filepresets_options_2_col.column(align=True)
                 filepresets_options_2_dropdowns.alignment = 'EXPAND'
@@ -315,7 +314,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 filepresets_options.separator()
 
 
-                filepresets_box.label("Format Type Settings")
+                filepresets_box.label(text="Format Type Settings")
                 #filepresets_box.separator()
 
                 if currentExp.format_type == 'FBX':
@@ -329,7 +328,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             else:
                 preset_unselected = filepresets_box.column(align=True)
-                preset_unselected.label("Select a preset in order to view preset settings.")
+                preset_unselected.label(text="Select a preset in order to view preset settings.")
                 preset_unselected.separator()
                 return
 
@@ -342,11 +341,11 @@ class CAP_AddonPreferences(AddonPreferences):
 
         if addon_prefs.tags_dropdown is False:
             tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            tag_title.label("Tags")
+            tag_title.label(text="Tags")
 
         else:
             tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            tag_title.label("Tags")
+            tag_title.label(text="Tags")
 
             if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
 
@@ -364,7 +363,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 tag_settings.separator()
 
                 if len(currentExp.tags) == 0:
-                    tag_settings.label("Create a new tag in order to view and edit tag settings.")
+                    tag_settings.label(text="Create a new tag in order to view and edit tag settings.")
                     tag_settings.separator()
 
                 else:
@@ -380,7 +379,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             else:
                 unselected = tag_box.column(align=True)
-                unselected.label("Select a preset in order to view tag settings.")
+                unselected.label(text="Select a preset in order to view tag settings.")
                 unselected.separator()
 
         #---------------------------------------------------------
@@ -391,11 +390,11 @@ class CAP_AddonPreferences(AddonPreferences):
 
         if addon_prefs.passes_dropdown is False:
             passUI.prop(addon_prefs, "passes_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            passUI.label("Passes")
+            passUI.label(text="Passes")
 
         else:
             passUI.prop(addon_prefs, "passes_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            passUI.label("Passes")
+            passUI.label(text="Passes")
 
 
             if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
@@ -417,7 +416,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 pass_settings.separator()
 
                 if len(currentExp.passes) == 0:
-                    pass_settings.label("Create a new pass in order to view and edit pass settings.")
+                    pass_settings.label(text="Create a new pass in order to view and edit pass settings.")
                     pass_settings.separator()
 
                 else:
@@ -469,7 +468,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             else:
                 unselected = pass_box.column(align=True)
-                unselected.label("Select a preset in order to view tag settings.")
+                unselected.label(text="Select a preset in order to view tag settings.")
                 unselected.separator()
 
         #---------------------------------------------------------
@@ -480,17 +479,17 @@ class CAP_AddonPreferences(AddonPreferences):
 
         if addon_prefs.options_dropdown is False:
             optionsUI.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            optionsUI.label("Extra Settings")
+            optionsUI.label(text="Extra Settings")
 
         else:
             optionsUI.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            optionsUI.label("Extra Settings")
+            optionsUI.label(text="Extra Settings")
             options_main = options_box.row(align=True)
             options_main.separator()
 
             options_1 = options_main.column(align=False)
             #options_1.alignment = 'CENTER'
-            options_1.label("Additional List Options")
+            options_1.label(text="Additional List Options")
             options_1.separator()
             options_1.prop(addon_prefs, "list_feature", text="", expand=False)
             options_1.separator()
@@ -503,7 +502,7 @@ class CAP_AddonPreferences(AddonPreferences):
             options_main.separator()
 
             options_2 = options_main.column(align=False)
-            options_2.label("Reset")
+            options_2.label(text="Reset")
             options_2.separator()
             options_2.operator("scene.cap_resetsceneprops", text="Reset Scene")
             options_2.separator()
@@ -516,8 +515,8 @@ def CreateDefaultData(scene):
     Attempts to create a Default Data object (a plain axis with a very specific name) to store export preference information in.  If one already exists, it will exit early.
     """
 
-    user_preferences = bpy.context.preferences
-    addon_prefs = user_preferences.addons[__name__].preferences
+    preferences = bpy.context.preferences
+    addon_prefs = preferences.addons[__name__].preferences
 
     # Figure out if an object already exists, if yes do nothing
     for object in bpy.data.objects:
@@ -546,8 +545,8 @@ def CheckSelectedObject(scene):
     A scene handler used to configure the status of previously selected objects and multi-edit opportunities behind the scenes.
     """
 
-    user_preferences = bpy.context.preferences
-    addon_prefs = user_preferences.addons[__name__].preferences
+    preferences = bpy.context.preferences
+    addon_prefs = preferences.addons[__name__].preferences
     #print("SCENE UPDATE")
 
     if bpy.context.active_object is not None:
@@ -565,30 +564,104 @@ def CheckSelectedObject(scene):
 addon_keymaps = []
 
 classes = (
+    # init
     CAP_AddonPreferences,
+
+    # export_formats
+    CAP_FormatData_FBX,
+    CAP_FormatData_OBJ,
+    CAP_FormatData_GLTF,
+
+    # properties
+    ObjectListItem, 
+    CollectionListItem, 
+    ActionListItem, 
+    CAPSULE_Scene_Preferences, 
+    CAPSULE_Object_Preferences, 
+    CAPSULE_Collection_Preferences, 
+    CAPSULE_Object_StateMachine, 
+    # CAPSULE_Action_Preferences,
+
+    # export_operators
+    CAPSULE_OT_ExportAssets,
+
+    # export_properties
+    CAPSULE_ExportTag, 
+    CAPSULE_ExportPassTag, 
+    CAPSULE_ExportPass, 
+    CAPSULE_ExportPreset, 
+    CAPSULE_LocationDefault, 
+    CAPSULE_ExportPresets,
+
+    # ui_operators
+    CAPSULE_OT_Add_Path,
+    CAPSULE_OT_Delete_Path,
+    CAPSULE_OT_Add_Export,
+    CAPSULE_OT_Delete_Export,
+    CAPSULE_OT_Add_Tag,
+    CAPSULE_OT_Delete_Tag,
+    CAPSULE_OT_Add_Pass,
+    CAPSULE_OT_Delete_Pass,
+    CAPSULE_OT_Shift_Path_Up,
+    CAPSULE_OT_Shift_Path_Down,
+    CAPSULE_OT_Set_Root_Object,
+    CAPSULE_OT_Clear_Root_Object,
+    CAPSULE_OT_Clear_List,
+    CAPSULE_OT_Refresh_List,
+    CAPSULE_OT_Reset_Scene,
+    CAPSULE_OT_Reset_Defaults,
+    CAPSULE_OT_UI_Group_Separate,
+    CAPSULE_OT_UI_Group_Options,
+    CAPSULE_OT_Refresh_Actions,
+    CAPSULE_OT_Tutorial_Tags,
+    CAPSULE_OT_Create_ExportData,
+    CAPSULE_OT_Add_Stored_Presets,
+    CAPSULE_OT_Delete_Presets,
+    CAPSULE_OT_Store_Presets,
+
+    # user_inferface
+    CAPSULE_UL_Name,
+    CAPSULE_UL_TagFilter,
+    CAPSULE_UL_Object,
+    CAPSULE_UL_Collection,
+    CAPSULE_UL_Path_Default,
+    CAPSULE_UL_Saved_Default,
+    CAPSULE_UL_Export_Default,
+    CAPSULE_UL_Tag_Default,
+    CAPSULE_UL_Pass_Default,
+    # CAPSULE_UL_Action,
+    CAPSULE_PT_Header,
+    CAPSULE_PT_Selection,
+    CAPSULE_PT_List,
+    CAPSULE_PT_Location
+
+
 )
 
 def register():
     """
     Registers itself and any extra pointer properties, handlers and keymaps to Blender.
     """
-    print("Registering Stuff")
 
-    from bpy.utils import register_class
+    # Register classes
     for cls in classes:
-        register_class(cls)
+        print("Registering ", cls)
+        bpy.utils.register_class(cls)
 
-    # bpy.types.Scene.CAPScn = PointerProperty(name='Capsule Scene Properties', type=properties.CAPSULE_Scene_Preferences)
-    # bpy.types.Object.CAPObj = PointerProperty(type=properties.CAPSULE_Object_Preferences)
-    # bpy.types.Collection.CAPCol = PointerProperty(type=properties.CAPSULE_Collection_Preferences)
-    # bpy.types.Action.CAPAcn = PointerProperty(type=properties.CAPSULE_Action_Preferences)
-    # bpy.types.Object.CAPStm = PointerProperty(type=properties.CAPSULE_Object_StateMachine)
-    # bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
+    # Assign datablocks now all classes have been registered.
+    bpy.types.Scene.CAPScn = PointerProperty(name='Capsule Scene Properties', type=CAPSULE_Scene_Preferences)
+    bpy.types.Object.CAPObj = PointerProperty(type=CAPSULE_Object_Preferences)
+    bpy.types.Collection.CAPCol = PointerProperty(type=CAPSULE_Collection_Preferences)
+    # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
+    bpy.types.Object.CAPStm = PointerProperty(type=CAPSULE_Object_StateMachine)
+    bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
 
-    export_presets.CreatePresets()
 
+    # Setup data and handlers
+    # export_presets.CreatePresets()
     bpy.app.handlers.load_pre.append(CreateDefaultData)
-    bpy.app.handlers.scene_update_post.append(CheckSelectedObject)
+    bpy.app.handlers.depsgraph_update_post.append(CheckSelectedObject)
+
 
     # Register keymaps
     wm = bpy.context.window_manager
@@ -605,26 +678,8 @@ def unregister():
     """
     Unregisters itself and any extra pointer properties, handlers and keymaps from Blender.
     """
-    print("Unregistering Stuff")
 
-    from bpy.utils import unregister_class
-    
-    export_presets.DeletePresets()
-
-    bpy.app.handlers.load_pre.remove(CreateDefaultData)
-    bpy.app.handlers.scene_update_post.remove(CheckSelectedObject)
-
-    # del bpy.types.Object.CAPExp
-    # del bpy.types.Scene.CAPScn
-    # del bpy.types.Object.CAPObj
-    # del bpy.types.Collection.CAPCol
-    # del bpy.types.Action.CAPAcn
-    # del bpy.types.Object.CAPStm
-
-    
-    for cls in reversed(classes):
-        unregister_class(cls)
-
+    # Remove keymaps
     wm = bpy.context.window_manager
     kc = wm.keyconfigs.addon
     if kc:
@@ -633,4 +688,24 @@ def unregister():
             if kmi.idname == 'wm.call_menu_pie':
                 if kmi.properties.name == "pie.capsule_main":
                     km.keymap_items.remove(kmi)
+    
+    # export_presets.DeletePresets()
+    bpy.app.handlers.load_pre.remove(CreateDefaultData)
+    bpy.app.handlers.depsgraph_update_post.remove(CheckSelectedObject)
+
+
+    # Delete custom datablocks
+    del bpy.types.Scene.CAPScn
+    del bpy.types.Object.CAPObj
+    del bpy.types.Collection.CAPCol
+    # del bpy.types.Action.CAPAcn
+    del bpy.types.Object.CAPStm
+    del bpy.types.Object.CAPExp
+
+
+    # Unregister classes
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
+
+
 

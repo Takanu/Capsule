@@ -12,8 +12,8 @@ def CAP_Update_CollectionExport(self, context):
     assignment using "UpdateCollectionList"
     """
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
     scn = context.scene.CAPScn
 
     print("Inside EnableExport (Collection)")
@@ -85,8 +85,8 @@ def CAP_Update_FocusCollection(self, context):
     EDITME: The camera movement interpolation no longer works.
     """
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     for collection in collection_utils.GetSceneCollections(context.scene, True):
         if collection.name == self.name:
@@ -119,8 +119,8 @@ def CAP_Update_SelectCollection(self, context):
     Selects (but doesn't focus) the given collection.
     """
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     for collection in select_utils.GetSceneCollections(context.scene, True):
         if collection.name == self.name:
@@ -160,8 +160,8 @@ def CAP_Update_CollectionListExport(self, context):
     """
     print("Changing Enable Export... (List)")
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
     scn = context.scene.CAPScn
     scn.enable_list_active = True
 
@@ -184,8 +184,8 @@ def CAP_Update_CollectionListSelect(self, context):
     Used to turn off multi-select-enabled update functions if they were instead activated from a 
     list entry instead of another UI element.  Sneaky usability enhancements be here... <w<
     """
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     if self.collection_list_index != -1:
         print("Selection in list, turning off multi edit...")
@@ -236,8 +236,8 @@ def CAP_Update_CollectionRootObject(self, context):
     Updates the "Collection Origin" property for all selected groups.
     """
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     if addon_prefs.collection_multi_edit is True:
 
@@ -264,8 +264,8 @@ def CAP_Update_CollectionLocationDefault(self, context):
     """
     Updates the object's Location Default property.
     """
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     if addon_prefs.collection_multi_edit is True:
 
@@ -292,8 +292,8 @@ def CAP_Update_CollectionExportDefault(self, context):
     """
     Updates the collection's Export Default property.
     """
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     if addon_prefs.collection_multi_edit is True:
 
@@ -321,8 +321,8 @@ def CAP_Update_CollectionNormals(self, context):
     Updates the groups's Normals property.
     FIXME: This needs to be categorised under a FBX-specific property panel
     """
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     if addon_prefs.collection_multi_edit is True:
 

@@ -21,8 +21,8 @@ class CAPSULE_OT_Add_Path(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         newPath = exp.location_presets.add()
@@ -50,8 +50,8 @@ class CAPSULE_OT_Delete_Path(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         exp.location_presets.remove(exp.location_presets_listindex)
@@ -77,8 +77,8 @@ class CAPSULE_OT_Add_Export(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
 
@@ -102,8 +102,8 @@ class CAPSULE_OT_Delete_Export(Operator):
 
     @classmethod
     def poll(cls, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         if len(exp.file_presets) > 0:
@@ -114,8 +114,8 @@ class CAPSULE_OT_Delete_Export(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # remove the data from both lists
@@ -138,8 +138,8 @@ class CAPSULE_OT_Add_Tag(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Add the tag into the main list
@@ -166,8 +166,8 @@ class CAPSULE_OT_Delete_Tag(Operator):
 
     @classmethod
     def poll(cls, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         export = exp.file_presets[exp.file_presets_listindex]
@@ -183,8 +183,8 @@ class CAPSULE_OT_Delete_Tag(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         export = exp.file_presets[exp.file_presets_listindex]
@@ -209,8 +209,8 @@ class CAPSULE_OT_Add_Pass(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         export = exp.file_presets[exp.file_presets_listindex]
@@ -237,8 +237,8 @@ class CAPSULE_OT_Delete_Pass(Operator):
 
     @classmethod
     def poll(cls, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         export = exp.file_presets[exp.file_presets_listindex]
@@ -250,8 +250,8 @@ class CAPSULE_OT_Delete_Pass(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         export = exp.file_presets[exp.file_presets_listindex]
@@ -311,8 +311,8 @@ class CAPSULE_OT_Set_Root_Object(Operator):
     def execute(self, context):
         scn = context.scene.CAPScn
 
-        user_preferences = context.user_preferences
-        self.addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        self.addon_prefs = preferences.addons[__package__].preferences
 
         self.collections = []
         self.object = None
@@ -387,8 +387,8 @@ class CAPSULE_OT_Clear_Root_Object(Operator):
 
         scn = context.scene.CAPScn
         obj = context.active_object.CAPObj
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
 
         # If multi-edit is on, get info from the scene
         if addon_prefs.collection_multi_edit is True:
@@ -533,8 +533,8 @@ class CAPSULE_OT_Reset_Defaults(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
 
         if addon_prefs == None:
             print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")
@@ -683,8 +683,8 @@ class CAPSULE_OT_Create_ExportData(Operator):
     def execute(self, context):
         print(self)
 
-        user_preferences = bpy.context.preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = bpy.context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
 
         # Figure out if an object already exists, if yes do nothing
         for object in bpy.data.objects:
@@ -716,8 +716,8 @@ class CAPSULE_OT_Add_Stored_Presets(Operator):
 
     @classmethod
     def poll(cls, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         if len(addon_prefs.saved_presets) > 0:
@@ -729,8 +729,8 @@ class CAPSULE_OT_Add_Stored_Presets(Operator):
     def execute(self, context):
 
         # Get the current export data
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
@@ -746,8 +746,8 @@ class CAPSULE_OT_Delete_Presets(Operator):
 
     @classmethod
     def poll(cls, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
 
         if len(addon_prefs.saved_presets) > 0:
             export = addon_prefs.saved_presets[addon_prefs.saved_presets_index]
@@ -760,8 +760,8 @@ class CAPSULE_OT_Delete_Presets(Operator):
     def execute(self, context):
 
         # Get the current export data
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
@@ -780,8 +780,8 @@ class CAPSULE_OT_Store_Presets(Operator):
 
     @classmethod
     def poll(cls, context):
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         if len(exp.file_presets) > 0:
@@ -794,8 +794,8 @@ class CAPSULE_OT_Store_Presets(Operator):
     def execute(self, context):
 
         # Get the current export data
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
@@ -803,5 +803,44 @@ class CAPSULE_OT_Store_Presets(Operator):
         export_presets.CopyPreset(exp.file_presets[exp.file_presets_listindex], new_preset)
 
         return {'FINISHED'}
+
+
+# ////////////////////// - CLASS REGISTRATION - ////////////////////////
+# decided to do it all in __init__ instead, skipping for now.
+
+# classes = (
+#     CAPSULE_OT_Add_Path,
+#     CAPSULE_OT_Delete_Path,
+#     CAPSULE_OT_Add_Export,
+#     CAPSULE_OT_Delete_Export,
+#     CAPSULE_OT_Add_Tag,
+#     CAPSULE_OT_Delete_Tag,
+#     CAPSULE_OT_Add_Pass,
+#     CAPSULE_OT_Delete_Pass,
+#     CAPSULE_OT_Shift_Path_Up,
+#     CAPSULE_OT_Shift_Path_Down,
+#     CAPSULE_OT_Set_Root_Object,
+#     CAPSULE_OT_Clear_Root_Object,
+#     CAPSULE_OT_Clear_List,
+#     CAPSULE_OT_Refresh_List,
+#     CAPSULE_OT_Reset_Scene,
+#     CAPSULE_OT_Reset_Defaults,
+#     CAPSULE_OT_UI_Group_Separate,
+#     CAPSULE_OT_UI_Group_Options,
+#     CAPSULE_OT_Refresh_Actions,
+#     CAPSULE_OT_Tutorial_Tags,
+#     CAPSULE_OT_Create_ExportData,
+#     CAPSULE_OT_Add_Stored_Presets,
+#     CAPSULE_OT_Delete_Presets,
+#     CAPSULE_OT_Store_Presets,
+# )
+
+# def register():
+#     for cls in classes:
+#         bpy.utils.register_class(cls)
+
+# def unregister():
+#     for cls in reversed(classes):
+#         bpy.utils.unregister_class(cls)
 
 

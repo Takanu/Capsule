@@ -4,6 +4,8 @@ from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, 
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.types import UILayout
 
+# why do I have this file again?
+
 # used to define the properties for different formats that Capsule can export to.
 
 class CAP_FormatData_Undefined(PropertyGroup):
@@ -13,6 +15,7 @@ class CAP_FormatData_Undefined(PropertyGroup):
            default=True,
         )
 
+# This is imported but not used anywhere.  Hmm...
 class CAP_ExportFormat:
 	"""
 	Defines a single export format that Capsule can export to.

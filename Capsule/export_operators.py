@@ -628,8 +628,8 @@ class CAPSULE_OT_ExportAssets(Operator):
         # Ensures that the scene is setup with correct settings, before proceeding
         # with the export.
 
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Check all active file presets for valid directory names
@@ -767,11 +767,11 @@ class CAPSULE_OT_ExportAssets(Operator):
         # Currently bundled with the plugin, leaving for later if needed
 
         # if gltfRequired == True:
-        #     print(bpy.context.user_preferences.addons.keys())
+        #     print(bpy.context.preferences.addons.keys())
         #     foundName = False
         #     moduleName = ""
 
-        #     for mod_name in bpy.context.user_preferences.addons.keys():
+        #     for mod_name in bpy.context.preferences.addons.keys():
         #         print(mod_name)
 
         #         if "blendergltf" in mod_name:
@@ -792,8 +792,8 @@ class CAPSULE_OT_ExportAssets(Operator):
     ###############################################################
     def execute(self, context):
         scn = context.scene.CAPScn
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = None
 
         # For the new pie menu, we need to see if any data exists before continuing
@@ -1463,3 +1463,12 @@ class CAPSULE_OT_ExportAssets(Operator):
 
 
         return {'FINISHED'}
+
+# ////////////////////// - CLASS REGISTRATION - ////////////////////////
+# decided to do it all in __init__ instead, skipping for now.
+
+# def register():
+#     bpy.utils.register_class(CAPSULE_OT_ExportAssets)
+
+# def unregister():
+#     bpy.utils.unregister_class(CAPSULE_OT_ExportAssets)

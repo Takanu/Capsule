@@ -86,8 +86,8 @@ class CAPSULE_MT_PieLocationObject(Menu):
         pie = layout.menu_pie()
 
         obj = context.object.CAPObj
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         i = 0
@@ -107,8 +107,8 @@ class CAPSULE_MT_PieLocationCollection(Menu):
         pie = layout.menu_pie()
 
         obj = context.object.CAPObj
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         i = 0
@@ -159,8 +159,8 @@ class CAPSULE_MT_PieExportObject(Menu):
         pie = layout.menu_pie()
 
         obj = context.object.CAPObj
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         i = 0
@@ -180,8 +180,8 @@ class CAPSULE_MT_PieExportCollection(Menu):
         pie = layout.menu_pie()
 
         obj = context.object.CAPObj
-        user_preferences = context.user_preferences
-        addon_prefs = user_preferences.addons[__package__].preferences
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         i = 0

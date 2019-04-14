@@ -16,11 +16,6 @@ from bpy.types import (
 	AddonPreferences, 
 	PropertyGroup,
 )
-from bpy_extras.io_utils import (
-	ExportHelper,
-	orientation_helper_factory,
-	axis_conversion,
-)
 
 class CAP_FormatData_GLTF(PropertyGroup):
 
@@ -337,13 +332,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_main.separator()
 		
-	def export(self, context, exportPreset, exportPass, filePath, fileName):
+	# def export(self, context, exportPreset, exportPass, filePath, fileName):
+	# 	"""
+	# 	Calls the GLTF Export module to make the export happen.
+	# 	"""
 
-		"""
-		Calls the GLTF Export module to make the export happen.
-		"""
-
-		print('nope.')
+	# 	print('nope.')
 
 		# Needs updating to Blender 2.8's inbuilt GLTF exporter.
 

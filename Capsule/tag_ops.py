@@ -5,8 +5,8 @@ from .tk_utils import text_ops
 def CheckForTags(context, string):
 
     scn = context.scene.CAPScn
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     hasLP = text_ops.CheckSuffix(string, addon_prefs.lp_tag)
     hasHP = text_ops.CheckSuffix(string, addon_prefs.hp_tag)

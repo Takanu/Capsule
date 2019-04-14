@@ -2,12 +2,14 @@
 import bpy
 from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
-from .export_formats import CAP_ExportFormat, CAP_FormatData_FBX, CAP_FormatData_OBJ#, CAP_FormatData_GLTF
+
+from . import export_formats
+from .export_formats import CAP_ExportFormat, CAP_FormatData_FBX, CAP_FormatData_OBJ, CAP_FormatData_GLTF
 
 def CAP_Update_TagName(self, context):
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
     if addon_prefs.plugin_is_ready is True:
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
@@ -244,7 +246,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
     data_obj: PointerProperty(type=CAP_FormatData_OBJ)
 
     # the data stored for GLTF presets.
-    data_gltf: PointerProperty(type=CAP_FormatData_OBJ)
+    data_gltf: PointerProperty(type=CAP_FormatData_GLTF)
 
     # A special system variable that defines whether it can be deleted from the Global Presets list.
     x_global_user_deletable: BoolProperty(default=True)
@@ -323,26 +325,25 @@ class CAPSULE_ExportPresets(PropertyGroup):
     )
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (
-    CAPSULE_ExportTag, 
-    CAPSULE_ExportPassTag, 
-    CAPSULE_ExportPass, 
-    CAPSULE_ExportPreset, 
-    CAPSULE_LocationDefault, 
-    CAPSULE_ExportPresets,
-)
+# decided to do it all in __init__ instead, skipping for now.
 
-def register():
-    print("Registering Properties")
-    for cls in classes:
-        bpy.utils.register_class(cls)
+# classes = (
+#     CAPSULE_ExportTag, 
+#     CAPSULE_ExportPassTag, 
+#     CAPSULE_ExportPass, 
+#     CAPSULE_ExportPreset, 
+#     CAPSULE_LocationDefault, 
+#     CAPSULE_ExportPresets,
+# )
 
-    bpy.types.Scene.CAPScn = PointerProperty(type=CAPSULE_Scene_Preferences)
+# def register():
+#     export_formats.register()
+#     for cls in classes:
+#         bpy.utils.register_class(cls)
 
 
-def unregister():
-    print("Un-registering Properties")
-    del bpy.types.Scene.CAPScn
-    
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+# def unregister():
+#     for cls in reversed(classes):
+#         bpy.utils.unregister_class(cls)
+
+#     export_formats.unregister()

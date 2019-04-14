@@ -223,8 +223,8 @@ def GetLocationDefaults(scene, context):
         ("0", "None",  "", 0),
         ]
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
     exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
     u = 1
@@ -240,8 +240,8 @@ def GetExportDefaults(scene, context):
         ("0", "None",  "", 0),
         ]
 
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons[__package__].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
     exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
     u = 1
@@ -333,8 +333,8 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
 def GetExportPresets(scene, context):
 
     items = []
-    user_preferences = context.user_preferences
-    addon_prefs = user_preferences.addons["Blinkey"].preferences
+    preferences = context.preferences
+    addon_prefs = preferences.addons["Blinkey"].preferences
 
     u = 1
 
@@ -360,27 +360,27 @@ class CAPSULE_Action_Preferences(PropertyGroup):
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
-classes = (
-    ObjectListItem, 
-    CollectionListItem, 
-    ActionListItem, 
-    CAPSULE_Scene_Preferences, 
-    CAPSULE_Object_Preferences, 
-    CAPSULE_Collection_Preferences, 
-    CAPSULE_Object_StateMachine, 
-    CAPSULE_Action_Preferences
-)
+# decided to do it all in __init__ instead, skipping for now.
 
-def register():
-    print("Registering Properties")
-    for cls in classes:
-        bpy.utils.register_class(cls)
+# classes = (
+#     ObjectListItem, 
+#     CollectionListItem, 
+#     ActionListItem, 
+#     CAPSULE_Scene_Preferences, 
+#     CAPSULE_Object_Preferences, 
+#     CAPSULE_Collection_Preferences, 
+#     CAPSULE_Object_StateMachine, 
+#     # CAPSULE_Action_Preferences
+# )
 
-    bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
+# def register():
+#     print("~~~Registering Generic Properties~~~")
+#     for cls in classes:
+#         bpy.utils.register_class(cls)
 
-def unregister():
-    print("Un-registering Properties")
-    del bpy.types.Object.CAPExp
 
-    for cls in reversed(classes):
-        bpy.utils.unregister_class(cls)
+# def unregister():
+#     print("~~~Un-registering Generic Properties~~~")
+#     for cls in reversed(classes):
+#         bpy.utils.unregister_class(cls)
+
