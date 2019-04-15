@@ -50,7 +50,7 @@ def GetSelectedObjectCollections():
     """
     collections_found = []
 
-    for item in context.selected_objects:
+    for item in bpy.context.selected_objects:
         for collection in item.users_collection:
             collection_added = False
 

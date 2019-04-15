@@ -26,13 +26,13 @@ def CAP_Update_TagName(self, context):
 
 def DrawAnimationWarning(self, context):
         layout = self.layout
-        layout.label("Hey!  The animation feature is currently experimental, and may result in")
-        layout.label("objects being repositioned after exporting in the scene and in the FBX file.")
+        layout.label(text="Hey!  The animation feature is currently experimental, and may result in")
+        layout.label(text="objects being repositioned after exporting in the scene and in the FBX file.")
         layout.separator()
-        layout.label("The animation features should work fine if you're exporting armature animations,")
-        layout.label("any other kinds of object animations are unlikely to export correctly, and if")
-        layout.label("attempted you may find your scene translated slightly.  If this happens though")
-        layout.label("simply use the undo tool.")
+        layout.label(text="The animation features should work fine if you're exporting armature animations,")
+        layout.label(text="any other kinds of object animations are unlikely to export correctly, and if")
+        layout.label(text="attempted you may find your scene translated slightly.  If this happens though")
+        layout.label(text="simply use the undo tool.")
         layout.separator()
 
 

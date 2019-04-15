@@ -220,7 +220,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_main.separator()
 
 			export_1 = export_main.column(align=True)
-			export_1.label("Group Options")
+			export_1.label(text="Group Options")
 			export_1.separator()
 			export_1.prop(exportData, "export_embed_buffers")
 			export_1.prop(exportData, "export_embed_images")
@@ -235,7 +235,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_main.separator()
 
 			export_2 = export_main.column(align=True)
-			export_2.label("Exportable Object Types")
+			export_2.label(text="Exportable Object Types")
 			export_2.separator()
 
 			export_main.separator()
@@ -267,7 +267,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_1_label = export_1_row.column(align=True)
 			export_1_label.alignment = 'LEFT'
-			export_1_label.label("Export Indices:")
+			export_1_label.label(text="Export Indices:")
 
 			export_1_dropdowns = export_1_row.column(align=True)
 			export_1_dropdowns.alignment = 'EXPAND'

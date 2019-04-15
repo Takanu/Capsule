@@ -697,7 +697,7 @@ class CAPSULE_OT_Create_ExportData(Operator):
         bpy.ops.object.select_all(action='DESELECT')
         bpy.ops.object.empty_add(type='PLAIN_AXES')
 
-        defaultDatablock = bpy.context.scene.objects.active
+        defaultDatablock = bpy.context.view_layer.objects.active
         defaultDatablock.name = addon_prefs.default_datablock
         defaultDatablock.hide_viewport = True
         defaultDatablock.hide_render = True

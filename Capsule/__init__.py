@@ -199,8 +199,8 @@ class CAP_AddonPreferences(AddonPreferences):
 
     data_missing: BoolProperty(default=False)
     plugin_is_ready: BoolProperty(default=False)
-    prev_selected_object: StringProperty()
-    prev_selected_count: IntProperty()
+    prev_selected_object: StringProperty(default='')
+    prev_selected_count: IntProperty(default=0)
 
     def draw(self, context):
         layout = self.layout
@@ -261,7 +261,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 col_savedpresets_list.operator("cap.create_current_preset", text="Add to File Presets", icon="FORWARD")
 
                 col_savedpresets_options = col_savedpresets.column(align=True)
-                col_savedpresets_options.operator("cap.delete_global_preset", text="", icon="ZOOMOUT")
+                col_savedpresets_options.operator("cap.delete_global_preset", text="", icon="REMOVE")
 
 
             filepresets_box = export_box.box()
@@ -273,8 +273,8 @@ class CAP_AddonPreferences(AddonPreferences):
             col_defaultslist.operator("cap.add_global_preset", text="Add to Saved Presets", icon="FORWARD")
 
             col_defaultslist_options = row_defaults.column(align=True)
-            col_defaultslist_options.operator("scene.cap_addexport", text="", icon="ZOOMIN")
-            col_defaultslist_options.operator("scene.cap_deleteexport", text="", icon="ZOOMOUT")
+            col_defaultslist_options.operator("scene.cap_addexport", text="", icon="ADD")
+            col_defaultslist_options.operator("scene.cap_deleteexport", text="", icon="REMOVE")
 
 
             if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
@@ -355,8 +355,8 @@ class CAP_AddonPreferences(AddonPreferences):
                 tagUI_row.template_list("CAPSULE_UL_Tag_Default", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
 
                 tagUI_col = tagUI_row.column(align=True)
-                tagUI_col.operator("scene.cap_addtag", text="", icon="ZOOMIN")
-                tagUI_col.operator("scene.cap_deletetag", text="", icon="ZOOMOUT")
+                tagUI_col.operator("scene.cap_addtag", text="", icon="ADD")
+                tagUI_col.operator("scene.cap_deletetag", text="", icon="REMOVE")
                 tagUI_col.separator()
 
                 tag_settings = tag_box.column(align=True)
@@ -407,8 +407,8 @@ class CAP_AddonPreferences(AddonPreferences):
                 row_passes.separator()
 
                 col_passes = row_passes.column(align=True)
-                col_passes.operator("scene.cap_addpass", text="", icon="ZOOMIN")
-                col_passes.operator("scene.cap_deletepass", text="", icon="ZOOMOUT")
+                col_passes.operator("scene.cap_addpass", text="", icon="ADD")
+                col_passes.operator("scene.cap_deletepass", text="", icon="REMOVE")
                 col_passes.separator()
 
 
@@ -529,7 +529,7 @@ def CreateDefaultData(scene):
     bpy.ops.object.empty_add(type='PLAIN_AXES')
 
     # set it's properties
-    defaultDatablock = bpy.context.scene.objects.active
+    defaultDatablock = bpy.context.view_layer.objects.active
     defaultDatablock.name = addon_prefs.default_datablock
     defaultDatablock.CAPExp.is_storage_object = True
 
@@ -564,9 +564,6 @@ def CheckSelectedObject(scene):
 addon_keymaps = []
 
 classes = (
-    # init
-    CAP_AddonPreferences,
-
     # export_formats
     CAP_FormatData_FBX,
     CAP_FormatData_OBJ,
@@ -633,9 +630,10 @@ classes = (
     CAPSULE_PT_Header,
     CAPSULE_PT_Selection,
     CAPSULE_PT_List,
-    CAPSULE_PT_Location
+    CAPSULE_PT_Location,
 
-
+    # init
+    CAP_AddonPreferences,
 )
 
 def register():

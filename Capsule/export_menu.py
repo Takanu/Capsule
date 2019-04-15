@@ -208,7 +208,7 @@ class CAPSULE_OT_PieObjectMenu(Menu):
         layout = self.layout
         pie = layout.menu_pie()
         # 4 - LEFT
-        pie.operator("capsule.toggle_export", text="Enable Export", icon="ZOOMIN").args = "OBJECT.True"
+        pie.operator("capsule.toggle_export", text="Enable Export", icon="ADD").args = "OBJECT.True"
         # 6 - RIGHT
         pie.operator("capsule.toggle_export", text="Disable Export", icon="X").args = "OBJECT.False"
         # 2 - BOTTOM
@@ -239,7 +239,7 @@ class CAPSULE_OT_PieCollectionMenu(Menu):
         layout = self.layout
         pie = layout.menu_pie()
         # 4 - LEFT
-        pie.operator("capsule.toggle_export", text="Enable Export", icon="ZOOMIN").args = "GROUP.True"
+        pie.operator("capsule.toggle_export", text="Enable Export", icon="ADD").args = "GROUP.True"
         # 6 - RIGHT
         pie.operator("capsule.toggle_export", text="Disable Export", icon="X").args = "GROUP.False"
         # 2 - BOTTOM

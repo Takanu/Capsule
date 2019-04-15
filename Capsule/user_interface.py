@@ -119,11 +119,18 @@ class CAPSULE_PT_Header(Panel):
 
 
 class CAPSULE_PT_Selection(Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "render"
-    bl_label = "Selection"
-    bl_parent_id = "CAPSULE_PT_Header"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "View"
+    bl_context = "objectmode"
+    bl_label = "Capsule"
+    
+
+    # bl_space_type = "PROPERTIES"
+    # bl_region_type = "WINDOW"
+    # bl_context = "render"
+    # bl_label = "Selection"
+    # bl_parent_id = "CAPSULE_PT_Header"
 
     def draw(self, context):
 
@@ -136,8 +143,8 @@ class CAPSULE_PT_Selection(Panel):
         except KeyError:
             layout = self.layout
             col_export = layout.column(align=True)
-            col_export.label("No Capsule for this .blend file has been found,")
-            col_export.label("Please press the button below to generate new data.")
+            col_export.label(text="No Capsule for this .blend file has been found,")
+            col_export.label(text="Please press the button below to generate new data.")
             col_export.separator()
             col_export.separator()
             col_export.operator("cap.exportdata_create")
@@ -218,7 +225,7 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.separator()
                 obj_settings.label(text="Location:")
                 obj_settings.separator()
-                obj_settings.prop(obj, "location_default", icon="FILESEL", text="")
+                obj_settings.prop(obj, "location_default", icon="FILE_FOLDER", text="")
                 obj_settings.separator()
                 obj_settings.label(text="Export Preset:")
                 obj_settings.separator()
@@ -267,13 +274,13 @@ class CAPSULE_PT_Selection(Panel):
             # Otherwise, just find it in a selection
             elif context.active_object is not None or len(context.selected_objects) > 0:
                 collections_found = collection_utils.GetSelectedObjectCollections()
-                collection_label = ""
+                collection_info = ""
 
                 if len(collections_found) == 1:
-                    collection_label = collections_found[0].name + " collection found."
+                    collection_info = collections_found[0].name + " collection found."
 
                 elif len(collections_found) > 1:
-                    collection_label = str(len(collections_found)) + " collections found."
+                    collection_info = str(len(collections_found)) + " collections found."
 
                 if context.active_object is not None:
                     if len(context.active_object.users_collection) > 0:
@@ -283,13 +290,13 @@ class CAPSULE_PT_Selection(Panel):
                             break
 
                 if gr is not None and len(collections_found) == 0:
-                    collection_label = gr.name + " collection selected."
+                    collection_info = gr.name + " collection selected."
 
-                if collection_label != "":
+                if collection_info != "":
                     col_selection_item_box = layout.box()
                     collection_label = col_selection_item_box.column(align=True)
                     collection_label.alignment = 'EXPAND'
-                    collection_label.label(text=collection_label, icon="MOD_ARRAY")
+                    collection_label.label(text=collection_info, icon="MOD_ARRAY")
 
 
 
@@ -311,7 +318,7 @@ class CAPSULE_PT_Selection(Panel):
                 rawr_other = layout.column(align=True)
                 rawr_other.label(text="Location:")
                 rawr_other.separator()
-                rawr_other.prop(grp, "location_default", icon="FILESEL", text="")
+                rawr_other.prop(grp, "location_default", icon="FILE_FOLDER", text="")
                 rawr_other.separator()
                 rawr_other.label(text="Export Preset:")
                 rawr_other.separator()
@@ -426,8 +433,8 @@ class CAPSULE_PT_Location(Panel):
         col_location.separator()
 
         row_location = col_location.column(align=True)
-        row_location.operator("scene.cap_addpath", text="", icon="ZOOMIN")
-        row_location.operator("scene.cap_deletepath", text="", icon="ZOOMOUT")
+        row_location.operator("scene.cap_addpath", text="", icon="ADD")
+        row_location.operator("scene.cap_deletepath", text="", icon="REMOVE")
         #row_location.operator("scene.cap_shiftup", text="", icon="TRIA_UP")
         #row_location.operator("scene.cap_shiftdown", text="", icon="TRIA_DOWN")
 
@@ -439,7 +446,7 @@ class CAPSULE_PT_Location(Panel):
             count += 1
 
         if exp.location_presets_listindex > -1 and exp.location_presets_listindex < count:
-            file.label("File Path:")
+            file.label(text="File Path:")
             file.separator()
             file.prop(exp.location_presets[exp.location_presets_listindex], "path", text="")
 

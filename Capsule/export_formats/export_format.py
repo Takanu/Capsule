@@ -30,7 +30,7 @@ class CAP_ExportFormat:
 		"""
 
 		column = layout.column(align=True)
-		column.label("This export type is undefined, someone let a base class here! D:")
+		column.label(text="This export type is undefined, someone let a base class here! D:")
 		return
 
 	def draw_selection_preferences(self, layout):
@@ -40,7 +40,7 @@ class CAP_ExportFormat:
 		"""
 
 		column = layout.column(align=True)
-		column.label("This export type is undefined, someone let a base class here! D:")
+		column.label(text="This export type is undefined, someone let a base class here! D:")
 		return
 
 

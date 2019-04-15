@@ -144,7 +144,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_main.separator()
 
 			export_1 = export_main.column(align=True)
-			export_1.label("Group Options")
+			export_1.label(text="Group Options")
 			export_1.separator()
 			export_1.prop(exportData, "use_blen_objects")
 			export_1.prop(exportData, "group_by_group")
@@ -156,7 +156,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_main.separator()
 
 			export_2 = export_main.column(align=True)
-			#export_2.label("Exportable Object Types")
+			#export_2.label(text="Exportable Object Types")
 			export_2.separator()
 			#export_types = export_1.row(align=True)
 			#export_2.prop(exportData, "export_types")
@@ -184,8 +184,8 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 			export_2_label = export_2_row.column(align=True)
 			export_2_label.alignment = 'RIGHT'
-			export_2_label.label("Axis Up:")
-			export_2_label.label("Axis Forward:")
+			export_2_label.label(text="Axis Up:")
+			export_2_label.label(text="Axis Forward:")
 
 			export_2_dropdowns = export_2_row.column(align=True)
 			export_2_dropdowns.alignment = 'EXPAND'

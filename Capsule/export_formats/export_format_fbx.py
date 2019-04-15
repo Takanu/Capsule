@@ -237,7 +237,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_main.separator()
 
 			export_1 = export_main.column(align=True)
-			export_1.label("Additional Options")
+			export_1.label(text="Additional Options")
 			export_1.separator()
 			export_1.prop(exportData, "bundle_textures")
 
@@ -246,7 +246,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_main.separator()
 
 			export_2 = export_main.column(align=True)
-			export_2.label("Exportable Object Types")
+			export_2.label(text="Exportable Object Types")
 			export_2.separator()
 			#export_types = export_1.row(align=True)
 			export_2.prop(exportData, "export_types")
@@ -280,9 +280,9 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 			export_2_label = export_2_row.column(align=True)
 			export_2_label.alignment = 'RIGHT'
-			export_2_label.label("Axis Up:")
-			export_2_label.label("Axis Forward:")
-			export_2_label.label("Apply Scale Options:")
+			export_2_label.label(text="Axis Up:")
+			export_2_label.label(text="Axis Forward:")
+			export_2_label.label(text="Apply Scale Options:")
 
 			export_2_dropdowns = export_2_row.column(align=True)
 			export_2_dropdowns.alignment = 'EXPAND'
@@ -305,7 +305,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_2.alignment = 'RIGHT'
 			export_2_label = export_2.column(align=True)
 			export_2_label.alignment = 'RIGHT'
-			export_2_label.label("Normals:")
+			export_2_label.label(text="Normals:")
 
 			export_2_dropdowns = export_2.column(align=True)
 			export_2_dropdowns.alignment = 'EXPAND'
@@ -329,9 +329,9 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_2.alignment = 'RIGHT'
 			export_2_label = export_2.column(align=True)
 			export_2_label.alignment = 'RIGHT'
-			export_2_label.label("Primary Bone Axis:")
-			export_2_label.label("Secondary Bone Axis:")
-			export_2_label.label("Armature Node Type:")
+			export_2_label.label(text="Primary Bone Axis:")
+			export_2_label.label(text="Secondary Bone Axis:")
+			export_2_label.label(text="Armature Node Type:")
 
 			export_2_dropdowns = export_2.column(align=True)
 			export_2_dropdowns.alignment = 'EXPAND'
