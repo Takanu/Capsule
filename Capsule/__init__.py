@@ -142,7 +142,7 @@ class CAP_AddonPreferences(AddonPreferences):
     default_datablock: StringProperty(
         name="Dummy Datablock Name",
         description="The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
-        default="> CAPSULE DATA 1.2 <"
+        default=">Capsule Blend File Data<"
     )
 
     # Storage for the Global Presets, and it's enum UI list.
@@ -648,11 +648,11 @@ def register():
 
     # Assign datablocks now all classes have been registered.
     bpy.types.Scene.CAPScn = PointerProperty(name='Capsule Scene Properties', type=CAPSULE_Scene_Preferences)
-    bpy.types.Object.CAPObj = PointerProperty(type=CAPSULE_Object_Preferences)
-    bpy.types.Collection.CAPCol = PointerProperty(type=CAPSULE_Collection_Preferences)
+    bpy.types.Object.CAPObj = PointerProperty(name='Capsule Object Properties', type=CAPSULE_Object_Preferences)
+    bpy.types.Collection.CAPCol = PointerProperty(name='Capsule Collection Properties', type=CAPSULE_Collection_Preferences)
     # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
-    bpy.types.Object.CAPStm = PointerProperty(type=CAPSULE_Object_StateMachine)
-    bpy.types.Object.CAPExp = PointerProperty(type=CAPSULE_ExportPresets)
+    bpy.types.Object.CAPStm = PointerProperty(name='Capsule State Tracker', type=CAPSULE_Object_StateMachine)
+    bpy.types.Object.CAPExp = PointerProperty(name='Capsule Export Presets', type=CAPSULE_ExportPresets)
 
 
     # Setup data and handlers

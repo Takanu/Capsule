@@ -272,7 +272,7 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         )
 
     location_default: EnumProperty(
-        name="Select Location Preset",
+        name="Select Export Location",
         description="Defines the file path that the object will be exported to.",
         items=GetLocationDefaults,
         update=CAP_Update_LocationDefault
@@ -311,7 +311,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         )
 
     location_default: EnumProperty(
-        name="Select Location Default",
+        name="Select Export Location",
         description="Defines the Location that the collection will be exported to.",
         items=GetLocationDefaults,
         update=CAP_Update_CollectionLocationDefault

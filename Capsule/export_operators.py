@@ -233,7 +233,7 @@ class CAPSULE_OT_ExportAssets(Operator):
         self.active = context.active_object
 
         # Save the current cursor location
-        cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+        cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
         self.cursorLocation = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
         # Keep a record of the current object mode
@@ -262,7 +262,7 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         for item in context.scene.objects:
             self.hiddenObjectList.append(item)
-            isHidden = item.hide
+            isHidden = item.hide_viewport
             self.hiddenList.append(isHidden)
             isSelectable = item.hide_select
             self.selectList.append(isSelectable)
@@ -423,7 +423,7 @@ class CAPSULE_OT_ExportAssets(Operator):
             bpy.ops.object.select_all(action='DESELECT')
 
         # Restore the 3D cursor
-        bpy.data.scenes[bpy.context.scene.name].cursor_location = self.cursorLocation
+        bpy.data.scenes[bpy.context.scene.name].cursor.location = self.cursorLocation
 
         print("Rawr")
 

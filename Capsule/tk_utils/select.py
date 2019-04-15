@@ -13,17 +13,17 @@ def FocusObject(target):
 
     # If the mode is not object, we have to change it before using the
     # Select All command
-    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
 
     prevMode = ''
     if target.mode != 'OBJECT':
         prevMode = target.mode
-        bpy.context.scene.objects.active = bpy.data.objects[target.name]
+        bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
         bpy.ops.object.mode_set(mode='OBJECT')
 
     #### Select and make target active
     bpy.ops.object.select_all(action='DESELECT')
-    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
     bpy.ops.object.select_pattern(pattern=target.name)
 
     # Set the mode back

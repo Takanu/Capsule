@@ -24,7 +24,7 @@ def MoveObject(target, context, location):
     target.lock_location = (False, False, False)
 
     # Save the current cursor location
-    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # This line is actually super-important, not sure why though...
@@ -34,14 +34,14 @@ def MoveObject(target, context, location):
     # Calculate the translation vector using the 3D cursor
     FocusObject(target)
     bpy.ops.view3d.snap_cursor_to_selected()
-    cursor_location = Vector((0.0, 0.0, 0.0))
+    cursor.location = Vector((0.0, 0.0, 0.0))
 
     for area in context.screen.areas:
         if area.type == 'VIEW_3D':
-            cursor_location = area.spaces[0].cursor_location
+            cursor.location = area.spaces[0].cursor.location
 
     # Calculate the movement difference
-    locationDiff = copyLocation - cursor_location
+    locationDiff = copyLocation - cursor.location
 
     bpy.ops.transform.translate(
         value=locationDiff,
@@ -62,7 +62,7 @@ def MoveObject(target, context, location):
         release_confirm=False)
 
     # Position the cursor back to it's original location
-    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+    bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
@@ -91,7 +91,7 @@ def MoveBone(target, bone, context, location):
     target.lock_location = (False, False, False)
 
     # Save the current cursor location
-    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # This line is actually super-important, not sure why though...
@@ -102,18 +102,18 @@ def MoveBone(target, bone, context, location):
     prevMode = SwitchObjectMode('POSE', target)
     bpy.data.objects[target.name].data.bones.active = bpy.data.objects[target.name].pose.bones[bone.name].bone
     bpy.ops.view3d.snap_cursor_to_selected()
-    cursor_location = Vector((0.0, 0.0, 0.0))
+    cursor.location = Vector((0.0, 0.0, 0.0))
 
     #print("RAWR")
 
     for area in context.screen.areas:
         if area.type == 'VIEW_3D':
-            cursor_location = area.spaces[0].cursor_location
+            cursor.location = area.spaces[0].cursor.location
 
-    #print(cursor_location)
+    #print(cursor.location)
 
     # Calculate the movement difference
-    locationDiff = copyLocation - cursor_location
+    locationDiff = copyLocation - cursor.location
 
     bpy.ops.transform.translate(
         value=locationDiff,
@@ -138,7 +138,7 @@ def MoveBone(target, bone, context, location):
     SwitchObjectMode(prevMode, target)
 
     # Position the cursor back to it's original location
-    #bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+    #bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
     #context.scene.tool_settings.use_keyframe_insert_auto = autoKey
@@ -162,7 +162,7 @@ def MoveObjects(targetLead, targets, context, location):
     targetLead.lock_location = (False, False, False)
 
     # Save the current cursor location
-    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # Calculate the translation vector using the 3D cursor
@@ -173,7 +173,7 @@ def MoveObjects(targetLead, targets, context, location):
 
     for area in context.screen.areas:
         if area.type == 'VIEW_3D':
-            rootLocation = area.spaces[0].cursor_location
+            rootLocation = area.spaces[0].cursor.location
 
     # Calculate the movement difference
     locationDiff = copyLocation - rootLocation
@@ -228,7 +228,7 @@ def MoveObjects(targetLead, targets, context, location):
         release_confirm=False)
 
     # Position the cursor back to it's original location
-    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+    bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey
@@ -338,7 +338,7 @@ def MoveAll(target, context, location):
     target.lock_location = (False, False, False)
 
     # Save the current cursor location
-    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor_location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # Calculate the translation vector using the 3D cursor
@@ -349,8 +349,8 @@ def MoveAll(target, context, location):
 
     for area in context.screen.areas:
         if area.type == 'VIEW_3D':
-            print(area.spaces[0].cursor_location)
-            rootLocation = area.spaces[0].cursor_location
+            print(area.spaces[0].cursor.location)
+            rootLocation = area.spaces[0].cursor.location
 
     # Calculate the movement difference
     locationDiff = copyLocation - rootLocation
@@ -378,7 +378,7 @@ def MoveAll(target, context, location):
         )
 
     # Position the cursor back to it's original location
-    bpy.data.scenes[bpy.context.scene.name].cursor_location = previous_cursor_loc
+    bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
     context.scene.tool_settings.use_keyframe_insert_auto = autoKey

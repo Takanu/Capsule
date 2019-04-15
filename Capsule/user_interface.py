@@ -223,7 +223,7 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.prop(obj, "use_scene_origin")
                 obj_settings.separator()
                 obj_settings.separator()
-                obj_settings.label(text="Location:")
+                obj_settings.label(text="Export Location:")
                 obj_settings.separator()
                 obj_settings.prop(obj, "location_default", icon="FILE_FOLDER", text="")
                 obj_settings.separator()
@@ -316,7 +316,7 @@ class CAPSULE_PT_Selection(Panel):
                 rawr_row.operator("scene.cap_clearroot", text="", icon="X")
 
                 rawr_other = layout.column(align=True)
-                rawr_other.label(text="Location:")
+                rawr_other.label(text="Export Location:")
                 rawr_other.separator()
                 rawr_other.prop(grp, "location_default", icon="FILE_FOLDER", text="")
                 rawr_other.separator()
