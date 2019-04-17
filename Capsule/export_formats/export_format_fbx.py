@@ -22,17 +22,23 @@ class CAP_FormatData_FBX(PropertyGroup):
 		items=(('MESH', "Mesh", ""),
 			('ARMATURE', "Armature", ""),
 			('CAMERA', "Camera", ""),
-			('LAMP', "Lamp", ""),
+			('LIGHT', "Light", ""),
 			('EMPTY', "Empty", ""),
 			('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),),
 		description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule.",
-		default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH', 'OTHER'},
+		default={'EMPTY', 'CAMERA', 'LIGHT', 'ARMATURE', 'MESH', 'OTHER'},
 		)
 
 	global_scale: FloatProperty(
 		name="Global Scale",
 		description="The exported scale of the objects.",
 		default=1.0
+		)
+	
+	apply_unit_scale: BoolProperty(
+		name="Apply Unit Scale",
+		description="Apply Unit, Take into account current Blender units settings (if unset, raw Blender Units values are used as-is)",
+		default=False
 		)
 
 	apply_scale_options: EnumProperty(
@@ -146,9 +152,9 @@ class CAP_FormatData_FBX(PropertyGroup):
 		name="FBX Armature NodeType",
 		description="Defines the type of FBX object Armatures will be exported as.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender.",
 		items=(
-			('Null', 'Null', ''),
-			('Root', 'Root', ''),
-			('LimbNode', 'LimbNode', ''))
+			('NULL', 'Null', "‘Null’ FBX node, similar to Blender’s Empty (default)."),
+			('ROOT', 'Root', "‘Root’ FBX node, supposed to be the root of chains of bones."),
+			('LIMBNODE', 'LimbNode', "‘LimbNode’ FBX node, a regular joint between two bones."))
 			)
 
 
@@ -172,12 +178,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 	bake_anim_force_startend_keying: BoolProperty(
 		name="Start/End Keying",
 		description="If enabled, this option fully keys the start and end positions of an animation.  Use this if the exported animations playback with incorrect starting positions.",
-		default=False
-		)
-
-	use_default_take: BoolProperty(
-		name="Use Default Take",
-		description="If enabled, uses the currently viewed pose/translation of the object as a starting pose for exported animations (excluding certain keyframes).",
 		default=False
 		)
 
@@ -261,7 +261,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_1 = export_main.column(align=True)
 			export_scale = export_1.row(align=True)
 			export_scale.prop(exportData, "global_scale")
-			#export_scale.prop(exportData, "apply_unit_scale", text="", icon='NDOF_TRANS')
+			export_scale.prop(exportData, "apply_unit_scale", text="", icon='NDOF_TRANS')
 			export_1.separator()
 
 			export_1.prop(exportData, "bake_space_transform")
@@ -352,7 +352,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_1.prop(exportData, "bake_anim_use_all_actions")
 			export_1.prop(exportData, "bake_anim_force_startend_keying")
 			export_1.prop(exportData, "optimise_keyframes")
-			export_1.prop(exportData, "use_default_take")
 			export_1.separator()
 
 			export_main.separator()
@@ -378,9 +377,10 @@ class CAP_FormatData_FBX(PropertyGroup):
 		bpy.ops.export_scene.fbx(check_existing=False,
 		filepath=filePath+ ".fbx",
 		filter_glob="*.fbx",
-		version='BIN7400',
 		use_selection=True,
+		use_active_collection=False,
 		global_scale=self.global_scale,
+		apply_unit_scale=self.apply_unit_scale,
 		apply_scale_options=self.apply_scale_options,
 		axis_forward=self.axis_forward,
 		axis_up=self.axis_up,
@@ -391,19 +391,23 @@ class CAP_FormatData_FBX(PropertyGroup):
 		use_mesh_edges=self.loose_edges,
 		use_tspace=self.tangent_space,
 		use_custom_props=False,
-		use_armature_deform_only=self.use_armature_deform_only,
+		
+		# Animation
 		add_leaf_bones=self.add_leaf_bones,
+		primary_bone_axis=self.primary_bone_axis,
+		secondary_bone_axis=self.secondary_bone_axis,
+		use_armature_deform_only=self.use_armature_deform_only,
+		armature_nodetype=self.armature_nodetype,
+
 		bake_anim=exportPass.export_animation,
 		bake_anim_use_all_bones=self.bake_anim_use_all_bones,
 		bake_anim_use_nla_strips=self.bake_anim_use_nla_strips,
 		bake_anim_use_all_actions=self.bake_anim_use_all_actions,
 		bake_anim_force_startend_keying=self.bake_anim_force_startend_keying,
-		#idk what this even is
-		use_anim=exportPass.export_animation,
-		use_anim_action_all=self.bake_anim_use_all_actions,
-		use_default_take=self.use_default_take,
-		use_anim_optimize=self.optimise_keyframes,
-		anim_optimize_precision=6.0,
+		bake_anim_step=self.bake_anim_step,
+		bake_anim_simplify_factor=self.bake_anim_simplify_factor,
+
+		# Export Details
 		path_mode='ABSOLUTE',
 		embed_textures=self.bundle_textures,
 		batch_mode='OFF',

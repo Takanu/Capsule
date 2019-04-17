@@ -41,7 +41,7 @@ def SelectObject(target):
     if target.hide_select is True:
         target.hide_select = False
 
-    target.select_set(true)
+    target.select_set(True)
 
 def ActivateObject(target):
     """
@@ -54,4 +54,4 @@ def ActivateObject(target):
     if target.hide_select is True:
         target.hide_select = False
 
-    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    bpy.context.view_layer.objects.active = bpy.data.objects[target.name]

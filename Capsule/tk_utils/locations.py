@@ -19,10 +19,10 @@ def FindWorldSpaceObjectLocation(target, context):
     # Calculate the translation vector using the 3D cursor
     FocusObject(target)
     bpy.ops.view3d.snap_cursor_to_selected()
-    cursor.location = bpy.data.scenes[bpy.context.scene.name].cursor.location
+    cursor_location = bpy.data.scenes[bpy.context.scene.name].cursor.location
 
     # Because vectors are pointers, we need to keep regenerating them
-    cursorLocCopy = Vector((cursor.location[0], cursor.location[1], cursor.location[2]))
+    cursorLocCopy = Vector((cursor_location[0], cursor_location[1], cursor_location[2]))
 
     # Restore the original cursor location and matrix
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
@@ -43,17 +43,19 @@ def FindWorldSpaceBoneLocation(target, context, bone):
     prevMode = SwitchObjectMode('POSE', target)
     bpy.data.objects[target.name].data.bones.active = bpy.data.objects[target.name].pose.bones[bone.name].bone
     bpy.ops.view3d.snap_cursor_to_selected()
-    cursor.location = Vector((0.0, 0.0, 0.0))
+    cursor_location = Vector((0.0, 0.0, 0.0))
 
-    for area in context.screen.areas:
-        if area.type == 'VIEW_3D':
-            cursor.location = area.spaces[0].cursor.location
+    cursor_location = bpy.context.scene.cursor.location
+
+#     for area in context.screen.areas:
+#         if area.type == 'VIEW_3D':
+#             cursor_location = area.spaces[0].cursor.location
 
     # Because vectors are pointers, we need to keep regenerating them
     cursorLocCopy = Vector((0.0, 0.0, 0.0))
-    cursorLocCopy[0] = cursor.location[0]
-    cursorLocCopy[1] = cursor.location[1]
-    cursorLocCopy[2] = cursor.location[2]
+    cursorLocCopy[0] = cursor_location[0]
+    cursorLocCopy[1] = cursor_location[1]
+    cursorLocCopy[2] = cursor_location[2]
 
     SwitchObjectMode(prevMode, target)
 

@@ -222,6 +222,12 @@ class CAPSULE_OT_ExportAssets(Operator):
         self.active = None
         self.selected = []
 
+        # If the current context isn't the 3D View, we need to change that before anything else.
+        self.previous_area_type = bpy.context.area.type
+        if self.previous_area_type != 'VIEW_3D':
+            bpy.context.area.type = 'VIEW_3D'
+
+        # We also need to store current 3D View selections.
         if context.active_object is not None:
             for sel in context.selected_objects:
                 if sel.name != context.active_object.name:
@@ -237,9 +243,8 @@ class CAPSULE_OT_ExportAssets(Operator):
         self.cursorLocation = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
         # Keep a record of the current object mode
-        mode = bpy.context.mode
+        self.view_mode = bpy.context.mode
         bpy.ops.object.mode_set(mode='OBJECT')
-
 
 
         # not sure if I need this anymore with view layers, test and report back.
@@ -422,8 +427,15 @@ class CAPSULE_OT_ExportAssets(Operator):
         if self.active is None and len(self.selected) == 0:
             bpy.ops.object.select_all(action='DESELECT')
 
+        # Restore the 3D view mode
+        bpy.ops.object.mode_set(mode=self.view_mode)
+
         # Restore the 3D cursor
         bpy.data.scenes[bpy.context.scene.name].cursor.location = self.cursorLocation
+
+        # Restore the panel type if necessary
+        if self.previous_area_type != 'VIEW_3D':
+            bpy.context.area.type = self.previous_area_type
 
         print("Rawr")
 
@@ -481,7 +493,7 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         if self.use_scene_origin is False:
             print("Moving scene...")
-            object_transform.MoveAll(target, context, Vector((0.0, 0.0, 0.0)))
+            object_transform.MoveAll(target, context, [0.0, 0.0, 0.0])
 
     def FinishSceneMovement(self, context, target, targetObjects, targetLoc, targetRot):
         """
@@ -711,7 +723,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                     name = collection.name
                     nameCheck.append([" Collection Name", name, " Preset", export.name])
 
-                # Check Location Default
+                # Check Export Location
                 if int(collection.CAPCol.location_default) == 0:
                     bpy.ops.object.select_all(action='DESELECT')
                     for item in collection.all_objects:
@@ -763,27 +775,6 @@ class CAPSULE_OT_ExportAssets(Operator):
                     statement = "The" + name[0] + " " + name[1] + ", belonging to the export, " + name[3] + characterlead + returnStatement + end
                     return statement
 
-        # Check that GLTF is installed if needed.
-        # Currently bundled with the plugin, leaving for later if needed
-
-        # if gltfRequired == True:
-        #     print(bpy.context.preferences.addons.keys())
-        #     foundName = False
-        #     moduleName = ""
-
-        #     for mod_name in bpy.context.preferences.addons.keys():
-        #         print(mod_name)
-
-        #         if "blendergltf" in mod_name:
-        #             foundName = True
-        #             self.GLTFModuleName = mod_name
-        #             continue
-
-        #     if foundName == False:
-        #         statement =  "In order to use the GLTF format, you need to install the plugin from GitHub.  View the Capsule GitHub for more info!"
-        #         select_utils.FocusObject(object)
-        #         return statement
-
 
         return None
 
@@ -829,7 +820,10 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         # Setup and store scene variables, to be restored when complete
         self.SetupScene(context)
-        context.window_manager.progress_begin(0, self.exportCount)
+        
+        # 2.80 - Commenting out until I fix the rest
+        # context.window_manager.progress_begin(0, self.exportCount)
+        
 
 
         ###############################################################
@@ -875,18 +869,18 @@ class CAPSULE_OT_ExportAssets(Operator):
 
                 # Need to get the movement location.  If the user wants to use the scene origin though,
                 # just make it 0
-                root_object_location = Vector((0.0, 0.0, 0.0))
-                root_object_rotation = (0.0, 0.0, 0.0)
+                root_object_location = [0.0, 0.0, 0.0]
+                root_object_rotation = [0.0, 0.0, 0.0]
 
                 if self.use_scene_origin is False:
 
                     tempROL = loc_utils.FindWorldSpaceObjectLocation(self.root_object, context)
-                    root_object_location = Vector((tempROL[0], 
-                                                   tempROL[1], 
-                                                   tempROL[2]))
-                    root_object_rotation = (self.root_object.rotation_euler[0], 
+                    root_object_location = [tempROL[0], 
+                                            tempROL[1], 
+                                            tempROL[2]]
+                    root_object_rotation = [self.root_object.rotation_euler[0], 
                                             self.root_object.rotation_euler[1], 
-                                            self.root_object.rotation_euler[2])
+                                            self.root_object.rotation_euler[2]]
 
 
                 # Get the object's base name
@@ -1065,7 +1059,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                         bpy.ops.view3d.snap_cursor_to_center()
                         bpy.ops.object.select_all(action='DESELECT')
                         bpy.ops.object.empty_add(type='PLAIN_AXES')
-                        sceneOrigin = bpy.context.scene.objects.active
+                        sceneOrigin = bpy.context.view_layer.objects.active
                         self.StartSceneMovement(context, sceneOrigin, movedObjects, root_object_rotation)
 
 
@@ -1128,7 +1122,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 if len(self.exportPreset.passes) > 0:
                     self.exportedObjects += 1
                     self.exportCount += 1
-                    context.window_manager.progress_update(self.exportCount)
+                    # context.window_manager.progress_update(self.exportCount)
                     print(">>> Object Export Complete <<<")
 
 
@@ -1194,13 +1188,13 @@ class CAPSULE_OT_ExportAssets(Operator):
                     print("Root type is...", self.root_object_type)
 
                 # Get the root object location for later use
-                root_object_location = Vector((0.0, 0.0, 0.0))
-                root_object_rotation = (0.0, 0.0, 0.0)
+                root_object_location = [0.0, 0.0, 0.0]
+                root_object_rotation = [0.0, 0.0, 0.0]
 
                 if self.root_object != None:
                     tempROL = loc_utils.FindWorldSpaceObjectLocation(self.root_object, context)
-                    root_object_location = Vector((tempROL[0], tempROL[1], tempROL[2]))
-                    root_object_rotation = (self.root_object.rotation_euler[0], self.root_object.rotation_euler[1], self.root_object.rotation_euler[2])
+                    root_object_location = [tempROL[0], tempROL[1], tempROL[2]]
+                    root_object_rotation = [self.root_object.rotation_euler[0], self.root_object.rotation_euler[1], self.root_object.rotation_euler[2]]
 
                 #/////////////////// - PASSES - /////////////////////////////////////////////////
                 for object_pass in self.exportPreset.passes:
@@ -1350,7 +1344,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                         bpy.ops.view3d.snap_cursor_to_center()
                         bpy.ops.object.select_all(action='DESELECT')
                         bpy.ops.object.empty_add(type='PLAIN_AXES')
-                        sceneOrigin = bpy.context.scene.objects.active
+                        sceneOrigin = bpy.context.view_layer.objects.active
                         self.StartSceneMovement(context, sceneOrigin, movedObjects, root_object_rotation)
 
 
@@ -1421,13 +1415,16 @@ class CAPSULE_OT_ExportAssets(Operator):
                 if len(self.exportPreset.passes) > 0:
                     self.exportedCollections += 1
                     self.exportCount += 1
-                    context.window_manager.progress_update(self.exportCount)
+                    # context.window_manager.progress_update(self.exportCount)
 
                     print(">>> Collection Export Complete <<<")
 
 
         self.RestoreScene(context)
-        context.window_manager.progress_end()
+        # context.window_manager.progress_end()
+
+        # 2.80 BONUS TEST TIME
+        bpy.context.area.type = 'VIEW_3D'
 
         textCollectionSingle = " collection"
         textCollectionPlural = " collections"

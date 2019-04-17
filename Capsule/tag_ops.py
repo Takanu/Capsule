@@ -61,7 +61,7 @@ def RemoveObjectTag(context, object, export_default):
         elif tag.object_type == '10':
             typeFilter = 'CAMERA'
         elif tag.object_type == '11':
-            typeFilter = 'LAMP'
+            typeFilter = 'LIGHT'
         elif tag.object_type == '12':
             typeFilter = 'SPEAKER'
 
@@ -159,7 +159,7 @@ def IdentifyObjectTag(context, object, export_default):
         elif tag.object_type == '10':
             typeFilter = 'CAMERA'
         elif tag.object_type == '11':
-            typeFilter = 'LAMP'
+            typeFilter = 'LIGHT'
         elif tag.object_type == '12':
             typeFilter = 'SPEAKER'
 
@@ -235,7 +235,7 @@ def CompareObjectWithTag(context, object, tag):
     elif tag.object_type == '10':
         typeFilter = 'CAMERA'
     elif tag.object_type == '11':
-        typeFilter = 'LAMP'
+        typeFilter = 'LIGHT'
     elif tag.object_type == '12':
         typeFilter = 'SPEAKER'
 
@@ -301,7 +301,7 @@ def FindObjectWithTag(context, object_name, tag):
             elif tag.object_type == '10':
                 typeFilter = 'CAMERA'
             elif tag.object_type == '11':
-                typeFilter = 'LAMP'
+                typeFilter = 'LIGHT'
             elif tag.object_type == '12':
                 typeFilter = 'SPEAKER'
 

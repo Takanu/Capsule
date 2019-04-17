@@ -76,7 +76,7 @@ class CAPSULE_ExportTag(PropertyGroup):
             ('8', 'Lattice', 'Applies to lattice object types only.'),
             ('9', 'Empty', 'Applies to empty object types only.'),
             ('10', 'Camera', 'Applies to camera object types only.'),
-            ('11', 'Lamp', 'Applies to lamp object types only.'),
+            ('11', 'light', 'Applies to light object types only.'),
             ('12', 'Speaker', 'Applies to speaker object types only.')
             ),
         default='1'

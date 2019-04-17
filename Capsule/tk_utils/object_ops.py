@@ -10,7 +10,7 @@ def DuplicateObject(target):
 
     #### Select and make target active
     bpy.ops.object.select_all(action='DESELECT')
-    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
     bpy.ops.object.select_pattern(pattern=target.name)
 
     # Duplicate the object
@@ -36,7 +36,7 @@ def DuplicateObjects(targets):
     bpy.ops.object.select_all(action='DESELECT')
 
     for target in targets:
-        bpy.context.scene.objects.active = bpy.data.objects[target.name]
+        bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
         bpy.ops.object.select_pattern(pattern=target.name)
 
     # Duplicate the object
@@ -83,10 +83,10 @@ def SwitchObjectMode(newMode, target):
     Forces an object mode switch to the one given, if it isn't already in that mode.
     """
     
-    bpy.context.scene.objects.active = bpy.data.objects[target.name]
+    bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
     prevMode = target.mode
     if target.mode != newMode:
-        bpy.context.scene.objects.active = bpy.data.objects[target.name]
+        bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
         bpy.ops.object.mode_set(mode=newMode)
         return prevMode
 

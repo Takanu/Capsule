@@ -16,7 +16,7 @@ def AddParent(child, parent):
     SelectObject(parent)
     SelectObject(child)
 
-    bpy.context.scene.objects.active = parent
+    bpy.context.view_layer.objects.active = parent
 
     bpy.ops.object.parent_set()
 

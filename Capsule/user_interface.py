@@ -236,6 +236,9 @@ class CAPSULE_PT_Selection(Panel):
                 #obj_settings.prop(obj, "normals", text="")
                 #obj_settings.separator()
 
+                obj_settings.separator()
+                obj_settings.operator("scene.cap_export")
+
             # If no object was eventually found, bring up warning labels.
             else:
                 object_info = layout.column(align=True)
