@@ -318,9 +318,8 @@ class CAPSULE_ExportPresets(PropertyGroup):
         items=(
         ('Export', 'Export', 'A tab containing general export paramaters.'),
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
-        ('Attributes', 'Attributes', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Object', 'Attributes', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
         ('Animation', 'Animation', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Experimental', 'Experimental', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
         ),
     )
 

@@ -1,8 +1,16 @@
 
 import bpy
-from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
 from bpy.types import UILayout
+from bpy.props import (
+	IntProperty, 
+	FloatProperty, 
+	BoolProperty, 
+	StringProperty, 
+	PointerProperty, 
+	CollectionProperty, 
+	EnumProperty,
+)
 
 from .export_format import CAP_ExportFormat
 
@@ -368,7 +376,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 	def export(self, exportPreset, exportPass, filePath):
 		"""
-		Calls the FBX Export API to make the export happen
+		Calls the FBX Export API to export the currently selected objects with the given settings.
 		"""
 
 		#print("APPLY UNIT SCALE, IS IT FUCKING ON?", self.apply_unit_scale)

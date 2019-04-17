@@ -18,7 +18,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		default=False,
 		)
 
-	group_by_group: BoolProperty(
+	group_by_object: BoolProperty(
 		name="Export Objects as OBJ Groups",
 		description="Exports an object as an OBJ group.  This along with Export Objects as OBJ Objects doesn't really matter to Blender, but may matter to the program you're exporting to.",
 		default=False,
@@ -30,11 +30,17 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		default=False,
 		)
 
-	map_vertex_groups: BoolProperty(
+	use_vertex_groups: BoolProperty(
 		name="Map Vertex Groups to Polygroups",
 		description="The exporter will attempt to map your defined vertex groups into OBJ Polygroups, which is designed to group faces.  If you have any single vertices defined in a vertex group, you will still lose them when using this feature.",
 		default=False,
 		)
+	
+	export_per_frame: BoolProperty(
+		name="Export OBJ File Per-Frame",
+		description="An OBJ file will be written for each frame of animation.  Not recommended for most people, if you want to export assets with animation, use FBX or GLTF instead.",
+		default=False
+	)
 
 	# transform
 
@@ -58,7 +64,6 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			('-Z', '-Z', '')),
 		default='Y',
 		)
-
 
 
 	axis_forward: EnumProperty(
@@ -87,8 +92,6 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		description="Writes smoothing groups IDs as bit flags (this produces at most 32 different smooth groups, usually much less).",
 		default=False,
 		)
-
-
 
 	use_normals: BoolProperty(
 		name="Export Normals",
@@ -147,8 +150,9 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_1.label(text="Group Options")
 			export_1.separator()
 			export_1.prop(exportData, "use_blen_objects")
-			export_1.prop(exportData, "group_by_group")
+			export_1.prop(exportData, "group_by_object")
 			export_1.prop(exportData, "group_by_material")
+			export_1.prop(exportData, "export_per_frame")
 			export_1.separator()
 
 			export_main.separator()
@@ -201,7 +205,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_1 = export_main.column(align=True)
 			export_1.prop(exportData, "use_smooth_groups")
 			export_1.prop(exportData, "use_smooth_groups_bitflags")
-			export_1.prop(exportData, "map_vertex_groups")
+			export_1.prop(exportData, "use_vertex_groups")
 
 			export_main.separator()
 			export_main.separator()
@@ -220,18 +224,16 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 	def export(self, exportPreset, exportPass, filePath):
 		"""
-		Calls the FBX Export API to make the export happen
+		Calls the FBX Export API to export the currently selected objects with the given settings.
 		"""
 
 		bpy.ops.export_scene.obj(
 			filepath=filePath + ".obj", 
 			check_existing=False, 
-			axis_forward=self.axis_forward, 
-			axis_up=self.axis_up, 
 			use_selection=True, 
-			use_animation=False, 
+			use_animation=self.export_per_frame, 
 			use_mesh_modifiers=True, 
-			use_mesh_modifiers_render=False, 
+
 			use_edges=True, 
 			use_smooth_groups=self.use_smooth_groups, 
 			use_smooth_groups_bitflags=self.use_smooth_groups_bitflags, 
@@ -240,13 +242,18 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			use_materials=self.use_materials, 
 			use_triangles=False, 
 			use_nurbs=self.use_nurbs, 
-			use_vertex_groups=self.map_vertex_groups, 
+			use_vertex_groups=self.use_vertex_groups, 
+			
 			use_blen_objects=self.use_blen_objects, 
-			group_by_object=self.group_by_group, 
+			group_by_object=self.group_by_object, 
 			group_by_material=self.group_by_material, 
 			keep_vertex_order=self.keep_vertex_order, 
-			global_scale=1.0, 
-			path_mode='ABSOLUTE'
+
+			global_scale=self.global_scale, 
+			path_mode='ABSOLUTE',
+
+			axis_forward=self.axis_forward, 
+			axis_up=self.axis_up, 
 			)
 
 	
