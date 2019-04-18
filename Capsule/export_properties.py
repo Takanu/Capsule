@@ -19,6 +19,7 @@ from .export_formats import (
     CAP_FormatData_GLTF, 
     CAP_FormatData_Alembic, 
     CAP_FormatData_Collada,
+    CAP_FormatData_STL,
 )
 
 def CAP_Update_TagName(self, context):
@@ -252,6 +253,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
             ('GLTF', "GLTF", "Export assets as GLTF files."),
             ('Alembic', "Alembic", "Export assets as Alembic files."),
             ('Collada', "Collada", "Export assets as Collada files."),
+            ('STL', "STL", "Export assets as STL files."),
             ),
         description="Defines what file type objects with this preset will export to and the export options available for this preset.",
         )
@@ -270,6 +272,9 @@ class CAPSULE_ExportPreset(PropertyGroup):
 
     # the data stored for Collada presets.
     data_dae: PointerProperty(type=CAP_FormatData_Collada)
+
+    # the data stored for STL presets.
+    data_stl: PointerProperty(type=CAP_FormatData_STL)
 
     # A special system variable that defines whether it can be deleted from the Global Presets list.
     x_global_user_deletable: BoolProperty(default=True)

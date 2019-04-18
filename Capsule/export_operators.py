@@ -98,6 +98,9 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         elif self.exportPreset.format_type == 'Alembic':
             self.exportPreset.data_abc.export(context, self.exportPreset, self.exportPass, objectFilePath)
+        
+        elif self.exportPreset.format_type == 'STL':
+            self.exportPreset.data_stl.export(context, self.exportPreset, self.exportPass, objectFilePath)
 
         self.exportedFiles += 1
 

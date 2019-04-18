@@ -331,6 +331,9 @@ class CAP_AddonPreferences(AddonPreferences):
                 
                 elif currentExp.format_type == 'Collada':
                     currentExp.data_dae.draw_addon_preferences(filepresets_box, currentExp.data_dae, exp)
+                
+                elif currentExp.format_type == 'STL':
+                    currentExp.data_stl.draw_addon_preferences(filepresets_box, currentExp.data_stl, exp)
 
             else:
                 preset_unselected = filepresets_box.column(align=True)
@@ -576,6 +579,7 @@ classes = (
     CAP_FormatData_GLTF,
     CAP_FormatData_Alembic,
     CAP_FormatData_Collada,
+    CAP_FormatData_STL,
 
     # properties
     ObjectListItem, 
