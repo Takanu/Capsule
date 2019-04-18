@@ -96,19 +96,19 @@ class CAP_FormatData_OBJ(PropertyGroup):
 	use_normals: BoolProperty(
 		name="Export Normals",
 		description="Export one normal per vertex and per face, to represent flat faces and sharp edges",
-		default=False,
+		default=True,
 		)
 
 	use_materials: BoolProperty(
 		name="Export Materials",
 		description="Export material information as a separate .MTL file.",
-		default=False,
+		default=True,
 		)
 
 	use_uvs: BoolProperty(
 		name="Export UVs",
 		description="Same as ‘Smooth Groups’, but generate smooth groups IDs as bitflags (produces at most 32 different smooth groups, usually much less).",
-		default=False,
+		default=True,
 		)
 
 	use_nurbs: BoolProperty(
@@ -122,6 +122,42 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		description="Preserves the vertex order of your models when exporting.",
 		default=False,
 		)
+
+
+	def export(self, exportPreset, exportPass, filePath):
+		"""
+		Calls the FBX Export API to export the currently selected objects with the given settings.
+		"""
+
+		bpy.ops.export_scene.obj(
+			filepath=filePath + ".obj", 
+			check_existing=False, 
+			use_selection=True, 
+			use_animation=self.export_per_frame, 
+			use_mesh_modifiers=True, 
+
+			use_edges=True, 
+			use_smooth_groups=self.use_smooth_groups, 
+			use_smooth_groups_bitflags=self.use_smooth_groups_bitflags, 
+			use_normals=self.use_normals, 
+			use_uvs=self.use_uvs, 
+			use_materials=self.use_materials, 
+			use_triangles=False, 
+			use_nurbs=self.use_nurbs, 
+			use_vertex_groups=self.use_vertex_groups, 
+			
+			use_blen_objects=self.use_blen_objects, 
+			group_by_object=self.group_by_object, 
+			group_by_material=self.group_by_material, 
+			keep_vertex_order=self.keep_vertex_order, 
+
+			global_scale=self.global_scale, 
+			path_mode='ABSOLUTE',
+
+			axis_forward=self.axis_forward, 
+			axis_up=self.axis_up, 
+			)
+
 
 	def draw_addon_preferences(self, layout, exportData, exp):
 		"""
@@ -220,40 +256,4 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_2.separator()
 
 			export_main.separator()
-
-
-	def export(self, exportPreset, exportPass, filePath):
-		"""
-		Calls the FBX Export API to export the currently selected objects with the given settings.
-		"""
-
-		bpy.ops.export_scene.obj(
-			filepath=filePath + ".obj", 
-			check_existing=False, 
-			use_selection=True, 
-			use_animation=self.export_per_frame, 
-			use_mesh_modifiers=True, 
-
-			use_edges=True, 
-			use_smooth_groups=self.use_smooth_groups, 
-			use_smooth_groups_bitflags=self.use_smooth_groups_bitflags, 
-			use_normals=self.use_normals, 
-			use_uvs=self.use_uvs, 
-			use_materials=self.use_materials, 
-			use_triangles=False, 
-			use_nurbs=self.use_nurbs, 
-			use_vertex_groups=self.use_vertex_groups, 
-			
-			use_blen_objects=self.use_blen_objects, 
-			group_by_object=self.group_by_object, 
-			group_by_material=self.group_by_material, 
-			keep_vertex_order=self.keep_vertex_order, 
-
-			global_scale=self.global_scale, 
-			path_mode='ABSOLUTE',
-
-			axis_forward=self.axis_forward, 
-			axis_up=self.axis_up, 
-			)
-
 	

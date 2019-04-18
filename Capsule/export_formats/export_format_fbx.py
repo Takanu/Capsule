@@ -219,7 +219,57 @@ class CAP_FormatData_FBX(PropertyGroup):
 	x_unity_rotation_fix: BoolProperty(default=False)
 
 
+	def export(self, exportPreset, exportPass, filePath):
+		"""
+		Calls the FBX Export API to export the currently selected objects with the given settings.
+		"""
 
+		#print("APPLY UNIT SCALE, IS IT FUCKING ON?", self.apply_unit_scale)
+
+		print("Exporting", "*"*70)
+		bpy.ops.export_scene.fbx(check_existing=False,
+		filepath=filePath+ ".fbx",
+		filter_glob="*.fbx",
+		use_selection=True,
+		use_active_collection=False,
+		global_scale=self.global_scale,
+		apply_unit_scale=self.apply_unit_scale,
+		apply_scale_options=self.apply_scale_options,
+		axis_forward=self.axis_forward,
+		axis_up=self.axis_up,
+		bake_space_transform=self.bake_space_transform,
+		object_types=self.export_types,
+		use_mesh_modifiers=exportPass.apply_modifiers,
+		mesh_smooth_type=self.normals,
+		use_mesh_edges=self.loose_edges,
+		use_tspace=self.tangent_space,
+		use_custom_props=False,
+		
+		# Animation
+		add_leaf_bones=self.add_leaf_bones,
+		primary_bone_axis=self.primary_bone_axis,
+		secondary_bone_axis=self.secondary_bone_axis,
+		use_armature_deform_only=self.use_armature_deform_only,
+		armature_nodetype=self.armature_nodetype,
+
+		bake_anim=exportPass.export_animation,
+		bake_anim_use_all_bones=self.bake_anim_use_all_bones,
+		bake_anim_use_nla_strips=self.bake_anim_use_nla_strips,
+		bake_anim_use_all_actions=self.bake_anim_use_all_actions,
+		bake_anim_force_startend_keying=self.bake_anim_force_startend_keying,
+		bake_anim_step=self.bake_anim_step,
+		bake_anim_simplify_factor=self.bake_anim_simplify_factor,
+
+		# Export Details
+		path_mode='ABSOLUTE',
+		embed_textures=self.bundle_textures,
+		batch_mode='OFF',
+		use_batch_own_dir=False,
+		use_metadata=False
+		
+		)
+	
+	
 	def draw_addon_preferences(self, layout, exportData, exp):
 		"""
 		Draws the panel that represents all the options that the export format has.
@@ -372,54 +422,5 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_2.separator()
 
 			export_main.separator()
-
-
-	def export(self, exportPreset, exportPass, filePath):
-		"""
-		Calls the FBX Export API to export the currently selected objects with the given settings.
-		"""
-
-		#print("APPLY UNIT SCALE, IS IT FUCKING ON?", self.apply_unit_scale)
-
-		print("Exporting", "*"*70)
-		bpy.ops.export_scene.fbx(check_existing=False,
-		filepath=filePath+ ".fbx",
-		filter_glob="*.fbx",
-		use_selection=True,
-		use_active_collection=False,
-		global_scale=self.global_scale,
-		apply_unit_scale=self.apply_unit_scale,
-		apply_scale_options=self.apply_scale_options,
-		axis_forward=self.axis_forward,
-		axis_up=self.axis_up,
-		bake_space_transform=self.bake_space_transform,
-		object_types=self.export_types,
-		use_mesh_modifiers=exportPass.apply_modifiers,
-		mesh_smooth_type=self.normals,
-		use_mesh_edges=self.loose_edges,
-		use_tspace=self.tangent_space,
-		use_custom_props=False,
-		
-		# Animation
-		add_leaf_bones=self.add_leaf_bones,
-		primary_bone_axis=self.primary_bone_axis,
-		secondary_bone_axis=self.secondary_bone_axis,
-		use_armature_deform_only=self.use_armature_deform_only,
-		armature_nodetype=self.armature_nodetype,
-
-		bake_anim=exportPass.export_animation,
-		bake_anim_use_all_bones=self.bake_anim_use_all_bones,
-		bake_anim_use_nla_strips=self.bake_anim_use_nla_strips,
-		bake_anim_use_all_actions=self.bake_anim_use_all_actions,
-		bake_anim_force_startend_keying=self.bake_anim_force_startend_keying,
-		bake_anim_step=self.bake_anim_step,
-		bake_anim_simplify_factor=self.bake_anim_simplify_factor,
-
-		# Export Details
-		path_mode='ABSOLUTE',
-		embed_textures=self.bundle_textures,
-		batch_mode='OFF',
-		use_batch_own_dir=False,
-		use_metadata=False)
 
 

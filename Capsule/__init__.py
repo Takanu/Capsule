@@ -325,6 +325,12 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 elif currentExp.format_type == 'GLTF':
                     currentExp.data_gltf.draw_addon_preferences(filepresets_box, currentExp.data_gltf, exp)
+                
+                elif currentExp.format_type == 'Alembic':
+                    currentExp.data_abc.draw_addon_preferences(filepresets_box, currentExp.data_abc, exp)
+                
+                elif currentExp.format_type == 'Collada':
+                    currentExp.data_dae.draw_addon_preferences(filepresets_box, currentExp.data_dae, exp)
 
             else:
                 preset_unselected = filepresets_box.column(align=True)
@@ -568,6 +574,8 @@ classes = (
     CAP_FormatData_FBX,
     CAP_FormatData_OBJ,
     CAP_FormatData_GLTF,
+    CAP_FormatData_Alembic,
+    CAP_FormatData_Collada,
 
     # properties
     ObjectListItem, 

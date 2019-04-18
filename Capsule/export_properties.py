@@ -1,10 +1,25 @@
 
 import bpy
-from bpy.props import IntProperty, FloatProperty, BoolProperty, StringProperty, PointerProperty, CollectionProperty, EnumProperty
 from bpy.types import AddonPreferences, PropertyGroup
+from bpy.props import (
+    IntProperty, 
+    FloatProperty, 
+    BoolProperty, 
+    StringProperty, 
+    PointerProperty, 
+    CollectionProperty, 
+    EnumProperty,
+)
 
 from . import export_formats
-from .export_formats import CAP_ExportFormat, CAP_FormatData_FBX, CAP_FormatData_OBJ, CAP_FormatData_GLTF
+from .export_formats import (
+    CAP_ExportFormat, 
+    CAP_FormatData_FBX, 
+    CAP_FormatData_OBJ, 
+    CAP_FormatData_GLTF, 
+    CAP_FormatData_Alembic, 
+    CAP_FormatData_Collada,
+)
 
 def CAP_Update_TagName(self, context):
 
@@ -232,9 +247,11 @@ class CAPSULE_ExportPreset(PropertyGroup):
         name="Format Type",
         items=
             (
-            ('FBX', "FBX", "Export assets in an .fbx format."),
-            ('OBJ', "OBJ", "Export assets in an .obj format."),
-            ('GLTF', "GLTF", "Export assets in a .gltf format."),
+            ('FBX', "FBX", "Export assets as FBX files."),
+            ('OBJ', "OBJ", "Export assets as OBJ files."),
+            ('GLTF', "GLTF", "Export assets as GLTF files."),
+            ('Alembic', "Alembic", "Export assets as Alembic files."),
+            ('Collada', "Collada", "Export assets as Collada files."),
             ),
         description="Defines what file type objects with this preset will export to and the export options available for this preset.",
         )
@@ -247,6 +264,12 @@ class CAPSULE_ExportPreset(PropertyGroup):
 
     # the data stored for GLTF presets.
     data_gltf: PointerProperty(type=CAP_FormatData_GLTF)
+
+    # the data stored for Alembic presets.
+    data_abc: PointerProperty(type=CAP_FormatData_Alembic)
+
+    # the data stored for Collada presets.
+    data_dae: PointerProperty(type=CAP_FormatData_Collada)
 
     # A special system variable that defines whether it can be deleted from the Global Presets list.
     x_global_user_deletable: BoolProperty(default=True)
@@ -320,6 +343,16 @@ class CAPSULE_ExportPresets(PropertyGroup):
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
         ('Object', 'Attributes', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
         ('Animation', 'Animation', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ),
+    )
+
+    alembic_menu_options: EnumProperty(
+        name="Export Options",
+        description="",
+        items=(
+        ('Scene', 'Scene', 'A tab containing general scene paramaters.'),
+        ('Object', 'Object', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Particles', 'Particles', 'A tab containing options for how particles are exported.'),
         ),
     )
 

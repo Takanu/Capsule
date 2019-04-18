@@ -217,8 +217,70 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default=True
 		)
 
+		
+	def export(self, context, exportPreset, exportPass, filePath, fileName):
+		"""
+		Calls the GLTF Export module to make the export happen.
+		"""
 
+		final_filename = ""
+		if self.export_format == 'GLTF_EMBEDDED' or 'GLTF_SEPARATE':
+			final_filename = filePath + fileName + '.gltf'
+		else:
+			final_filename = filePath + fileName + '.glb'
 
+		bpy.ops.export_scene.gltf(
+
+			# core settings
+			filepath=final_filename,
+			check_existing=False,
+
+			# export settings
+			export_format=self.export_format,
+			export_copyright=self.export_copyright,
+			export_image_format=self.export_image_format,
+
+			# object filtering
+			export_selected=True,
+			export_cameras=self.export_cameras,
+			export_lights=self.export_lights,
+			export_extras=self.export_custom_properties,
+
+			# compression
+			export_draco_mesh_compression_enable=self.export_draco_mesh_compression_enable,
+			export_draco_mesh_compression_level=self.export_draco_mesh_compression_level,
+			export_draco_position_quantization=self.export_draco_position_quantization,
+			export_draco_normal_quantization=self.export_draco_normal_quantization,
+			export_draco_texcoord_quantization=self.export_draco_texcoord_quantization,
+
+			# mesh data
+			export_yup=self.export_y_up,
+			export_apply=exportPass.apply_modifiers,
+
+			export_texcoords=self.export_texcoords,
+			export_normals=self.export_normals,
+			export_tangents=self.export_tangents,
+			export_materials=self.export_materials,
+			export_colors=self.export_colors,
+			export_displacement=self.export_displacement,
+
+			# animation data
+			export_animations=exportPass.export_animation,
+			export_frame_range=self.export_frame_range,
+			export_frame_step=self.export_frame_step,
+			export_force_sampling=self.export_force_sampling,
+			export_current_frame=self.export_current_frame,
+			export_all_influences=self.export_all_influences,
+
+			export_skins=self.export_skins,
+			export_bake_skins=self.export_bake_skins,
+			export_morph=self.export_morph,
+			export_morph_normal=self.export_morph_normal,
+			export_morph_tangent=self.export_morph_tangent,
+
+		)
+
+		
 	def draw_addon_preferences(self, layout, exportData, exp):
 		"""
 		Draws the panel that represents all the options that the export format has.
@@ -340,67 +402,3 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_2.separator()
 
 			export_main.separator()
-
-		
-	def export(self, context, exportPreset, exportPass, filePath, fileName):
-		"""
-		Calls the GLTF Export module to make the export happen.
-		"""
-
-		final_filename = ""
-		if self.export_format == 'GLTF_EMBEDDED' or 'GLTF_SEPARATE':
-			final_filename = filePath + fileName + '.gltf'
-		else:
-			final_filename = filePath + fileName + '.glb'
-
-		bpy.ops.export_scene.gltf(
-
-			# core settings
-			filepath=final_filename,
-			check_existing=False,
-
-			# export settings
-			export_format=self.export_format,
-			export_copyright=self.export_copyright,
-			export_image_format=self.export_image_format,
-
-			# object filtering
-			export_selected=True,
-			export_cameras=self.export_cameras,
-			export_lights=self.export_lights,
-			export_extras=self.export_custom_properties,
-
-			# compression
-			export_draco_mesh_compression_enable=self.export_draco_mesh_compression_enable,
-			export_draco_mesh_compression_level=self.export_draco_mesh_compression_level,
-			export_draco_position_quantization=self.export_draco_position_quantization,
-			export_draco_normal_quantization=self.export_draco_normal_quantization,
-			export_draco_texcoord_quantization=self.export_draco_texcoord_quantization,
-
-			# mesh data
-			export_yup=self.export_y_up,
-			export_apply=exportPass.apply_modifiers,
-
-			export_texcoords=self.export_texcoords,
-			export_normals=self.export_normals,
-			export_tangents=self.export_tangents,
-			export_materials=self.export_materials,
-			export_colors=self.export_colors,
-			export_displacement=self.export_displacement,
-
-			# animation data
-			export_animations=exportPass.export_animations,
-			export_frame_range=self.export_frame_range,
-			export_frame_step=self.export_frame_step,
-			export_force_sampling=self.export_force_sampling,
-			export_current_frame=self.export_current_frame,
-			export_all_influences=self.export_all_influences,
-
-			export_skins=self.export_skins,
-			export_bake_skins=self.export_bake_skins,
-			export_morph=self.export_morph,
-			export_morph_normal=self.export_morph_normal,
-			export_morph_tangent=self.export_morph_tangent,
-
-		)
-

@@ -91,10 +91,13 @@ class CAPSULE_OT_ExportAssets(Operator):
             self.exportPreset.data_fbx.export(self.exportPreset, self.exportPass, objectFilePath)
 
         elif self.exportPreset.format_type == 'OBJ':
-                self.exportPreset.data_obj.export(self.exportPreset, self.exportPass, objectFilePath)
+            self.exportPreset.data_obj.export(self.exportPreset, self.exportPass, objectFilePath)
 
         elif self.exportPreset.format_type == 'GLTF':
-                self.exportPreset.data_gltf.export(context, self.exportPreset, self.exportPass, path, exportName + suffix)
+            self.exportPreset.data_gltf.export(context, self.exportPreset, self.exportPass, path, exportName + suffix)
+
+        elif self.exportPreset.format_type == 'Alembic':
+            self.exportPreset.data_abc.export(context, self.exportPreset, self.exportPass, objectFilePath)
 
         self.exportedFiles += 1
 
