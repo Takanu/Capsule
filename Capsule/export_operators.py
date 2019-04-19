@@ -45,17 +45,25 @@ class CAPSULE_OT_ExportAssets(Operator):
             bpy.ops.object.select_all(action='DESELECT')
             select_utils.FocusObject(item)
 
+
             # based on the export location, send it to the right place
             if self.exportPreset.format_type == 'FBX':
                 self.exportPreset.data_fbx.export(self.exportPreset, self.exportPass, individualFilePath)
 
-
             elif self.exportPreset.format_type == 'OBJ':
                 self.exportPreset.data_obj.export(self.exportPreset, self.exportPass, individualFilePath)
-            
 
             elif self.exportPreset.format_type == 'GLTF':
                 self.exportPreset.data_gltf.export(context, self.exportPreset, self.exportPass, individualFilePath)
+            
+            elif self.exportPreset.format_type == 'Alembic':
+                self.exportPreset.data_abc.export(context, self.exportPreset, self.exportPass, individualFilePath)
+
+            elif self.exportPreset.format_type == 'Collada':
+                self.exportPreset.data_dae.export(self.exportPreset, self.exportPass, individualFilePath)
+
+            elif self.exportPreset.format_type == 'STL':
+                self.exportPreset.data_stl.export(context, self.exportPreset, self.exportPass, individualFilePath)
 
 
             # tick up the exports and move the object back.
@@ -86,6 +94,7 @@ class CAPSULE_OT_ExportAssets(Operator):
         objectFilePath = path + exportName + suffix
         print("Final File Path.", objectFilePath)
 
+
         # based on the export location, send it to the right place
         if self.exportPreset.format_type == 'FBX':
             self.exportPreset.data_fbx.export(self.exportPreset, self.exportPass, objectFilePath)
@@ -98,9 +107,14 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         elif self.exportPreset.format_type == 'Alembic':
             self.exportPreset.data_abc.export(context, self.exportPreset, self.exportPass, objectFilePath)
+
+        elif self.exportPreset.format_type == 'Collada':
+            self.exportPreset.data_dae.export(self.exportPreset, self.exportPass, objectFilePath)
         
         elif self.exportPreset.format_type == 'STL':
             self.exportPreset.data_stl.export(context, self.exportPreset, self.exportPass, objectFilePath)
+        
+       
 
         self.exportedFiles += 1
 

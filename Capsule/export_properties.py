@@ -248,12 +248,12 @@ class CAPSULE_ExportPreset(PropertyGroup):
         name="Format Type",
         items=
             (
-            ('FBX', "FBX", "Export assets as FBX files."),
-            ('OBJ', "OBJ", "Export assets as OBJ files."),
-            ('GLTF', "GLTF", "Export assets as GLTF files."),
-            ('Alembic', "Alembic", "Export assets as Alembic files."),
-            ('Collada', "Collada", "Export assets as Collada files."),
-            ('STL', "STL", "Export assets as STL files."),
+            ('FBX', "FBX", "Export assets in the FBX file format.  Ideal for 3D game engines."),
+            ('OBJ', "OBJ", "Export assets in the OBJ file format.  Ideal for simple objects and older software compatibility."),
+            ('GLTF', "GLTF", "Export assets in the GLTF file format."),
+            ('Alembic', "Alembic", "Export assets in the Alembic file format.  Ideal for moving assets between 3D modelling programs."),
+            ('Collada', "Collada", "Export assets in the Collada file format.  Ideal for moving assets between 3D modelling programs."),
+            ('STL', "STL", "Export assets as STL files.  Ideal for 3D printing applications."),
             ),
         description="Defines what file type objects with this preset will export to and the export options available for this preset.",
         )
@@ -358,6 +358,16 @@ class CAPSULE_ExportPresets(PropertyGroup):
         ('Scene', 'Scene', 'A tab containing general scene paramaters.'),
         ('Object', 'Object', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
         ('Particles', 'Particles', 'A tab containing options for how particles are exported.'),
+        ),
+    )
+
+    collada_menu_options: EnumProperty(
+        name="Export Options",
+        description="",
+        items=(
+        ('Main', 'Main', 'A tab containing general export paramaters.'),
+        ('Object', 'Object', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Animation', 'Animation', 'A tab containing options for how animations and armatures are exported.'),
         ),
     )
 
