@@ -3,16 +3,25 @@ import bpy, bmesh, os, platform, sys
 from mathutils import Vector
 from math import pi, radians, degrees
 from bpy.types import Operator
-from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
-
+from bpy.props import (
+    IntProperty, 
+    BoolProperty,
+    FloatProperty, 
+    EnumProperty, 
+    PointerProperty, 
+    StringProperty, 
+    CollectionProperty,
+)
 
 from .tk_utils import collections as collection_utils
 from .tk_utils import select as select_utils
 from .tk_utils import locations as loc_utils
 from .tk_utils import object_ops
 from .tk_utils import object_transform
+from .tk_utils import paths as path_utils
+
 from . import tag_ops
-from .export_utils import ReplaceSystemChar, CheckSystemChar, CheckAnimation, AddTriangulate, RemoveTriangulate
+from .export_utils import CheckAnimation, AddTriangulate, RemoveTriangulate
 
 class CAPSULE_OT_ExportAssets(Operator):
     """Exports all objects and collections in the scene that are marked for export."""
@@ -20,7 +29,7 @@ class CAPSULE_OT_ExportAssets(Operator):
     bl_idname = "scene.cap_export"
     bl_label = "Export"
 
-    def PrepareExportIndividual(self, context, targets, path, suffix):
+    def PrepareExportIndividual(self, context, targets, path):
         """
         Exports a selection of objects, saving each object into it's own file.
         """
@@ -29,7 +38,7 @@ class CAPSULE_OT_ExportAssets(Operator):
         for item in targets:
             print("-"*70)
             print("Exporting...... ", item.name)
-            individualFilePath = path + item.name + suffix
+            individualFilePath = path + item.name
             print("Final File Path.", individualFilePath)
 
             # For the time being, manually move the object back and forth to
@@ -72,7 +81,7 @@ class CAPSULE_OT_ExportAssets(Operator):
             object_transform.MoveObject(item, context, tempLoc)
 
 
-    def PrepareExportCombined(self, context, targets, path, exportName, suffix):
+    def PrepareExportCombined(self, context, targets, path, exportName):
         """
         Exports a selection of objects into a single file.
         """
@@ -89,9 +98,8 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         print(path)
         print(exportName)
-        print(suffix)
 
-        objectFilePath = path + exportName + suffix
+        objectFilePath = path + exportName
         print("Final File Path.", objectFilePath)
 
 
@@ -103,7 +111,7 @@ class CAPSULE_OT_ExportAssets(Operator):
             self.exportPreset.data_obj.export(self.exportPreset, self.exportPass, objectFilePath)
 
         elif self.exportPreset.format_type == 'GLTF':
-            self.exportPreset.data_gltf.export(context, self.exportPreset, self.exportPass, path, exportName + suffix)
+            self.exportPreset.data_gltf.export(context, self.exportPreset, self.exportPass, path, exportName)
 
         elif self.exportPreset.format_type == 'Alembic':
             self.exportPreset.data_abc.export(context, self.exportPreset, self.exportPass, objectFilePath)
@@ -118,87 +126,6 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         self.exportedFiles += 1
 
-
-    def GetFilePath(self, context, locationEnum, fileName):
-        """
-        Attempts to fetch and retrieve the selected file path for 'CalculateFilePath'
-        """
-
-        enumIndex = int(locationEnum)
-        filePath = ""
-
-        enumIndex -= 1
-
-        defaultFilePath = self.exportInfo.location_presets[enumIndex].path
-        print("Obtained location default: ", self.exportInfo.location_presets[enumIndex].path)
-
-        if defaultFilePath == "":
-            return {'2'}
-
-        if defaultFilePath.find('//') != -1:
-            return {'3'}
-
-        filePath = defaultFilePath
-
-        return filePath
-
-    def CalculateFilePath(self, context, locationDefault, object_name, subDirectory):
-        """
-        Attempts to create a file path based on the given location default and export settings.
-        """
-
-        print("Obtaining File...")
-        print("File Enumerator = ", locationDefault)
-
-        path = self.GetFilePath(context, locationDefault, object_name)
-
-        print("Current Path: ", path)
-
-        # //////////// - FILE DIRECTORY - ///////////////////////////////////////////
-        # Need to extract the information from the pass name to see
-        # if a sub-directory needs creating in the location default
-        if subDirectory != "" or self.use_sub_directory is True or self.use_blend_directory is True:
-            newPath = ""
-            slash = "/"
-            if platform.system() == 'Windows':
-                slash = "\\"
-
-            print("Constructing path...")
-
-            if self.use_blend_directory is True:
-                print(bpy.path.basename(bpy.context.blend_data.filepath))
-                blendName = bpy.path.basename(bpy.context.blend_data.filepath)
-                blendName = blendName.replace(".blend", "")
-                print(blendName)
-                if self.replaceInvalidChars is True:
-                    blendName = ReplaceSystemChar(context, blendName)
-
-                newPath = path + blendName + slash
-
-            if self.use_sub_directory is True:
-                if self.replaceInvalidChars is True:
-                    object_name = ReplaceSystemChar(context, object_name)
-                newPath = newPath + object_name + slash
-
-            if subDirectory.replace(" ", "") != "":
-                if self.replaceInvalidChars is True:
-                    subDirectory = ReplaceSystemChar(context, subDirectory)
-                newPath = newPath + subDirectory + slash
-
-            if newPath == "":
-                newPath = path
-
-            print("newPath = ", newPath)
-            print(">>> Sub-Directory found, appending...")
-
-            if not os.path.exists(newPath):
-                os.makedirs(newPath)
-
-            print("Old Path: ", path)
-            path = newPath
-            print("New Path: ", path)
-
-        return path
 
     # CHANGE ME PLZ
     def GetNormals(self, enum):
@@ -244,8 +171,14 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         # If the current context isn't the 3D View, we need to change that before anything else.
         self.previous_area_type = bpy.context.area.type
-        if self.previous_area_type != 'VIEW_3D':
-            bpy.context.area.type = 'VIEW_3D'
+
+        for area in context.screen.areas:
+            if area != context.area:
+                self.region_override = area.regions[0]
+                break
+
+        context.area.type = 'VIEW_3D'
+        
 
         # We also need to store current 3D View selections.
         if context.active_object is not None:
@@ -453,9 +386,10 @@ class CAPSULE_OT_ExportAssets(Operator):
         # Restore the 3D cursor
         bpy.data.scenes[bpy.context.scene.name].cursor.location = self.cursorLocation
 
-        # Restore the panel type if necessary
-        if self.previous_area_type != 'VIEW_3D':
-            bpy.context.area.type = self.previous_area_type
+        # Restore the panel type
+        print("PREVIOUS AREA TYPE")
+        print(self.previous_area_type)
+        context.area.type = self.previous_area_type
 
         print("Rawr")
 
@@ -513,7 +447,7 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         if self.use_scene_origin is False:
             print("Moving scene...")
-            object_transform.MoveAll(target, context, [0.0, 0.0, 0.0])
+            object_transform.MoveAll_TEST(target, context, [0.0, 0.0, 0.0], self.region_override)
 
     def FinishSceneMovement(self, context, target, targetObjects, targetLoc, targetRot):
         """
@@ -525,7 +459,7 @@ class CAPSULE_OT_ExportAssets(Operator):
         #     object_transform.RotateAllSafe(self.root_object, context, targetRot, True)
 
         if self.use_scene_origin is False:
-            object_transform.MoveAll(self.root_object, context, targetLoc)
+            object_transform.MoveAll_TEST(self.root_object, context, targetLoc, self.region_override)
 
         # since Blender 2.79 + Unity 2017.3, this is no longer needed.
         # if self.exportPreset.format_type == 'FBX':
@@ -669,27 +603,12 @@ class CAPSULE_OT_ExportAssets(Operator):
         nameCheck = []
         gltfRequired = False
 
-        for export in exp.file_presets:
-            if export.use_blend_directory is True:
-                blendName = bpy.path.basename(bpy.context.blend_data.filepath)
-                nameCheck.append([" Blend Name", blendName, " Preset", export.name])
-            for ePass in export.passes:
-                if ePass.sub_directory != "":
-                    nameCheck.append([" Pass Folder", ePass.sub_directory, " Preset", export.name])
-                if ePass.file_suffix != "":
-                    nameCheck.append([" File Suffix", ePass.file_suffix, " Preset", export.name])
-
-            if export.format_type == 'GLTF':
-                gltfRequired = True
-
-        print("names found...", nameCheck)
-
         # Checks for any easily-preventable errors
         for object in context.scene.objects:
             if object.CAPObj.enable_export is True:
 
                 # Check Export Key
-                expKey = int(object.CAPObj.export_default) - 1
+                expKey = int(object.CAPObj.export_preset) - 1
                 if expKey == -1:
                     statement = "The selected object " + object.name + " has no export default selected.  Please define!"
                     select_utils.FocusObject(object)
@@ -702,7 +621,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                     nameCheck.append([" Object Name", objName, " Preset", export.name])
 
                 # Check Location Default
-                if int(object.CAPObj.location_default) == 0:
+                if int(object.CAPObj.location_preset) == 0:
                     statement =  "The selected object " + object.name + " has no location preset defined, please define one!"
                     select_utils.FocusObject(object)
                     return statement
@@ -726,11 +645,13 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         # Check all scene collections for potential errors
         for collection in collection_utils.GetSceneCollections(context.scene, True):
+
             if collection.CAPCol.enable_export is True:
 
                 # Check Export Key
-                expKey = int(collection.CAPCol.export_default) - 1
+                expKey = int(collection.CAPCol.export_preset) - 1
                 if expKey == -1:
+
                     bpy.ops.object.select_all(action='DESELECT')
                     for item in collection.all_objects:
                         select_utils.SelectObject(item)
@@ -744,7 +665,8 @@ class CAPSULE_OT_ExportAssets(Operator):
                     nameCheck.append([" Collection Name", name, " Preset", export.name])
 
                 # Check Export Location
-                if int(collection.CAPCol.location_default) == 0:
+                if int(collection.CAPCol.location_preset) == 0:
+                    print("FOUND BAD COLLECTION LOCATION - ", collection)
                     bpy.ops.object.select_all(action='DESELECT')
                     for item in collection.all_objects:
                         select_utils.SelectObject(item)
@@ -766,11 +688,7 @@ class CAPSULE_OT_ExportAssets(Operator):
             if defaultFilePath == "":
                 statement = "The path for " + exp.location_presets[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
                 return statement
-
-            if defaultFilePath.find('//') != -1:
-                statement =  "The path " + exp.location_presets[enumIndex].name + "is using a relative file path name, please turn off the Relative Path option when choosing a file path in the file browser."
-                return statement
-
+                
             i += 1
 
         # Check all collected names for invalid characters
@@ -840,6 +758,8 @@ class CAPSULE_OT_ExportAssets(Operator):
 
         # Setup and store scene variables, to be restored when complete
         self.SetupScene(context)
+
+        print('scene setup complete...')
         
         # 2.80 - Commenting out until I fix the rest
         # context.window_manager.progress_begin(0, self.exportCount)
@@ -863,7 +783,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 print("-"*109)
 
                 #Get the export default for the object
-                expKey = int(object.CAPObj.export_default) - 1
+                expKey = int(object.CAPObj.export_preset) - 1
 
                 if expKey == -1:
                     statement = "The selected object " + object.name + " has no export default selected.  Please define!"
@@ -954,8 +874,6 @@ class CAPSULE_OT_ExportAssets(Operator):
 
                     path = ""                                    # Path given from the location default
                     fileName = ""                                # File name for the object (without tag suffixes)
-                    suffix = object_pass.file_suffix             # Additional file name suffix
-                    subDirectory = object_pass.sub_directory     # Whether a sub-directory needs to be created
 
 
                     # Lists for the renaming feature
@@ -982,7 +900,9 @@ class CAPSULE_OT_ExportAssets(Operator):
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    path = self.CalculateFilePath(context, self.root_object.CAPObj.location_default, object_name, subDirectory)
+                    location_preset_index = int(self.root_object.CAPObj.location_preset) - 1
+                    location_preset = exp.location_presets[location_preset_index]
+                    path = path_utils.CreateFilePath(location_preset, [self.root_object], None, self.replaceInvalidChars)
 
                     # If while calculating a file path a warning was found, return early.
                     if path.find("WARNING") == 0:
@@ -1108,10 +1028,10 @@ class CAPSULE_OT_ExportAssets(Operator):
                     if len(finalExportList) > 0:
 
                         if self.exportIndividual is True:
-                            self.PrepareExportIndividual(context, finalExportList, path, suffix)
+                            self.PrepareExportIndividual(context, finalExportList, path)
 
                         else:
-                            self.PrepareExportCombined(context, finalExportList, path, object_name, suffix)
+                            self.PrepareExportCombined(context, finalExportList, path, object_name)
 
 
                     # /////////// - DELETE/RESTORE - ///////////////////
@@ -1153,6 +1073,8 @@ class CAPSULE_OT_ExportAssets(Operator):
         for collection in collection_utils.GetSceneCollections(context.scene, True):
             if collection.CAPCol.enable_export is True:
 
+                print('stepping through new collection...')
+
                 print("-"*79)
                 print("NEW JOB", "-"*70)
                 print("-"*79)
@@ -1184,7 +1106,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                     print("No root object is currently being used, proceed!")
 
                 #Get the export default for the object
-                expKey = int(collection.CAPCol.export_default) - 1
+                expKey = int(collection.CAPCol.export_preset) - 1
 
                 if expKey == -1:
                     statement = "The collection " + collection.name + " has no export default selected.  Please define!"
@@ -1262,8 +1184,6 @@ class CAPSULE_OT_ExportAssets(Operator):
                     path = ""
                     filePath = ""
                     objectFilePath = ""
-                    suffix = object_pass.file_suffix
-                    subDirectory = object_pass.sub_directory
 
                     # Lets see if the root object can be exported...
                     expRoot = False
@@ -1281,7 +1201,9 @@ class CAPSULE_OT_ExportAssets(Operator):
 
 
                     #/////////////////// - FILE NAME - /////////////////////////////////////////////////
-                    path = self.CalculateFilePath(context, collection.CAPCol.location_default, object_name, subDirectory)
+                    location_preset_index = int(collection.CAPCol.location_preset) - 1
+                    location_preset = exp.location_presets[location_preset_index - 1]
+                    path = path_utils.CreateFilePath(location_preset, collection.all_objects, collection, self.replaceInvalidChars)
 
                     if path.find("WARNING") == 0:
                         path = path.replace("WARNING: ", "")
@@ -1404,10 +1326,10 @@ class CAPSULE_OT_ExportAssets(Operator):
 
                         if len(finalExportList) > 0:
                             if self.exportIndividual is True:
-                                self.PrepareExportIndividual(context, finalExportList, path, suffix)
+                                self.PrepareExportIndividual(context, finalExportList, path)
 
                             else:
-                                self.PrepareExportCombined(context, finalExportList, path, collection.name, suffix)
+                                self.PrepareExportCombined(context, finalExportList, path, collection.name)
 
                     bpy.ops.object.select_all(action='DESELECT')
 

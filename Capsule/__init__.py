@@ -68,7 +68,7 @@ from .export_properties import (
     CAPSULE_ExportPassTag, 
     CAPSULE_ExportPass, 
     CAPSULE_ExportPreset, 
-    CAPSULE_LocationDefault, 
+    CAPSULE_LocationPreset, 
     CAPSULE_ExportPresets,
     )
 
@@ -433,11 +433,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     # Pass Options UI
                     currentPass = currentExp.passes[currentExp.passes_index]
 
-                    pass_settings.prop(currentPass, "file_suffix")
-                    pass_settings.prop(currentPass, "sub_directory")
                     pass_settings.separator()
-                    pass_settings.separator()
-
                     pass_options = pass_settings.row(align=True)
                     pass_options.separator()
 
@@ -599,12 +595,13 @@ classes = (
     CAPSULE_ExportPassTag, 
     CAPSULE_ExportPass, 
     CAPSULE_ExportPreset, 
-    CAPSULE_LocationDefault, 
+    CAPSULE_LocationPreset, 
     CAPSULE_ExportPresets,
 
     # ui_operators
     CAPSULE_OT_Add_Path,
     CAPSULE_OT_Delete_Path,
+    CAPSULE_OT_Add_Path_Tag,
     CAPSULE_OT_Add_Export,
     CAPSULE_OT_Delete_Export,
     CAPSULE_OT_Add_Tag,

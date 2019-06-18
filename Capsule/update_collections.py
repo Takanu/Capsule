@@ -280,11 +280,11 @@ def CAP_Update_CollectionLocationDefault(self, context):
             groups_found.remove(current_collection)
 
             # Obtain the value changed
-            value = current_collection.CAPCol.location_default
+            value = current_collection.CAPCol.location_preset
 
             # Run through the objects
             for collection in groups_found:
-                collection.CAPCol.location_default = value
+                collection.CAPCol.location_preset = value
 
     return None
 
@@ -308,11 +308,11 @@ def CAP_Update_CollectionExportDefault(self, context):
             groups_found.remove(current_collection)
 
             # Obtain the value changed
-            value = current_collection.CAPCol.export_default
+            value = current_collection.CAPCol.export_preset
 
             # Run through the objects
             for collection in groups_found:
-                collection.CAPCol.export_default = value
+                collection.CAPCol.export_preset = value
 
     return None
 

@@ -5,8 +5,8 @@ def FocusObject(target):
     Focuses the given target in the 3D View while deselecting all other objects.
     """
     # If the target isnt visible, MAKE IT VISIBLE.
-    if target.hide_viewport is True:
-        target.hide_viewport = False
+    if target.hide_get() is True:
+        target.hide_set(False)
 
     if target.hide_select is True:
         target.hide_select = False
@@ -30,16 +30,28 @@ def FocusObject(target):
     if prevMode != '':
         bpy.ops.object.mode_set(mode=prevMode)
 
-def SelectObject(target):
+def SelectObject(target, force_select = False):
     """
     Selects the given target in the 3D View.  This does not make the object active.
+    - force_select: If true the target will be selected regardless of any hide settings it has, otherwise it won't.
     """
+
+    # print('selecting... ', target)
+
+    if force_select == False:
+        if target.hide_get() is True and target.hide_select is True:
+            return
+
     # If the target isnt visible, MAKE IT VISIBLE.
-    if target.hide_viewport is True:
-        target.hide_viewport = False
+    if target.hide_get() is True:
+        target.hide_set(False)
 
     if target.hide_select is True:
         target.hide_select = False
+
+    # print('attempting to select... ', target)
+    # print(target.hide_viewport)
+    # print(target.hide_select)
 
     target.select_set(True)
 
@@ -48,8 +60,8 @@ def ActivateObject(target):
     Makes the given object the one that is currently active in the 3D view.
     """
     # If the target isnt visible, MAKE IT VISIBLE.
-    if target.hide_viewport is True:
-        target.hide_viewport = False
+    if target.hide_get() is True:
+        target.hide_set(False)
 
     if target.hide_select is True:
         target.hide_select = False

@@ -58,6 +58,46 @@ class CAPSULE_OT_Delete_Path(Operator):
 
         return {'FINISHED'}
 
+class CAPSULE_OT_Add_Path_Tag(Operator):
+    """Adds a new path tag to the currently selected path."""
+
+    bl_idname = "scene.cap_add_path_tag"
+    bl_label = "Add Path Tag"
+
+    path_tags: EnumProperty(
+        name="Add Path Tag",
+        description="",
+        items=(
+        ('object_name', 'Object Name', 'Adds a folder with the object name.'),
+        ('object_type', 'Object Type', 'Adds a folder with the object name.'),
+        ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
+        ('blend_file_name', 'Blend File Name', 'Adds a folder with the blend file name.'),
+        ),
+    )
+
+    def execute(self, context):
+        print(self)
+
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        
+        # get the selected path
+        path_index = exp.location_presets_listindex
+        new_path = exp.location_presets[path_index].path
+
+        # directory failsafe
+        if new_path.endswith("/") == False:
+            new_path += "/"
+
+        # insert the selected option into the currently selected path
+        new_path += "^"
+        new_path += self.path_tags
+        new_path += "^/"
+        
+        exp.location_presets[path_index].path = new_path
+
+        return {'FINISHED'}
 
 class CAPSULE_OT_Add_Export(Operator):
     """Create a new file preset."""
@@ -91,6 +131,8 @@ class CAPSULE_OT_Add_Export(Operator):
         exp.file_presets_listindex = len(exp.file_presets) - 1
 
         return {'FINISHED'}
+
+
 
 class CAPSULE_OT_Delete_Export(Operator):
     """Delete the selected file preset from the list."""
@@ -501,16 +543,16 @@ class CAPSULE_OT_Reset_Scene(Operator):
             col = collection.CAPCol
             col.enable_export = False
             col.root_object = ""
-            col.location_default = '0'
-            col.export_default = '0'
+            col.location_preset = '0'
+            col.export_preset = '0'
             col.normals = '1'
 
         for object in context.scene.objects:
             obj = object.CAPObj
             obj.enable_export = False
             obj.use_scene_origin = False
-            obj.location_default = '0'
-            obj.export_default = '0'
+            obj.location_preset = '0'
+            obj.export_preset = '0'
             obj.normals = '1'
 
         bpy.ops.scene.cap_refobjects()

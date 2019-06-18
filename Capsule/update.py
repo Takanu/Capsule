@@ -263,11 +263,11 @@ def CAP_Update_LocationDefault(self, context):
                     selected.append(sel)
 
             # Obtain the value changed
-            value = self.location_default
+            value = self.location_preset
 
             # Run through the objects
             for object in selected:
-                object.CAPObj.location_default = value
+                object.CAPObj.location_preset = value
 
     return None
 
@@ -290,11 +290,11 @@ def CAP_Update_ExportDefault(self, context):
                     selected.append(sel)
 
             # Obtain the value changed
-            value = self.export_default
+            value = self.export_preset
 
             # Run through the objects
             for object in selected:
-                object.CAPObj.export_default = value
+                object.CAPObj.export_preset = value
 
     return None
 

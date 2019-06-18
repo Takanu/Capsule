@@ -141,16 +141,7 @@ class CAPSULE_ExportPass(PropertyGroup):
         description="Lets you enable or disable the pass for use when exporting objects.",
         default=True
     )
-
-    file_suffix: StringProperty(
-        name="File Suffix",
-        description="An optional string that if used, will be appended to all the names of files produced through this pass."
-        )
-    sub_directory: StringProperty(
-        name="Sub-Directory",
-        description="If enabled, a folder will be created inside the currently defined file path (and any other defined folders for the File Preset), where all exports from this pass will be placed into."
-        )
-
+    
     tags: CollectionProperty(type=CAPSULE_ExportPassTag)
     tags_index: IntProperty(default=0)
 
@@ -280,7 +271,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
     x_global_user_deletable: BoolProperty(default=True)
 
 
-class CAPSULE_LocationDefault(PropertyGroup):
+class CAPSULE_LocationPreset(PropertyGroup):
     # Defines a single location default, assigned to specific objects to define where they should be exported to.
 
     name: StringProperty(
@@ -313,7 +304,7 @@ class CAPSULE_ExportPresets(PropertyGroup):
     is_storage_object: BoolProperty(default=False)
 
     # the available location presets created by the user
-    location_presets: CollectionProperty(type=CAPSULE_LocationDefault)
+    location_presets: CollectionProperty(type=CAPSULE_LocationPreset)
 
     # the location selected on the Locations panel, inside the 3D view
     location_presets_listindex: IntProperty(default=0)
@@ -379,7 +370,7 @@ class CAPSULE_ExportPresets(PropertyGroup):
 #     CAPSULE_ExportPassTag, 
 #     CAPSULE_ExportPass, 
 #     CAPSULE_ExportPreset, 
-#     CAPSULE_LocationDefault, 
+#     CAPSULE_LocationPreset, 
 #     CAPSULE_ExportPresets,
 # )
 

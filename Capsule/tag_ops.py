@@ -19,7 +19,7 @@ def CheckForTags(context, string):
     else:
         return True
 
-def RemoveObjectTag(context, object, export_default):
+def RemoveObjectTag(context, object, export_preset):
 
     scn = context.scene.CAPScn
 
@@ -28,7 +28,7 @@ def RemoveObjectTag(context, object, export_default):
     # Create a new string to return
     newString = ""
 
-    for tag in export_default.tags:
+    for tag in export_preset.tags:
         #print("Found tag...", tag.name)
         passed_type_filter = False
 
@@ -95,7 +95,7 @@ def RemoveObjectTag(context, object, export_default):
     print("Could not remove tag, none found.  Exiting...")
     return ""
 
-def IdentifyObjectTag(context, object, export_default):
+def IdentifyObjectTag(context, object, export_preset):
 
     scn = context.scene
 
@@ -104,7 +104,7 @@ def IdentifyObjectTag(context, object, export_default):
     i = 0
 
     # Now collect objects based on the filtering categories
-    for tag in export_default.tags:
+    for tag in export_preset.tags:
         #print("Found tag...", tag.name)
 
         # NAME CHECK!

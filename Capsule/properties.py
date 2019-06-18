@@ -271,14 +271,14 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         update=CAP_Update_SceneOrigin
         )
 
-    location_default: EnumProperty(
-        name="Select Export Location",
+    location_preset: EnumProperty(
+        name="Select Location Preset",
         description="Defines the file path that the object will be exported to.",
         items=GetLocationDefaults,
         update=CAP_Update_LocationDefault
         )
 
-    export_default: EnumProperty(
+    export_preset: EnumProperty(
         name="Select Export Preset",
         description="Defines the export settings used on the object.",
         items=GetExportDefaults,
@@ -310,14 +310,14 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         update=CAP_Update_CollectionRootObject
         )
 
-    location_default: EnumProperty(
+    location_preset: EnumProperty(
         name="Select Export Location",
         description="Defines the Location that the collection will be exported to.",
         items=GetLocationDefaults,
         update=CAP_Update_CollectionLocationDefault
         )
 
-    export_default: EnumProperty(
+    export_preset: EnumProperty(
         name="Select Export Default",
         description="Defines the export settings used on the collection.",
         items=GetExportDefaults,

@@ -51,9 +51,7 @@ def MoveObject(target, context, location):
         constraint_axis=(False, False, False),
         orient_type='GLOBAL',
         mirror=False,
-        proportional='DISABLED',
-        proportional_edit_falloff='SMOOTH',
-        proportional_size=1.0,
+        use_proportional_edit='DISABLED',
         snap=False,
         snap_target='CLOSEST',
         snap_point=(0.0, 0.0, 0.0),
@@ -124,9 +122,7 @@ def MoveBone(target, bone, context, location):
         constraint_axis=(False, False, False),
         orient_type='GLOBAL',
         mirror=False,
-        proportional='DISABLED',
-        proportional_edit_falloff='SMOOTH',
-        proportional_size=1.0,
+        use_proportional_edit='DISABLED',
         snap=False,
         snap_target='CLOSEST',
         snap_point=(0.0, 0.0, 0.0),
@@ -220,9 +216,7 @@ def MoveObjects(targetLead, targets, context, location):
         constraint_axis=(False, False, False),
         orient_type='GLOBAL',
         mirror=False,
-        proportional='DISABLED',
-        proportional_edit_falloff='SMOOTH',
-        proportional_size=1.0,
+        use_proportional_edit='DISABLED',
         snap=False,
         snap_target='CLOSEST',
         snap_point=(0.0, 0.0, 0.0),
@@ -346,7 +340,7 @@ def MoveAll(target, context, location):
     target.lock_location = (False, False, False)
 
     # Save the current cursor location
-    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
+    cursor_loc = bpy.data.scenes[context.scene.name].cursor.location
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # Calculate the translation vector using the 3D cursor
@@ -357,7 +351,7 @@ def MoveAll(target, context, location):
 
     print('Getting cursor...')
 
-    rootLocation = bpy.context.scene.cursor.location
+    rootLocation = context.scene.cursor.location
 
     print('Did it break?  aaaaaaaa')
 
@@ -374,21 +368,103 @@ def MoveAll(target, context, location):
 
     bpy.ops.object.select_all(action='SELECT')
     ActivateObject(target)
+
     previous_mode = bpy.context.active_object.mode
 
     print('ok now moving for realsies - ', locationDiff)
 
     # 2.79 translate
-    # bpy.ops.transform.translate(
-    #     value=locationDiff,
-    #     constraint_axis=(False, False, False),
-    #     orient_type='GLOBAL',
-    #     mirror=False,
-    #     proportional='DISABLED',
-    #     snap=False,
-    #     )
+    bpy.ops.transform.translate(
+        value = locationDiff,
+        constraint_axis = (False, False, False),
+        orient_type = 'GLOBAL',
+        mirror = False,
+        use_proportional_edit = False,
+        snap = False,
+        release_confirm = False,
+    )
+    
+    print('All objects moved, resetting cursor...')
 
-    bpy.ops.transform.translate()
+    bpy.ops.object.mode_set(mode=previous_mode)
+
+    # Position the cursor back to it's original location
+    bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+    target.lock_location = lockTransform
+
+    print('Move finished.')
+
+def MoveAll_TEST(target, context, location, region):
+    """
+    ???
+    """
+    # This doesnt need the cursor, and will ensure nothing is animated
+	# in the process
+
+    print('MOVEMENT TEST')
+
+    copyLocation = [0.0, 0.0, 0.0]
+    copyLocation[0] = location[0]
+    copyLocation[1] = location[1]
+    copyLocation[2] = location[2]
+
+    # Prevent auto keyframing and location lock from being active
+    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    lockTransform = target.lock_location
+
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+    target.lock_location = (False, False, False)
+
+    # Save the current cursor location
+    cursor_loc = bpy.data.scenes[context.scene.name].cursor.location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
+    # Calculate the translation vector using the 3D cursor
+    bpy.ops.object.select_all(action='DESELECT')
+    FocusObject(target)
+    bpy.ops.view3d.snap_cursor_to_selected()
+    rootLocation = (0.0, 0.0, 0.0)
+
+    print('Getting cursor...')
+
+    rootLocation = context.scene.cursor.location
+
+    print('Did it break?  aaaaaaaa')
+
+    # for area in context.screen.areas:
+    #     if area.type == 'VIEW_3D':
+    #         print(area.spaces[0].cursor.location)
+    #         rootLocation = area.spaces[0].cursor.location
+
+    # Calculate the movement difference
+    locationDiff = []
+    locationDiff.append(copyLocation[0] - rootLocation[0])
+    locationDiff.append(copyLocation[1] - rootLocation[1])
+    locationDiff.append(copyLocation[2] - rootLocation[2])
+
+    bpy.ops.object.select_all(action='SELECT')
+    ActivateObject(target)
+
+    previous_mode = bpy.context.active_object.mode
+
+    print('ok now moving for realsies - ', locationDiff)
+
+    override = {'region': region}
+
+    # NEW Translate
+    bpy.ops.transform.translate(
+        override,
+        value = locationDiff,
+        constraint_axis = (False, False, False),
+        orient_type = 'GLOBAL',
+        mirror = False,
+        use_proportional_edit = False,
+        snap = False,
+        release_confirm = False,
+    )
     
     print('All objects moved, resetting cursor...')
 

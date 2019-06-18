@@ -60,7 +60,7 @@ class CAPSULE_OT_LocationSelectObject(Operator):
 
     def execute(self, context):
         if self.loc != -1:
-            context.active_object.CAPObj.location_default = str(self.loc + 1)
+            context.active_object.CAPObj.location_preset = str(self.loc + 1)
         return {'FINISHED'}
 
 class CAPSULE_OT_LocationSelectCollection(Operator):
@@ -73,7 +73,7 @@ class CAPSULE_OT_LocationSelectCollection(Operator):
         if self.loc != -1:
 
             for collection in collection_utils.GetSelectedObjectCollections():
-                collection.CAPCol.location_default = str(self.loc + 1)
+                collection.CAPCol.location_preset = str(self.loc + 1)
 
         return {'FINISHED'}
 
@@ -127,7 +127,7 @@ class CAPSULE_OT_ExportSelectObject(Operator):
 
     def execute(self, context):
         if self.loc != -1:
-            context.active_object.CAPObj.export_default = str(self.loc + 1)
+            context.active_object.CAPObj.export_preset = str(self.loc + 1)
         return {'FINISHED'}
 
 class CAPSULE_OT_ExportSelectCollection(Operator):
@@ -143,7 +143,7 @@ class CAPSULE_OT_ExportSelectCollection(Operator):
         if self.loc != -1:
 
             for collection in collection_utils.GetSelectedObjectCollections():
-                collection.CAPCol.export_default = str(self.loc + 1)
+                collection.CAPCol.export_preset = str(self.loc + 1)
 
         return {'FINISHED'}
 
