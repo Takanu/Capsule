@@ -12,12 +12,6 @@ class CAPSULE_UL_Name(UIList):
 
             layout.prop(item, "name", text="", emboss=False)
 
-class CAPSULE_UL_TagFilter(UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-
-            layout.prop(item, "name", text="", emboss=False)
-            layout.prop(item, "use_tag", text="")
-
 class CAPSULE_UL_Object(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
@@ -75,19 +69,6 @@ class CAPSULE_UL_Export_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
-        layout.prop(item, "name", text="", emboss=False)
-
-class CAPSULE_UL_Tag_Default(UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-
-        scn = context.scene.CAPScn
-        layout.prop(item, "name", text="", emboss=False)
-
-class CAPSULE_UL_Pass_Default(UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
-
-        scn = context.scene.CAPScn
-        layout.prop(item, "enable", text="")
         layout.prop(item, "name", text="", emboss=False)
 
 class CAPSULE_UL_Action(UIList):

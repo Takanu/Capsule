@@ -158,7 +158,7 @@ def SearchConstraints(target, currentList):
 
     return object_list
 
-def GetDependencies(objectList):
+def GetDependencies(object_list):
     """
     Searches and returns a list of all objects that the given objects are dependant on for modifiers or constraints.
     """
@@ -166,13 +166,13 @@ def GetDependencies(objectList):
     print(">>> Getting Dependencies <<<")
 
     totalFoundList = []
-    totalFoundList += objectList
+    totalFoundList += object_list
 
-    print("objectList...", objectList)
+    print("object_list...", object_list)
 
     checkedList = []
     currentList = []
-    currentList += objectList
+    currentList += object_list
 
     while len(currentList) != 0:
         item = currentList.pop()

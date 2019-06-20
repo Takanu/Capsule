@@ -67,7 +67,7 @@ class CAP_FormatData_STL(PropertyGroup):
         default='Z'
         )
     
-    def export(self, context, exportPreset, exportPass, filePath):
+    def export(self, context, export_preset, filePath):
         """
         Calls the Alembic export operator module to export the currently selected objects.
         """
@@ -79,7 +79,7 @@ class CAP_FormatData_STL(PropertyGroup):
             check_existing = False,
             use_selection = True,
 
-            use_mesh_modifiers = exportPass.apply_modifiers,
+            use_mesh_modifiers = export_preset.apply_modifiers,
 
             # all
             global_scale = self.global_scale,

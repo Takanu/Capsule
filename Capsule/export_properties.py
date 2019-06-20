@@ -22,23 +22,6 @@ from .export_formats import (
     CAP_FormatData_STL,
 )
 
-def CAP_Update_TagName(self, context):
-
-    preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
-
-    if addon_prefs.plugin_is_ready is True:
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-        currentTag = exp.tags[exp.tags_index]
-        tag_name = currentTag.name
-
-        # Get tags in all current passes, and edit them
-        for expPass in export.passes:
-            passTag = expPass.tags[export.tags_index]
-            passTag.name = tag_name
-
-    return None
-
 
 def DrawAnimationWarning(self, context):
         layout = self.layout
@@ -57,125 +40,6 @@ def CAP_Update_AnimationWarning(self, context):
         bpy.context.window_manager.popup_menu(DrawAnimationWarning, title="Animation Warning", icon='INFO')
     self.export_animation_prev = self.export_animation
 
-class CAPSULE_ExportTag(PropertyGroup):
-    # The main Export Tag collection property, used for storing the actual tags used in an Export Preset
-
-    name: StringProperty(
-        name="Tag Name",
-        description="The name of the tag.",
-        update=CAP_Update_TagName
-        )
-
-    name_filter: StringProperty(
-        name="Tag",
-        description="The text you wish to use as a filter, when sorting through object names."
-        )
-
-    name_filter_type: EnumProperty(
-        name="Tag Type",
-        description="Where the name filter is being looked for.",
-        items=(
-        ('1', 'Suffix', ''),
-        ('2', 'Prefix', ''),),
-        )
-
-    object_type: EnumProperty(
-        name="Object Type",
-        items=(
-            ('1', 'All', 'Applies to all object types.'),
-            ('2', 'Mesh', 'Applies to mesh object types only.'),
-            ('3', 'Curve', 'Applies to curve object types only.'),
-            ('4', 'Surface', 'Applies to surface object types only.'),
-            ('5', 'Metaball', 'Applies to metaball object types only.'),
-            ('6', 'Font', 'Applies to font object types only.'),
-            ('7', 'Armature', 'Applies to armature object types only.'),
-            ('8', 'Lattice', 'Applies to lattice object types only.'),
-            ('9', 'Empty', 'Applies to empty object types only.'),
-            ('10', 'Camera', 'Applies to camera object types only.'),
-            ('11', 'light', 'Applies to light object types only.'),
-            ('12', 'Speaker', 'Applies to speaker object types only.')
-            ),
-        default='1'
-        )
-
-    # Special preferences for special export presets.
-    x_user_deletable: BoolProperty(default=True)
-    x_user_editable_type: BoolProperty(default=True)
-
-
-class CAPSULE_ExportPassTag(PropertyGroup):
-    # The Export Tag reference, used inside Export Passes to list the available tags.
-    # Also specified for that pass, whether or not it is to be used.
-
-    name: StringProperty(
-        name="Tag Name",
-        description="The name of the tag.",
-        default=""
-        )
-    prev_name: StringProperty(
-        name="Previous Tag Name",
-        description="A backup tag name designed to prevent editing of tag names when viewing them. (Internal Only)",
-        default=""
-        )
-    index: IntProperty(
-        name="Tag Index",
-        description="Where the tag is located in the Export Preset, so it can be looked up later (Internal Only)",
-        default=0
-        )
-    use_tag: BoolProperty(
-        name="",
-        description="Determines whether or not the tag gets used in the pass.",
-        default=False
-        )
-
-class CAPSULE_ExportPass(PropertyGroup):
-    # Used to define properties for a single export pass.
-
-    name: StringProperty(
-        name="Pass Name",
-        description="The name of the selected pass."
-        )
-
-    enable: BoolProperty(
-        name="Enable Pass",
-        description="Lets you enable or disable the pass for use when exporting objects.",
-        default=True
-    )
-    
-    tags: CollectionProperty(type=CAPSULE_ExportPassTag)
-    tags_index: IntProperty(default=0)
-
-    export_individual: BoolProperty(
-        name="Export Individual",
-        description="If enabled, the pass will export every individual object available in the pass into individual files, rather than a single file.",
-        default=False
-        )
-
-    export_animation: BoolProperty(
-        name="Export Animation",
-        description="(EXPERIMENTAL) If ticked, animations found in objects or collections in this pass, will be exported.",
-        default=False,
-        update=CAP_Update_AnimationWarning
-        )
-    export_animation_prev: BoolProperty(default=False)
-
-    apply_modifiers: BoolProperty(
-        name="Apply Modifiers",
-        description="If enabled, all modifiers on every object in the pass will be applied.",
-        default=False
-        )
-
-    triangulate: BoolProperty(
-        name="Triangulate Export",
-        description="If enabled, all objects in the pass will be triangulated automatically using optimal triangulation settings, unless a Triangulation modifier is already present.",
-        default=False
-        )
-
-    use_tags_on_objects: BoolProperty(
-        name="Use Tags for Objects",
-        description="If enabled, active tag filters will also apply to any single-object exports in this pass.\n\nAny other objects with matching names and valid, enabled tags will then be included in the export for this pass.",
-        default=False
-        )
 
 class CAPSULE_ExportPreset(PropertyGroup):
     # Used to define properties for a single export preset.
@@ -199,29 +63,40 @@ class CAPSULE_ExportPreset(PropertyGroup):
         default=""
         )
 
-    use_blend_directory: BoolProperty(
-        name="Add Blend File Directory",
-        description="If enabled, a folder will be created inside the currently defined file path, where all exports from this blend file will be placed into.  \n\nUseful for exporting multiple .blend file contents to the same location.",
-        default=False
-        )
-
-    use_sub_directory: BoolProperty(
-        name="Add Object Directory",
-        description="If enabled, a folder will be created inside the currently defined file path (and inside the Blend Folder if enabled), for every object or collection created, where it's export results will be placed into.  \n\nUseful for organising complex object or collection exports, with multiple passes.",
-        default=False
-        )
+    # FIXME : Re-enable in 2.0
+    # sub_directory: StringProperty(
+    #     name="Sub-Directory",
+    #     description="Allows you to extend the file path of the export.",
+    #     default=""
+    #     )
 
     filter_render: BoolProperty(
         name="Filter by Rendering",
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
         )
+    
+    # FIXME 1.2 : Move as exporter-specific data?
+    export_animation: BoolProperty(
+        name="Export Animation",
+        description="(EXPERIMENTAL) If ticked, animations found will be exported (Collada, FBX and GLTF only).",
+        default=False,
+        update=CAP_Update_AnimationWarning
+        )
 
-    # Currently disabled until further notice due to reliability issues.
-    reset_rotation: BoolProperty(
-        name="Reset Rotation",
-        description="If enabled, the plugin will reset the rotation of objects and collections when exported.  For collections, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a collection to be reset.  \n\nCurrently this doesn't work with rotation-influencing constraints, and will be disabled on objects and collection that use them.",
+    export_animation_prev: BoolProperty(default=False)
+
+    apply_modifiers: BoolProperty(
+        name="Apply Modifiers",
+        description="If enabled, all modifiers will be applied to the export.",
         default=False
         )
+
+    # Currently disabled until further notice due to reliability issues.
+    # reset_rotation: BoolProperty(
+    #     name="Reset Rotation",
+    #     description="If enabled, the plugin will reset the rotation of objects and collections when exported.  For collections, they will be reset depending on the rotation of the root object, so make sure that aligns with how you wish the rotation of a collection to be reset.  \n\nCurrently this doesn't work with rotation-influencing constraints, and will be disabled on objects and collection that use them.",
+    #     default=False
+    #     )
 
     preserve_armature_constraints: BoolProperty(
         name="Preserve Armature Constraints",
@@ -230,10 +105,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
         )
 
 
-    passes: CollectionProperty(type=CAPSULE_ExportPass)
-    passes_index: IntProperty(default=0)
-    tags: CollectionProperty(type=CAPSULE_ExportTag)
-    tags_index: IntProperty(default=0)
+    # TODO : This is where the Filter and Export Commands will sit
 
     format_type: EnumProperty(
         name="Format Type",

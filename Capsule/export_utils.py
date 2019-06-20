@@ -62,6 +62,7 @@ def CheckAnimation(context):
 
   print(">>>> CHECKED ANIMATION <<<<")
 
+# FIXME : Not in use rn.
 def AddTriangulate(targetList):
   """
   Adds the triangulate modifier to any objects that don't yet have it.
@@ -90,6 +91,7 @@ def AddTriangulate(targetList):
                       modifier.ngon_method = 'CLIP'
                       stm.has_triangulate = False
 
+# FIXME : Not in use rn.
 def RemoveTriangulate(targetList):
   """
   Adds the triangulate modifier from objects where it was added as an export option.

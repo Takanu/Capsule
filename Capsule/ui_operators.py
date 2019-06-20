@@ -171,140 +171,6 @@ class CAPSULE_OT_Delete_Export(Operator):
         return {'FINISHED'}
 
 
-class CAPSULE_OT_Add_Tag(Operator):
-    """Create a new tag."""
-
-    bl_idname = "scene.cap_addtag"
-    bl_label = "Add"
-
-
-    def execute(self, context):
-        print(self)
-
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-
-        # Add the tag into the main list
-        export = exp.file_presets[exp.file_presets_listindex]
-        newTag = export.tags.add()
-        newTag.name = "Tag " + str(len(export.tags))
-
-        # Now add it for all other passes in the export
-        for expPass in export.passes:
-            newPassTag = expPass.tags.add()
-            newPassTag.name = newTag.name
-            newPassTag.index = len(export.tags) - 1
-
-        # Ensure the tag index keeps within a window
-        export.tags_index = len(export.tags) - 1
-
-        return {'FINISHED'}
-
-class CAPSULE_OT_Delete_Tag(Operator):
-    """Delete the selected tag from the list."""
-
-    bl_idname = "scene.cap_deletetag"
-    bl_label = "Remove"
-
-    @classmethod
-    def poll(cls, context):
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-
-        export = exp.file_presets[exp.file_presets_listindex]
-        if len(export.tags) > 0:
-            currentTag = export.tags[export.tags_index]
-
-            if currentTag.x_user_deletable is True:
-                return True
-
-        else:
-            return False
-
-    def execute(self, context):
-        print(self)
-
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-
-        export = exp.file_presets[exp.file_presets_listindex]
-        export.tags.remove(export.tags_index)
-
-        for expPass in export.passes:
-            expPass.tags_index -= 1
-            expPass.tags.remove(export.tags_index)
-
-        if export.tags_index > 0:
-            export.tags_index -= 1
-
-        return {'FINISHED'}
-
-
-class CAPSULE_OT_Add_Pass(Operator):
-    """Create a new pass."""
-
-    bl_idname = "scene.cap_addpass"
-    bl_label = "Add"
-
-    def execute(self, context):
-        print(self)
-
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-
-        export = exp.file_presets[exp.file_presets_listindex]
-        newPass = export.passes.add()
-        newPass.name = "Pass " + str(len(export.passes))
-        newPass.path = ""
-
-        # Ensure the new pass has all the current tags
-        for tag in export.tags:
-            newPassTag = newPass.tags.add()
-            newPassTag.name = tag.name
-            newPassTag.index = len(export.tags) - 1
-
-        # Ensure the tag index keeps within a window
-        export.passes_index = len(export.passes) - 1
-
-        return {'FINISHED'}
-
-class CAPSULE_OT_Delete_Pass(Operator):
-    """Delete the selected pass from the list."""
-
-    bl_idname = "scene.cap_deletepass"
-    bl_label = "Remove"
-
-    @classmethod
-    def poll(cls, context):
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-
-        export = exp.file_presets[exp.file_presets_listindex]
-        if len(export.passes) > 0:
-            return True
-
-        return False
-
-    def execute(self, context):
-        print(self)
-
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-
-        export = exp.file_presets[exp.file_presets_listindex]
-        export.passes.remove(export.passes_index)
-
-        if export.passes_index > 0:
-            export.passes_index -= 1
-
-        return {'FINISHED'}
-
 class CAPSULE_OT_Shift_Path_Up(Operator):
     """Move the current entry in the list up by one"""
 
@@ -528,7 +394,7 @@ class CAPSULE_OT_Reset_Scene(Operator):
     def execute(self, context):
         print(self)
 
-        exportedObjects = 0
+        self.export_stats['object_export_count'] = 0
 
         # Keep a record of the selected and active objects to restore later
         active = None
@@ -639,7 +505,7 @@ class CAPSULE_OT_UI_Group_Options(Operator):
 
         return {'FINISHED'}
 
-
+# TODO : Make relevant in 2.0
 class CAPSULE_OT_Refresh_Actions(Operator):
     """Generate a list of collections to browse"""
 
@@ -698,24 +564,6 @@ class CAPSULE_OT_Refresh_Actions(Operator):
 
         return {'FINISHED'}
 
-class CAPSULE_OT_Tutorial_Tags(Operator):
-    """Delete the selected file preset from the list."""
-
-    bl_idname = "cap_tutorial.tags"
-    bl_label = "Tags let you automatically split objects in your passes by defining an object suffix/prefix and/or object type, that objects in the pass it's used in need to match in order to be included for export, enabiling you to create multiple different versions of an object or collection export without having to manually define them."
-
-    StringProperty(default="Are you sure you wish to delete the selected preset?")
-
-    def execute(self, context):
-        print(self)
-
-        #main(self, context)
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-        return wm.invoke_props_dialog(self)
-
-        return {'FINISHED'}
 
 class CAPSULE_OT_Create_ExportData(Operator):
     """Create a new empty object for which Capsule data is stored, and where both file presets and other scene data is stored."""

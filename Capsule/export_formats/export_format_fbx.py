@@ -223,7 +223,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 	x_unity_rotation_fix: BoolProperty(default=False)
 
 
-	def export(self, exportPreset, exportPass, filePath):
+	def export(self, export_preset, filePath):
 		"""
 		Calls the FBX Export API to export the currently selected objects with the given settings.
 		"""
@@ -244,7 +244,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			axis_up=self.axis_up,
 			bake_space_transform=self.bake_space_transform,
 			object_types=self.export_types,
-			use_mesh_modifiers=exportPass.apply_modifiers,
+			use_mesh_modifiers=export_preset.apply_modifiers,
 			mesh_smooth_type=self.normals,
 			use_mesh_edges=self.loose_edges,
 			use_tspace=self.tangent_space,
@@ -257,7 +257,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			use_armature_deform_only=self.use_armature_deform_only,
 			armature_nodetype=self.armature_nodetype,
 
-			bake_anim=exportPass.export_animation,
+			bake_anim=export_preset.export_animation,
 			bake_anim_use_all_bones=self.bake_anim_use_all_bones,
 			bake_anim_use_nla_strips=self.bake_anim_use_nla_strips,
 			bake_anim_use_all_actions=self.bake_anim_use_all_actions,

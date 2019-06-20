@@ -160,7 +160,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 		default = False,
 	)
 
-	def export(self, exportPreset, exportPass, filePath):
+	def export(self, export_preset, filePath):
 		"""
 		Calls the Collada Export API to export the currently selected objects with the given settings.
 		"""
@@ -170,7 +170,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 			# core
 			filepath = filePath + '.dae',
 			check_existing = False,
-			apply_modifiers = exportPass.apply_modifiers,
+			apply_modifiers = export_preset.apply_modifiers,
 			selected = True,
 
 			# export
@@ -187,7 +187,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 			use_object_instantiation = self.use_object_instantiation,
 
 			# animation
-			include_animations = exportPass.export_animation,
+			include_animations = export_preset.export_animation,
 			include_all_actions = self.include_all_actions,
 			export_animation_type_selection = self.export_animation_type,
 			export_transformation_type_selection = self.export_transformation_type_selection,

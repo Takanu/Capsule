@@ -158,7 +158,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		default = False
 	)
 
-	def export(self, context, exportPreset, exportPass, filePath):
+	def export(self, context, export_preset, filePath):
 		"""
 		Calls the Alembic export operator module to export the currently selected objects.
 		"""

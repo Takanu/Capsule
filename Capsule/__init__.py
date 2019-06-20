@@ -64,9 +64,6 @@ from bpy.types import (
 from bpy.app.handlers import persistent
 
 from .export_properties import (
-    CAPSULE_ExportTag, 
-    CAPSULE_ExportPassTag, 
-    CAPSULE_ExportPass, 
     CAPSULE_ExportPreset, 
     CAPSULE_LocationPreset, 
     CAPSULE_ExportPresets,
@@ -302,13 +299,12 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 filepresets_options_1 = filepresets_options.column(align=True)
                 filepresets_options_1.alignment = 'EXPAND'
-                filepresets_options_1.prop(currentExp, "use_blend_directory")
-                filepresets_options_1.prop(currentExp, "use_sub_directory")
                 filepresets_options_1.prop(currentExp, "filter_render")
 
                 # this was removed from 1.01 onwards due to implementation issues.
                 # filepresets_options_1.prop(currentExp, "reset_rotation")
-
+                filepresets_options_1.prop(currentExp, "export_animation")
+                filepresets_options_1.prop(currentExp, "apply_modifiers")
                 filepresets_options_1.prop(currentExp, "preserve_armature_constraints")
 
                 filepresets_options.separator()
@@ -340,141 +336,6 @@ class CAP_AddonPreferences(AddonPreferences):
                 preset_unselected.label(text="Select a preset in order to view preset settings.")
                 preset_unselected.separator()
                 return
-
-
-        #---------------------------------------------------------
-        # Tags UI
-        #---------------------------------------------------------
-        tag_box = layout.box()
-        tag_title = tag_box.row(align=True)
-
-        if addon_prefs.tags_dropdown is False:
-            tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            tag_title.label(text="Tags")
-
-        else:
-            tag_title.prop(addon_prefs, "tags_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            tag_title.label(text="Tags")
-
-            if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
-
-                currentExp = exp.file_presets[exp.file_presets_listindex]
-
-                tagUI_row = tag_box.row(align=True)
-                tagUI_row.template_list("CAPSULE_UL_Tag_Default", "default", currentExp, "tags", currentExp, "tags_index", rows=3, maxrows=6)
-
-                tagUI_col = tagUI_row.column(align=True)
-                tagUI_col.operator("scene.cap_addtag", text="", icon="ADD")
-                tagUI_col.operator("scene.cap_deletetag", text="", icon="REMOVE")
-                tagUI_col.separator()
-
-                tag_settings = tag_box.column(align=True)
-                tag_settings.separator()
-
-                if len(currentExp.tags) == 0:
-                    tag_settings.label(text="Create a new tag in order to view and edit tag settings.")
-                    tag_settings.separator()
-
-                else:
-                    currentTag = currentExp.tags[currentExp.tags_index]
-                    tag_settings.prop(currentTag, "name_filter")
-                    tag_settings.prop(currentTag, "name_filter_type")
-
-                    toggle_settings = tag_settings.column(align=True)
-                    toggle_settings.prop(currentTag, "object_type")
-
-                    if currentTag.x_user_editable_type is False:
-                        toggle_settings.enabled = False
-
-            else:
-                unselected = tag_box.column(align=True)
-                unselected.label(text="Select a preset in order to view tag settings.")
-                unselected.separator()
-
-        #---------------------------------------------------------
-        # Pass UI
-        #---------------------------------------------------------
-        pass_box = layout.box()
-        passUI = pass_box.row(align=True)
-
-        if addon_prefs.passes_dropdown is False:
-            passUI.prop(addon_prefs, "passes_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            passUI.label(text="Passes")
-
-        else:
-            passUI.prop(addon_prefs, "passes_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            passUI.label(text="Passes")
-
-
-            if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
-
-                currentExp = exp.file_presets[exp.file_presets_listindex]
-
-                row_passes = pass_box.row(align=True)
-                row_passes.template_list("CAPSULE_UL_Pass_Default", "default", currentExp, "passes", currentExp, "passes_index", rows=3, maxrows=6)
-
-                row_passes.separator()
-
-                col_passes = row_passes.column(align=True)
-                col_passes.operator("scene.cap_addpass", text="", icon="ADD")
-                col_passes.operator("scene.cap_deletepass", text="", icon="REMOVE")
-                col_passes.separator()
-
-
-                pass_settings = pass_box.column(align=True)
-                pass_settings.separator()
-
-                if len(currentExp.passes) == 0:
-                    pass_settings.label(text="Create a new pass in order to view and edit pass settings.")
-                    pass_settings.separator()
-
-                else:
-
-                    # Pass Options UI
-                    currentPass = currentExp.passes[currentExp.passes_index]
-
-                    pass_settings.separator()
-                    pass_options = pass_settings.row(align=True)
-                    pass_options.separator()
-
-                    # Additional Export Options
-                    options_ui = pass_options.column(align=True)
-                    options_ui.label(text="Export Options")
-
-                    options_ui.separator()
-                    options_ui.prop(currentPass, "export_animation")
-                    options_ui.prop(currentPass, "apply_modifiers")
-                    options_ui.prop(currentPass, "triangulate")
-                    options_ui.prop(currentPass, "export_individual")
-                    options_ui.separator()
-
-                    pass_options.separator()
-                    pass_options.separator()
-                    pass_options.separator()
-
-                    # Tag Filters
-                    tag_filter = pass_options.column(align=True)
-                    tag_filter.label(text="Filter by Tag")
-                    tag_filter.separator()
-
-                    for passTag in currentPass.tags:
-                        tag_column = tag_filter.column(align=True)
-                        tag_column.prop(passTag, "use_tag", text="Filter " + passTag.name)
-
-                    tag_filter.separator()
-
-                    # Tag Options
-                    tag_options = pass_options.column(align=True)
-                    tag_options.label(text="Tag Options")
-                    tag_options.separator()
-
-                    tag_options.prop(currentPass, "use_tags_on_objects")
-                    tag_options.separator()
-
-            else:
-                unselected = pass_box.column(align=True)
-                unselected.label(text="Select a preset in order to view tag settings.")
-                unselected.separator()
 
         #---------------------------------------------------------
         # Options
@@ -591,9 +452,6 @@ classes = (
     CAPSULE_OT_ExportAssets,
 
     # export_properties
-    CAPSULE_ExportTag, 
-    CAPSULE_ExportPassTag, 
-    CAPSULE_ExportPass, 
     CAPSULE_ExportPreset, 
     CAPSULE_LocationPreset, 
     CAPSULE_ExportPresets,
@@ -604,10 +462,6 @@ classes = (
     CAPSULE_OT_Add_Path_Tag,
     CAPSULE_OT_Add_Export,
     CAPSULE_OT_Delete_Export,
-    CAPSULE_OT_Add_Tag,
-    CAPSULE_OT_Delete_Tag,
-    CAPSULE_OT_Add_Pass,
-    CAPSULE_OT_Delete_Pass,
     CAPSULE_OT_Shift_Path_Up,
     CAPSULE_OT_Shift_Path_Down,
     CAPSULE_OT_Set_Root_Object,
@@ -619,7 +473,6 @@ classes = (
     CAPSULE_OT_UI_Group_Separate,
     CAPSULE_OT_UI_Group_Options,
     CAPSULE_OT_Refresh_Actions,
-    CAPSULE_OT_Tutorial_Tags,
     CAPSULE_OT_Create_ExportData,
     CAPSULE_OT_Add_Stored_Presets,
     CAPSULE_OT_Delete_Presets,
@@ -627,14 +480,11 @@ classes = (
 
     # user_inferface
     CAPSULE_UL_Name,
-    CAPSULE_UL_TagFilter,
     CAPSULE_UL_Object,
     CAPSULE_UL_Collection,
     CAPSULE_UL_Path_Default,
     CAPSULE_UL_Saved_Default,
     CAPSULE_UL_Export_Default,
-    CAPSULE_UL_Tag_Default,
-    CAPSULE_UL_Pass_Default,
     # CAPSULE_UL_Action,
     CAPSULE_PT_Header,
     CAPSULE_PT_Selection,

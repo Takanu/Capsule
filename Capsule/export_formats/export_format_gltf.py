@@ -218,7 +218,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		)
 
 		
-	def export(self, context, exportPreset, exportPass, filePath, fileName):
+	def export(self, context, export_preset, filePath, fileName):
 		"""
 		Calls the GLTF Export module to make the export happen.
 		"""
@@ -255,7 +255,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			# mesh data
 			export_yup=self.export_y_up,
-			export_apply=exportPass.apply_modifiers,
+			export_apply=export_preset.apply_modifiers,
 
 			export_texcoords=self.export_texcoords,
 			export_normals=self.export_normals,
@@ -265,7 +265,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_displacement=self.export_displacement,
 
 			# animation data
-			export_animations=exportPass.export_animation,
+			export_animations=export_preset.export_animation,
 			export_frame_range=self.export_frame_range,
 			export_frame_step=self.export_frame_step,
 			export_force_sampling=self.export_force_sampling,

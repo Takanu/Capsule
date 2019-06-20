@@ -124,7 +124,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		)
 
 
-	def export(self, exportPreset, exportPass, filePath):
+	def export(self, export_preset, filePath):
 		"""
 		Calls the FBX Export API to export the currently selected objects with the given settings.
 		"""
