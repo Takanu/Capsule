@@ -69,9 +69,10 @@ class CAPSULE_OT_Add_Path_Tag(Operator):
         description="",
         items=(
         ('object_name', 'Object Name', 'Adds a folder with the object name.'),
-        ('object_type', 'Object Type', 'Adds a folder with the object name.'),
+        ('object_type', 'Object Type', 'Adds a folder with the object type.'),
         ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
         ('blend_file_name', 'Blend File Name', 'Adds a folder with the blend file name.'),
+        # ('export_date', 'Export Date', 'Adds a folder with the date and time of the export.')
         ),
     )
 

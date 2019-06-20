@@ -127,17 +127,6 @@ class CAPSULE_OT_ExportAssets(Operator):
         self.exportedFiles += 1
 
 
-    # CHANGE ME PLZ
-    def GetNormals(self, enum):
-        # I should change this, this is redundant.
-
-        if enum == '1':
-            return 'EDGE'
-        if enum == '2':
-            return 'FACE'
-        if enum == '3':
-            return 'OFF'
-
     def GetExportInfo(self, exportPreset):
         """
         Builds a list of export information 
@@ -166,11 +155,12 @@ class CAPSULE_OT_ExportAssets(Operator):
         States stored here will be restored with the 'RestoreScene' function.
         """
 
-        self.active = None
-        self.selected = []
+        print("NEW SETUP SCENE PROCESS")
+
+        self.scene_records = {}
 
         # If the current context isn't the 3D View, we need to change that before anything else.
-        self.previous_area_type = bpy.context.area.type
+        self.scene_records['active_area_type'] = bpy.context.area.type
 
         for area in context.screen.areas:
             if area != context.area:
@@ -181,26 +171,30 @@ class CAPSULE_OT_ExportAssets(Operator):
         
 
         # We also need to store current 3D View selections.
+        selected_record = []
         if context.active_object is not None:
             for sel in context.selected_objects:
                 if sel.name != context.active_object.name:
-                    self.selected.append(sel)
+                    selected_record.append(sel)
         else:
             for sel in context.selected_objects:
-                self.selected.append(sel)
+                selected_record.append(sel)
 
-        self.active = context.active_object
+        self.scene_records['active_object'] = context.active_object
+        self.scene_records['selected_objects'] = selected_record
 
         # Save the current cursor location
         cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
-        self.cursorLocation = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+        self.scene_records['cursor_location'] = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
         # Keep a record of the current object mode
-        self.view_mode = bpy.context.mode
+        self.scene_records['view_mode'] = bpy.context.mode
         bpy.ops.object.mode_set(mode='OBJECT')
 
 
         # not sure if I need this anymore with view layers, test and report back.
+
+
         # ======================
         # Ensure all layers are visible
 
@@ -210,135 +204,150 @@ class CAPSULE_OT_ExportAssets(Operator):
         #     self.layersBackup.append(layerVisibility)
 
         # context.scene.layers = (True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True)
+        
 
         # ======================
-
-        # Record object visibility
-        self.hiddenList = []
-        self.selectList = []
-        self.hiddenObjectList = []
-
-        for item in context.scene.objects:
-            self.hiddenObjectList.append(item)
-            isHidden = item.hide_viewport
-            self.hiddenList.append(isHidden)
-            isSelectable = item.hide_select
-            self.selectList.append(isSelectable)
+        # Preserve all scene object information
+        
+        self.object_records = []
+        self.constraint_record = []
 
         for item in context.scene.objects:
+            record = {}
+            record['item'] = item
+            record['item_name'] = item.name
+
+            # Record object visibility
+            record['is_hidden'] = item.hide_viewport
+            record['is_selectable'] = item.hide_select
+
             item.hide_select = False
 
-        # If an object has locked Location/Rotation/Scale values, store them and turn it on
-        self.translateList = []
-        print("Checking locked objects")
-        for item in context.scene.objects:
-            boolList = []
+
+            # Record object loc/rot/scale locks if applicable
+            transform_locks = []
             for i, x in enumerate(item.lock_location):
-                boolList.append(item.lock_location[i])
+                transform_locks.append(item.lock_location[i])
             for i, x in enumerate(item.lock_rotation):
-                boolList.append(item.lock_rotation[i])
+                transform_locks.append(item.lock_rotation[i])
             for i, x in enumerate(item.lock_scale):
-                boolList.append(item.lock_scale[i])
-
-            if True in boolList:
-                entry = {'object_name': item.name, 'lock_list': boolList}
-                self.translateList.append(entry)
-
-        for item in context.scene.objects:
+                transform_locks.append(item.lock_scale[i])
+            
+            if True in transform_locks:
+                record['transform_locks'] = transform_locks
+            
             item.lock_location = (False, False, False)
             item.lock_rotation = (False, False, False)
             item.lock_scale = (False, False, False)
 
-        # If any armatures are in any non-object modes, we need to change this
-        self.armatureMode = []
-        for item in context.scene.objects:
+
+             # If any armatures are in any non-object modes, we need to change this
+            print("Searching for armatures...")
             if item.type == 'ARMATURE':
                 mode = object_ops.SwitchObjectMode('OBJECT', item)
+                
                 if mode != None:
-                    entry = {'object_name': item.name, 'mode': mode}
-                    self.armatureMode.append(entry)
+                    record['armature_mode'] = mode
 
-        # Find objects affected by specific constraints, and work out how much
-        # they need to be moved by, in order to keep the scene representative
-        self.constraintList = []
-        self.constraintObjects = []
-        print("Searching for constraints...")
-        for item in context.scene.objects:
-            i = 0
 
-            for constraint in item.constraints:
-                if item not in self.constraintObjects:
-                    # Record the current object location for later
-                    trueLocation = loc_utils.FindWorldSpaceObjectLocation(item, context)
-                    constraintLocation = Vector((0.0, 0.0, 0.0))
-                    print("TrueLocation", trueLocation)
-                    print("constraintLocation", constraintLocation)
+            # Add constraint records if the object has any.
+            if len(item.constraints) > 0:
 
-                    entry = {'object_name': item.name, 'true_location': trueLocation, 'constraint_location': constraintLocation}
-                    self.constraintObjects.append(entry)
+                constraint_list = []
 
-                entry = {'object_name': item.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
-                self.constraintList.append(entry)
+                # Record the current object location for later
+                true_location = loc_utils.FindWorldSpaceObjectLocation(item, context)
 
-                i += 1
+                # Placeholder for later, once all constraints are isolated and muted.
+                constraint_location = Vector((0.0, 0.0, 0.0))
 
-        # NOW WE CAN FUCKING MUTE THEM
-        for entry in self.constraintList:
-            item = context.scene.objects[entry['object_name']]
-            constraint = item.constraints[entry['index']]
+                print("true_location", true_location)
+                print("constraint_location", constraint_location)
+                record['true_location'] = true_location
+                record['constraint_location'] = constraint_location
 
-            # Mute the constraint
-            constraint.mute = True
-            constraint.influence = 0.0
+                # Iterate through and save constraint settings
+                i = 0
+                for constraint in item.constraints:
+                    constraint_list.append( {'index': i, 'enabled': constraint.mute, 'influence': constraint.influence} )
+                    i += 1
+                
+                record['constraint_list'] = constraint_list
 
-        # Reset the constraint location now we have a 'true' location
-        for entry in self.constraintObjects:
-            item = context.scene.objects[entry['object_name']]
-            entry['constraint_location'] = loc_utils.FindWorldSpaceObjectLocation(item, context)
-            print("NEW CONSTRAINT LOCATION", item.name, entry['constraint_location'])
+                # Mute and isolate them
+                for entry in self.constraint_list:
+                    constraint = item.constraints[entry['index']]
 
-        # Now all problematic constraints have been turned off, we can safely move
-        # objects to their initial positions
-        for entry in self.constraintObjects:
-            item = context.scene.objects[entry['object_name']]
-            print("Moving Object...", item.name, entry['true_location'])
-            object_transform.MoveObject(item, context, entry['true_location'])
-            print("New Object Location = ", item.location)
-            print("-"*20)
+                    # Mute the constraint
+                    constraint.mute = True
+                    constraint.influence = 0.0
 
+            # Add the new record
+            self.object_records.append(record)
+
+        
+        # Now the records have been created, we can alter constraint and object positions.
+        for record in self.object_records:
+            if 'constraint_list' in record:
+                item = record['item']
+                record['constraint_location'] = loc_utils.FindWorldSpaceObjectLocation(item, context)
+                
+                print("NEW CONSTRAINT LOCATION", item.name, entry['constraint_location'])
+
+                print("Moving Object...", item.name, record['true_location'])
+                object_transform.MoveObject(item, context, record['true_location'])
+                print("New Object Location = ", item.location)
+                print("-"*20)
 
         # Now we can unhide and deselect everything
         bpy.ops.object.hide_view_clear()
         bpy.ops.object.select_all(action='DESELECT')
+
+
 
     def RestoreScene(self, context):
         """
         Restores all scene information preserved with the 'SetupScene' function.
         """
 
-        # Restore constraint object positions
-        for entry in self.constraintObjects:
-            item = context.scene.objects[entry['object_name']]
-            print(entry)
-            print("Moving Object...", item.name, entry['constraint_location'])
-            object_transform.MoveObject(item, context, entry['constraint_location'])
-            print("New Object Location = ", item.name, item.location)
+        for record in self.object_records:
+            item = record['item']
+            
+             # Restore constraint object positions
+            if 'constraint_list' in record:
+                print(record)
+                print("Moving Object...", item.name, record['constraint_location'])
+                object_transform.MoveObject(item, context, record['constraint_location'])
+                print("New Object Location = ", item.name, item.location)
 
-        # Restore Constraint Defaults
-        for entry in self.constraintList:
-            item = bpy.data.objects[entry['object_name']]
-            index = entry['index']
-            item.constraints[index].mute = entry['enabled']
-            item.constraints[index].influence = entry['influence']
+                # Restore Constraint Defaults
+                for constraint_record in record['constraint_list']:
+                    index = constraint_record['index']
+                    item.constraints[index].mute = econstraint_recordntry['enabled']
+                    item.constraints[index].influence = constraint_record['influence']
+            
+            # Restore visibility defaults
+            item.hide_set(record['is_hidden'])
+            item.hide_select = record['is_selectable']
 
-        # Restore visibility defaults
-        while len(self.hiddenObjectList) != 0:
-            item = self.hiddenObjectList.pop()
-            hide = self.hiddenList.pop()
-            hide_select = self.selectList.pop()
+            # Restore transform locks
+            if 'transform_locks' in record:
+                lock_list = record['transform_locks']
 
-            item.hide_viewport = hide
-            item.hide_select = hide_select
+                item.lock_location[0] = lock_list[0]
+                item.lock_location[1] = lock_list[1]
+                item.lock_location[2] = lock_list[2]
+                item.lock_rotation[0] = lock_list[3]
+                item.lock_rotation[1] = lock_list[4]
+                item.lock_rotation[2] = lock_list[5]
+                item.lock_scale[0] = lock_list[6]
+                item.lock_scale[1] = lock_list[7]
+                item.lock_scale[2] = lock_list[8]
+            
+            # Restore armature mode
+            if 'armature_mode' in record:
+                mode = object_ops.SwitchObjectMode(record['armature_mode'], item)
+
 
         # Not sure if I need this anymore with view layers.  Test and report back.
         # ======================
@@ -347,49 +356,26 @@ class CAPSULE_OT_ExportAssets(Operator):
         # while i < 20:
         #     context.scene.layers[i] = self.layersBackup[i]
         #     i += 1
-        
-
-        # If an object has locked Location/Rotation/Scale values, store them and turn it on
-        while len(self.translateList) != 0:
-            entry = self.translateList.pop()
-            item = bpy.data.objects[entry['object_name']]
-            boolList = entry['lock_list']
-
-            item.lock_location[0] = boolList[0]
-            item.lock_location[1] = boolList[1]
-            item.lock_location[2] = boolList[2]
-            item.lock_rotation[0] = boolList[3]
-            item.lock_rotation[1] = boolList[4]
-            item.lock_rotation[2] = boolList[5]
-            item.lock_scale[0] = boolList[6]
-            item.lock_scale[1] = boolList[7]
-            item.lock_scale[2] = boolList[8]
-
-        # Restore armature modes
-        while len(self.armatureMode) != 0:
-            entry = self.armatureMode.pop()
-            mode = object_ops.SwitchObjectMode(entry['mode'], bpy.data.objects[entry['object_name']])
 
         # Re-select the objects previously selected
-        if self.active is not None:
-            select_utils.FocusObject(self.active)
+        if self.scene_records['active_object'] is not None:
+            select_utils.FocusObject(self.scene_records['active_object'])
 
-        for sel in self.selected:
+        for sel in self.scene_records['selected_objects']:
             select_utils.SelectObject(sel)
 
-        if self.active is None and len(self.selected) == 0:
+        if self.scene_records['active_object'] is None and len(self.scene_records['selected_objects']) == 0:
             bpy.ops.object.select_all(action='DESELECT')
 
         # Restore the 3D view mode
-        bpy.ops.object.mode_set(mode=self.view_mode)
+        bpy.ops.object.mode_set(mode = self.scene_records['view_mode'])
 
         # Restore the 3D cursor
-        bpy.data.scenes[bpy.context.scene.name].cursor.location = self.cursorLocation
+        bpy.data.scenes[bpy.context.scene.name].cursor.location = self.scene_records['cursor_location']
 
         # Restore the panel type
-        print("PREVIOUS AREA TYPE")
-        print(self.previous_area_type)
-        context.area.type = self.previous_area_type
+        # FIXME : This currently doesn't work with the Blender 2.8 area bug.
+        context.area.type = self.scene_records['active_area_type']
 
         print("Rawr")
 
@@ -688,7 +674,7 @@ class CAPSULE_OT_ExportAssets(Operator):
             if defaultFilePath == "":
                 statement = "The path for " + exp.location_presets[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
                 return statement
-                
+
             i += 1
 
         # Check all collected names for invalid characters
