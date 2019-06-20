@@ -192,12 +192,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		description='',
 		default=False
 	)
-
-	export_bake_skins: BoolProperty(
-		name='Bake Skinning Constraints',
-		description='',
-		default=False
-	)
+	# FIXME : Removed from 2.8?  Hmm...
+	# export_bake_skins: BoolProperty(
+	# 	name='Bake Skinning Constraints',
+	# 	description='',
+	# 	default=False
+	# )
 
 	export_morph: BoolProperty(
 		name='Export Morphing',
@@ -273,7 +273,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_all_influences=self.export_all_influences,
 
 			export_skins=self.export_skins,
-			export_bake_skins=self.export_bake_skins,
+			# export_bake_skins=self.export_bake_skins,
 			export_morph=self.export_morph,
 			export_morph_normal=self.export_morph_normal,
 			export_morph_tangent=self.export_morph_tangent,
@@ -395,7 +395,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_2 = export_main.column(align=True)
 			export_2.prop(exportData, "export_skins")
-			export_2.prop(exportData, "export_bake_skins")
+			# export_2.prop(exportData, "export_bake_skins")
 			export_2.prop(exportData, "export_morph")
 			export_2.prop(exportData, "export_morph_normal")
 			export_2.prop(exportData, "export_morph_tangent")

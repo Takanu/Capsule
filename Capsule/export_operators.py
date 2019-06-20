@@ -63,7 +63,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 self.export_preset.data_obj.export(self.export_preset, individualFilePath)
 
             elif self.export_preset.format_type == 'GLTF':
-                self.export_preset.data_gltf.export(context, self.export_preset, individualFilePath)
+                self.export_preset.data_gltf.export(context, self.export_preset, path, item.name)
             
             elif self.export_preset.format_type == 'Alembic':
                 self.export_preset.data_abc.export(context, self.export_preset, individualFilePath)
@@ -109,7 +109,7 @@ class CAPSULE_OT_ExportAssets(Operator):
             self.export_preset.data_obj.export(self.export_preset, objectFilePath)
 
         elif self.export_preset.format_type == 'GLTF':
-            self.export_preset.data_gltf.export(context, self.export_preset, PrepareExportCombined)
+            self.export_preset.data_gltf.export(context, self.export_preset, path, exportName)
 
         elif self.export_preset.format_type == 'Alembic':
             self.export_preset.data_abc.export(context, self.export_preset, objectFilePath)
@@ -636,7 +636,7 @@ class CAPSULE_OT_ExportAssets(Operator):
 
                 # Check Export Key
                 exp_key = int(collection.CAPCol.export_preset) - 1
-                if exexp_keypKey == -1:
+                if exp_key == -1:
 
                     bpy.ops.object.select_all(action='DESELECT')
                     for item in collection.all_objects:
@@ -930,13 +930,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 self.export_preset = self.export_info.file_presets[expKey]
                 self.GetExportInfo(self.export_preset)
                 print("Using Export Default...", self.export_preset.name, ".  Export Key", expKey)
-
-
-                # Identify what tag the root object has
-                if self.root_object != None:
-                    self.root_object_type = tag_ops.IdentifyObjectTag(context, self.root_object, self.export_preset)
-                    print("Root type is...", self.root_object_type)
-
+                
                 # Get the root object location for later use
                 root_object_location = [0.0, 0.0, 0.0]
                 root_object_rotation = [0.0, 0.0, 0.0]
@@ -1024,7 +1018,9 @@ class CAPSULE_OT_ExportAssets(Operator):
                 elif is_collection_exportable is True:
                     finalExportList = []
                     finalExportList += object_list
-                    finalExportList.append(self.root_object)
+
+                    if self.root_object != None:
+                        finalExportList.append(self.root_object)
 
                     print("Final Export List:", finalExportList)
 

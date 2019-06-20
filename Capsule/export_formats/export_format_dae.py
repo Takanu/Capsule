@@ -119,7 +119,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 		description = "Transformation type for translation, scale and rotation.",
 		items = (
 			('matrix', "Matrix", "Use <matrix> to specify transformations."),
-			('transrotloc', 'TransRotLoc', " Use <translate>, <rotate>, <scale> to specify transformations."),
+			('decomposed', 'Decomposed', " Use <translate>, <rotate>, <scale> to specify transformations."),
 			),
 	)
 
@@ -185,12 +185,13 @@ class CAP_FormatData_Collada(PropertyGroup):
 			active_uv_only = self.export_active_uv_only,
 			use_texture_copies = self.export_texture_copy,
 			use_object_instantiation = self.use_object_instantiation,
+			export_object_transformation_type_selection = self.export_transformation_type_selection,
 
 			# animation
 			include_animations = export_preset.export_animation,
 			include_all_actions = self.include_all_actions,
 			export_animation_type_selection = self.export_animation_type,
-			export_transformation_type_selection = self.export_transformation_type_selection,
+			export_animation_transformation_type_selection = self.export_transformation_type_selection,
 			sampling_rate = self.sampling_rate,
 			keep_smooth_curves = self.keep_smooth_curves,
 			keep_keyframes = self.keep_keyframes,
@@ -242,6 +243,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 			export_1.prop(exportData, "export_active_uv_only")
 			export_1.prop(exportData, "export_texture_copy")
 			export_1.prop(exportData, "use_object_instantiation")
+			export_1.prop(exportData, "export_transformation_type_selection")
 			export_1.separator()
 
 			export_main.separator()
