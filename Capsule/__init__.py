@@ -400,8 +400,8 @@ def CreateDefaultData(scene):
     defaultDatablock.CAPExp.is_storage_object = True
 
     # hide it!
-    defaultDatablock.hide_set(true)
-    defaultDatablock.select_set(true)
+    defaultDatablock.hide_set(True)
+    defaultDatablock.select_set(True)
     defaultDatablock.hide_render = True
     
 

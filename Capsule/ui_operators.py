@@ -214,7 +214,7 @@ class CAPSULE_OT_Set_Root_Object(Operator):
     def finish(self):
         # This def helps us tidy the shit we started
         # Restore the active area's header to its initial state.
-        bpy.context.area.header_text_set()
+        bpy.context.area.header_text_set(None)
 
 
     def execute(self, context):
@@ -231,7 +231,7 @@ class CAPSULE_OT_Set_Root_Object(Operator):
         # If multi-edit is on, get info from the scene
         if self.addon_prefs.collection_multi_edit is True:
             print("Multi-edit on")
-            self.object = context.scene.objects.active
+            self.object = context.active_object
             for object in context.selected_objects:
                 for found_collection in object.users_collection:
                     self.collections.append(found_collection)
@@ -246,7 +246,7 @@ class CAPSULE_OT_Set_Root_Object(Operator):
                     self.collections.append(found_collection)
 
         print("Collections found....", self.collections)
-        self._timer = context.window_manager.event_timer_add(0.05, context.window)
+        self._timer = context.window_manager.event_timer_add(0.05, window=context.window)
         bpy.ops.object.select_all(action='DESELECT')
 
         # Set the header text with USEFUL INSTRUCTIONS :O
@@ -269,7 +269,7 @@ class CAPSULE_OT_Set_Root_Object(Operator):
             # Check only one object was selected
             if context.selected_objects != None and len(context.selected_objects) == 1:
                 for collection in self.collections:
-                    collection.CAPCol.root_object = context.scene.objects.active.name
+                    collection.CAPCol.root_object = context.active_object.name
                 if self.object != None:
                     select_utils.FocusObject(self.object)
                 else:
