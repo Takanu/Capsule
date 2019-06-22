@@ -228,22 +228,12 @@ class CAPSULE_OT_Set_Root_Object(Operator):
         self.list_item = 0
         context.window_manager.modal_handler_add(self)
 
-        # If multi-edit is on, get info from the scene
-        if self.addon_prefs.collection_multi_edit is True:
-            print("Multi-edit on")
-            self.object = context.active_object
-            for object in context.selected_objects:
-                for found_collection in object.users_collection:
-                    self.collections.append(found_collection)
+        self.list_item = context.scene.CAPScn.collection_list_index
+        item = context.scene.CAPScn.collection_list[context.scene.CAPScn.collection_list_index]
+        for found_collection in collection_utils.GetSceneCollections(context.scene, True):
+            if found_collection.name == item.name:
+                self.collections.append(found_collection)
 
-        # Otherwise, find it in the scene
-        else:
-            print("Multi-edit off")
-            self.list_item = context.scene.CAPScn.collection_list_index
-            item = context.scene.CAPScn.collection_list[context.scene.CAPScn.collection_list_index]
-            for found_collection in collection_utils.GetSceneCollections(context.scene, True):
-                if found_collection.name == item.name:
-                    self.collections.append(found_collection)
 
         print("Collections found....", self.collections)
         self._timer = context.window_manager.event_timer_add(0.05, window=context.window)
@@ -299,20 +289,10 @@ class CAPSULE_OT_Clear_Root_Object(Operator):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
 
-        # If multi-edit is on, get info from the scene
-        if addon_prefs.collection_multi_edit is True:
-            print("Multi-edit on")
-            for object in context.selected_objects:
-                for found_collection in object.users_collection:
-                    found_collection.CAPCol.root_object = ""
-
-        # Otherwise, find it in the scene
-        else:
-            print("Multi-edit off")
-            item = context.scene.CAPScn.collection_list[context.scene.CAPScn.collection_list_index]
-            for found_collection in collection_utils.GetSceneCollections(context.scene, True):
-                if found_collection.name == item.name:
-                    found_collection.CAPCol.root_object = ""
+        item = context.scene.CAPScn.collection_list[context.scene.CAPScn.collection_list_index]
+        for found_collection in collection_utils.GetSceneCollections(context.scene, True):
+            if found_collection.name == item.name:
+                found_collection.CAPCol.root_object = ""
 
         return {'FINISHED'}
 

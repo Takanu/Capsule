@@ -8,7 +8,7 @@ from .tk_utils import select as select_utils
 def CAP_Update_CollectionExport(self, context):
     """
     Updates the selected groups' "Enable Export" status across UI elements.
-    Note - This should only be used from the Enable Export UI tick, otherwise manually handle "Enable Export" status 
+    Note - This should only be used from the Enable Export Selection tick, otherwise manually handle "Enable Export" status 
     assignment using "UpdateCollectionList"
     """
 
@@ -27,40 +27,28 @@ def CAP_Update_CollectionExport(self, context):
         target = None
         value = False
 
-        if addon_prefs.collection_multi_edit is True:
-            # Acts as its own switch to prevent endless recursion
-            if self == context.active_object.users_collection[0].CAPCol:
-                current_collection = None
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.users_collection[0].CAPCol:
+            current_collection = None
 
-                if context.active_object.users_collection is not None:
-                    current_collection = context.active_object.users_collection[0]
+            if context.active_object.users_collection is not None:
+                current_collection = context.active_object.users_collection[0]
 
-                collected.append(current_collection)
+            collected.append(current_collection)
 
-                for item in context.selected_objects:
-                    for collection in item.users_collection:
-                        collection_added = False
-
-                        for found_group in collected:
-                            if found_group.name == collection.name:
-                                collection_added = True
-
-                        if collection_added == False:
-                            collected.append(collection)
-
-                collected.remove(current_collection)
-                target = current_collection
-                value = self.enable_export
-
-        # Otherwise, get information from the list
-        else:
-            item = scn.collection_list[scn.collection_list_index]
-            print("Item Found:", item.name)
-            for item in scene.objects:
+            for item in context.selected_objects:
                 for collection in item.users_collection:
-                    if collection.name == item.name:
-                        target = collection
+                    collection_added = False
 
+                    for found_group in collected:
+                        if found_group.name == collection.name:
+                            collection_added = True
+
+                    if collection_added == False:
+                        collected.append(collection)
+
+            collected.remove(current_collection)
+            target = current_collection
             value = self.enable_export
 
         # Obtain the value changed
@@ -82,7 +70,7 @@ def CAP_Update_FocusCollection(self, context):
 
     """
     Focuses the camera to a particular collection, moving it to ensure all objects are in the frame and can be seen clearly.
-    EDITME: The camera movement interpolation no longer works.
+    TODO 2.0: The camera movement interpolation no longer works.
     """
 
     preferences = context.preferences
@@ -179,18 +167,6 @@ def CAP_Update_CollectionListExport(self, context):
 
     return None
 
-def CAP_Update_CollectionListSelect(self, context):
-    """
-    Used to turn off multi-select-enabled update functions if they were instead activated from a 
-    list entry instead of another UI element.  Sneaky usability enhancements be here... <w<
-    """
-    preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
-
-    if self.collection_list_index != -1:
-        print("Selection in list, turning off multi edit...")
-        addon_prefs.collection_multi_edit = False
-
 
 def CAP_Update_CollectionRemoveFromList(self, context):
     """
@@ -239,52 +215,48 @@ def CAP_Update_CollectionRootObject(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    if addon_prefs.collection_multi_edit is True:
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.users_collection[0].CAPCol:
+        current_collection = None
+        
+        if context.active_object.users_collection is not None:
+            current_collection = context.active_object.users_collection[0]
 
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.users_collection[0].CAPCol:
-            current_collection = None
-            
-            if context.active_object.users_collection is not None:
-                current_collection = context.active_object.users_collection[0]
+        groups_found = collection_utils.GetObjectCollections(context.selected_objects)
+        groups_found.remove(current_collection)
 
-            groups_found = collection_utils.GetObjectCollections(context.selected_objects)
-            groups_found.remove(current_collection)
+        # Obtain the value changed
+        value = current_collection.CAPCol.root_object
 
-            # Obtain the value changed
-            value = current_collection.CAPCol.root_object
-
-            # Run through the objects
-            for collection in groups_found:
-                collection.CAPCol.root_object = value
+        # Run through the objects
+        for collection in groups_found:
+            collection.CAPCol.root_object = value
 
     return None
 
-def CAP_Update_CollectionLocationDefault(self, context):
+def CAP_Update_CollectionLocationPreset(self, context):
     """
     Updates the object's Location Default property.
     """
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    if addon_prefs.collection_multi_edit is True:
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.users_collection[0].CAPCol:
+        current_collection = None
 
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.users_collection[0].CAPCol:
-            current_collection = None
+        if context.active_object.users_collection is not None:
+            current_collection = context.active_object.users_collection[0]
 
-            if context.active_object.users_collection is not None:
-                current_collection = context.active_object.users_collection[0]
+        groups_found = collection_utils.GetObjectCollections(context.selected_objects)
+        groups_found.remove(current_collection)
 
-            groups_found = collection_utils.GetObjectCollections(context.selected_objects)
-            groups_found.remove(current_collection)
+        # Obtain the value changed
+        value = current_collection.CAPCol.location_preset
 
-            # Obtain the value changed
-            value = current_collection.CAPCol.location_preset
-
-            # Run through the objects
-            for collection in groups_found:
-                collection.CAPCol.location_preset = value
+        # Run through the objects
+        for collection in groups_found:
+            collection.CAPCol.location_preset = value
 
     return None
 
@@ -295,24 +267,22 @@ def CAP_Update_CollectionExportDefault(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    if addon_prefs.collection_multi_edit is True:
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.users_collection[0].CAPCol:
+        current_collection = None
 
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.users_collection[0].CAPCol:
-            current_collection = None
+        if context.active_object.users_collection is not None:
+            current_collection = context.active_object.users_collection[0]
 
-            if context.active_object.users_collection is not None:
-                current_collection = context.active_object.users_collection[0]
+        groups_found = collection_utils.GetObjectCollections(context.selected_objects)
+        groups_found.remove(current_collection)
 
-            groups_found = collection_utils.GetObjectCollections(context.selected_objects)
-            groups_found.remove(current_collection)
+        # Obtain the value changed
+        value = current_collection.CAPCol.export_preset
 
-            # Obtain the value changed
-            value = current_collection.CAPCol.export_preset
-
-            # Run through the objects
-            for collection in groups_found:
-                collection.CAPCol.export_preset = value
+        # Run through the objects
+        for collection in groups_found:
+            collection.CAPCol.export_preset = value
 
     return None
 
@@ -324,24 +294,22 @@ def CAP_Update_CollectionNormals(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    if addon_prefs.collection_multi_edit is True:
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.users_collection[0].CAPCol:
+        current_collection = None
 
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.users_collection[0].CAPCol:
-            current_collection = None
+        if context.active_object.users_collection is not None:
+            current_collection = context.active_object.users_collection[0]
 
-            if context.active_object.users_collection is not None:
-                current_collection = context.active_object.users_collection[0]
+        groups_found = collection_utils.GetObjectCollections(context.selected_objects)
+        groups_found.remove(current_collection)
 
-            groups_found = collection_utils.GetObjectCollections(context.selected_objects)
-            groups_found.remove(current_collection)
+        # Obtain the value changed
+        value = current_collection.CAPCol.normals
 
-            # Obtain the value changed
-            value = current_collection.CAPCol.normals
-
-            # Run through the objects
-            for collection in groups_found:
-                collection.CAPCol.normals = value
+        # Run through the objects
+        for collection in groups_found:
+            collection.CAPCol.normals = value
 
     return None
 

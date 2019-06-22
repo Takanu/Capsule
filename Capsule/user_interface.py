@@ -122,15 +122,7 @@ class CAPSULE_PT_Selection(Panel):
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
-            layout = self.layout
-            col_export = layout.column(align=True)
-            col_export.label(text="No Capsule for this .blend file has been found,")
-            col_export.label(text="Please press the button below to generate new data.")
-            col_export.separator()
-            col_export.separator()
-            col_export.operator("cap.exportdata_create")
-            col_export.separator()
-            return
+            CreateCapsuleData(layout)
 
 
         scn = context.scene.CAPScn
@@ -145,19 +137,8 @@ class CAPSULE_PT_Selection(Panel):
             obj = None
             ob = None
 
-            # If multi-edit is off, find it from the currently selected list entry.
-            if addon_prefs.object_multi_edit is False:
-                if len(scn.object_list) is not 0:
-                    if len(scn.object_list) > scn.object_list_index:
-                        entry = scn.object_list[scn.object_list_index]
-
-                        for item in context.scene.objects:
-                            if item.name == entry.name:
-                                obj = item.CAPObj
-                                ob = item
-
             # If multi-edit is on, find it from the scene.
-            elif context.active_object is not None:
+            if context.active_object is not None:
                 obj = context.active_object.CAPObj
                 ob = context.active_object
 
@@ -167,7 +148,7 @@ class CAPSULE_PT_Selection(Panel):
 
             # Now we can build the UI
             if ob != None:
-                if addon_prefs.object_multi_edit is False or len(context.selected_objects) == 1 or (context.active_object is not None and len(context.selected_objects) == 0):
+                if len(context.selected_objects) == 1 or (context.active_object is not None and len(context.selected_objects) == 0):
                     col_selection_item_box = layout.box()
                     col_export = col_selection_item_box.column(align=True)
                     col_export.alignment = 'EXPAND'
@@ -212,13 +193,12 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.separator()
                 obj_settings.prop(obj, "export_preset", text="")
                 obj_settings.separator()
+
+                # TODO 2.0 : Add this back in with other object/collection switches.
                 #obj_settings.label(text="Mesh Normals:")
                 #obj_settings.separator()
                 #obj_settings.prop(obj, "normals", text="")
                 #obj_settings.separator()
-
-                obj_settings.separator()
-                obj_settings.operator("scene.cap_export")
 
             # If no object was eventually found, bring up warning labels.
             else:
@@ -238,25 +218,8 @@ class CAPSULE_PT_Selection(Panel):
             grp = None
             gr = None
 
-            # If the multi-edit isnt on, just grab the list collection
-            if addon_prefs.collection_multi_edit is False:
-                if len(scn.collection_list) > 0:
-                    entry = scn.collection_list[scn.collection_list_index]
-
-                    for collection in collection_utils.GetSceneCollections(context.scene, True):
-                        if collection.name == entry.name:
-                            grp = collection.CAPCol
-                            gr = collection
-
-                if gr is not None:
-                    col_selection_item_box = layout.box()
-                    collection_label = col_selection_item_box.column(align=True)
-                    collection_label.alignment = 'EXPAND'
-                    collection_label.label(text=gr.name, icon="MOD_ARRAY")
-
-
-            # Otherwise, just find it in a selection
-            elif context.active_object is not None or len(context.selected_objects) > 0:
+            # Highlight the currently selected collections
+            if len(context.selected_objects) > 0:
                 collections_found = collection_utils.GetSelectedObjectCollections()
                 collection_info = ""
 
@@ -347,15 +310,15 @@ class CAPSULE_PT_List(Panel):
     bl_label = "Export List"
     bl_parent_id = "CAPSULE_PT_Header"
 
-    @classmethod
-    def poll(cls, context):
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-        except KeyError:
-            return False
-        return True
+    # @classmethod
+    # def poll(cls, context):
+    #     preferences = context.preferences
+    #     addon_prefs = preferences.addons[__package__].preferences
+    #     try:
+    #         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    #     except KeyError:
+    #         return False
+    #     return True
 
     def draw(self, context):
         preferences = context.preferences
@@ -363,6 +326,13 @@ class CAPSULE_PT_List(Panel):
         scn = context.scene.CAPScn
 
         layout = self.layout
+
+        try:
+            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        except KeyError:
+            CreateCapsuleData(layout)
+            return
+
         listTab = int(str(scn.list_switch))
 
         list_switch = layout.row(align=True)
@@ -380,7 +350,7 @@ class CAPSULE_PT_List(Panel):
         col_location_options.operator("scene.cap_refreshlist", icon="FILE_REFRESH")
 
         col_export = layout.column(align=True)
-        col_export.operator("scene.cap_export")
+        
         layout.separator()
 
 
@@ -391,22 +361,31 @@ class CAPSULE_PT_Location(Panel):
     bl_label = "Locations"
     bl_parent_id = "CAPSULE_PT_Header"
 
-    @classmethod
-    def poll(cls, context):
+    # @classmethod
+    # def poll(cls, context):
+    #     preferences = context.preferences
+    #     addon_prefs = preferences.addons[__package__].preferences
+
+    #     try:
+    #         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    #     except KeyError:
+    #         return False
+    #     return True
+
+    def draw(self, context):
+
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
+        layout = self.layout
 
+        # UI Prompt for when the .blend Capsule data can no longer be found.
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
-            return False
-        return True
+            CreateCapsuleData(layout)
+            return
 
-    def draw(self, context):
-        layout = self.layout
-
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
+        
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         scn = context.scene.CAPScn
         ob = context.object
@@ -435,8 +414,42 @@ class CAPSULE_PT_Location(Panel):
             file.prop(exp.location_presets[exp.location_presets_listindex], "path", text="")
             file.operator_menu_enum("scene.cap_add_path_tag", "path_tags")
 
-# def register():
-#     bpy.utils.register_module(__name__)
+class CAPSULE_PT_Export(Panel):
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "render"
+    bl_label = "Export Overview"
+    bl_parent_id = "CAPSULE_PT_Header"
 
-# def unregister():
-#     bpy.utils.unregister_module(__name__)
+    def draw(self, context):
+
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+        layout = self.layout
+
+        # UI Prompt for when the .blend Capsule data can no longer be found.
+        try:
+            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        except KeyError:
+            CreateCapsuleData(layout)
+            return
+
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+
+        export_buttons = layout.row(align=True)
+        export_buttons.operator("scene.cap_export")
+
+
+
+
+def CreateCapsuleData(layout):
+
+    # UI Prompt for when the .blend Capsule data can no longer be found.
+    col_export = layout.column(align=True)
+    col_export.label(text="No Capsule for this .blend file has been found,")
+    col_export.label(text="Please press the button below to generate new data.")
+    col_export.separator()
+    col_export.separator()
+    col_export.operator("cap.exportdata_create")
+    col_export.separator()
+    return

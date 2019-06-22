@@ -27,27 +27,17 @@ def CAP_Update_ObjectExport(self, context):
         collected = [] 
         target = None
         value = False
+        
+        # Acts as its own switch to prevent endless recursion
+        if self == context.active_object.CAPObj:
+            print("Changing Export...", context.active_object.name)
 
-        # If the selection has come from the scene, get data from inside the scene
-        if addon_prefs.object_multi_edit is True:
+            for sel in context.selected_objects:
+                if sel.name != context.active_object.name:
+                    collected.append(sel)
 
-            # Acts as its own switch to prevent endless recursion
-            if self == context.active_object.CAPObj:
-                print("Changing Export...", context.active_object.name)
-
-                for sel in context.selected_objects:
-                    if sel.name != context.active_object.name:
-                        collected.append(sel)
-
-                # Obtain the value changed
-                target = context.active_object
-                value = self.enable_export
-
-        # Otherwise, get information from the list
-        else:
-            item = scn.object_list[scn.object_list_index]
-            print("Item Found:", item.name)
-            target = scene.objects[item.name]
+            # Obtain the value changed
+            target = context.active_object
             value = self.enable_export
 
         # Update the list associated with the object
@@ -71,23 +61,22 @@ def CAP_Update_SceneOrigin(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    if addon_prefs.object_multi_edit is True:
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.CAPObj:
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.CAPObj:
 
-            # Keep a record of the selected objects to update
-            selected = []
+        # Keep a record of the selected objects to update
+        selected = []
 
-            for sel in context.selected_objects:
-                if sel.name != context.active_object.name:
-                    selected.append(sel)
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
 
-            # Obtain the value changed
-            value = self.use_scene_origin
+        # Obtain the value changed
+        value = self.use_scene_origin
 
-            # Run through the objects
-            for object in selected:
-                object.CAPObj.use_scene_origin = value
+        # Run through the objects
+        for object in selected:
+            object.CAPObj.use_scene_origin = value
 
     return None
 
@@ -187,18 +176,6 @@ def CAP_Update_ObjectListExport(self, context):
     scn.enable_list_active = False
     return None
 
-def CAP_Update_ObjectListSelect(self, context):
-    """
-    Used to turn off multi-select-enabled update functions if they were instead activated from a 
-    list entry instead of another UI element.  Sneaky usability enhancements be here... <w<
-    """
-    preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
-
-    if self.object_list_index != -1:
-        print("Selection in list, turning off multi edit...")
-        addon_prefs.object_multi_edit = False
-
 
 def CAP_Update_ObjectRemoveFromList(self, context):
     """
@@ -242,7 +219,7 @@ def CAP_Update_ObjectRemoveFromList(self, context):
         i += 1
 
 
-def CAP_Update_LocationDefault(self, context):
+def CAP_Update_LocationPreset(self, context):
     """
     Updates the object's Location Default property.
     """
@@ -250,24 +227,23 @@ def CAP_Update_LocationDefault(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    if addon_prefs.object_multi_edit is True:
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.CAPObj:
-            print(context.active_object.name)
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.CAPObj:
+        print(context.active_object.name)
 
-            # Keep a record of the selected objects to update
-            selected = []
+        # Keep a record of the selected objects to update
+        selected = []
 
-            for sel in context.selected_objects:
-                if sel.name != context.active_object.name:
-                    selected.append(sel)
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
 
-            # Obtain the value changed
-            value = self.location_preset
+        # Obtain the value changed
+        value = self.location_preset
 
-            # Run through the objects
-            for object in selected:
-                object.CAPObj.location_preset = value
+        # Run through the objects
+        for object in selected:
+            object.CAPObj.location_preset = value
 
     return None
 
@@ -278,23 +254,22 @@ def CAP_Update_ExportDefault(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    if addon_prefs.object_multi_edit is True:
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.CAPObj:
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.CAPObj:
 
-            # Keep a record of the selected objects to update
-            selected = []
+        # Keep a record of the selected objects to update
+        selected = []
 
-            for sel in context.selected_objects:
-                if sel.name != context.active_object.name:
-                    selected.append(sel)
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
 
-            # Obtain the value changed
-            value = self.export_preset
+        # Obtain the value changed
+        value = self.export_preset
 
-            # Run through the objects
-            for object in selected:
-                object.CAPObj.export_preset = value
+        # Run through the objects
+        for object in selected:
+            object.CAPObj.export_preset = value
 
     return None
 
@@ -306,23 +281,22 @@ def CAP_Update_Normals(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    if addon_prefs.object_multi_edit is True:
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.CAPObj:
+    # Acts as its own switch to prevent endless recursion
+    if self == context.active_object.CAPObj:
 
-            # Keep a record of the selected objects to update
-            selected = []
+        # Keep a record of the selected objects to update
+        selected = []
 
-            for sel in context.selected_objects:
-                if sel.name != context.active_object.name:
-                    selected.append(sel)
+        for sel in context.selected_objects:
+            if sel.name != context.active_object.name:
+                selected.append(sel)
 
-            # Obtain the value changed
-            value = self.normals
+        # Obtain the value changed
+        value = self.normals
 
-            # Run through the objects
-            for object in selected:
-                object.CAPObj.normals = value
+        # Run through the objects
+        for object in selected:
+            object.CAPObj.normals = value
 
     return None
 

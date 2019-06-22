@@ -6,7 +6,7 @@ from bpy.types import PropertyGroup
 from .update import (
     CAP_Update_ObjectExport, 
     CAP_Update_SceneOrigin, 
-    CAP_Update_LocationDefault, 
+    CAP_Update_LocationPreset, 
     CAP_Update_ExportDefault, 
     CAP_Update_Normals, 
     CAP_Update_ObjectListName, 
@@ -14,7 +14,6 @@ from .update import (
     CAP_Update_ActionItemName, 
     CAP_Update_FocusObject,  
     CAP_Update_SelectObject, 
-    CAP_Update_ObjectListSelect, 
     CAP_Update_ObjectRemoveFromList
 )
 
@@ -26,9 +25,8 @@ from .update_collections import (
     CAP_Update_CollectionExport,
     CAP_Update_CollectionRootObject, 
     CAP_Update_CollectionExportDefault, 
-    CAP_Update_CollectionLocationDefault, 
+    CAP_Update_CollectionLocationPreset, 
     CAP_Update_CollectionNormals, 
-    CAP_Update_CollectionListSelect, 
     CAP_Update_CollectionRemoveFromList
 )
 
@@ -174,7 +172,6 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
     collection_list_index: IntProperty(
         name="",
         description="",
-        update=CAP_Update_CollectionListSelect
         )
 
     ## ???
@@ -192,7 +189,6 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
     # ???
     object_list_index: IntProperty(name="",
         description="",
-        update=CAP_Update_ObjectListSelect
         )
 
     ## FIXME: idk what this is
@@ -217,7 +213,7 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
         ('2', 'Collections', 'Displays selected collections, and any associated export settings.')),
         )
 
-def GetLocationDefaults(scene, context):
+def GetLocationPresets(scene, context):
 
     items = [
         ("0", "None",  "", 0),
@@ -274,8 +270,8 @@ class CAPSULE_Object_Preferences(PropertyGroup):
     location_preset: EnumProperty(
         name="Select Location Preset",
         description="Defines the file path that the object will be exported to.",
-        items=GetLocationDefaults,
-        update=CAP_Update_LocationDefault
+        items=GetLocationPresets,
+        update=CAP_Update_LocationPreset
         )
 
     export_preset: EnumProperty(
@@ -313,8 +309,8 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
     location_preset: EnumProperty(
         name="Select Export Location",
         description="Defines the Location that the collection will be exported to.",
-        items=GetLocationDefaults,
-        update=CAP_Update_CollectionLocationDefault
+        items=GetLocationPresets,
+        update=CAP_Update_CollectionLocationPreset,
         )
 
     export_preset: EnumProperty(

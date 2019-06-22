@@ -121,16 +121,6 @@ def GetGlobalPresets(scene, context):
 
     return items
 
-def UpdateObjectSelectMode(self, context):
-
-    if self.object_multi_edit is True:
-        context.scene.CAPScn.object_list_index = -1
-
-def UpdateCollectionSelectMode(self, context):
-
-    if self.collection_multi_edit is True:
-        context.scene.CAPScn.collection_list_index = -1
-
 
 class CAP_AddonPreferences(AddonPreferences):
     bl_idname = __name__
@@ -152,26 +142,6 @@ class CAP_AddonPreferences(AddonPreferences):
     tags_dropdown: BoolProperty(default = False)
     passes_dropdown: BoolProperty(default = False)
     options_dropdown: BoolProperty(default = False)
-
-    # not currently accessible through any menu, this is now an internally-managed state.
-    # used to turn off multi-selection editing when an object is selected from the export list,
-    # or potentially for other operations.
-    object_multi_edit: BoolProperty(
-        name="Collection Multi-Edit Mode",
-        description="Allows you to edit export settings for all objects that the currently selected.  \n\nTurning this option off will let you edit the currently selected object on the list.",
-        default=True,
-        update=UpdateObjectSelectMode
-        )
-    
-    # not currently accessible through any menu, this is now an internally-managed state.
-    # used to turn off multi-selection editing when an object is selected from the export list,
-    # or potentially for other operations.
-    collection_multi_edit: BoolProperty(
-        name="Collection Multi-Edit Mode",
-        description="Allows you to edit export settings for all collections that the currently selected objects belong to.  \n\nWARNING - One object can belong to multiple collections, please be careful when using this mode.",
-        default=False,
-        update=UpdateCollectionSelectMode
-        )
 
     object_list_autorefresh: BoolProperty(
         name="Object List Auto-Refresh",
@@ -403,28 +373,6 @@ def CreateDefaultData(scene):
     defaultDatablock.hide_set(True)
     defaultDatablock.select_set(True)
     defaultDatablock.hide_render = True
-    
-
-@persistent
-def CheckSelectedObject(scene):
-    """
-    A scene handler used to configure the status of previously selected objects and multi-edit opportunities behind the scenes.
-    """
-
-    preferences = bpy.context.preferences
-    addon_prefs = preferences.addons[__name__].preferences
-    #print("SCENE UPDATE")
-
-    if bpy.context.active_object is not None:
-        if bpy.context.active_object.name != addon_prefs.prev_selected_object:
-            addon_prefs.object_multi_edit = True
-            addon_prefs.collection_multi_edit = True
-            addon_prefs.prev_selected_object = bpy.context.active_object.name
-
-    if len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
-        addon_prefs.object_multi_edit = True
-        addon_prefs.collection_multi_edit = True
-        addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
 
 
 addon_keymaps = []
@@ -490,6 +438,7 @@ classes = (
     CAPSULE_PT_Selection,
     CAPSULE_PT_List,
     CAPSULE_PT_Location,
+    CAPSULE_PT_Export,
 
     # init
     CAP_AddonPreferences,
@@ -516,8 +465,6 @@ def register():
 
     # Setup data and handlers
     # export_presets.CreatePresets()
-    bpy.app.handlers.load_pre.append(CreateDefaultData)
-    bpy.app.handlers.depsgraph_update_post.append(CheckSelectedObject)
 
 
     # Register keymaps
@@ -548,7 +495,6 @@ def unregister():
     
     # export_presets.DeletePresets()
     bpy.app.handlers.load_pre.remove(CreateDefaultData)
-    bpy.app.handlers.depsgraph_update_post.remove(CheckSelectedObject)
 
 
     # Delete custom datablocks
