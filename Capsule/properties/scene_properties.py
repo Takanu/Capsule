@@ -4,11 +4,6 @@ from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, Po
 from bpy.types import PropertyGroup
 
 from ..update.update_objects import (
-    CAP_Update_ObjectExport, 
-    CAP_Update_SceneOrigin, 
-    CAP_Update_LocationPreset, 
-    CAP_Update_ExportDefault, 
-    CAP_Update_Normals, 
     CAP_Update_ObjectListName, 
     CAP_Update_ObjectListExport, 
     CAP_Update_ActionItemName, 
@@ -22,11 +17,6 @@ from ..update.update_collections import (
     CAP_Update_CollectionListExport, 
     CAP_Update_FocusCollection, 
     CAP_Update_SelectCollection, 
-    CAP_Update_CollectionExport,
-    CAP_Update_CollectionRootObject, 
-    CAP_Update_CollectionExportDefault, 
-    CAP_Update_CollectionLocationPreset, 
-    CAP_Update_CollectionNormals, 
     CAP_Update_CollectionListRemove
 )
 
@@ -195,10 +185,6 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
     action_list: CollectionProperty(type=ActionListItem)
     action_list_index: IntProperty()
 
-    # Used to handle multi-edit capabilities
-    enable_sel_active: BoolProperty(default=False)
-    enable_list_active: BoolProperty(default=False)
-
     list_switch: EnumProperty(
         name="Object Type Switch",
         description="Switches the list display mode between objects and collections.",
@@ -259,28 +245,24 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         name = "Enable Export",
         description = "Enables or disables the ability to export this object.",
         default = False,
-        update = CAP_Update_ObjectExport
         )
 
     use_scene_origin: BoolProperty(
         name="Use Scene Origin",
         description="If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly without this feature, use this feature <3",
         default=False,
-        update=CAP_Update_SceneOrigin
         )
 
     location_preset: EnumProperty(
         name="Select Location Preset",
         description="Defines the file path that the object will be exported to.",
         items=GetLocationPresets,
-        update=CAP_Update_LocationPreset
         )
 
     export_preset: EnumProperty(
         name="Select Export Preset",
         description="Defines the export settings used on the object.",
         items=GetExportDefaults,
-        update=CAP_Update_ExportDefault
         )
 
     enable_edit: BoolProperty(
@@ -303,28 +285,24 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         name="Export Collection",
         description="Enables or disables the ability to export this collection.",
         default=False,
-        update=CAP_Update_CollectionExport
         )
 
     root_object: StringProperty(
         name="Origin Object",
         description="Defines the origin point of the exported collection object.  If not defined, the origin will be the scene's origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly with a defined root object, leave it blank <3",
         default="",
-        update=CAP_Update_CollectionRootObject
         )
 
     location_preset: EnumProperty(
         name="Select Export Location",
         description="Defines the Location that the collection will be exported to.",
         items=GetLocationPresets,
-        update=CAP_Update_CollectionLocationPreset,
         )
 
     export_preset: EnumProperty(
         name="Select Export Default",
         description="Defines the export settings used on the collection.",
         items=GetExportDefaults,
-        update=CAP_Update_CollectionExportDefault
         )
     
     enable_edit: BoolProperty(

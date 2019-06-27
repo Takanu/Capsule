@@ -49,7 +49,6 @@ class CAPSULE_OT_ToggleExport(Operator):
                 collection.CAPCol.enable_export = isEnabled
                 UpdateCollectionList(context.scene, collection, isEnabled)
 
-        scn.enable_sel_active = False
 
         return {'FINISHED'}
 

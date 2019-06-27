@@ -385,6 +385,7 @@ def CheckSelectedObject(scene):
 
     preferences = bpy.context.preferences
     addon_prefs = preferences.addons[__name__].preferences
+    proxy = bpy.context.scene.CAPProxy
     #print("SCENE UPDATE")
 
     # If the active selected object changes or anything else about the selection, we need to update the edit toggles
@@ -399,6 +400,22 @@ def CheckSelectedObject(scene):
                 for collection in item.users_collection:
                     collection.CAPCol.enable_edit = True
             
+            # update the proxy objects with the current selection
+            obj = bpy.context.active_object.CAPObj
+            grp = bpy.context.active_object.users_collection[0].CAPCol
+
+            proxy.disable_updates = True
+            proxy.obj_enable_export = obj.enable_export
+            proxy.obj_use_scene_origin = obj.use_scene_origin
+            proxy.obj_location_preset = obj.location_preset
+            proxy.obj_export_preset = obj.export_preset
+            
+            proxy.col_enable_export = grp.enable_export
+            proxy.col_root_object = grp.root_object
+            proxy.col_location_preset = grp.location_preset
+            proxy.col_export_preset = grp.export_preset
+            proxy.disable_updates = False
+
             return
     
     if len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
@@ -410,6 +427,22 @@ def CheckSelectedObject(scene):
 
             for collection in item.users_collection:
                     collection.CAPCol.enable_edit = True
+        
+        # update the proxy objects with the current selection
+            obj = bpy.context.active_object.CAPObj
+            grp = bpy.context.active_object.users_collection[0].CAPCol
+            
+            proxy.disable_updates = True
+            proxy.obj_enable_export = obj.enable_export
+            proxy.obj_use_scene_origin = obj.use_scene_origin
+            proxy.obj_location_preset = obj.location_preset
+            proxy.obj_export_preset = obj.export_preset
+
+            proxy.col_enable_export = grp.enable_export
+            proxy.col_root_object = grp.root_object
+            proxy.col_location_preset = grp.location_preset
+            proxy.col_export_preset = grp.export_preset
+            proxy.disable_updates = False
         
         return
 
@@ -434,6 +467,7 @@ classes = (
     CAPSULE_Collection_Preferences, 
     CAPSULE_Object_StateMachine, 
     # CAPSULE_Action_Preferences,
+    CAPSULE_Proxy_Properties,
 
     # export_operators
     CAPSULE_OT_ExportAssets,
@@ -500,6 +534,7 @@ def register():
     # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
     bpy.types.Object.CAPStm = PointerProperty(name='Capsule State Tracker', type=CAPSULE_Object_StateMachine)
     bpy.types.Object.CAPExp = PointerProperty(name='Capsule Export Presets', type=CAPSULE_ExportPresets)
+    bpy.types.Scene.CAPProxy = PointerProperty(name='Capsule Scene Property Proxy', type=CAPSULE_Proxy_Properties)
 
 
     # Setup data and handlers
@@ -546,6 +581,7 @@ def unregister():
     # del bpy.types.Action.CAPAcn
     del bpy.types.Object.CAPStm
     del bpy.types.Object.CAPExp
+    del bpy.types.Scene.CAPProxy
 
 
     # Unregister classes

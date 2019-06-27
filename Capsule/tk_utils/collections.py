@@ -59,7 +59,6 @@ def GetSelectedObjectCollections():
                     collection_added = True
 
             if collection_added == False:
-                print("")
                 collections_found.append(collection)
 
     return collections_found

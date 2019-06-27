@@ -126,6 +126,7 @@ class CAPSULE_PT_Selection(Panel):
 
 
         scn = context.scene.CAPScn
+        proxy = context.scene.CAPProxy
         selectTab = int(str(scn.selection_switch))
 
         layout = self.layout
@@ -201,19 +202,21 @@ class CAPSULE_PT_Selection(Panel):
                     
 
             if ob != None:
+
+                # now build the UI with that proxy
                 obj_settings = layout.column(align=True)
                 obj_settings.separator()
-                obj_settings.prop(obj, "enable_export")
-                obj_settings.prop(obj, "use_scene_origin")
+                obj_settings.prop(proxy, "obj_enable_export")
+                obj_settings.prop(proxy, "obj_use_scene_origin")
                 obj_settings.separator()
                 obj_settings.separator()
                 obj_settings.label(text="Export Location:")
                 obj_settings.separator()
-                obj_settings.prop(obj, "location_preset", icon="FILE_FOLDER", text="")
+                obj_settings.prop(proxy, "obj_location_preset", icon="FILE_FOLDER", text="")
                 obj_settings.separator()
                 obj_settings.label(text="Export Preset:")
                 obj_settings.separator()
-                obj_settings.prop(obj, "export_preset", text="")
+                obj_settings.prop(proxy, "obj_export_preset", text="")
                 obj_settings.separator()
 
                 # TODO 2.0 : Add this back in with other object/collection switches.
@@ -304,26 +307,28 @@ class CAPSULE_PT_Selection(Panel):
             #Get the collection so we can obtain preference data from it
             #With Multi-Edit, we have to find a flexible approach to obtaining collection data
             if grp != None:
+
+                # now build the UI with that proxy
                 rawr = layout.column(align=True)
                 rawr.separator()
-                rawr.prop(grp, "enable_export", text="Enable Export")
+                rawr.prop(proxy, "col_enable_export", text="Enable Export")
                 rawr.separator()
                 rawr.separator()
                 rawr.label(text="Origin Object:")
 
                 rawr_row = layout.row(align=True)
-                rawr_row.prop(grp, "root_object", icon="OBJECT_DATA", text="")
+                rawr_row.prop(proxy, "col_root_object", icon="OBJECT_DATA", text="")
                 rawr_row.operator("scene.cap_setroot", text="", icon="EYEDROPPER")
                 rawr_row.operator("scene.cap_clearroot", text="", icon="X")
 
                 rawr_other = layout.column(align=True)
                 rawr_other.label(text="Export Location:")
                 rawr_other.separator()
-                rawr_other.prop(grp, "location_preset", icon="FILE_FOLDER", text="")
+                rawr_other.prop(proxy, "col_location_preset", icon="FILE_FOLDER", text="")
                 rawr_other.separator()
                 rawr_other.label(text="Export Preset:")
                 rawr_other.separator()
-                rawr_other.prop(grp, "export_preset", text="")
+                rawr_other.prop(proxy, "col_export_preset", text="")
                 #rawr_other.separator()
                 #rawr_other.label(text="Mesh Normal Export:")
                 #rawr_other.separator()

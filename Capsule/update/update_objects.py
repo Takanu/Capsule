@@ -5,6 +5,22 @@ from math import *
 from ..tk_utils import collections as collection_utils
 from ..tk_utils import select as select_utils
 
+# OBJECT DATA PROPERTIES
+# /////////////////////////////////////////////////
+# /////////////////////////////////////////////////
+
+def FindEditableObjects(context):
+    """
+    Finds objects that can have their values edited.
+    """
+    collected = [] 
+
+    for item in context.selected_objects:
+        if item.CAPObj.enable_edit is True:
+            collected.append(item)
+
+    return collected
+
 def CAP_Update_ObjectExport(self, context):
     """
     Updates the selected objects "Enable Export" status across UI elements.
@@ -14,42 +30,21 @@ def CAP_Update_ObjectExport(self, context):
 
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
-    scn = context.scene.CAPScn
+    proxy = context.scene.CAPProxy
 
-    print("Inside EnableExport (Object)")
+    # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
 
-    # If this was called from the actual UI element rather than another function,
-    # we need to do stuff!
-    print(scn.enable_list_active, scn.enable_sel_active)
-    if scn.enable_list_active == False and scn.enable_sel_active == False:
-        print("Called from UI element")
-        scn.enable_sel_active = True
-        collected = [] 
-        target = None
-        value = False
-        
-        # Acts as its own switch to prevent endless recursion
-        if self == context.active_object.CAPObj:
-            print("Changing Export...", context.active_object.name)
+    # Setup initial targets and the value state we need to change.
+    collected = FindEditableObjects(context)
+    value = proxy.obj_enable_export
 
-            for sel in context.selected_objects:
-                if sel.name != context.active_object.name:
-                    collected.append(sel)
+    # Run through any collected objects to also update them.
+    for item in collected:
+        item.CAPObj.enable_export = value
+        UpdateObjectList(context.scene, item, value)
 
-            # Obtain the value changed
-            target = context.active_object
-            value = self.enable_export
-
-        # Update the list associated with the object
-        UpdateObjectList(context.scene, target, value)
-
-        # Run through any collected objects to also update them.
-        for item in collected:
-            item.CAPObj.enable_export = value
-            UpdateObjectList(context.scene, item, value)
-
-        scn.enable_sel_active = False
-        scn.enable_list_active = False
 
     return None
 
@@ -60,26 +55,154 @@ def CAP_Update_SceneOrigin(self, context):
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+    
+    # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
 
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.CAPObj:
+    # Setup initial targets and the value state we need to change.
+    collected = FindEditableObjects(context)
+    value = proxy.obj_use_scene_origin
 
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.use_scene_origin
-
-        # Run through the objects
-        for object in selected:
-            object.CAPObj.use_scene_origin = value
+    # Run through the objects
+    for item in collected:
+        item.CAPObj.use_scene_origin = value
 
     return None
 
+def CAP_Update_LocationPreset(self, context):
+    """
+    Updates the object's Location Default property.
+    """
+
+    preferences = context.preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+
+    # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
+
+    # Setup initial targets and the value state we need to change.
+    collected = FindEditableObjects(context)
+    value = proxy.obj_location_preset
+
+    # Run through the objects
+    for item in collected:
+        item.CAPObj.location_preset = value
+
+    return None
+
+def CAP_Update_ExportDefault(self, context):
+    """
+    Updates the object's Export Default property.
+    """
+    preferences = context.preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+    
+     # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
+
+    # Setup initial targets and the value state we need to change.
+    collected = FindEditableObjects(context)
+    value = proxy.obj_export_preset
+
+    # Run through the objects
+    for item in collected:
+        item.CAPObj.export_preset = value
+
+    return None
+
+
+def CAP_Update_ActionItemName(self, context):
+    """
+    Updates an animation actions name when edited from a list.
+    """
+    active = context.active_object
+    print(">>> Changing Action Name <<<")
+    print(self)
+
+    if active.animation_data is not None:
+        animData = active.animation_data
+        print("Checking Object Animation Names...")
+
+        if animData.action is not None:
+            if animData.action.name == self.prev_name:
+                animData.action.name = self.name
+                self.prev_name = self.name
+                return None
+
+        for nla in active.animation_data.nla_tracks:
+            print("Checking NLA...", nla, nla.name)
+            if nla.name == self.prev_name:
+                nla.name = self.name
+                self.prev_name = self.name
+                return None
+
+    modType = {'ARMATURE'}
+
+    for modifier in active.modifiers:
+        if modifier.type in modType:
+            armature = modifier.object
+
+    if armature is not None:
+        if armature.animation_data is not None:
+            animData = armature.animation_data
+            print("Checking Armature Animation Names...")
+
+            if animData.action is not None:
+                if animData.action.name == self.prev_name:
+                    animData.action.name = self.name
+                    self.prev_name = self.name
+                    return None
+
+            for nla in animData.nla_tracks:
+                if nla.name == self.prev_name:
+                    nla.name = self.name
+                    self.prev_name = self.name
+                    return None
+
+    print("No name could be changed for action", self.prev_name, ".  Oh no!")
+
+
+
+# OBJECT LIST PROPERTIES
+# /////////////////////////////////////////////////
+# /////////////////////////////////////////////////
+
+
+def UpdateObjectList(scene, object, enableExport):
+    """
+    Used when properties are updated outside the scope of the Export List
+    to ensure that all UI elements are kept in sync.
+    """
+    scn = scene.CAPScn
+    print("Hey, this object is %s" % object)
+
+    if object is None:
+        return
+
+    # Check a list entry for the object doesn't already exist.
+    for item in scene.CAPScn.object_list:
+        if item.name == object.name:
+            print("Changing", object.name, "'s export from list.'")
+            item.enable_export = enableExport
+            return
+
+    # If an entry couldn't be found in the list, add it.
+    if enableExport is True:
+        print("Adding", object.name, "to list.")
+        entry = scn.object_list.add()
+        entry.name = object.name
+        entry.prev_name = object.name
+        entry.enable_export = enableExport
+
+        object.CAPObj.in_export_list = True
+
+    return None
 
 def CAP_Update_FocusObject(self, context):
     """
@@ -162,20 +285,13 @@ def CAP_Update_ObjectListExport(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
     scn = context.scene.CAPScn
-    scn.enable_list_active = True
-
-    if scn.enable_sel_active == False:
-        print("Rawr")
         
-        # Set the name of the item to the collection name
-        for item in context.scene.objects:
-            if item.name == self.name:
-                print("Found object name ", item.name)
-                item.CAPObj.enable_export = self.enable_export
+    # Set the name of the item to the collection name
+    for item in context.scene.objects:
+        if item.name == self.name:
+            print("Found object name ", item.name)
+            item.CAPObj.enable_export = self.enable_export
 
-        # Only un-toggle the multi-select switches if this update activated in the first place.
-        scn.enable_sel_active = False
-        scn.enable_list_active = False
 
     return None
 
@@ -198,7 +314,6 @@ def CAP_Update_ObjectListRemove(self, context):
             for sceneObj in context.scene.objects:
                 if sceneObj.name == self.name:
                     print("Deleting", sceneObj.name, "from the list.")
-                    scn.enable_list_active = True
 
                     sceneObj.CAPObj.enable_export = False
                     sceneObj.CAPObj.in_export_list = False
@@ -215,170 +330,6 @@ def CAP_Update_ObjectListRemove(self, context):
             if i == (backupListLength - 1):
                 scn.object_list_index = i - 1
 
-            scn.enable_sel_active = False
-            scn.enable_list_active = False
             return
 
         i += 1
-
-
-def CAP_Update_LocationPreset(self, context):
-    """
-    Updates the object's Location Default property.
-    """
-
-    preferences = context.preferences
-    addon_prefs = preferences.addons['Capsule'].preferences
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.CAPObj:
-        print(context.active_object.name)
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.location_preset
-
-        # Run through the objects
-        for object in selected:
-            object.CAPObj.location_preset = value
-
-    return None
-
-def CAP_Update_ExportDefault(self, context):
-    """
-    Updates the object's Export Default property.
-    """
-    preferences = context.preferences
-    addon_prefs = preferences.addons['Capsule'].preferences
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.CAPObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.export_preset
-
-        # Run through the objects
-        for object in selected:
-            object.CAPObj.export_preset = value
-
-    return None
-
-def CAP_Update_Normals(self, context):
-    """
-    Updates the object's Normals property.
-    FIXME: This needs to be categorised under a FBX-specific property panel
-    """
-    preferences = context.preferences
-    addon_prefs = preferences.addons['Capsule'].preferences
-
-    # Acts as its own switch to prevent endless recursion
-    if self == context.active_object.CAPObj:
-
-        # Keep a record of the selected objects to update
-        selected = []
-
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        # Obtain the value changed
-        value = self.normals
-
-        # Run through the objects
-        for object in selected:
-            object.CAPObj.normals = value
-
-    return None
-
-def CAP_Update_ActionItemName(self, context):
-    """
-    Updates an animation actions name when edited from a list.
-    """
-    active = context.active_object
-    print(">>> Changing Action Name <<<")
-    print(self)
-
-    if active.animation_data is not None:
-        animData = active.animation_data
-        print("Checking Object Animation Names...")
-
-        if animData.action is not None:
-            if animData.action.name == self.prev_name:
-                animData.action.name = self.name
-                self.prev_name = self.name
-                return None
-
-        for nla in active.animation_data.nla_tracks:
-            print("Checking NLA...", nla, nla.name)
-            if nla.name == self.prev_name:
-                nla.name = self.name
-                self.prev_name = self.name
-                return None
-
-    modType = {'ARMATURE'}
-
-    for modifier in active.modifiers:
-        if modifier.type in modType:
-            armature = modifier.object
-
-    if armature is not None:
-        if armature.animation_data is not None:
-            animData = armature.animation_data
-            print("Checking Armature Animation Names...")
-
-            if animData.action is not None:
-                if animData.action.name == self.prev_name:
-                    animData.action.name = self.name
-                    self.prev_name = self.name
-                    return None
-
-            for nla in animData.nla_tracks:
-                if nla.name == self.prev_name:
-                    nla.name = self.name
-                    self.prev_name = self.name
-                    return None
-
-    print("No name could be changed for action", self.prev_name, ".  Oh no!")
-
-def UpdateObjectList(scene, object, enableExport):
-    """
-    Used when properties are updated outside the scope of the Export List
-    to ensure that all UI elements are kept in sync.
-    """
-    scn = scene.CAPScn
-    print("Hey, this object is %s" % object)
-
-    if object is None:
-        return
-
-    # Check a list entry for the object doesn't already exist.
-    for item in scene.CAPScn.object_list:
-        if item.name == object.name:
-            print("Changing", object.name, "'s export from list.'")
-            item.enable_export = enableExport
-            return
-
-    # If an entry couldn't be found in the list, add it.
-    if enableExport is True:
-        print("Adding", object.name, "to list.")
-        entry = scn.object_list.add()
-        entry.name = object.name
-        entry.prev_name = object.name
-        entry.enable_export = enableExport
-
-        object.CAPObj.in_export_list = True
-
-    return None

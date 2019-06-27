@@ -16,3 +16,5 @@ from .export_properties import (
     CAPSULE_LocationPreset,
     CAPSULE_ExportPresets,
 )
+
+from .ui_properties import CAPSULE_Proxy_Properties

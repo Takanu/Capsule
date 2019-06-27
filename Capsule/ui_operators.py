@@ -323,9 +323,6 @@ class CAPSULE_OT_Clear_List(Operator):
                 col.in_export_list = False
             scn.collection_list.clear()
 
-        scn.enable_sel_active = False
-        scn.enable_list_active = False
-
         return {'FINISHED'}
 
 class CAPSULE_OT_Refresh_List(Operator):
@@ -358,9 +355,6 @@ class CAPSULE_OT_Refresh_List(Operator):
                         entry.name = collection.name
                         entry.prev_name = collection.name
                         entry.enable_export = collection.CAPCol.enable_export
-
-        scn.enable_sel_active = False
-        scn.enable_list_active = False
 
         return {'FINISHED'}
 
