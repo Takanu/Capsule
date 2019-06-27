@@ -5,7 +5,7 @@ from math import *
 from ..tk_utils import collections as collection_utils
 from ..tk_utils import select as select_utils
 
-# OBJECT DATA PROPERTIES
+# OBJECT DATA PROXY PROPERTIES
 # /////////////////////////////////////////////////
 # /////////////////////////////////////////////////
 
@@ -21,7 +21,7 @@ def FindEditableObjects(context):
 
     return collected
 
-def CAP_Update_ObjectExport(self, context):
+def CAP_Update_ProxyObjectExport(self, context):
     """
     Updates the selected objects "Enable Export" status across UI elements.
     Note - This should only be used from the Enable Export UI tick, otherwise manually handle "Enable Export" status 
@@ -49,7 +49,7 @@ def CAP_Update_ObjectExport(self, context):
     return None
 
 
-def CAP_Update_SceneOrigin(self, context):
+def CAP_Update_ProxyObjectSceneOrigin(self, context):
     """
     Updates the "Use Scene Origin" property for all selected objects.
     """
@@ -71,7 +71,7 @@ def CAP_Update_SceneOrigin(self, context):
 
     return None
 
-def CAP_Update_LocationPreset(self, context):
+def  CAP_Update_ProxyObjectLocationPreset(self, context):
     """
     Updates the object's Location Default property.
     """
@@ -94,7 +94,7 @@ def CAP_Update_LocationPreset(self, context):
 
     return None
 
-def CAP_Update_ExportDefault(self, context):
+def CAP_Update_ProxyObjectExportPreset(self, context):
     """
     Updates the object's Export Default property.
     """

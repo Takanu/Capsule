@@ -5,7 +5,7 @@ from math import *
 from ..tk_utils import collections as collection_utils
 from ..tk_utils import select as select_utils
 
-# COLLECTION DATA PROPERTIES
+# COLLECTION DATA PROXY PROPERTIES
 # /////////////////////////////////////////////////
 # /////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ def FindEditableCollections(context):
 
     return collected
 
-def CAP_Update_CollectionExport(self, context):
+def CAP_Update_ProxyCollectionExport(self, context):
     """
     Used for selection editing to update all properties in the current selection.
     """
@@ -57,7 +57,7 @@ def CAP_Update_CollectionExport(self, context):
     return None
 
 
-def CAP_Update_CollectionRootObject(self, context):
+def CAP_Update_ProxyCollectionRootObject(self, context):
     """
     Updates the "Collection Origin" property for all selected groups.
     """
@@ -79,7 +79,7 @@ def CAP_Update_CollectionRootObject(self, context):
 
     return None
 
-def CAP_Update_CollectionLocationPreset(self, context):
+def CAP_Update_ProxyCollectionLocationPreset(self, context):
     """
     Updates the object's Location Default property.
     """
@@ -104,7 +104,7 @@ def CAP_Update_CollectionLocationPreset(self, context):
 
     return None
 
-def CAP_Update_CollectionExportDefault(self, context):
+def CAP_Update_ProxyCollectionExportDefault(self, context):
     """
     Updates the collection's Export Default property.
     """

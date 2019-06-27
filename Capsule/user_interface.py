@@ -92,7 +92,7 @@ class CAPSULE_UL_Action(UIList):
 class CAPSULE_PT_Header(Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = 'WINDOW'
-    bl_context = "render"
+    bl_context = "scene"
     bl_label = "Capsule"
 
     def draw(self, context):
@@ -365,7 +365,7 @@ class CAPSULE_PT_Selection(Panel):
 class CAPSULE_PT_List(Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_context = "render"
+    bl_context = "scene"
     bl_label = "Export List"
     bl_parent_id = "CAPSULE_PT_Header"
 
@@ -472,7 +472,7 @@ class CAPSULE_PT_List(Panel):
 class CAPSULE_PT_Location(Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_context = "render"
+    bl_context = "scene"
     bl_label = "Locations"
     bl_parent_id = "CAPSULE_PT_Header"
 
@@ -532,7 +532,7 @@ class CAPSULE_PT_Location(Panel):
 class CAPSULE_PT_Export(Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-    bl_context = "render"
+    bl_context = "scene"
     bl_label = "Export Overview"
     bl_parent_id = "CAPSULE_PT_Header"
 

@@ -11,17 +11,17 @@ from bpy.props import (
 )
 
 from ..update.update_objects import (
-    CAP_Update_ObjectExport, 
-    CAP_Update_SceneOrigin, 
-    CAP_Update_LocationPreset, 
-    CAP_Update_ExportDefault, 
+    CAP_Update_ProxyObjectExport, 
+    CAP_Update_ProxyObjectSceneOrigin, 
+     CAP_Update_ProxyObjectLocationPreset, 
+    CAP_Update_ProxyObjectExportPreset, 
 )
 
 from ..update.update_collections import (
-    CAP_Update_CollectionExport, 
-    CAP_Update_CollectionRootObject, 
-    CAP_Update_CollectionLocationPreset, 
-    CAP_Update_CollectionExportDefault, 
+    CAP_Update_ProxyCollectionExport, 
+    CAP_Update_ProxyCollectionRootObject, 
+    CAP_Update_ProxyCollectionLocationPreset, 
+    CAP_Update_ProxyCollectionExportDefault, 
 )
 
 from bpy.types import PropertyGroup
@@ -34,7 +34,11 @@ def GetLocationPresets(scene, context):
 
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
-    exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    try:
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    except KeyError:
+        return items
+
 
     u = 1
 
@@ -51,7 +55,11 @@ def GetExportDefaults(scene, context):
 
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
-    exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    try:
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    except KeyError:
+        return items
+
 
     u = 1
 
@@ -75,54 +83,54 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         name = "Enable Export",
         description = "Enables or disables the ability to export this object.",
         default = False,
-        update = CAP_Update_ObjectExport
+        update = CAP_Update_ProxyObjectExport
         )
 
     obj_use_scene_origin: BoolProperty(
         name="Use Scene Origin",
         description="If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly without this feature, use this feature <3",
         default=False,
-        update=CAP_Update_SceneOrigin
+        update=CAP_Update_ProxyObjectSceneOrigin
         )
 
     obj_location_preset: EnumProperty(
         name="Select Location Preset",
         description="Defines the file path that the object will be exported to.",
         items=GetLocationPresets,
-        update=CAP_Update_LocationPreset
+        update= CAP_Update_ProxyObjectLocationPreset
         )
 
     obj_export_preset: EnumProperty(
         name="Select Export Preset",
         description="Defines the export settings used on the object.",
         items=GetExportDefaults,
-        update=CAP_Update_ExportDefault
+        update=CAP_Update_ProxyObjectExportPreset
         )
     
     col_enable_export: BoolProperty(
         name="Export Collection",
         description="Enables or disables the ability to export this collection.",
         default=False,
-        update=CAP_Update_CollectionExport
+        update=CAP_Update_ProxyCollectionExport
         )
 
     col_root_object: StringProperty(
         name="Origin Object",
         description="Defines the origin point of the exported collection object.  If not defined, the origin will be the scene's origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly with a defined root object, leave it blank <3",
         default="",
-        update=CAP_Update_CollectionRootObject
+        update=CAP_Update_ProxyCollectionRootObject
         )
 
     col_location_preset: EnumProperty(
         name="Select Export Location",
         description="Defines the Location that the collection will be exported to.",
         items=GetLocationPresets,
-        update=CAP_Update_CollectionLocationPreset,
+        update=CAP_Update_ProxyCollectionLocationPreset,
         )
 
     col_export_preset: EnumProperty(
         name="Select Export Default",
         description="Defines the export settings used on the collection.",
         items=GetExportDefaults,
-        update=CAP_Update_CollectionExportDefault
+        update=CAP_Update_ProxyCollectionExportDefault
         )
