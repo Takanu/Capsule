@@ -2,8 +2,8 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import Menu, Operator
 
-from .update import CAP_Update_ObjectExport, UpdateObjectList
-from .update_collections import CAP_Update_CollectionExport, UpdateCollectionList
+from .update.update_objects import CAP_Update_ObjectExport, UpdateObjectList
+from .update.update_collections import CAP_Update_CollectionExport, UpdateCollectionList
 from .tk_utils import collections as collection_utils
 
 from . import tk_utils
@@ -50,6 +50,7 @@ class CAPSULE_OT_ToggleExport(Operator):
                 UpdateCollectionList(context.scene, collection, isEnabled)
 
         scn.enable_sel_active = False
+
         return {'FINISHED'}
 
 class CAPSULE_OT_LocationSelectObject(Operator):

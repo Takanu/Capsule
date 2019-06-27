@@ -3,7 +3,7 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
 
-from .update import (
+from ..update.update_objects import (
     CAP_Update_ObjectExport, 
     CAP_Update_SceneOrigin, 
     CAP_Update_LocationPreset, 
@@ -14,10 +14,10 @@ from .update import (
     CAP_Update_ActionItemName, 
     CAP_Update_FocusObject,  
     CAP_Update_SelectObject, 
-    CAP_Update_ObjectRemoveFromList
+    CAP_Update_ObjectListRemove
 )
 
-from .update_collections import (
+from ..update.update_collections import (
     CAP_Update_CollectionListName, 
     CAP_Update_CollectionListExport, 
     CAP_Update_FocusCollection, 
@@ -27,10 +27,10 @@ from .update_collections import (
     CAP_Update_CollectionExportDefault, 
     CAP_Update_CollectionLocationPreset, 
     CAP_Update_CollectionNormals, 
-    CAP_Update_CollectionRemoveFromList
+    CAP_Update_CollectionListRemove
 )
 
-from .tk_utils import collections as collection_utils
+from ..tk_utils.collections import GetSelectedObjectCollections
 
 class ObjectListItem(PropertyGroup):
     """
@@ -72,7 +72,7 @@ class ObjectListItem(PropertyGroup):
         name="",
         description="Removes the object from the list, and un-marks it for export.",
         default=True,
-        update=CAP_Update_ObjectRemoveFromList
+        update=CAP_Update_ObjectListRemove
         )
 
 class CollectionListItem(PropertyGroup):
@@ -96,7 +96,7 @@ class CollectionListItem(PropertyGroup):
         default=False,
         update=CAP_Update_CollectionListExport
         )
-
+    
     sel: BoolProperty(
         name="Select",
         description="Selects the collection in the scene",
@@ -115,7 +115,7 @@ class CollectionListItem(PropertyGroup):
         name="",
         description="Removes the collection from the list, and un-marks it for export.",
         default=True,
-        update=CAP_Update_CollectionRemoveFromList
+        update=CAP_Update_CollectionListRemove
         )
 
 class ActionListItem(PropertyGroup):
@@ -153,7 +153,7 @@ def GetSelectedCollections(scene, context):
     scn.collection_selected_list.clear()
     u = 1
 
-    for i,x in enumerate(collection_utils.GetSelectedObjectCollections()):
+    for i,x in enumerate(GetSelectedObjectCollections()):
         items.append((str(i+1), x.name, x.name, i+1))
         new_collection_entry = scn.collection_selected_list.add()
         new_collection_entry.name = x.name
@@ -191,9 +191,11 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
         description="",
         )
 
-    ## FIXME: idk what this is
+    ## Old Action list variables
     action_list: CollectionProperty(type=ActionListItem)
     action_list_index: IntProperty()
+
+    # Used to handle multi-edit capabilities
     enable_sel_active: BoolProperty(default=False)
     enable_list_active: BoolProperty(default=False)
 
@@ -220,7 +222,7 @@ def GetLocationPresets(scene, context):
         ]
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
     exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
     u = 1
@@ -237,7 +239,7 @@ def GetExportDefaults(scene, context):
         ]
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
     exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
     u = 1
@@ -281,6 +283,11 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         update=CAP_Update_ExportDefault
         )
 
+    enable_edit: BoolProperty(
+        name="",
+        description="Enables editing of the object's properties when selected.",
+    )
+
     in_export_list: BoolProperty(
         name="",
         description="(Internal Only) Prevents refreshes of the Export List from removing items not marked for export.",
@@ -319,6 +326,11 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         items=GetExportDefaults,
         update=CAP_Update_CollectionExportDefault
         )
+    
+    enable_edit: BoolProperty(
+        name="",
+        description="Enables editing of the collection's properties.",
+    )
 
     in_export_list: BoolProperty(
         name="",

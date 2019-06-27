@@ -2,8 +2,8 @@
 import bpy, bmesh, time
 from math import *
 
-from .tk_utils import collections as collection_utils
-from .tk_utils import select as select_utils
+from ..tk_utils import collections as collection_utils
+from ..tk_utils import select as select_utils
 
 def CAP_Update_ObjectExport(self, context):
     """
@@ -13,7 +13,7 @@ def CAP_Update_ObjectExport(self, context):
     """
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
     scn = context.scene.CAPScn
 
     print("Inside EnableExport (Object)")
@@ -59,7 +59,7 @@ def CAP_Update_SceneOrigin(self, context):
     Updates the "Use Scene Origin" property for all selected objects.
     """
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.CAPObj:
@@ -84,16 +84,16 @@ def CAP_Update_SceneOrigin(self, context):
 def CAP_Update_FocusObject(self, context):
     """
     Focuses the camera to a particular object, ensuring the object is clearly within the camera frame.  
-    EDITME: The camera movement interpolation no longer works.
     """
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     for object in context.scene.objects:
         if object.name == self.name:
-
-            select_utils.FocusObject(object)
+            
+            bpy.ops.object.select_all(action='DESELECT')
+            select_utils.SelectObject(object)
 
             # As the context won't be correct when the icon is clicked
             # We have to find the actual 3D view and override the context of the operator
@@ -108,7 +108,7 @@ def CAP_Update_FocusObject(self, context):
                                         'screen': bpy.context.screen, 
                                         'window': bpy.context.window}
 
-                            bpy.ops.view3d.view_selected()
+                            bpy.ops.view3d.view_selected(override)
     return None
 
 
@@ -118,7 +118,7 @@ def CAP_Update_SelectObject(self, context):
     """
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     for object in context.scene.objects:
         if object.name == self.name:
@@ -160,24 +160,27 @@ def CAP_Update_ObjectListExport(self, context):
     print("Changing Enable Export... (List)")
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
     scn = context.scene.CAPScn
     scn.enable_list_active = True
 
     if scn.enable_sel_active == False:
         print("Rawr")
+        
         # Set the name of the item to the collection name
         for item in context.scene.objects:
             if item.name == self.name:
                 print("Found object name ", item.name)
                 item.CAPObj.enable_export = self.enable_export
 
-    scn.enable_sel_active = False
-    scn.enable_list_active = False
+        # Only un-toggle the multi-select switches if this update activated in the first place.
+        scn.enable_sel_active = False
+        scn.enable_list_active = False
+
     return None
 
 
-def CAP_Update_ObjectRemoveFromList(self, context):
+def CAP_Update_ObjectListRemove(self, context):
     """
     Used in a list to remove an object from both the export list, while disabling it's "Enable Export" status.
     """
@@ -225,7 +228,7 @@ def CAP_Update_LocationPreset(self, context):
     """
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.CAPObj:
@@ -252,7 +255,7 @@ def CAP_Update_ExportDefault(self, context):
     Updates the object's Export Default property.
     """
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.CAPObj:
@@ -279,7 +282,7 @@ def CAP_Update_Normals(self, context):
     FIXME: This needs to be categorised under a FBX-specific property panel
     """
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.CAPObj:

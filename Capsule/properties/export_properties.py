@@ -11,8 +11,7 @@ from bpy.props import (
     EnumProperty,
 )
 
-from . import export_formats
-from .export_formats import (
+from ..export_formats import (
     CAP_ExportFormat, 
     CAP_FormatData_FBX, 
     CAP_FormatData_OBJ, 

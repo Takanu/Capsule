@@ -318,7 +318,7 @@ class CAPSULE_OT_Clear_List(Operator):
 
         elif objectTab == 2:
             for collection in collection_utils.GetSceneCollections(context.scene, True):
-                col = objectTab.CAPCol
+                col = collection.CAPCol
                 col.enable_export = False
                 col.in_export_list = False
             scn.collection_list.clear()

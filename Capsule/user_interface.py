@@ -122,7 +122,7 @@ class CAPSULE_PT_Selection(Panel):
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
-            CreateCapsuleData(layout)
+            Draw_CreateCapsuleData(layout)
 
 
         scn = context.scene.CAPScn
@@ -137,7 +137,6 @@ class CAPSULE_PT_Selection(Panel):
             obj = None
             ob = None
 
-            # If multi-edit is on, find it from the scene.
             if context.active_object is not None:
                 obj = context.active_object.CAPObj
                 ob = context.active_object
@@ -148,35 +147,58 @@ class CAPSULE_PT_Selection(Panel):
 
             # Now we can build the UI
             if ob != None:
-                if len(context.selected_objects) == 1 or (context.active_object is not None and len(context.selected_objects) == 0):
-                    col_selection_item_box = layout.box()
-                    col_export = col_selection_item_box.column(align=True)
-                    col_export.alignment = 'EXPAND'
-                    col_export.label(text=ob.name, icon="OBJECT_DATA")
-                    #col_export.separator()
+                
+                selection_label = ""
+                edit_enable_list = False
 
+                # LABEL - If we only have one object
+                if len(context.selected_objects) == 1 or (context.active_object is not None and len(context.selected_objects) == 0):
+                    selection_label = ob.name
+
+                # LABEL - If we have MORE THAN ONE OBJECT
                 elif len(context.selected_objects) > 1:
                     objectCount = 0
-                    objectLabel = ""
                     selected = []
+
                     for sel in context.selected_objects:
-                        if sel.type == 'MESH':
-                            objectCount += 1
-                            selected.append(sel)
+                        objectCount += 1
+                        selected.append(sel)
 
-                    if objectCount == 1:
-                        if type is 1:
-                            col_selection_item_box = layout.box()
-                            col_export = layout.column(align=True)
-                            col_export.label(text=selected[0].name, icon="OBJECT_DATA")
-                            #col_export.separator()
+                    edit_enable_list = True
+                    selection_label = str(objectCount) + " objects selected"
+                
+                # No dropdown, indicate objects to be edited
+                if addon_prefs.edit_enable_dropdown is False:
+                    col_selection_item_box = layout.box()
+                    col_edit_indicator = col_selection_item_box.row(align=True)
 
-                    else:
-                        col_selection_item_box = layout.box()
-                        col_export = col_selection_item_box.column(align=True)
-                        objectLabel = str(objectCount) + " objects selected"
-                        col_export.label(text=objectLabel, icon="OBJECT_DATA")
-                        #col_export.separator()
+                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+                    col_edit_indicator.alignment = 'EXPAND'
+                    col_edit_indicator.label(text=selection_label, icon="OBJECT_DATA")
+
+                # Dropdown active, multiple objects selected.
+                elif edit_enable_list is True:
+                    col_selection_item_box = layout.box()
+                    col_edit_indicator = col_selection_item_box.row(align=True)
+
+                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                    col_edit_indicator.alignment = 'EXPAND'
+                    col_edit_indicator.label(text=selection_label, icon="OBJECT_DATA")
+                    col_edit_list = col_selection_item_box.column(align=True)
+
+                    for item in context.selected_objects:
+                        item_label = "Edit " + item.name
+                        col_edit_list.prop(item.CAPObj, 'enable_edit', text=item_label)
+
+                # Only one object selected, no need to show the list.
+                else:
+                    col_selection_item_box = layout.box()
+                    col_edit_indicator = col_selection_item_box.row(align=True)
+
+                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                    col_edit_indicator.alignment = 'EXPAND'
+                    col_edit_indicator.label(text=selection_label, icon="OBJECT_DATA")
+                    
 
             if ob != None:
                 obj_settings = layout.column(align=True)
@@ -218,16 +240,18 @@ class CAPSULE_PT_Selection(Panel):
             grp = None
             gr = None
 
-            # Highlight the currently selected collections
             if len(context.selected_objects) > 0:
                 collections_found = collection_utils.GetSelectedObjectCollections()
-                collection_info = ""
+                selection_label = ""
+                edit_enable_list = False
 
+                # LABEL - If we only have one collection
                 if len(collections_found) == 1:
-                    collection_info = collections_found[0].name + " collection found."
+                    selection_label = collections_found[0].name
 
                 elif len(collections_found) > 1:
-                    collection_info = str(len(collections_found)) + " collections found."
+                    edit_enable_list = True
+                    selection_label = str(len(collections_found)) + " collections found."
 
                 if context.active_object is not None:
                     if len(context.active_object.users_collection) > 0:
@@ -235,15 +259,45 @@ class CAPSULE_PT_Selection(Panel):
                             gr = collection
                             grp = collection.CAPCol
                             break
-
+                
+                # Failsafe if we didn't find a collection label by now.
                 if gr is not None and len(collections_found) == 0:
-                    collection_info = gr.name + " collection selected."
+                    selection_label = gr.name + " collection selected."
 
-                if collection_info != "":
-                    col_selection_item_box = layout.box()
-                    collection_label = col_selection_item_box.column(align=True)
-                    collection_label.alignment = 'EXPAND'
-                    collection_label.label(text=collection_info, icon="MOD_ARRAY")
+                # If we have one, we can continue onwards!
+                if selection_label != "":
+                    
+                    # No dropdown, indicate objects to be edited
+                    if addon_prefs.edit_enable_dropdown is False:
+                        col_selection_item_box = layout.box()
+                        col_edit_indicator = col_selection_item_box.row(align=True)
+
+                        col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+                        col_edit_indicator.alignment = 'EXPAND'
+                        col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
+                    
+                    # Dropdown active, multiple objects selected.
+                    elif edit_enable_list is True:
+                        col_selection_item_box = layout.box()
+                        col_edit_indicator = col_selection_item_box.row(align=True)
+
+                        col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                        col_edit_indicator.alignment = 'EXPAND'
+                        col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
+                        col_edit_list = col_selection_item_box.column(align=True)
+
+                        for item in collections_found:
+                            item_label = "Edit " + item.name
+                            col_edit_list.prop(item.CAPCol, 'enable_edit', text=item_label)
+
+                    # Only one object selected, no need to show the list.
+                    else:
+                        col_selection_item_box = layout.box()
+                        col_edit_indicator = col_selection_item_box.row(align=True)
+
+                        col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                        col_edit_indicator.alignment = 'EXPAND'
+                        col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
 
 
 
@@ -330,7 +384,7 @@ class CAPSULE_PT_List(Panel):
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
-            CreateCapsuleData(layout)
+            Draw_CreateCapsuleData(layout)
             return
 
         listTab = int(str(scn.list_switch))
@@ -349,8 +403,64 @@ class CAPSULE_PT_List(Panel):
         col_location_options.operator("scene.cap_clearlist", icon="X")
         col_location_options.operator("scene.cap_refreshlist", icon="FILE_REFRESH")
 
-        col_export = layout.column(align=True)
+        if listTab == 1:
+            obj = None
+            ob = None
+
+            if len(scn.object_list) is not 0:
+                if len(scn.object_list) > scn.object_list_index:
+                    entry = scn.object_list[scn.object_list_index]
+
+                    for item in context.scene.objects:
+                        if item.name == entry.name:
+                            obj = item.CAPObj
+                            ob = item
+            
+            if obj is not None:
+                col_export_options = layout.column(align=True)
+                col_export_options.separator()
+                col_export_options.prop(obj, "use_scene_origin")
+                col_export_options.separator()
+                col_export_options.separator()
+                col_export_options.label(text="Export Location:")
+                col_export_options.separator()
+                col_export_options.prop(obj, "location_preset", icon="FILE_FOLDER", text="")
+                col_export_options.separator()
+                col_export_options.label(text="Export Preset:")
+                col_export_options.separator()
+                col_export_options.prop(obj, "export_preset", text="")
+                # col_export_options.separator()
         
+        # Group selection
+        elif listTab == 2:
+            grp = None 
+            gr = None
+
+            if len(scn.collection_list) > 0:
+                entry = scn.collection_list[scn.collection_list_index]
+
+                for collection in collection_utils.GetSceneCollections(context.scene, True):
+                    if collection.name == entry.name:
+                        grp = collection.CAPCol
+                        gr = collection
+            
+            if grp is not None:
+                col_root = layout.column(align=True)
+                col_root.separator()
+                col_root.label(text="Origin Object:")
+                root_row = layout.row(align=True)
+                root_row.prop(grp, "root_object", icon="OBJECT_DATA", text="")
+                # root_row.operator("scene.cap_clearroot", text="", icon="X")
+
+                col_export_options = layout.column(align=True)
+                col_export_options.label(text="Export Location:")
+                col_export_options.separator()
+                col_export_options.prop(grp, "location_preset", icon="FILE_FOLDER", text="")
+                col_export_options.separator()
+                col_export_options.label(text="Export Preset:")
+                col_export_options.separator()
+                col_export_options.prop(grp, "export_preset", text="")
+
         layout.separator()
 
 
@@ -382,7 +492,7 @@ class CAPSULE_PT_Location(Panel):
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
-            CreateCapsuleData(layout)
+            Draw_CreateCapsuleData(layout)
             return
 
         
@@ -431,7 +541,7 @@ class CAPSULE_PT_Export(Panel):
         try:
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
-            CreateCapsuleData(layout)
+            Draw_CreateCapsuleData(layout)
             return
 
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
@@ -442,7 +552,7 @@ class CAPSULE_PT_Export(Panel):
 
 
 
-def CreateCapsuleData(layout):
+def Draw_CreateCapsuleData(layout):
 
     # UI Prompt for when the .blend Capsule data can no longer be found.
     col_export = layout.column(align=True)

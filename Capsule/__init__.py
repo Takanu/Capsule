@@ -35,16 +35,17 @@ bl_info = {
 import bpy
 from .export_formats import *
 from .tk_utils import *
+from .update import *
 from .properties import *
+
 from .user_interface import *
 from .export_operators import *
 from .export_presets import *
-from .export_properties import *
 from .export_utils import *
 from .export_menu import *
 from .ui_operators import *
-from .update import *
-from .update_collections import *
+
+
 
 from bpy.props import (
     IntProperty, 
@@ -63,7 +64,7 @@ from bpy.types import (
 
 from bpy.app.handlers import persistent
 
-from .export_properties import (
+from .properties.export_properties import (
     CAPSULE_ExportPreset, 
     CAPSULE_LocationPreset, 
     CAPSULE_ExportPresets,
@@ -97,7 +98,7 @@ from .export_properties import (
 #     if "ui_operators" in locals():
 #         imp.reload(ui_operators)
 #     if "update" in locals():
-#         imp.reload(update)
+#         imp.reload(update_objects)
 #     if "update_collections" in locals():
 #         imp.reload(update_collections)
 
@@ -137,11 +138,13 @@ class CAP_AddonPreferences(AddonPreferences):
     saved_presets: CollectionProperty(type=CAPSULE_ExportPreset)
     saved_presets_index: IntProperty()
 
+    # Addon Preferences Dropdowns
     saved_presets_dropdown: BoolProperty(default=False)
     presets_dropdown: BoolProperty(default = False)
-    tags_dropdown: BoolProperty(default = False)
-    passes_dropdown: BoolProperty(default = False)
     options_dropdown: BoolProperty(default = False)
+
+    # Selection Dropdowns
+    edit_enable_dropdown: BoolProperty(default=False)
 
     object_list_autorefresh: BoolProperty(
         name="Object List Auto-Refresh",
@@ -374,6 +377,42 @@ def CreateDefaultData(scene):
     defaultDatablock.select_set(True)
     defaultDatablock.hide_render = True
 
+@persistent
+def CheckSelectedObject(scene):
+    """
+    A scene handler used to configure the status of previously selected objects and multi-edit opportunities behind the scenes.
+    """
+
+    preferences = bpy.context.preferences
+    addon_prefs = preferences.addons[__name__].preferences
+    #print("SCENE UPDATE")
+
+    # If the active selected object changes or anything else about the selection, we need to update the edit toggles
+    if bpy.context.active_object is not None:
+        if bpy.context.active_object.name != addon_prefs.prev_selected_object:
+            addon_prefs.prev_selected_object = bpy.context.active_object.name
+            addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
+
+            for item in bpy.context.selected_objects:
+                item.CAPObj.enable_edit = True
+
+                for collection in item.users_collection:
+                    collection.CAPCol.enable_edit = True
+            
+            return
+    
+    if len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
+        addon_prefs.prev_selected_object = bpy.context.active_object.name
+        addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
+
+        for item in bpy.context.selected_objects:
+            item.CAPObj.enable_edit = True
+
+            for collection in item.users_collection:
+                    collection.CAPCol.enable_edit = True
+        
+        return
+
 
 addon_keymaps = []
 
@@ -465,6 +504,8 @@ def register():
 
     # Setup data and handlers
     # export_presets.CreatePresets()
+    bpy.app.handlers.load_pre.append(CreateDefaultData)
+    bpy.app.handlers.depsgraph_update_post.append(CheckSelectedObject)
 
 
     # Register keymaps
@@ -495,6 +536,7 @@ def unregister():
     
     # export_presets.DeletePresets()
     bpy.app.handlers.load_pre.remove(CreateDefaultData)
+    bpy.app.handlers.depsgraph_update_post.remove(CheckSelectedObject)
 
 
     # Delete custom datablocks

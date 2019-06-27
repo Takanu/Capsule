@@ -2,8 +2,8 @@
 import bpy, bmesh, time
 from math import *
 
-from .tk_utils import collections as collection_utils
-from .tk_utils import select as select_utils
+from ..tk_utils import collections as collection_utils
+from ..tk_utils import select as select_utils
 
 def CAP_Update_CollectionExport(self, context):
     """
@@ -13,7 +13,7 @@ def CAP_Update_CollectionExport(self, context):
     """
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
     scn = context.scene.CAPScn
 
     print("Inside EnableExport (Collection)")
@@ -31,27 +31,36 @@ def CAP_Update_CollectionExport(self, context):
         if self == context.active_object.users_collection[0].CAPCol:
             current_collection = None
 
+            print("we're here")
+
             if context.active_object.users_collection is not None:
                 current_collection = context.active_object.users_collection[0]
 
             collected.append(current_collection)
 
             for item in context.selected_objects:
-                for collection in item.users_collection:
+                for new_collection in item.users_collection: 
+                    print('new collection - ', new_collection.name)
                     collection_added = False
 
                     for found_group in collected:
-                        if found_group.name == collection.name:
+                        if found_group.name == new_collection.name:
+                            print('already found, not adding - ', new_collection.name)
                             collection_added = True
 
                     if collection_added == False:
-                        collected.append(collection)
+                        print('NOT found, adding - ', new_collection.name)
+                        collected.append(new_collection)
 
             collected.remove(current_collection)
             target = current_collection
             value = self.enable_export
 
         # Obtain the value changed
+        print("CURRENT COLLECTION:")
+        print(target)
+        print("COLLECTED COLLECTIONS")
+        print(collected)
         UpdateCollectionList(context.scene, target, value)
 
         # Run through the objects
@@ -59,6 +68,7 @@ def CAP_Update_CollectionExport(self, context):
             collection.CAPCol.enable_export = value
             UpdateCollectionList(context.scene, collection, self.enable_export)
 
+        print("CLEANING UP ENABLE EXPORT >>>")
         scn.enable_sel_active = False
         scn.enable_list_active = False
 
@@ -74,7 +84,7 @@ def CAP_Update_FocusCollection(self, context):
     """
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     for collection in collection_utils.GetSceneCollections(context.scene, True):
         if collection.name == self.name:
@@ -108,7 +118,7 @@ def CAP_Update_SelectCollection(self, context):
     """
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     for collection in select_utils.GetSceneCollections(context.scene, True):
         if collection.name == self.name:
@@ -149,7 +159,7 @@ def CAP_Update_CollectionListExport(self, context):
     print("Changing Enable Export... (List)")
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
     scn = context.scene.CAPScn
     scn.enable_list_active = True
 
@@ -162,13 +172,14 @@ def CAP_Update_CollectionListExport(self, context):
                 print("Found object name ", collection.name)
                 collection.CAPCol.enable_export = self.enable_export
 
-    scn.enable_sel_active = False
-    scn.enable_list_active = False
+        # Only un-toggle the multi-select switches if this update activated in the first place.
+        scn.enable_sel_active = False
+        scn.enable_list_active = False
 
     return None
 
 
-def CAP_Update_CollectionRemoveFromList(self, context):
+def CAP_Update_CollectionListRemove(self, context):
     """
     Used in a list to remove a collection from both the export list, while disabling it's "Enable Export" status.
     """
@@ -213,7 +224,7 @@ def CAP_Update_CollectionRootObject(self, context):
     """
 
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.users_collection[0].CAPCol:
@@ -239,7 +250,7 @@ def CAP_Update_CollectionLocationPreset(self, context):
     Updates the object's Location Default property.
     """
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.users_collection[0].CAPCol:
@@ -265,7 +276,7 @@ def CAP_Update_CollectionExportDefault(self, context):
     Updates the collection's Export Default property.
     """
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.users_collection[0].CAPCol:
@@ -292,7 +303,7 @@ def CAP_Update_CollectionNormals(self, context):
     FIXME: This needs to be categorised under a FBX-specific property panel
     """
     preferences = context.preferences
-    addon_prefs = preferences.addons[__package__].preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
 
     # Acts as its own switch to prevent endless recursion
     if self == context.active_object.users_collection[0].CAPCol:
@@ -321,11 +332,16 @@ def UpdateCollectionList(scene, collection, enableExport):
     scn = scene.CAPScn
 
     # Check a list entry for the collection doesn't already exist.
+    print("UPDATING COLLECTION LIST!")
+    print(scene.CAPScn.collection_list)
+
     for item in scene.CAPScn.collection_list:
-        if item.name == collection.name:
-            print("Changing", collection.name, "'s export from list.'")
-            item.enable_export = enableExport
-            return
+        print(item)
+        if item is not None:
+            if item.name == collection.name:
+                print("Changing", collection.name, "'s export from list.'")
+                item.enable_export = enableExport
+                return
 
     if enableExport is True:
         print("Adding", collection.name, "to list.")
