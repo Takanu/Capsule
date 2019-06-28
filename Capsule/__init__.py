@@ -406,11 +406,12 @@ def CheckSelectedObject(scene):
 
             proxy.disable_updates = True
             proxy.obj_enable_export = obj.enable_export
-            proxy.obj_use_scene_origin = obj.use_scene_origin
+            proxy.obj_origin_point = obj.origin_point
             proxy.obj_location_preset = obj.location_preset
             proxy.obj_export_preset = obj.export_preset
             
             proxy.col_enable_export = grp.enable_export
+            proxy.col_origin_point = grp.origin_point
             proxy.col_root_object = grp.root_object
             proxy.col_location_preset = grp.location_preset
             proxy.col_export_preset = grp.export_preset
@@ -434,11 +435,12 @@ def CheckSelectedObject(scene):
             
             proxy.disable_updates = True
             proxy.obj_enable_export = obj.enable_export
-            proxy.obj_use_scene_origin = obj.use_scene_origin
+            proxy.obj_origin_point = obj.origin_point
             proxy.obj_location_preset = obj.location_preset
             proxy.obj_export_preset = obj.export_preset
 
             proxy.col_enable_export = grp.enable_export
+            proxy.col_origin_point = grp.origin_point
             proxy.col_root_object = grp.root_object
             proxy.col_location_preset = grp.location_preset
             proxy.col_export_preset = grp.export_preset

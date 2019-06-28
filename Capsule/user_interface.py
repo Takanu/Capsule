@@ -207,10 +207,13 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings = layout.column(align=True)
                 obj_settings.separator()
                 obj_settings.prop(proxy, "obj_enable_export")
-                obj_settings.prop(proxy, "obj_use_scene_origin")
                 obj_settings.separator()
                 obj_settings.separator()
-                obj_settings.label(text="Export Location:")
+                obj_settings.label(text="Origin Point:")
+                obj_settings.separator()
+                obj_settings.prop(proxy, "obj_origin_point", text="")
+                obj_settings.separator()
+                obj_settings.label(text="Folder Location:")
                 obj_settings.separator()
                 obj_settings.prop(proxy, "obj_location_preset", icon="FILE_FOLDER", text="")
                 obj_settings.separator()
@@ -314,12 +317,15 @@ class CAPSULE_PT_Selection(Panel):
                 rawr.prop(proxy, "col_enable_export", text="Enable Export")
                 rawr.separator()
                 rawr.separator()
-                rawr.label(text="Origin Object:")
-
-                rawr_row = layout.row(align=True)
-                rawr_row.prop(proxy, "col_root_object", icon="OBJECT_DATA", text="")
-                rawr_row.operator("scene.cap_setroot", text="", icon="EYEDROPPER")
-                rawr_row.operator("scene.cap_clearroot", text="", icon="X")
+                rawr.label(text="Origin Point:")
+                rawr.separator()
+                rawr.prop(proxy, "col_origin_point", text="")
+                
+                if proxy.col_origin_point == 'Object':
+                    rawr_row = rawr.row(align=True)
+                    rawr_row.prop(proxy, "col_root_object", icon="OBJECT_DATA", text="")
+                    rawr_row.operator("scene.cap_setroot", text="", icon="EYEDROPPER")
+                    rawr_row.operator("scene.cap_clearroot", text="", icon="X")
 
                 rawr_other = layout.column(align=True)
                 rawr_other.label(text="Export Location:")
@@ -424,10 +430,11 @@ class CAPSULE_PT_List(Panel):
             if obj is not None:
                 col_export_options = layout.column(align=True)
                 col_export_options.separator()
-                col_export_options.prop(obj, "use_scene_origin")
+                col_export_options.label(text="Origin Point:")
                 col_export_options.separator()
+                col_export_options.prop(obj, "origin_point", text="")
                 col_export_options.separator()
-                col_export_options.label(text="Export Location:")
+                col_export_options.label(text="Folder Location:")
                 col_export_options.separator()
                 col_export_options.prop(obj, "location_preset", icon="FILE_FOLDER", text="")
                 col_export_options.separator()
@@ -450,12 +457,14 @@ class CAPSULE_PT_List(Panel):
                         gr = collection
             
             if grp is not None:
-                col_root = layout.column(align=True)
-                col_root.separator()
-                col_root.label(text="Origin Object:")
-                root_row = layout.row(align=True)
-                root_row.prop(grp, "root_object", icon="OBJECT_DATA", text="")
-                # root_row.operator("scene.cap_clearroot", text="", icon="X")
+                col_origin_point = layout.column(align=True)
+                col_origin_point.separator()
+                col_origin_point.label(text="Origin Point:")
+                col_origin_point.separator()
+                col_origin_point.prop(grp, "origin_point", text="")
+                
+                if grp.origin_point == 'Object':
+                    col_origin_point.prop(grp, "root_object", icon="OBJECT_DATA", text="")
 
                 col_export_options = layout.column(align=True)
                 col_export_options.label(text="Export Location:")

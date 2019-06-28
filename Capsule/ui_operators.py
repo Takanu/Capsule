@@ -391,7 +391,7 @@ class CAPSULE_OT_Reset_Scene(Operator):
         for object in context.scene.objects:
             obj = object.CAPObj
             obj.enable_export = False
-            obj.use_scene_origin = False
+            obj.origin_export = "Object"
             obj.location_preset = '0'
             obj.export_preset = '0'
             obj.normals = '1'

@@ -254,11 +254,19 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         default = False,
         )
 
-    use_scene_origin: BoolProperty(
-        name="Use Scene Origin",
-        description="If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly without this feature, use this feature <3",
-        default=False,
+    origin_point: EnumProperty(
+        name="Export Origin",
+        description="Determines what the origin point of the exported file is set to.",
+        items=(
+        ('Object', 'Object', "Sets the exported origin point to the object's origin point."),
+        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
         )
+
+    # use_scene_origin: BoolProperty(
+    #     name="Use Scene Origin",
+    #     description="If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly without this feature, use this feature <3",
+    #     default=False,
+    #     )
 
     location_preset: EnumProperty(
         name="Select Location Preset",
@@ -293,10 +301,18 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         description="Enables or disables the ability to export this collection.",
         default=False,
         )
+    
+    origin_point: EnumProperty(
+        name="Export Origin",
+        description="Determines what the origin point of the exported file is set to.",
+        items=(
+        ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object."),
+        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
+        )
 
     root_object: StringProperty(
         name="Origin Object",
-        description="Defines the origin point of the exported collection object.  If not defined, the origin will be the scene's origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly with a defined root object, leave it blank <3",
+        description="Defines what object will be used as the exported collection's origin point.",
         default="",
         )
 

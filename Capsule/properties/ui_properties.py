@@ -12,13 +12,14 @@ from bpy.props import (
 
 from ..update.update_objects import (
     CAP_Update_ProxyObjectExport, 
-    CAP_Update_ProxyObjectSceneOrigin, 
+    CAP_Update_ProxyObjectOriginPoint, 
      CAP_Update_ProxyObjectLocationPreset, 
     CAP_Update_ProxyObjectExportPreset, 
 )
 
 from ..update.update_collections import (
     CAP_Update_ProxyCollectionExport, 
+    CAP_Update_ProxyCollectionOriginPoint,
     CAP_Update_ProxyCollectionRootObject, 
     CAP_Update_ProxyCollectionLocationPreset, 
     CAP_Update_ProxyCollectionExportDefault, 
@@ -86,18 +87,20 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         update = CAP_Update_ProxyObjectExport
         )
 
-    obj_use_scene_origin: BoolProperty(
-        name="Use Scene Origin",
-        description="If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly without this feature, use this feature <3",
-        default=False,
-        update=CAP_Update_ProxyObjectSceneOrigin
+    obj_origin_point: EnumProperty(
+        name="Export Origin",
+        description="Determines what the origin point of the exported file is set to.",
+        items=(
+        ('Object', 'Object', "Sets the exported origin point to the object's origin point."),
+        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
+        update=CAP_Update_ProxyObjectOriginPoint
         )
 
     obj_location_preset: EnumProperty(
         name="Select Location Preset",
         description="Defines the file path that the object will be exported to.",
         items=GetLocationPresets,
-        update= CAP_Update_ProxyObjectLocationPreset
+        update=CAP_Update_ProxyObjectLocationPreset
         )
 
     obj_export_preset: EnumProperty(
@@ -113,10 +116,19 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         default=False,
         update=CAP_Update_ProxyCollectionExport
         )
+    
+    col_origin_point: EnumProperty(
+        name="Export Origin",
+        description="Determines what the origin point of the exported file is set to.",
+        items=(
+        ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object."),
+        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
+        update=CAP_Update_ProxyCollectionOriginPoint,
+        )
 
     col_root_object: StringProperty(
         name="Origin Object",
-        description="Defines the origin point of the exported collection object.  If not defined, the origin will be the scene's origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly with a defined root object, leave it blank <3",
+        description="Defines the origin point of the exported collection object.",
         default="",
         update=CAP_Update_ProxyCollectionRootObject
         )

@@ -434,7 +434,7 @@ class CAPSULE_OT_ExportAssets(Operator):
         #         )
         #     RotateAllSafe(target, context, (radians(90), 0, 0), True)
 
-        if self.use_scene_origin is False:
+        if self.origin_point is "Object":
             print("Moving scene...")
             object_transform.MoveAll_TEST(target, context, [0.0, 0.0, 0.0], self.region_override)
 
@@ -447,7 +447,7 @@ class CAPSULE_OT_ExportAssets(Operator):
         # if self.reset_rotation is True:
         #     object_transform.RotateAllSafe(self.root_object, context, targetRot, True)
 
-        if self.use_scene_origin is False:
+        if self.origin_point is "Object":
             object_transform.MoveAll_TEST(self.root_object, context, targetLoc, self.region_override)
 
         # since Blender 2.79 + Unity 2017.3, this is no longer needed.
@@ -779,7 +779,7 @@ class CAPSULE_OT_ExportAssets(Operator):
 
                 # Get the root object and set some more variables!
                 self.root_object = object
-                self.use_scene_origin = self.root_object.CAPObj.use_scene_origin
+                self.origin_point = self.root_object.CAPObj.origin_point
 
                 # FIXME: Is this needed anymore?
                 # If they asked us not preserve armature constraints, we can
@@ -792,7 +792,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 root_object_location = [0.0, 0.0, 0.0]
                 root_object_rotation = [0.0, 0.0, 0.0]
 
-                if self.use_scene_origin is False:
+                if self.origin_point is "Object":
 
                     tempROL = loc_utils.FindWorldSpaceObjectLocation(self.root_object, context)
                     root_object_location = [tempROL[0], 
@@ -828,7 +828,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 # /////////////////////////////////////////////////
                 scene_origin = None
 
-                if self.use_scene_origin is False:
+                if self.origin_point is "Object":
                     self.StartSceneMovement(context, self.root_object, [self.root_object], root_object_rotation)
 
                 else:
@@ -856,7 +856,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 # DELETE/RESTORE 
                 # /////////////////////////////////////////////////
                 # Reverse movement and rotation
-                if self.use_scene_origin is False:
+                if self.origin_point is "Object":
                     self.FinishSceneMovement(context, self.root_object, [self.root_object], root_object_location, root_object_rotation)
                 else:
                     self.FinishSceneMovement(context, scene_origin, [self.root_object], root_object_location, root_object_rotation)
@@ -893,9 +893,10 @@ class CAPSULE_OT_ExportAssets(Operator):
 
                 # Before we do anything, check that a root object exists
                 self.root_object = None
+                self.origin_point = collection.CAPObj.origin_point
+
                 self.root_object_name = ""
                 self.root_object_type = 0
-                self.use_scene_origin = False
                 is_root_in_collection = False
 
                 # Find the root object in a collection, if thats where it's located
@@ -913,7 +914,6 @@ class CAPSULE_OT_ExportAssets(Operator):
                             self.root_object_name = item.name
 
                 if self.root_object == None:
-                    self.use_scene_origin = True
                     print("No root object is currently being used, proceed!")
 
                 #Get the export default for the object
@@ -935,7 +935,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 root_object_location = [0.0, 0.0, 0.0]
                 root_object_rotation = [0.0, 0.0, 0.0]
 
-                if self.root_object != None:
+                if self.origin_point is 'Object':
                     tempROL = loc_utils.FindWorldSpaceObjectLocation(self.root_object, context)
                     root_object_location = [tempROL[0], tempROL[1], tempROL[2]]
                     root_object_rotation = [self.root_object.rotation_euler[0], self.root_object.rotation_euler[1], self.root_object.rotation_euler[2]]
@@ -983,7 +983,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 scene_origin = None
 
                 # If we have a usable root object, use that as the origin point
-                if self.root_object != None:
+                if self.origin_point is 'Object':
                     moved_objects.append(self.root_object)
                     self.StartSceneMovement(context, self.root_object, moved_objects, root_object_rotation)
 
@@ -1007,7 +1007,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 bpy.ops.object.select_all(action='DESELECT')
 
                 is_collection_exportable = True
-                if self.root_object != None:
+                if self.origin_point is 'Object':
                     print("Root Location...", self.root_object.location)
 
                 if len(object_list) == 0:
@@ -1033,7 +1033,7 @@ class CAPSULE_OT_ExportAssets(Operator):
                 # /////////////////////////////////////////////////////////////////////////
 
                 # Move objects back
-                if self.root_object != None:
+                if self.origin_point is 'Object':
                     self.FinishSceneMovement(context, self.root_object, moved_objects, root_object_location, root_object_rotation)
                 else:
                     self.FinishSceneMovement(context, scene_origin, moved_objects, root_object_location, root_object_rotation)
@@ -1051,8 +1051,8 @@ class CAPSULE_OT_ExportAssets(Operator):
         self.RestoreScene(context)
         # context.window_manager.progress_end()
 
-        # 2.80 BONUS TEST TIME
-        bpy.context.area.type = 'VIEW_3D'
+        # EXPORT SUMMARY  
+        # /////////////////////////////////////////////////////////////////////////
 
         textCollectionSingle = " collection"
         textCollectionPlural = " collections"
@@ -1088,12 +1088,3 @@ class CAPSULE_OT_ExportAssets(Operator):
 
 
         return {'FINISHED'}
-
-# ////////////////////// - CLASS REGISTRATION - ////////////////////////
-# decided to do it all in __init__ instead, skipping for now.
-
-# def register():
-#     bpy.utils.register_class(CAPSULE_OT_ExportAssets)
-
-# def unregister():
-#     bpy.utils.unregister_class(CAPSULE_OT_ExportAssets)

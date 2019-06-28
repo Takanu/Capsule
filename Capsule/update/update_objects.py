@@ -49,7 +49,7 @@ def CAP_Update_ProxyObjectExport(self, context):
     return None
 
 
-def CAP_Update_ProxyObjectSceneOrigin(self, context):
+def CAP_Update_ProxyObjectOriginPoint(self, context):
     """
     Updates the "Use Scene Origin" property for all selected objects.
     """
@@ -63,11 +63,11 @@ def CAP_Update_ProxyObjectSceneOrigin(self, context):
 
     # Setup initial targets and the value state we need to change.
     collected = FindEditableObjects(context)
-    value = proxy.obj_use_scene_origin
+    value = proxy.obj_origin_point
 
     # Run through the objects
     for item in collected:
-        item.CAPObj.use_scene_origin = value
+        item.CAPObj.origin_point = value
 
     return None
 

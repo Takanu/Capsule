@@ -56,6 +56,28 @@ def CAP_Update_ProxyCollectionExport(self, context):
 
     return None
 
+def CAP_Update_ProxyCollectionOriginPoint(self, context):
+    """
+    Updates the "Collection Origin" property for all selected groups.
+    """
+
+    preferences = context.preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+    
+    # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
+
+    collected = FindEditableCollections(context)
+    value = proxy.col_origin_point
+
+    # Run through the objects
+    for collection in collected:
+        collection.CAPCol.origin_point = value
+
+    return None
+
 
 def CAP_Update_ProxyCollectionRootObject(self, context):
     """
