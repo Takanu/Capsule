@@ -23,6 +23,29 @@ def GetSceneCollections(scene, hasObjects):
 
     return collections
 
+def GetEditableCollections(context):
+    """
+    Finds collections that can have their values edited.
+    """
+    collected = [] 
+
+    for item in context.selected_objects:
+        for new_collection in item.users_collection: 
+            
+            if new_collection.CAPCol.enable_edit is False:
+                continue
+
+            collection_added = False
+
+            for added_group in collected:
+                if added_group.name == new_collection.name:
+                    collection_added = True
+
+            if collection_added == False:
+                collected.append(new_collection)
+
+    return collected
+
 def GetObjectCollections(objects):
     """
     Returns a unique list of all collections that belong to the given object list,

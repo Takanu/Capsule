@@ -130,7 +130,7 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         name="Origin Object",
         description="Defines the origin point of the exported collection object.",
         default="",
-        update=CAP_Update_ProxyCollectionRootObject
+        update=CAP_Update_ProxyCollectionRootObject,
         )
 
     col_location_preset: EnumProperty(

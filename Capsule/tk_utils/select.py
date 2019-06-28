@@ -67,3 +67,27 @@ def ActivateObject(target):
         target.hide_select = False
 
     bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
+
+def RecordSelections():
+    """
+    Records the current active and selected objects and returns a dictionary.
+    """
+
+    record = {}
+    if bpy.context.active_object is not None:
+        record['active'] = bpy.context.active_object
+    
+    record['selected'] = bpy.context.selected_objects
+
+    return record
+
+def RestoreSelections(record):
+    """
+    Restores a previously-recorded selection set.
+    """
+
+    if record['active'] is not None:
+        ActivateObject(record['active'])
+    
+    for item in record['selected']:
+        SelectObject(item)

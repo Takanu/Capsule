@@ -223,19 +223,10 @@ class CAPSULE_OT_Set_Root_Object(Operator):
         preferences = context.preferences
         self.addon_prefs = preferences.addons[__package__].preferences
 
-        self.collections = []
-        self.object = None
-        self.list_item = 0
+        self.collections = collection_utils.GetEditableCollections(context)
+        self.select_record = select_utils.RecordSelections()
+
         context.window_manager.modal_handler_add(self)
-
-        self.list_item = context.scene.CAPScn.collection_list_index
-        item = context.scene.CAPScn.collection_list[context.scene.CAPScn.collection_list_index]
-        for found_collection in collection_utils.GetSceneCollections(context.scene, True):
-            if found_collection.name == item.name:
-                self.collections.append(found_collection)
-
-
-        print("Collections found....", self.collections)
         self._timer = context.window_manager.event_timer_add(0.05, window=context.window)
         bpy.ops.object.select_all(action='DESELECT')
 
@@ -258,12 +249,14 @@ class CAPSULE_OT_Set_Root_Object(Operator):
 
             # Check only one object was selected
             if context.selected_objects != None and len(context.selected_objects) == 1:
+
+                new_root_object = context.active_object.name
                 for collection in self.collections:
-                    collection.CAPCol.root_object = context.active_object.name
-                if self.object != None:
-                    select_utils.FocusObject(self.object)
-                else:
-                    context.scene.CAPScn.collection_list_index = self.list_item
+                    collection.CAPCol.root_object = new_root_object
+
+                bpy.ops.object.select_all(action='DESELECT')
+                select_utils.RestoreSelections(self.select_record)
+
                 self.finish()
 
                 return{'FINISHED'}
@@ -284,15 +277,7 @@ class CAPSULE_OT_Clear_Root_Object(Operator):
     def execute(self, context):
         print(self)
 
-        scn = context.scene.CAPScn
-        obj = context.active_object.CAPObj
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-
-        item = context.scene.CAPScn.collection_list[context.scene.CAPScn.collection_list_index]
-        for found_collection in collection_utils.GetSceneCollections(context.scene, True):
-            if found_collection.name == item.name:
-                found_collection.CAPCol.root_object = ""
+        context.scene.CAPProxy.col_root_object = ""
 
         return {'FINISHED'}
 

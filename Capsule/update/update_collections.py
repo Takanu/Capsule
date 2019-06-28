@@ -9,28 +9,6 @@ from ..tk_utils import select as select_utils
 # /////////////////////////////////////////////////
 # /////////////////////////////////////////////////
 
-def FindEditableCollections(context):
-    """
-    Finds collections that can have their values edited.
-    """
-    collected = [] 
-
-    for item in context.selected_objects:
-        for new_collection in item.users_collection: 
-            
-            if new_collection.CAPCol.enable_edit is False:
-                continue
-
-            collection_added = False
-
-            for added_group in collected:
-                if added_group.name == new_collection.name:
-                    collection_added = True
-
-            if collection_added == False:
-                collected.append(new_collection)
-
-    return collected
 
 def CAP_Update_ProxyCollectionExport(self, context):
     """
@@ -46,7 +24,7 @@ def CAP_Update_ProxyCollectionExport(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = FindEditableCollections(context)
+    collected = collection_utils.GetEditableCollections(context)
     value = proxy.col_enable_export
 
     # Run through the objects
@@ -69,7 +47,7 @@ def CAP_Update_ProxyCollectionOriginPoint(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = FindEditableCollections(context)
+    collected = collection_utils.GetEditableCollections(context)
     value = proxy.col_origin_point
 
     # Run through the objects
@@ -92,7 +70,7 @@ def CAP_Update_ProxyCollectionRootObject(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = FindEditableCollections(context)
+    collected = collection_utils.GetEditableCollections(context)
     value = proxy.col_root_object
 
     # Run through the objects
@@ -117,7 +95,7 @@ def CAP_Update_ProxyCollectionLocationPreset(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = FindEditableCollections(context)
+    collected = collection_utils.GetEditableCollections(context)
     value = proxy.col_location_preset
 
     # Run through the objects
@@ -142,7 +120,7 @@ def CAP_Update_ProxyCollectionExportDefault(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = FindEditableCollections(context)
+    collected = collection_utils.GetEditableCollections(context)
     value = proxy.col_export_preset
 
     # Run through the objects
