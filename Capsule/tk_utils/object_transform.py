@@ -17,8 +17,8 @@ def MoveObject(target, context, location):
     copyLocation = Vector((location[0], location[1], location[2]))
 
     # Prevent auto keyframing from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
-    lockTransform = target.lock_location
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
+    lock_transform = target.lock_location
 
     context.scene.tool_settings.use_keyframe_insert_auto = False
     target.lock_location = (False, False, False)
@@ -66,8 +66,8 @@ def MoveObject(target, context, location):
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
-    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
-    target.lock_location = lockTransform
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
+    target.lock_location = lock_transform
 
 def MoveBone(target, bone, context, location):
     """
@@ -85,8 +85,8 @@ def MoveBone(target, bone, context, location):
     copyLocation[2] = location[2]
 
     # Prevent auto keyframing from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
-    lockTransform = target.lock_location
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
+    lock_transform = target.lock_location
 
     context.scene.tool_settings.use_keyframe_insert_auto = False
     target.lock_location = (False, False, False)
@@ -141,8 +141,8 @@ def MoveBone(target, bone, context, location):
     #bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
-    #context.scene.tool_settings.use_keyframe_insert_auto = autoKey
-    #target.lock_location = lockTransform
+    #context.scene.tool_settings.use_keyframe_insert_auto = auto_key
+    #target.lock_location = lock_transform
 
 def MoveObjects(targetLead, targets, context, location):
     """
@@ -155,8 +155,8 @@ def MoveObjects(targetLead, targets, context, location):
     copyLocation = Vector((location[0], location[1], location[2]))
 
     # Prevent auto keyframing and location lock from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
-    lockTransform = targetLead.lock_location
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
+    lock_transform = targetLead.lock_location
 
     context.scene.tool_settings.use_keyframe_insert_auto = False
     targetLead.lock_location = (False, False, False)
@@ -169,16 +169,16 @@ def MoveObjects(targetLead, targets, context, location):
     bpy.ops.object.select_all(action='DESELECT')
     FocusObject(targetLead)
     bpy.ops.view3d.snap_cursor_to_selected()
-    rootLocation = Vector((0.0, 0.0, 0.0))
+    root_location = Vector((0.0, 0.0, 0.0))
 
-    rootLocation = bpy.context.scene.cursor.location
+    root_location = bpy.context.scene.cursor.location
 
     # for area in context.screen.areas:
     #     if area.type == 'VIEW_3D':
-    #         rootLocation = area.spaces[0].cursor.location
+    #         root_location = area.spaces[0].cursor.location
 
     # Calculate the movement difference
-    locationDiff = copyLocation - rootLocation
+    locationDiff = copyLocation - root_location
 
     targetsToRemove = []
 
@@ -231,8 +231,8 @@ def MoveObjects(targetLead, targets, context, location):
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
-    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
-    targetLead.lock_location = lockTransform
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
+    targetLead.lock_location = lock_transform
 
 def RotateObjectSafe(target, context, rotation, forward):
     """
@@ -240,7 +240,7 @@ def RotateObjectSafe(target, context, rotation, forward):
     """
 
     # Prevent auto keyframing and location lock from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
 
     FocusObject(target)
@@ -316,7 +316,7 @@ def RotateObjectSafe(target, context, rotation, forward):
             area.spaces[0].use_pivot_point_align = backupAlign
 
     # Restore the previous setting
-    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
 
 def MoveAll(target, context, location):
     """
@@ -333,8 +333,8 @@ def MoveAll(target, context, location):
     copyLocation[2] = location[2]
 
     # Prevent auto keyframing and location lock from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
-    lockTransform = target.lock_location
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
+    lock_transform = target.lock_location
 
     context.scene.tool_settings.use_keyframe_insert_auto = False
     target.lock_location = (False, False, False)
@@ -347,24 +347,24 @@ def MoveAll(target, context, location):
     bpy.ops.object.select_all(action='DESELECT')
     FocusObject(target)
     bpy.ops.view3d.snap_cursor_to_selected()
-    rootLocation = (0.0, 0.0, 0.0)
+    root_location = (0.0, 0.0, 0.0)
 
     print('Getting cursor...')
 
-    rootLocation = context.scene.cursor.location
+    root_location = context.scene.cursor.location
 
     print('Did it break?  aaaaaaaa')
 
     # for area in context.screen.areas:
     #     if area.type == 'VIEW_3D':
     #         print(area.spaces[0].cursor.location)
-    #         rootLocation = area.spaces[0].cursor.location
+    #         root_location = area.spaces[0].cursor.location
 
     # Calculate the movement difference
     locationDiff = []
-    locationDiff.append(copyLocation[0] - rootLocation[0])
-    locationDiff.append(copyLocation[1] - rootLocation[1])
-    locationDiff.append(copyLocation[2] - rootLocation[2])
+    locationDiff.append(copyLocation[0] - root_location[0])
+    locationDiff.append(copyLocation[1] - root_location[1])
+    locationDiff.append(copyLocation[2] - root_location[2])
 
     bpy.ops.object.select_all(action='SELECT')
     ActivateObject(target)
@@ -392,28 +392,29 @@ def MoveAll(target, context, location):
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
-    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
-    target.lock_location = lockTransform
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
+    target.lock_location = lock_transform
 
     print('Move finished.')
 
-def MoveAll_TEST(target, context, location, region):
+def MoveAllFailsafe(context, origin, destination, region):
     """
-    ???
+    Moves every object in the scene safely
+    BLENDER 2.8 - This also uses a region to ensure that it moves in a 3D View region that hasnt been deallocated.
     """
     # This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
     print('MOVEMENT TEST')
 
-    copyLocation = [0.0, 0.0, 0.0]
-    copyLocation[0] = location[0]
-    copyLocation[1] = location[1]
-    copyLocation[2] = location[2]
+    target_location = [0.0, 0.0, 0.0]
+    target_location[0] = destination[0]
+    target_location[1] = destination[1]
+    target_location[2] = destination[2]
 
     # Prevent auto keyframing and location lock from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
-    lockTransform = target.lock_location
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
+    lock_transform = target.lock_location
 
     context.scene.tool_settings.use_keyframe_insert_auto = False
     target.lock_location = (False, False, False)
@@ -426,24 +427,24 @@ def MoveAll_TEST(target, context, location, region):
     bpy.ops.object.select_all(action='DESELECT')
     FocusObject(target)
     bpy.ops.view3d.snap_cursor_to_selected()
-    rootLocation = (0.0, 0.0, 0.0)
+    root_location = (0.0, 0.0, 0.0)
 
     print('Getting cursor...')
 
-    rootLocation = context.scene.cursor.location
+    root_location = context.scene.cursor.location
 
     print('Did it break?  aaaaaaaa')
 
     # for area in context.screen.areas:
     #     if area.type == 'VIEW_3D':
     #         print(area.spaces[0].cursor.location)
-    #         rootLocation = area.spaces[0].cursor.location
+    #         root_location = area.spaces[0].cursor.location
 
     # Calculate the movement difference
     locationDiff = []
-    locationDiff.append(copyLocation[0] - rootLocation[0])
-    locationDiff.append(copyLocation[1] - rootLocation[1])
-    locationDiff.append(copyLocation[2] - rootLocation[2])
+    locationDiff.append(target_location[0] - root_location[0])
+    locationDiff.append(target_location[1] - root_location[1])
+    locationDiff.append(target_location[2] - root_location[2])
 
     bpy.ops.object.select_all(action='SELECT')
     ActivateObject(target)
@@ -474,8 +475,8 @@ def MoveAll_TEST(target, context, location, region):
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
     # Restore the previous setting
-    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
-    target.lock_location = lockTransform
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
+    target.lock_location = lock_transform
 
     print('Move finished.')
 
@@ -484,7 +485,7 @@ def RotateAll(target, context, rotation, constraintAxis):
     ???
     """
     # Prevent auto keyframing and location lock from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
 
     bpy.ops.object.select_all(action='SELECT')
@@ -515,7 +516,7 @@ def RotateAll(target, context, rotation, constraintAxis):
             area.spaces[0].use_pivot_point_align = backupAlign
 
     # Restore the previous setting
-    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
 
 def RotateAllSafe(target, context, rotation, forward):
     """
@@ -523,7 +524,7 @@ def RotateAllSafe(target, context, rotation, forward):
     """
 
     # Prevent auto keyframing and location lock from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
 
     bpy.ops.object.select_all(action='SELECT')
@@ -600,14 +601,14 @@ def RotateAllSafe(target, context, rotation, forward):
             area.spaces[0].use_pivot_point_align = backupAlign
 
     # Restore the previous setting
-    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
 
 def ScaleAll(context, scale, constraintAxis):
     """
     ???
     """
     # Prevent auto keyframing and location lock from being active
-    autoKey = context.scene.tool_settings.use_keyframe_insert_auto
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
 
     bpy.ops.object.select_all(action='SELECT')
@@ -632,4 +633,4 @@ def ScaleAll(context, scale, constraintAxis):
         )
 
     # Restore the previous setting
-    context.scene.tool_settings.use_keyframe_insert_auto = autoKey
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key

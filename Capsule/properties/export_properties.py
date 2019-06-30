@@ -157,7 +157,7 @@ class CAPSULE_LocationPreset(PropertyGroup):
         )
 
 
-class CAPSULE_ExportPresets(PropertyGroup):
+class CAPSULE_ExportData(PropertyGroup):
     """
     A property group passed onto the "default datablock", the empty object created in a blend file to store all the available export presets.
     """
@@ -166,10 +166,10 @@ class CAPSULE_ExportPresets(PropertyGroup):
     version_number: FloatProperty(default=1.10)
 
     # the available file presets
-    file_presets: CollectionProperty(type=CAPSULE_ExportPreset)
+    export_presets: CollectionProperty(type=CAPSULE_ExportPreset)
 
     # the preset selected on the list panel, when viewed from the AddonPreferences window.
-    file_presets_listindex: IntProperty(default=0)
+    export_presets_listindex: IntProperty(default=0)
 
     # if true, this object is the empty created for the purposes of storing preset data.
     is_storage_object: BoolProperty(default=False)
@@ -242,7 +242,7 @@ class CAPSULE_ExportPresets(PropertyGroup):
 #     CAPSULE_ExportPass, 
 #     CAPSULE_ExportPreset, 
 #     CAPSULE_LocationPreset, 
-#     CAPSULE_ExportPresets,
+#     CAPSULE_ExportData,
 # )
 
 # def register():

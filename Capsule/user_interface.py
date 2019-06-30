@@ -561,7 +561,7 @@ class CAPSULE_PT_Export(Panel):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         export_buttons = layout.row(align=True)
-        export_buttons.operator("scene.cap_export")
+        export_buttons.operator("scene.cap_export_all")
 
 
 

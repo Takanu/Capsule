@@ -164,8 +164,8 @@ class CAPSULE_MT_PieExportObject(Menu):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         i = 0
-        for loc in exp.file_presets:
-            pie.operator("capsule.export_select_object", text=exp.file_presets[i].name, icon="PREFERENCES").loc = i
+        for loc in exp.export_presets:
+            pie.operator("capsule.export_select_object", text=exp.export_presets[i].name, icon="PREFERENCES").loc = i
             i += 1
 
 class CAPSULE_MT_PieExportCollection(Menu):
@@ -185,8 +185,8 @@ class CAPSULE_MT_PieExportCollection(Menu):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         i = 0
-        for loc in exp.file_presets:
-            pie.operator("capsule.export_select_collection", text=exp.file_presets[i].name, icon="PREFERENCES").loc = i
+        for loc in exp.export_presets:
+            pie.operator("capsule.export_select_collection", text=exp.export_presets[i].name, icon="PREFERENCES").loc = i
             i += 1
 
 class CAPSULE_OT_PieObjectMenu(Menu):
@@ -269,6 +269,6 @@ class CAPSULE_OT_PieMainMenu(Menu):
             # 6 - RIGHT
             pie.operator("wm.call_menu_pie", text="Collection Settings", icon="GROUP").name = "pie.capsule_collection"
             # 2 - BOTTOM
-            pie.operator("scene.cap_export", text="Export with Capsule", icon="EXPORT")
+            pie.operator("scene.cap_export_all", text="Export with Capsule", icon="EXPORT")
         else:
-            pie.operator("scene.cap_export", text="Export with Capsule", icon="EXPORT")
+            pie.operator("scene.cap_export_all", text="Export with Capsule", icon="EXPORT")

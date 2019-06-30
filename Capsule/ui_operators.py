@@ -109,7 +109,7 @@ class CAPSULE_OT_Add_Export(Operator):
     def get_unique_id(self, context, exp):
         newID = random.randrange(0, 1000000)
 
-        for preset in exp.file_presets:
+        for preset in exp.export_presets:
             if preset.instance_id == newID:
                 newID = self.get_unique_id(context, exp)
 
@@ -124,12 +124,12 @@ class CAPSULE_OT_Add_Export(Operator):
 
 
         # make the new file preset
-        newDefault = exp.file_presets.add()
-        newDefault.name = "Export " + str(len(exp.file_presets))
+        newDefault = exp.export_presets.add()
+        newDefault.name = "Export " + str(len(exp.export_presets))
         newDefault.path = ""
 
         # Ensure the tag index keeps within a window
-        exp.file_presets_listindex = len(exp.file_presets) - 1
+        exp.export_presets_listindex = len(exp.export_presets) - 1
 
         return {'FINISHED'}
 
@@ -149,7 +149,7 @@ class CAPSULE_OT_Delete_Export(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        if len(exp.file_presets) > 0:
+        if len(exp.export_presets) > 0:
             return True
 
         return False
@@ -162,11 +162,11 @@ class CAPSULE_OT_Delete_Export(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # remove the data from both lists
-        exp.file_presets.remove(exp.file_presets_listindex)
+        exp.export_presets.remove(exp.export_presets_listindex)
 
         # ensure the selected list index is within the list bounds
-        if exp.file_presets_listindex > 0:
-            exp.file_presets_listindex -= 1
+        if exp.export_presets_listindex > 0:
+            exp.export_presets_listindex -= 1
 
         return {'FINISHED'}
 
@@ -225,7 +225,7 @@ class CAPSULE_OT_Set_Root_Object(Operator):
 
         # Get collections and selections
         self.collections = collection_utils.GetEditableCollections(context)
-        self.select_record = select_utils.RecordSelections()
+        self.select_record = select_utils.SaveSelections()
 
         # Get key configs for click select
         wm = context.window_manager
@@ -586,7 +586,7 @@ class CAPSULE_OT_Add_Stored_Presets(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        if len(addon_prefs.saved_presets) > 0:
+        if len(addon_prefs.saved_export_presets) > 0:
             return True
 
         else:
@@ -600,8 +600,8 @@ class CAPSULE_OT_Add_Stored_Presets(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
-        new_preset = exp.file_presets.add()
-        export_presets.CopyPreset(addon_prefs.saved_presets[addon_prefs.saved_presets_index], new_preset)
+        new_preset = exp.export_presets.add()
+        export_presets.CopyPreset(addon_prefs.saved_export_presets[addon_prefs.saved_export_presets_index], new_preset)
 
         return {'FINISHED'}
 
@@ -615,8 +615,8 @@ class CAPSULE_OT_Delete_Presets(Operator):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
 
-        if len(addon_prefs.saved_presets) > 0:
-            export = addon_prefs.saved_presets[addon_prefs.saved_presets_index]
+        if len(addon_prefs.saved_export_presets) > 0:
+            export = addon_prefs.saved_export_presets[addon_prefs.saved_export_presets_index]
             
             if export.x_global_user_deletable is True:
                 return True
@@ -631,11 +631,11 @@ class CAPSULE_OT_Delete_Presets(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
-        addon_prefs.saved_presets.remove(addon_prefs.saved_presets_index)
+        addon_prefs.saved_export_presets.remove(addon_prefs.saved_export_presets_index)
 
         # Decrement the list selection
-        if addon_prefs.saved_presets_index > 0:
-            addon_prefs.saved_presets_index -= 1
+        if addon_prefs.saved_export_presets_index > 0:
+            addon_prefs.saved_export_presets_index -= 1
 
         return {'FINISHED'}
 
@@ -650,7 +650,7 @@ class CAPSULE_OT_Store_Presets(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        if len(exp.file_presets) > 0:
+        if len(exp.export_presets) > 0:
             return True
 
         else:
@@ -665,8 +665,8 @@ class CAPSULE_OT_Store_Presets(Operator):
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
         # Obtain the selected preset
-        new_preset = addon_prefs.saved_presets.add()
-        export_presets.CopyPreset(exp.file_presets[exp.file_presets_listindex], new_preset)
+        new_preset = addon_prefs.saved_export_presets.add()
+        export_presets.CopyPreset(exp.export_presets[exp.export_presets_listindex], new_preset)
 
         return {'FINISHED'}
 

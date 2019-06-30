@@ -237,7 +237,7 @@ def GetExportDefaults(scene, context):
 
     u = 1
 
-    for i,x in enumerate(exp.file_presets):
+    for i,x in enumerate(exp.export_presets):
         items.append((str(i+1), x.name, x.name, i+1))
 
     return items

@@ -67,7 +67,7 @@ from bpy.app.handlers import persistent
 from .properties.export_properties import (
     CAPSULE_ExportPreset, 
     CAPSULE_LocationPreset, 
-    CAPSULE_ExportPresets,
+    CAPSULE_ExportData,
     )
 
 
@@ -113,7 +113,7 @@ def GetGlobalPresets(scene, context):
 
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
-    exp = addon_prefs.saved_presets
+    exp = addon_prefs.saved_export_presets
 
     u = 1
 
@@ -135,11 +135,11 @@ class CAP_AddonPreferences(AddonPreferences):
 
     # Storage for the Global Presets, and it's enum UI list.
     sort_presets: CollectionProperty(type=CAPSULE_ExportPreset)
-    saved_presets: CollectionProperty(type=CAPSULE_ExportPreset)
-    saved_presets_index: IntProperty()
+    saved_export_presets: CollectionProperty(type=CAPSULE_ExportPreset)
+    saved_export_presets_index: IntProperty()
 
     # Addon Preferences Dropdowns
-    saved_presets_dropdown: BoolProperty(default=False)
+    saved_export_presets_dropdown: BoolProperty(default=False)
     presets_dropdown: BoolProperty(default = False)
     options_dropdown: BoolProperty(default = False)
 
@@ -213,21 +213,21 @@ class CAP_AddonPreferences(AddonPreferences):
             #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
             col_export_title.label(text="Export Presets")
 
-            if addon_prefs.saved_presets_dropdown is False:
+            if addon_prefs.saved_export_presets_dropdown is False:
                 savedpresets_box = export_box.box()
                 col_saved_title = savedpresets_box.row(align=True)
-                col_saved_title.prop(addon_prefs, "saved_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+                col_saved_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
                 col_saved_title.label(text="Saved Presets")
 
             else:
                 savedpresets_box = export_box.box()
                 col_saved_title = savedpresets_box.row(align=True)
-                col_saved_title.prop(addon_prefs, "saved_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                col_saved_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
                 col_saved_title.label(text="Saved Presets")
 
                 col_savedpresets = savedpresets_box.row(align=True)
                 col_savedpresets_list = col_savedpresets.column(align=True)
-                col_savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_presets", addon_prefs, "saved_presets_index", rows=3, maxrows=6)
+                col_savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
                 col_savedpresets_list.operator("cap.create_current_preset", text="Add to File Presets", icon="FORWARD")
 
                 col_savedpresets_options = col_savedpresets.column(align=True)
@@ -239,7 +239,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             row_defaults = filepresets_box.row(align=True)
             col_defaultslist = row_defaults.column(align=True)
-            col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", exp, "file_presets", exp, "file_presets_listindex", rows=3, maxrows=6)
+            col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", exp, "export_presets", exp, "export_presets_listindex", rows=3, maxrows=6)
             col_defaultslist.operator("cap.add_global_preset", text="Add to Saved Presets", icon="FORWARD")
 
             col_defaultslist_options = row_defaults.column(align=True)
@@ -247,9 +247,9 @@ class CAP_AddonPreferences(AddonPreferences):
             col_defaultslist_options.operator("scene.cap_deleteexport", text="", icon="REMOVE")
 
 
-            if len(exp.file_presets) > 0 and (exp.file_presets_listindex) < len(exp.file_presets):
+            if len(exp.export_presets) > 0 and (exp.export_presets_listindex) < len(exp.export_presets):
 
-                currentExp = exp.file_presets[exp.file_presets_listindex]
+                currentExp = exp.export_presets[exp.export_presets_listindex]
 
                 filepresets_box.label(text="Basic Settings")
                 filepresets_options = filepresets_box.row(align=True)
@@ -472,12 +472,12 @@ classes = (
     CAPSULE_Proxy_Properties,
 
     # export_operators
-    CAPSULE_OT_ExportAssets,
+    CAPSULE_OT_ExportAll,
 
     # export_properties
     CAPSULE_ExportPreset, 
     CAPSULE_LocationPreset, 
-    CAPSULE_ExportPresets,
+    CAPSULE_ExportData,
     
     # export menu
     CAPSULE_OT_PieWarning,
@@ -550,7 +550,7 @@ def register():
     bpy.types.Collection.CAPCol = PointerProperty(name='Capsule Collection Properties', type=CAPSULE_Collection_Preferences)
     # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
     bpy.types.Object.CAPStm = PointerProperty(name='Capsule State Tracker', type=CAPSULE_Object_StateMachine)
-    bpy.types.Object.CAPExp = PointerProperty(name='Capsule Export Presets', type=CAPSULE_ExportPresets)
+    bpy.types.Object.CAPExp = PointerProperty(name='Capsule Export Presets', type=CAPSULE_ExportData)
     bpy.types.Scene.CAPProxy = PointerProperty(name='Capsule Scene Property Proxy', type=CAPSULE_Proxy_Properties)
 
 

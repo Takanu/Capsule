@@ -1,3 +1,4 @@
+
 import bpy, bmesh, time
 from math import pi, radians, degrees
 from mathutils import Vector
@@ -7,7 +8,7 @@ from .object_ops import SwitchObjectMode
 
 #//////////////////// - BASIC DEFINITIONS - ///////////////////////
 
-def FindWorldSpaceObjectLocation(target, context):
+def FindWorldSpaceObjectLocation(context, target):
     """
     Finds the given object location in world space, NO MATTER WHAT THE CIRCUMSTANCES.
     """

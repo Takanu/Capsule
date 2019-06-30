@@ -68,7 +68,7 @@ def ActivateObject(target):
 
     bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
 
-def RecordSelections():
+def SaveSelections():
     """
     Records the current active and selected objects and returns a dictionary.
     """

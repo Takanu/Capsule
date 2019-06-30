@@ -12,7 +12,7 @@ def DeletePresets():
     print(">>>>>>>>>> Deleting presets...")
     preferences = bpy.context.preferences
     addon_prefs = preferences.addons[__package__].preferences
-    exp = addon_prefs.saved_presets
+    exp = addon_prefs.saved_export_presets
     presetsToKeep = []
 
     i = len(exp) - 1
@@ -37,7 +37,7 @@ def CreatePresets():
     # -------------------------------------------------------------------------
     preferences = bpy.context.preferences
     addon_prefs = preferences.addons[__package__].preferences
-    exp = addon_prefs.saved_presets
+    exp = addon_prefs.saved_export_presets
     sort = addon_prefs.sort_presets
     print(">>>>>>>>>> Adding presets...")
 
