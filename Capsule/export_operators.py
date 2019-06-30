@@ -125,14 +125,15 @@ class CAPSULE_OT_ExportAll(Operator):
     
             origin_point = collection.CAPCol.origin_point
             root_definition = None
-            if origin_point is 'Object':
-                root_definition = bpy.data.objects.get(collection.CAPCol.root_object) 
+            if origin_point == 'Object':
+                root_definition = bpy.context.scene.objects.get(collection.CAPCol.root_object)
+                print(' R O O T - ', root_definition)
 
             # Collect all objects that are applicable for this export
             targets = collection.all_objects
 
             # E X P O R T
-            export_result = ExportTarget(context, targets, item.name, export_preset, location_preset, origin_point, root_definition, meta)
+            export_result = ExportTarget(context, targets, collection.name, export_preset, location_preset, origin_point, root_definition, meta)
 
             # Return early if a warning was triggered.
             if 'warning' in export_result:
@@ -182,7 +183,7 @@ class CAPSULE_OT_ExportAll(Operator):
 
 
 
-def GetRootLocationDefinition(context, targets, export_name, export_preset, origin_point, root_definition):
+def GetRootLocationDefinition(context, export_name, origin_point, root_definition):
     """
     Filters through potential origin point definitions to return a world-space location and rotation.
     """
@@ -191,13 +192,18 @@ def GetRootLocationDefinition(context, targets, export_name, export_preset, orig
     result['location'] = [0.0, 0.0, 0.0]
     result['rotation'] = [0.0, 0.0, 0.0]
 
-    if origin_point is 'Scene':
+    print('AAAAAAAA')
+
+    if origin_point == 'Scene':
+        print('origin point is SCENE')
         return result
 
-    if origin_point is "Object":
-        if len(targets) > 1:
-            result['warning'] = "The '" + export_name + "' collection has no root object assigned to it.  ASSIGN ONE."
-            return result
+    elif origin_point == "Object":
+        print('origin point is OBJECT')
+        # Not currently needed
+        # if len(targets) > 1:
+        #     result['warning'] = "The '" + export_name + "' collection has no root object assigned to it.  ASSIGN ONE."
+        #     return result
         
         # TODO 2.0 - Check the root_definition argument to ensure it's the type we expect.
 
@@ -208,6 +214,8 @@ def GetRootLocationDefinition(context, targets, export_name, export_preset, orig
         result['rotation'] = [root_definition.rotation_euler[0], 
                                 root_definition.rotation_euler[1], 
                                 root_definition.rotation_euler[2]]
+        
+        print('found root location : ', result['location'])
     
     return result
 
@@ -250,14 +258,15 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # /////////////////////////////////////////////////
 
     # Get the root location if we can, otherwise return early.
-    root_location = GetRootLocationDefinition(context, targets, export_name, export_preset, origin_point, root_definition)
+    # FIXME 1.2 - not using the actual location currently, can't </3
+    root_location = GetRootLocationDefinition(context, export_name, origin_point, root_definition)
     if 'warning' in root_location:
         result['warning'] = root_location['warning']
         return result
 
-    if origin_point is "Object":
-        origin_location = loc_utils.FindWorldSpaceObjectLocation(context, root_definition)
-        object_transform.MoveAllFailsafe(context, origin_location, [0.0, 0.0, 0.0], {'region': meta['region']})
+    if origin_point == "Object":
+        print('origin point is object, moving...')
+        object_transform.MoveAllFailsafe(context, root_definition, [0.0, 0.0, 0.0], {'region': meta['region']})
 
 
     # /////////////////////////////////////////////////
@@ -279,8 +288,8 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # /////////////////////////////////////////////////
 
     # Reverse movement and rotation
-    if origin_point is "Object":
-        object_transform.MoveAllFailsafe(context, [0.0, 0.0, 0.0], origin_location, {'region': meta['region']})
+    if origin_point == "Object":
+        object_transform.MoveAllFailsafe(context, root_definition, root_location['location'], {'region': meta['region']})
 
     print(">>> Pass Complete <<<")
 
