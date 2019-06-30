@@ -478,6 +478,21 @@ classes = (
     CAPSULE_ExportPreset, 
     CAPSULE_LocationPreset, 
     CAPSULE_ExportPresets,
+    
+    # export menu
+    CAPSULE_OT_PieWarning,
+    CAPSULE_OT_ToggleExport,
+    CAPSULE_OT_LocationSelectObject,
+    CAPSULE_OT_LocationSelectCollection,
+    CAPSULE_MT_PieLocationObject,
+    CAPSULE_MT_PieLocationCollection,
+    CAPSULE_OT_ExportSelectObject,
+    CAPSULE_OT_ExportSelectCollection,
+    CAPSULE_MT_PieExportObject,
+    CAPSULE_MT_PieExportCollection,
+    CAPSULE_OT_PieObjectMenu,
+    CAPSULE_OT_PieCollectionMenu,
+    CAPSULE_OT_PieMainMenu,
 
     # ui_operators
     CAPSULE_OT_Add_Path,
@@ -548,6 +563,7 @@ def register():
     # Register keymaps
     wm = bpy.context.window_manager
     if wm.keyconfigs.addon:
+        print("REGISTERING KEYMAP?")
         # Object Mode
         km = wm.keyconfigs.addon.keymaps.new(name='Object Mode')
         kmi = km.keymap_items.new('wm.call_menu_pie', 'E', 'PRESS')

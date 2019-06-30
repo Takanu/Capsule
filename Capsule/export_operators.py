@@ -893,7 +893,7 @@ class CAPSULE_OT_ExportAssets(Operator):
 
                 # Before we do anything, check that a root object exists
                 self.root_object = None
-                self.origin_point = collection.CAPObj.origin_point
+                self.origin_point = collection.CAPCol.origin_point
 
                 self.root_object_name = ""
                 self.root_object_type = 0

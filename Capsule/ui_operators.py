@@ -223,32 +223,48 @@ class CAPSULE_OT_Set_Root_Object(Operator):
         preferences = context.preferences
         self.addon_prefs = preferences.addons[__package__].preferences
 
+        # Get collections and selections
         self.collections = collection_utils.GetEditableCollections(context)
         self.select_record = select_utils.RecordSelections()
+
+        # Get key configs for click select
+        wm = context.window_manager
+        keyconfig = wm.keyconfigs.active
+        self.select = getattr(keyconfig.preferences, "select_mouse", "LEFT")
 
         context.window_manager.modal_handler_add(self)
         self._timer = context.window_manager.event_timer_add(0.05, window=context.window)
         bpy.ops.object.select_all(action='DESELECT')
 
         # Set the header text with USEFUL INSTRUCTIONS :O
-        context.area.header_text_set(
-            "Select the object you want to use as a root object.  " +
-            "RMB: Select Collision Object, Esc: Exit"
-        )
+        # TODO 2.0 : Learn how to really format Python text, c'mon.
+        if self.select == 'LEFT':
+            context.area.header_text_set(
+                "Select the object you want to use as a root object.  " +
+                "Left Mouse: Select Collision Object, Esc: Exit"
+            )
+            self.event = 'LEFTMOUSE'
+        else:
+            context.area.header_text_set(
+                "Select the object you want to use as a root object.  " +
+                "Right Mouse: Select Collision Object, Esc: Exit"
+            )
+            self.event = 'RIGHTMOUSE'
 
         return {'RUNNING_MODAL'}
 
     def modal(self,context,event):
         # If escape is pressed, exit
         if event.type in {'ESC'}:
+            select_utils.RestoreSelections(self.select_record)
             self.finish()
             return{'FINISHED'}
 
         # When an object is selected, set it as a child to the object, and finish.
-        elif event.type == 'RIGHTMOUSE':
+        elif event.type == self.event:
 
             # Check only one object was selected
-            if context.selected_objects != None and len(context.selected_objects) == 1:
+            if context.active_object != None and len(context.selected_objects) == 1:
 
                 new_root_object = context.active_object.name
                 for collection in self.collections:
