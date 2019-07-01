@@ -315,6 +315,20 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         description="Defines what object will be used as the exported collection's origin point.",
         default="",
         )
+    
+    child_export_option: EnumProperty(
+        name="Child Export Options",
+        description="Lets you set how children of a collection are included in the export.",
+        items=(
+        ('All', 'All Children', "Will export the children of this collection as well as every object associated to a child of this collection."),
+        ('Immediate', 'Immediate Children Only', "Will only export objects that are a child of this collection."),
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree."),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree."),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree."),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree."),
+        ('Down 5', 'Five Layer Down', "Will export all children up to five layers down the hierarchy tree.")
+        ),
+        )
 
     location_preset: EnumProperty(
         name="Select Export Location",

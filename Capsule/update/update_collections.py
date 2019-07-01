@@ -79,6 +79,30 @@ def CAP_Update_ProxyCollectionRootObject(self, context):
 
     return None
 
+
+def CAP_Update_ProxyCollectionChildExportOption(self, context):
+    """
+    Updates the "Child Export Options" property for all selected groups.
+    """
+
+    preferences = context.preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+    
+    # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
+
+    collected = collection_utils.GetEditableCollections(context)
+    value = proxy.col_child_export_option
+
+    # Run through the objects
+    for collection in collected:
+        collection.CAPCol.child_export_option = value
+
+    return None
+
+
 def CAP_Update_ProxyCollectionLocationPreset(self, context):
     """
     Updates the object's Location Default property.

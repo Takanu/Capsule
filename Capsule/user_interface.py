@@ -332,6 +332,10 @@ class CAPSULE_PT_Selection(Panel):
                     rawr_row.operator("scene.cap_clearroot", text="", icon="X")
 
                 rawr_other = layout.column(align=True)
+                rawr_other.label(text="Child Export Options:")
+                rawr_other.separator()
+                rawr_other.prop(proxy, "col_child_export_option", text="")
+                rawr_other.separator()
                 rawr_other.label(text="Export Location:")
                 rawr_other.separator()
                 rawr_other.prop(proxy, "col_location_preset", icon="FILE_FOLDER", text="")
@@ -351,8 +355,6 @@ class CAPSULE_PT_Selection(Panel):
                 collection_info.label(text="No groups selected.")
 
             layout.separator()
-
-
 
 
 
@@ -470,6 +472,10 @@ class CAPSULE_PT_List(Panel):
                     col_origin_point.prop(grp, "root_object", icon="OBJECT_DATA", text="")
 
                 col_export_options = layout.column(align=True)
+                col_export_options.label(text="Child Export Options:")
+                col_export_options.separator()
+                col_export_options.prop(grp, "child_export_option", text="")
+                col_export_options.separator()
                 col_export_options.label(text="Export Location:")
                 col_export_options.separator()
                 col_export_options.prop(grp, "location_preset", icon="FILE_FOLDER", text="")

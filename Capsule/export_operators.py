@@ -329,7 +329,8 @@ def ExportCollectionList(context, exp, collection_list, global_record):
             print(' R O O T - ', root_definition)
 
         # Collect all objects that are applicable for this export
-        targets = collection.all_objects
+        child_export_option = collection.CAPCol.child_export_option
+        targets = collection_utils.GetExportableCollectionObjects(context, collection, child_export_option)
 
         print("PREPARING TO EXPORT COLLECTION ", collection.name)
 

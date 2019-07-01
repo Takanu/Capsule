@@ -13,7 +13,7 @@ from bpy.props import (
 from ..update.update_objects import (
     CAP_Update_ProxyObjectExport, 
     CAP_Update_ProxyObjectOriginPoint, 
-     CAP_Update_ProxyObjectLocationPreset, 
+    CAP_Update_ProxyObjectLocationPreset, 
     CAP_Update_ProxyObjectExportPreset, 
 )
 
@@ -21,6 +21,7 @@ from ..update.update_collections import (
     CAP_Update_ProxyCollectionExport, 
     CAP_Update_ProxyCollectionOriginPoint,
     CAP_Update_ProxyCollectionRootObject, 
+    CAP_Update_ProxyCollectionChildExportOption,
     CAP_Update_ProxyCollectionLocationPreset, 
     CAP_Update_ProxyCollectionExportDefault, 
 )
@@ -125,12 +126,27 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
         update=CAP_Update_ProxyCollectionOriginPoint,
         )
-
+        
     col_root_object: StringProperty(
         name="Origin Object",
         description="Defines the origin point of the exported collection object.",
         default="",
         update=CAP_Update_ProxyCollectionRootObject,
+        )
+
+    col_child_export_option: EnumProperty(
+        name="Child Export Options",
+        description="Lets you set how children of a collection are included in the export.",
+        items=(
+        ('All', 'All Children', "Will export the children of this collection as well as every object associated to a child of this collection."),
+        ('Immediate', 'Immediate Children Only', "Will only export objects that are a child of this collection."),
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree."),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree."),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree."),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree."),
+        ('Down 5', 'Five Layer Down', "Will export all children up to five layers down the hierarchy tree.")
+        ),
+        update=CAP_Update_ProxyCollectionChildExportOption,
         )
 
     col_location_preset: EnumProperty(
