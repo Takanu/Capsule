@@ -221,6 +221,10 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.separator()
                 obj_settings.prop(proxy, "obj_export_preset", text="")
                 obj_settings.separator()
+                obj_settings.separator()
+                obj_settings.separator()
+                obj_settings.operator("scene.cap_export_all")
+                obj_settings.operator("scene.cap_export_selected")
 
                 # TODO 2.0 : Add this back in with other object/collection switches.
                 #obj_settings.label(text="Mesh Normals:")
@@ -257,7 +261,7 @@ class CAPSULE_PT_Selection(Panel):
 
                 elif len(collections_found) > 1:
                     edit_enable_list = True
-                    selection_label = str(len(collections_found)) + " collections found."
+                    selection_label = str(len(collections_found)) + " collections selected"
 
                 if context.active_object is not None:
                     if len(context.active_object.users_collection) > 0:
@@ -335,10 +339,10 @@ class CAPSULE_PT_Selection(Panel):
                 rawr_other.label(text="Export Preset:")
                 rawr_other.separator()
                 rawr_other.prop(proxy, "col_export_preset", text="")
-                #rawr_other.separator()
-                #rawr_other.label(text="Mesh Normal Export:")
-                #rawr_other.separator()
-                #rawr_other.prop(grp, "normals", text="")
+                rawr_other.separator()
+                rawr_other.separator()
+                rawr_other.operator("scene.cap_export_all")
+                rawr_other.operator("scene.cap_export_selected")
 
             # If no collection was eventually found, bring up warning labels.
             else:
@@ -441,7 +445,6 @@ class CAPSULE_PT_List(Panel):
                 col_export_options.label(text="Export Preset:")
                 col_export_options.separator()
                 col_export_options.prop(obj, "export_preset", text="")
-                # col_export_options.separator()
         
         # Group selection
         elif listTab == 2:

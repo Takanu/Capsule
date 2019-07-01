@@ -328,6 +328,12 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         items=GetExportDefaults,
         )
     
+    export_preset: EnumProperty(
+        name="Select Export Default",
+        description="Defines the export settings used on the collection.",
+        items=GetExportDefaults,
+        )
+    
     enable_edit: BoolProperty(
         name="",
         description="Enables editing of the collection's properties.",

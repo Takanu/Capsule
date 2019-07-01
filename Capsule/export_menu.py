@@ -251,6 +251,28 @@ class CAPSULE_OT_PieCollectionMenu(Menu):
         # 9 - TOP - RIGHT
         # 3 - BOTTOM - RIGHT
 
+class CAPSULE_OT_PieExport(Menu):
+    """
+    Pie menus for the base menu that appears when E is used.
+    """
+
+    bl_idname = "pie.capsule_export"
+    bl_label = "Export..."
+
+    def draw(self, context):
+        layout = self.layout
+        pie = layout.menu_pie()
+        # 4 - LEFT
+        pie.operator("scene.cap_export_all", text="Export All", icon="EXPORT")
+        # 6 - RIGHT
+        pie.operator("scene.cap_export_selected", text="Export Selected", icon="EXPORT")
+        # 2 - BOTTOM
+        # 8 - TOP
+        # 7 - TOP - LEFT
+        # 1 - BOTTOM - LEFT
+        # 9 - TOP - RIGHT
+        # 3 - BOTTOM - RIGHT
+
 class CAPSULE_OT_PieMainMenu(Menu):
     """
     Pie menus for the base menu that appears when E is used.
@@ -269,6 +291,6 @@ class CAPSULE_OT_PieMainMenu(Menu):
             # 6 - RIGHT
             pie.operator("wm.call_menu_pie", text="Collection Settings", icon="GROUP").name = "pie.capsule_collection"
             # 2 - BOTTOM
-            pie.operator("scene.cap_export_all", text="Export with Capsule", icon="EXPORT")
+            pie.operator("wm.call_menu_pie", text="Export with Capsule", icon="EXPORT").name = "pie.capsule_export"
         else:
-            pie.operator("scene.cap_export_all", text="Export with Capsule", icon="EXPORT")
+            pie.operator("wm.call_menu_pie", text="Export with Capsule", icon="EXPORT").name = "pie.capsule_export"

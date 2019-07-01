@@ -473,6 +473,7 @@ classes = (
 
     # export_operators
     CAPSULE_OT_ExportAll,
+    CAPSULE_OT_ExportSelected,
 
     # export_properties
     CAPSULE_ExportPreset, 
@@ -492,6 +493,7 @@ classes = (
     CAPSULE_MT_PieExportCollection,
     CAPSULE_OT_PieObjectMenu,
     CAPSULE_OT_PieCollectionMenu,
+    CAPSULE_OT_PieExport,
     CAPSULE_OT_PieMainMenu,
 
     # ui_operators
