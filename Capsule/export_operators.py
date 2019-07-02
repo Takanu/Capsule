@@ -431,7 +431,8 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
     if origin_point == "Object":
         print('origin point is object, moving...')
-        object_transform.MoveAllFailsafe(context, root_definition, [0.0, 0.0, 0.0], {'region': meta['region']})
+        print('META - ', meta['region'])
+        object_transform.MoveAllFailsafe(context, root_definition, [0.0, 0.0, 0.0], meta['region'])
 
 
     # /////////////////////////////////////////////////
@@ -454,7 +455,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
     # Reverse movement and rotation
     if origin_point == "Object":
-        object_transform.MoveAllFailsafe(context, root_definition, root_location['location'], {'region': meta['region']})
+        object_transform.MoveAllFailsafe(context, root_definition, root_location['location'], meta['region'])
 
     print(">>> Pass Complete <<<")
 

@@ -390,7 +390,7 @@ def CheckSelectedObject(scene):
 
     # If the active selected object changes or anything else about the selection, we need to update the edit toggles
     if bpy.context.active_object is not None:
-        if bpy.context.active_object.name != addon_prefs.prev_selected_object:
+        if bpy.context.active_object.name != addon_prefs.prev_selected_object or len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
             addon_prefs.prev_selected_object = bpy.context.active_object.name
             addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
 
@@ -419,33 +419,8 @@ def CheckSelectedObject(scene):
 
             return
     
-    if len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
-        addon_prefs.prev_selected_object = bpy.context.active_object.name
+    elif len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
         addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
-
-        for item in bpy.context.selected_objects:
-            item.CAPObj.enable_edit = True
-
-            for collection in item.users_collection:
-                    collection.CAPCol.enable_edit = True
-        
-        # update the proxy objects with the current selection
-            obj = bpy.context.active_object.CAPObj
-            grp = bpy.context.active_object.users_collection[0].CAPCol
-            
-            proxy.disable_updates = True
-            proxy.obj_enable_export = obj.enable_export
-            proxy.obj_origin_point = obj.origin_point
-            proxy.obj_location_preset = obj.location_preset
-            proxy.obj_export_preset = obj.export_preset
-
-            proxy.col_enable_export = grp.enable_export
-            proxy.col_origin_point = grp.origin_point
-            proxy.col_root_object = grp.root_object
-            proxy.col_location_preset = grp.location_preset
-            proxy.col_export_preset = grp.export_preset
-            proxy.disable_updates = False
-        
         return
 
 

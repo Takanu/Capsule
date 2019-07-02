@@ -139,6 +139,5 @@ def GetExportableCollectionObjects(context, collection, child_export_option):
         max_layers = 5
 
     
-            
     object_list = ExportTreeSearch(0, max_layers, collection)
     return object_list

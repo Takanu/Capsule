@@ -24,6 +24,7 @@ def SaveSceneContext(context):
     for area in context.screen.areas:
         if area != context.area:
             scene_records['region_override'] = area.regions[0]
+            print("got a region override - ", scene_records['region_override'])
             break
 
     context.area.type = 'VIEW_3D'
@@ -46,24 +47,21 @@ def SaveSceneContext(context):
     cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
     scene_records['cursor_location'] = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
-    # Keep a record of the current object mode
+    # Keep a record of the current object mode 
     scene_records['view_mode'] = bpy.context.mode
     bpy.ops.object.mode_set(mode='OBJECT')
 
 
-    # not sure if I need this anymore with view layers, test and report back.
-
-
     # ======================
-    # Ensure all layers are visible
+    # Setup a new view layer
 
-    # self.layersBackup = []
-    # for layer in context.scene.layers:
-    #     layerVisibility = layer
-    #     self.layersBackup.append(layerVisibility)
+    # I dont actually need this, might be useful later
+    # scene_records['current_view_layer'] = bpy.context.view_layer.name
 
-    # context.scene.layers = (True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True)
-    
+    bpy.ops.scene.view_layer_add()
+    bpy.context.view_layer.name = ">> Capsule <<"
+    scene_records['capsule_view_layer'] = ">> Capsule <<"
+
 
     # ======================
     # Preserve all scene object information
@@ -218,13 +216,10 @@ def RestoreSceneContext(context, record):
             mode = object_ops.SwitchObjectMode(record['armature_mode'], item)
 
 
-    # Not sure if I need this anymore with view layers.  Test and report back.
     # ======================
-    # # Turn off all other layers
-    # i = 0
-    # while i < 20:
-    #     context.scene.layers[i] = self.layersBackup[i]
-    #     i += 1
+    # Delete the created view layer.
+    # ======================
+    bpy.ops.scene.view_layer_remove()
 
     # Re-select the objects previously selected
     if scene_records['active_object'] is not None:
