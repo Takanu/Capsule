@@ -68,11 +68,16 @@ class CAPSULE_OT_Add_Path_Tag(Operator):
         name="Add Path Tag",
         description="",
         items=(
-        ('object_name', 'Object Name', 'Adds a folder with the object name.'),
-        ('object_type', 'Object Type', 'Adds a folder with the object type.'),
-        ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
+        ('export_name', 'Export Name', 'Adds a folder with the name of the Object or Collection being exported.'),
+        # ('object_type', 'Object Type', 'Adds a folder with the object type.'),
+        # ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
         ('blend_file_name', 'Blend File Name', 'Adds a folder with the blend file name.'),
-        # ('export_date', 'Export Date', 'Adds a folder with the date and time of the export.')
+        ('export_preset_name', 'Export Preset Name', 'Adds a folder with the Export Preset name used.'),
+        ('export_date_ymd', 'Export Date (Year-Month-Day)', 'Adds a folder with the date of the export.'),
+        ('export_date_dmy', 'Export Date (Day-Month-Year)', 'Adds a folder with the date of the export.'),
+        ('export_date_mdy', 'Export Date (Month-Year-Day)', 'Adds a folder with the date of the export.'),
+        ('export_time_hm', 'Export Time (Hour-Minute)', 'Adds a folder with the time of the export.'),
+        ('export_time_hms', 'Export Time (Hour-Minute-Second)', 'Adds a folder with the time of the export.'),
         ),
     )
 

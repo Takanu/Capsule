@@ -1,7 +1,10 @@
 
 import bpy, bmesh, os, platform, sys
+
+from datetime import datetime
 from mathutils import Vector
 from math import pi, radians, degrees
+
 from bpy.types import Operator
 from bpy.props import (
     IntProperty, 
@@ -62,6 +65,9 @@ class CAPSULE_OT_ExportAll(Operator):
         self.export_stats['object_export_count'] = 0
         self.export_stats['collection_export_count'] = 0
         self.export_stats['file_export_count'] = 0
+        
+        # get the current time for later
+        global_record['export_time'] = datetime.now()
 
         # /////////////////////////////////////////////////
         # FETCH
@@ -203,6 +209,9 @@ class CAPSULE_OT_ExportSelected(Operator):
         self.export_stats['object_export_count'] = 0
         self.export_stats['collection_export_count'] = 0
         self.export_stats['file_export_count'] = 0
+
+        # get the current time for later
+        global_record['export_time'] = datetime.now()
         
         # /////////////////////////////////////////////////
         # OBJECT EXPORT
@@ -278,10 +287,13 @@ def ExportObjectList(context, exp, object_list, global_record):
     for item in object_list:
         meta = {}
         meta['region'] = global_record['scene']['region_override']
+        meta['export_time'] = global_record['export_time']
+        meta['export_name'] = item.name
 
         # Get the export default for the object
         export_preset_index = int(item.CAPObj.export_preset) - 1
         export_preset = exp.export_presets[export_preset_index]
+        meta['preset_name'] = export_preset.name
 
         location_preset_index = int(item.CAPObj.location_preset) - 1
         location_preset = exp.location_presets[location_preset_index]
@@ -314,10 +326,13 @@ def ExportCollectionList(context, exp, collection_list, global_record):
     for collection in collection_list:
         meta = {}
         meta['region'] = global_record['scene']['region_override']
+        meta['export_time'] = global_record['export_time']
+        meta['export_name'] = collection.name
 
         # Get the export default for the object
         export_preset_index = int(collection.CAPCol.export_preset) - 1
         export_preset = exp.export_presets[export_preset_index]
+        meta['preset_name'] = export_preset.name
 
         location_preset_index = int(collection.CAPCol.location_preset) - 1
         location_preset = exp.location_presets[location_preset_index]
@@ -408,7 +423,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # /////////////////////////////////////////////////
     # FILE NAME
     # /////////////////////////////////////////////////
-    path = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories)
+    path = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories, meta)
 
     # If while calculating a file path a warning was found, return early.
     if path.find("WARNING") == 0:

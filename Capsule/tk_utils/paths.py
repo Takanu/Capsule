@@ -1,8 +1,10 @@
 
 import bpy, os, platform
 
+from datetime import datetime
 
-def CreateFilePath(location_preset, targets, collection, replace_invalid_chars):
+
+def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, meta):
     """
     Extracts and calculates a final path with which to export the target to.
     """
@@ -19,7 +21,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars):
     print(location_path)
 
     # Now substitute any tags
-    location_path = FillTags(location_path, targets, collection, replace_invalid_chars)
+    location_path = FillTags(location_path, targets, collection, replace_invalid_chars, meta)
 
     # directory failsafe
     if location_path.endswith("/") == False:
@@ -34,7 +36,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars):
 
 
 
-def FillTags(location_path, targets, collection, replace_invalid_chars):
+def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     """
     Searches for and substitutes the tags in a path name.
     """
@@ -43,43 +45,46 @@ def FillTags(location_path, targets, collection, replace_invalid_chars):
     if platform.system() == 'Windows':
         slash = "\\"
 
-    if location_path.find('^object_name^'):
+    if location_path.find('^export_name^'):
 
-        object_name = targets[0].name
-
-        if replace_invalid_chars is True:
-            object_name = ReplaceSystemChar(object_name)
-
-        location_path = location_path.replace('^object_name^', object_name)
-    
-
-    if location_path.find('^object_type^'):
-
-        type_name = targets[0].type
-        type_name = type_name.lower()
-        type_name = type_name.capitalize()
-
-        if replace_invalid_chars is True:
-            type_name = ReplaceSystemChar(type_name)
-
-        location_path = location_path.replace('^object_type^', type_name)
-    
-
-    if location_path.find('^collection^'):
-        
-        collection_name = ''
-        if collection != None:
-            collection_name = collection.name
+        if collection is not None:
+            export_name = collection.name
         else:
-            if targets[0].users_collection[0]:
-                collection_name = targets[0].users_collection[0].name
-            else:
-                collection_name = "Unknown Collection"
-        
+            export_name = targets[0].name
+
         if replace_invalid_chars is True:
-            collection_name = ReplaceSystemChar(collection_name)
+            export_name = ReplaceSystemChar(export_name)
+
+        location_path = location_path.replace('^object_name^', export_name)
+    
+
+    # if location_path.find('^object_type^'):
+
+    #     type_name = targets[0].type
+    #     type_name = type_name.lower()
+    #     type_name = type_name.capitalize()
+
+    #     if replace_invalid_chars is True:
+    #         type_name = ReplaceSystemChar(type_name)
+
+    #     location_path = location_path.replace('^object_type^', type_name)
+    
+
+    # if location_path.find('^collection^'):
+        
+    #     collection_name = ''
+    #     if collection != None:
+    #         collection_name = collection.name
+    #     else:
+    #         if targets[0].users_collection[0]:
+    #             collection_name = targets[0].users_collection[0].name
+    #         else:
+    #             collection_name = "Unknown Collection"
+        
+    #     if replace_invalid_chars is True:
+    #         collection_name = ReplaceSystemChar(collection_name)
                 
-        location_path = location_path.replace('^collection^', collection_name)
+    #     location_path = location_path.replace('^collection^', collection_name)
 
     
     if location_path.find('^blend_file_name^'):
@@ -91,6 +96,42 @@ def FillTags(location_path, targets, collection, replace_invalid_chars):
             blend_name = ReplaceSystemChar(blend_name)
 
         location_path = location_path.replace('^blend_file_name^', blend_name)
+    
+    if location_path.find('^export_preset_name^'):
+
+        preset_name = meta['preset_name']
+
+        if replace_invalid_chars is True:
+            blend_name = ReplaceSystemChar(preset_name)
+
+        location_path = location_path.replace('^export_preset_name^', preset_name)
+    
+    # DATE AND TIME
+
+    if location_path.find('export_date_ymd'):
+
+        time = meta['export_time'].strftime('%Y-%m-%d')
+        location_path = location_path.replace('^export_date_ymd^', time)
+
+    if location_path.find('export_date_dmy'):
+
+        time = meta['export_time'].strftime('%d-%m-%Y')
+        location_path = location_path.replace('^export_date_dmy^', time)
+
+    if location_path.find('export_date_mdy'):
+
+        time = meta['export_time'].strftime('%m-%d-%Y')
+        location_path = location_path.replace('^export_date_mdy^', time)
+    
+    if location_path.find('export_time_hm'):
+
+        time = meta['export_time'].strftime('%H.%M')
+        location_path = location_path.replace('^export_time^', time)
+
+    if location_path.find('export_time_hms'):
+
+        time = meta['export_time'].strftime('%H.%M.%S')
+        location_path = location_path.replace('^export_time^', time)
     
     return location_path    
 
