@@ -545,7 +545,7 @@ class CAPSULE_PT_Location(Panel):
             file.label(text="File Path:")
             file.separator()
             file.prop(exp.location_presets[exp.location_presets_listindex], "path", text="")
-            file.operator_menu_enum("scene.cap_add_path_tag", "path_tags")
+            file.operator_menu_enum("scene.cap_add_location_path_tag", "path_tags")
 
 class CAPSULE_PT_Export(Panel):
     bl_space_type = "PROPERTIES"

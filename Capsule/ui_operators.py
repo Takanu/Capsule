@@ -58,10 +58,10 @@ class CAPSULE_OT_Delete_Path(Operator):
 
         return {'FINISHED'}
 
-class CAPSULE_OT_Add_Path_Tag(Operator):
+class CAPSULE_OT_Add_Location_Path_Tag(Operator):
     """Adds a new path tag to the currently selected path."""
 
-    bl_idname = "scene.cap_add_path_tag"
+    bl_idname = "scene.cap_add_location_path_tag"
     bl_label = "Add Path Tag"
 
     path_tags: EnumProperty(
@@ -72,7 +72,8 @@ class CAPSULE_OT_Add_Path_Tag(Operator):
         # ('object_type', 'Object Type', 'Adds a folder with the object type.'),
         # ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
         ('blend_file_name', 'Blend File Name', 'Adds a folder with the blend file name.'),
-        ('export_preset_name', 'Export Preset Name', 'Adds a folder with the Export Preset name used.'),
+        # ('location_preset_name', 'Location Preset Name', 'Adds a folder with the Location Preset name used on export.'),
+        ('export_preset_name', 'Export Preset Name', 'Adds a folder with the Export Preset name used on export.'),
         ('export_date_ymd', 'Export Date (Year-Month-Day)', 'Adds a folder with the date of the export.'),
         ('export_date_dmy', 'Export Date (Day-Month-Year)', 'Adds a folder with the date of the export.'),
         ('export_date_mdy', 'Export Date (Month-Year-Day)', 'Adds a folder with the date of the export.'),
@@ -102,6 +103,54 @@ class CAPSULE_OT_Add_Path_Tag(Operator):
         new_path += "^/"
         
         exp.location_presets[path_index].path = new_path
+
+        return {'FINISHED'}
+
+class CAPSULE_OT_Add_ExportPreset_Path_Tag(Operator):
+    """Adds a new path tag to the current Export Preset."""
+
+    bl_idname = "scene.cap_add_exportpreset_path_tag"
+    bl_label = "Add Path Tag"
+
+    path_tags: EnumProperty(
+        name="Add Path Tag",
+        description="",
+        items=(
+        ('export_name', 'Export Name', 'Adds a folder with the name of the Object or Collection being exported.'),
+        # ('object_type', 'Object Type', 'Adds a folder with the object type.'),
+        # ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
+        ('blend_file_name', 'Blend File Name', 'Adds a folder with the blend file name.'),
+        ('location_preset_name', 'Location Preset Name', 'Adds a folder with the Location Preset name used on export.'),
+        # ('export_preset_name', 'Export Preset Name', 'Adds a folder with the Export Preset name used on export.'),
+        ('export_date_ymd', 'Export Date (Year-Month-Day)', 'Adds a folder with the date of the export.'),
+        ('export_date_dmy', 'Export Date (Day-Month-Year)', 'Adds a folder with the date of the export.'),
+        ('export_date_mdy', 'Export Date (Month-Year-Day)', 'Adds a folder with the date of the export.'),
+        ('export_time_hm', 'Export Time (Hour-Minute)', 'Adds a folder with the time of the export.'),
+        ('export_time_hms', 'Export Time (Hour-Minute-Second)', 'Adds a folder with the time of the export.'),
+        ),
+    )
+
+    def execute(self, context):
+        print(self)
+
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        selected_export_preset = exp.export_presets[exp.export_presets_listindex]
+
+        # get the selected path
+        new_path = selected_export_preset.sub_directory
+
+        # directory failsafe
+        if new_path.endswith("/") == False:
+            new_path += "/"
+
+        # insert the selected option into the currently selected path
+        new_path += "^"
+        new_path += self.path_tags
+        new_path += "^/"
+        
+        selected_export_preset.sub_directory = new_path
 
         return {'FINISHED'}
 

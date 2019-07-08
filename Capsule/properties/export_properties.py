@@ -62,12 +62,11 @@ class CAPSULE_ExportPreset(PropertyGroup):
         default=""
         )
 
-    # FIXME : Re-enable in 2.0
-    # sub_directory: StringProperty(
-    #     name="Sub-Directory",
-    #     description="Allows you to extend the file path of the export.",
-    #     default=""
-    #     )
+    sub_directory: StringProperty(
+        name="Sub-directory",
+        description="Allows you to extend the file path of the export from the Location Preset assigned to it.",
+        default="/"
+        )
 
     filter_render: BoolProperty(
         name="Filter by Rendering",
