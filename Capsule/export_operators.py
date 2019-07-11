@@ -439,8 +439,8 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # /////////////////////////////////////////////////
     path = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories, meta)
 
-    if addon_prefs.substitute_directories == True:
-        export_name = path_utils.ReplaceSystemChar(export_name)
+    if addon_prefs.substitute_directories is True:
+        export_name = path_utils.SubstituteDirectoryCharacters(export_name)
 
     # If while calculating a file path a warning was found, return early.
     if path.find("WARNING") == 0:

@@ -32,6 +32,9 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
         if location_path.endswith("/") == False:
             location_path += "/"
     
+    if replace_invalid_chars is True:
+        location_path = SubstitutePathCharacters(location_path)
+    
     # Build the file path
     if not os.path.exists(location_path):
         os.makedirs(location_path)
@@ -58,7 +61,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
             export_name = targets[0].name
 
         if replace_invalid_chars is True:
-            export_name = ReplaceSystemChar(export_name)
+            export_name = SubstituteDirectoryCharacters(export_name)
 
         location_path = location_path.replace('^object_name^', export_name)
     
@@ -70,7 +73,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     #     type_name = type_name.capitalize()
 
     #     if replace_invalid_chars is True:
-    #         type_name = ReplaceSystemChar(type_name)
+    #         type_name = SubstituteDirectoryCharacters(type_name)
 
     #     location_path = location_path.replace('^object_type^', type_name)
     
@@ -87,7 +90,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     #             collection_name = "Unknown Collection"
         
     #     if replace_invalid_chars is True:
-    #         collection_name = ReplaceSystemChar(collection_name)
+    #         collection_name = SubstituteDirectoryCharacters(collection_name)
                 
     #     location_path = location_path.replace('^collection^', collection_name)
 
@@ -98,7 +101,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
         blend_name = blend_name.replace(".blend", "")
 
         if replace_invalid_chars is True:
-            blend_name = ReplaceSystemChar(blend_name)
+            blend_name = SubstituteDirectoryCharacters(blend_name)
 
         location_path = location_path.replace('^blend_file_name^', blend_name)
     
@@ -107,7 +110,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
         preset_name = meta['preset_name']
 
         if replace_invalid_chars is True:
-            blend_name = ReplaceSystemChar(preset_name)
+            blend_name = SubstituteDirectoryCharacters(preset_name)
 
         location_path = location_path.replace('^export_preset_name^', preset_name)
     
@@ -141,13 +144,13 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     return location_path    
 
     
-def ReplaceSystemChar(path):
+def SubstituteDirectoryCharacters(path):
   # Replaces invalid directory characters in names
 
   print("Checking Directory...", path)
   result = path
   if platform.system() == 'Windows':
-      invalid_characters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
+      invalid_characters = ["\\", "/", "*", "?", "\"", "<", ">", "|", ":"]
       for char in invalid_characters:
           result = result.replace(char, "_")
 
@@ -158,6 +161,28 @@ def ReplaceSystemChar(path):
 
   elif platform.system() == 'linux' or platform.system() == 'linux2':
       invalid_characters = [":", "/"]
+      for char in invalid_characters:
+          result = result.replace(char, "_")
+
+  return result
+
+def SubstitutePathCharacters(path):
+  # Replaces invalid directory characters in full export paths
+
+  print("Checking Directory...", path)
+  result = path
+  if platform.system() == 'Windows':
+      invalid_characters = ["*", "?", "<", ">", "|", ":"]
+      for char in invalid_characters:
+          result = result.replace(char, "_")
+
+  elif platform.system() == 'Darwin':
+      invalid_characters = [":"]
+      for char in invalid_characters:
+          result = result.replace(char, "_")
+
+  elif platform.system() == 'linux' or platform.system() == 'linux2':
+      invalid_characters = [":"]
       for char in invalid_characters:
           result = result.replace(char, "_")
 

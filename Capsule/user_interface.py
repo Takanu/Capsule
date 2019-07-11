@@ -551,7 +551,7 @@ class CAPSULE_PT_Export(Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "scene"
-    bl_label = "Export Overview"
+    bl_label = "Export Options"
     bl_parent_id = "CAPSULE_PT_Header"
 
     def draw(self, context):

@@ -162,7 +162,7 @@ class CAP_AddonPreferences(AddonPreferences):
         )
 
     substitute_directories: BoolProperty(
-        name="Substitute Invalid Folder Characters",
+        name="Substitute Invalid Directory Characters",
         description="If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  \n\nIf unticked, the plugin will prompt you with an error if your directories contain invalid characters.",
         default=True
         )
