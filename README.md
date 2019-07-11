@@ -26,6 +26,6 @@ Capsule is an export manager for Blender that allows you to automate the export 
 - The add-on will appear in the list, simply click the checkbox next to it’s title to activate it.
 
 
-
+---
 
 If you like this plugin and want to support future development, [consider buying me a coffee](https://paypal.me/takanukyriako) ☕️.
