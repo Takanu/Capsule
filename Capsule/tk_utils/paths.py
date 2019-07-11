@@ -19,6 +19,17 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
     elif location_path.find('//') != -1:
         location_path = bpy.path.abspath(location_path)
 
+    # If Windows, split the drive indicator
+    drive_indicator = ""
+    if platform.system() == 'Windows':
+        drive_index = location_path.find("\\")
+
+        if drive_index is not -1:
+            drive_split = location_path.split("\\", 1)
+            drive_indicator = drive_split[0]
+            location_path = drive_split[1]
+    
+
     print("Current Location Path - ", location_path)
 
     # Now substitute any tags
@@ -34,6 +45,10 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
     
     if replace_invalid_chars is True:
         location_path = SubstitutePathCharacters(location_path)
+
+    # Windows drive indicator re-stitch
+    if drive_indicator is not "":
+        location_path = drive_indicator + "\\" + location_path
     
     # Build the file path
     if not os.path.exists(location_path):
