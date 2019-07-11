@@ -141,9 +141,13 @@ class CAPSULE_OT_Add_ExportPreset_Path_Tag(Operator):
         # get the selected path
         new_path = selected_export_preset.sub_directory
 
-        # directory failsafe
-        if new_path.endswith("/") == False:
-            new_path += "/"
+         # directory failsafe
+        if platform.system() == 'Windows':
+            if location_path.endswith("\\") == False:
+                location_path += "\\"
+        else:
+            if location_path.endswith("/") == False:
+                location_path += "/"
 
         # insert the selected option into the currently selected path
         new_path += "^"

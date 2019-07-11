@@ -68,7 +68,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
         default="/"
         )
 
-    filter_render: BoolProperty(
+    filter_by_rendering: BoolProperty(
         name="Filter by Rendering",
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
         )

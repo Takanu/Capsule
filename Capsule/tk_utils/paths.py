@@ -2,6 +2,7 @@
 import bpy, os, platform
 
 from datetime import datetime
+from mathutils import Vector
 
 
 def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, meta):
@@ -24,8 +25,12 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
     location_path = FillTags(location_path, targets, collection, replace_invalid_chars, meta)
 
     # directory failsafe
-    if location_path.endswith("/") == False:
-        location_path += "/"
+    if platform.system() == 'Windows':
+        if location_path.endswith("\\") == False:
+            location_path += "\\"
+    else:
+        if location_path.endswith("/") == False:
+            location_path += "/"
     
     # Build the file path
     if not os.path.exists(location_path):

@@ -268,10 +268,12 @@ class CAP_AddonPreferences(AddonPreferences):
                 filepresets_options_2_col = filepresets_options.column(align=True)
                 filepresets_options_2_col.separator()
                 filepresets_options_2_col.alignment = 'LEFT'
-                # filepresets_options_2_col.prop(currentExp, "filter_render")
+                filepresets_options_2_col.separator()
+                
 
                 # this was removed from 1.01 onwards due to implementation issues.
                 # filepresets_options_1.prop(currentExp, "reset_rotation")
+                filepresets_options_2_col.prop(currentExp, "filter_by_rendering")
                 filepresets_options_2_col.prop(currentExp, "export_animation")
                 filepresets_options_2_col.prop(currentExp, "apply_modifiers")
                 filepresets_options_2_col.prop(currentExp, "preserve_armature_constraints")
@@ -535,7 +537,7 @@ def register():
 
 
     # Setup data and handlers
-    # export_presets.CreatePresets()
+    export_presets.CreatePresets()
     bpy.app.handlers.load_pre.append(CreateDefaultData)
     bpy.app.handlers.depsgraph_update_post.append(CheckSelectedObject)
 

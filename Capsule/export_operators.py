@@ -300,6 +300,11 @@ def ExportObjectList(context, exp, object_list, global_record):
 
         origin_point = item.CAPObj.origin_point
 
+        # Filter by rendering
+        if export_preset.filter_by_rendering is True:
+            if item.hide_render is True:
+                return result
+
         # E X P O R T
         export_result = ExportTarget(context, [item], item.name, export_preset, location_preset, origin_point, item, meta)
 
@@ -346,6 +351,15 @@ def ExportCollectionList(context, exp, collection_list, global_record):
         # Collect all objects that are applicable for this export
         child_export_option = collection.CAPCol.child_export_option
         targets = collection_utils.GetExportableCollectionObjects(context, collection, child_export_option)
+        
+        # Filter by rendering
+        if export_preset.filter_by_rendering is True:
+            renderable = []
+            for target in targets:
+                if target.hide_render is False:
+                    renderable.append(target)
+            
+            targets = renderable
 
         print("PREPARING TO EXPORT COLLECTION ", collection.name)
 
@@ -424,6 +438,9 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # FILE NAME
     # /////////////////////////////////////////////////
     path = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories, meta)
+
+    if addon_prefs.substitute_directories == True:
+        export_name = path_utils.ReplaceSystemChar(export_name)
 
     # If while calculating a file path a warning was found, return early.
     if path.find("WARNING") == 0:
