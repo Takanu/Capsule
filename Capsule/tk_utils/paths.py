@@ -19,7 +19,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
     elif location_path.find('//') != -1:
         location_path = bpy.path.abspath(location_path)
 
-    print(location_path)
+    print("Current Location Path - ", location_path)
 
     # Now substitute any tags
     location_path = FillTags(location_path, targets, collection, replace_invalid_chars, meta)
@@ -39,6 +39,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
     if not os.path.exists(location_path):
         os.makedirs(location_path)
     
+    print("Final Location Path - ", location_path)
     
     return location_path
 
@@ -134,12 +135,12 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     if location_path.find('export_time_hm'):
 
         time = meta['export_time'].strftime('%H.%M')
-        location_path = location_path.replace('^export_time^', time)
+        location_path = location_path.replace('^export_time_hm^', time)
 
     if location_path.find('export_time_hms'):
 
         time = meta['export_time'].strftime('%H.%M.%S')
-        location_path = location_path.replace('^export_time^', time)
+        location_path = location_path.replace('^export_time_hms^', time)
     
     return location_path    
 

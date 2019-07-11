@@ -1,5 +1,5 @@
 
-import bpy, bmesh, random
+import bpy, bmesh, random, platform
 
 from mathutils import Vector
 from bpy.types import Operator
@@ -92,15 +92,22 @@ class CAPSULE_OT_Add_Location_Path_Tag(Operator):
         # get the selected path
         path_index = exp.location_presets_listindex
         new_path = exp.location_presets[path_index].path
+        end_path = ""
 
         # directory failsafe
-        if new_path.endswith("/") == False:
-            new_path += "/"
+        if platform.system() == 'Windows':
+            if new_path.endswith("\\") == False and new_path.endswith("//") == False:
+                new_path += "\\"
+            end_path = "\\"
+        else:
+            if new_path.endswith("/") == False:
+                new_path += "/"
+            end_path = "\\"
 
         # insert the selected option into the currently selected path
         new_path += "^"
         new_path += self.path_tags
-        new_path += "^/"
+        new_path += "^" + end_path
         
         exp.location_presets[path_index].path = new_path
 
@@ -140,19 +147,22 @@ class CAPSULE_OT_Add_ExportPreset_Path_Tag(Operator):
 
         # get the selected path
         new_path = selected_export_preset.sub_directory
+        end_path = ""
 
-         # directory failsafe
+        # directory failsafe
         if platform.system() == 'Windows':
-            if location_path.endswith("\\") == False:
-                location_path += "\\"
+            if new_path.endswith("\\") == False and new_path.endswith("//") == False:
+                new_path += "\\"
+            end_path = "\\"
         else:
-            if location_path.endswith("/") == False:
-                location_path += "/"
+            if new_path.endswith("/") == False:
+                new_path += "/"
+            end_path = "\\"
 
         # insert the selected option into the currently selected path
         new_path += "^"
         new_path += self.path_tags
-        new_path += "^/"
+        new_path += "^" + end_path
         
         selected_export_preset.sub_directory = new_path
 
