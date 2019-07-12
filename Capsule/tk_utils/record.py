@@ -1,6 +1,7 @@
 
 import bpy
 
+from mathutils import Vector
 from . import collections as collection_utils
 from . import select as select_utils
 from . import locations as loc_utils
@@ -151,10 +152,10 @@ def SaveSceneContext(context):
             item = record['item']
             record['constraint_location'] = loc_utils.FindWorldSpaceObjectLocation(context, item)
             
-            print("NEW CONSTRAINT LOCATION", item.name, entry['constraint_location'])
+            print("NEW CONSTRAINT LOCATION", item.name, record['constraint_location'])
 
             print("Moving Object...", item.name, record['true_location'])
-            object_transform.MoveObject(item, context, record['true_location'])
+            object_transform.MoveObjectFailsafe(item, context, record['true_location'], scene_records['region_override'])
             print("New Object Location = ", item.location)
             print("-"*20)
 
@@ -183,13 +184,13 @@ def RestoreSceneContext(context, record):
         if 'constraint_list' in record:
             print(record)
             print("Moving Object...", item.name, record['constraint_location'])
-            object_transform.MoveObject(item, context, record['constraint_location'])
+            object_transform.MoveObjectFailsafe(item, context, record['constraint_location'], scene_records['region_override'])
             print("New Object Location = ", item.name, item.location)
 
             # Restore Constraint Defaults
             for constraint_record in record['constraint_list']:
                 index = constraint_record['index']
-                item.constraints[index].mute = econstraint_recordntry['enabled']
+                item.constraints[index].mute = constraint_record['enabled']
                 item.constraints[index].influence = constraint_record['influence']
         
         # Restore visibility defaults

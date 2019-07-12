@@ -2,7 +2,6 @@
 import bpy, os, platform
 
 from datetime import datetime
-from mathutils import Vector
 
 
 def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, meta):

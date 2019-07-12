@@ -51,7 +51,7 @@ def MoveObject(target, context, location):
         constraint_axis=(False, False, False),
         orient_type='GLOBAL',
         mirror=False,
-        use_proportional_edit='DISABLED',
+        use_proportional_edit=False,
         snap=False,
         snap_target='CLOSEST',
         snap_point=(0.0, 0.0, 0.0),
@@ -61,6 +61,68 @@ def MoveObject(target, context, location):
         texture_space=False,
         remove_on_cancel=False,
         release_confirm=False)
+
+    # Position the cursor back to it's original location
+    bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
+
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
+    target.lock_location = lock_transform
+
+def MoveObjectFailsafe(target, context, location, region):
+    """
+    Safely moves the given object to the given location.  Will ensure nothing is animated or screwed up in the process.
+    WORKAROUND FOR BLENDER 2.8 CRASH FUNTIMES.
+    """
+
+	# This doesnt need the cursor, and will ensure nothing is animated
+	# in the process
+
+    print(">>>>>> Moving Object <<<<<<")
+
+    copyLocation = Vector((location[0], location[1], location[2]))
+
+    # Prevent auto keyframing from being active
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
+    lock_transform = target.lock_location
+
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+    target.lock_location = (False, False, False)
+
+    # Save the current cursor location
+    cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+
+    # This line is actually super-important, not sure why though...
+    # FocusObject should fill the role of deselection...
+    bpy.ops.object.select_all(action='DESELECT')
+
+    # Calculate the translation vector using the 3D cursor
+    FocusObject(target)
+    bpy.ops.view3d.snap_cursor_to_selected()
+    translation_loc = Vector((0.0, 0.0, 0.0))
+
+    translation_loc = bpy.context.scene.cursor.location
+
+    previous_mode = bpy.context.active_object.mode
+    override = {'region': region}
+
+    # Calculate the movement difference
+    locationDiff = copyLocation - translation_loc
+
+    # NEW Translate
+    bpy.ops.transform.translate(
+        override,
+        value = locationDiff,
+        constraint_axis = (False, False, False),
+        orient_type = 'GLOBAL',
+        mirror = False,
+        use_proportional_edit = False,
+        snap = False,
+        release_confirm = False,
+    )
+
+    bpy.ops.object.mode_set(mode=previous_mode)
 
     # Position the cursor back to it's original location
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
