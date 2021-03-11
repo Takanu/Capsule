@@ -271,7 +271,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 # Used a split here to recreate the use_property_split with a custom design.
                 format_type_selector = format_type.row(align=True)
                 format_type_selector_split = format_type_selector.split(factor=0.4, align=True)
-                format_type_selector_split.label(text="Export File Type", icon="OBJECT_DATA")
+                format_type_selector_split.label(text="Export File Type", icon="FILE")
                 format_type_selector_split.prop(currentExp, "format_type", text="")
 
                 format_type.separator()

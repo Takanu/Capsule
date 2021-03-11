@@ -213,7 +213,8 @@ class CAPSULE_ExportData(PropertyGroup):
         items=(
         ('Export', 'Export', 'A tab containing general export paramaters.'),
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
-        ('Object', 'Attributes', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Attributes', 'Attributes', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Draco', 'Draco','A tab containing Draco compression options.'),
         ('Animation', 'Animation', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
         ),
     )

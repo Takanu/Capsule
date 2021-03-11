@@ -344,113 +344,125 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		export_separator.separator()
 
 		if exp.gltf_menu_options == 'Export':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
-
-			export_1 = export_main.column(align=True)
-			export_1.alignment = 'RIGHT'
-			export_1.prop(exportData, "export_cameras")
-			export_1.prop(exportData, "export_lights")
-			export_1.prop(exportData, "export_custom_properties")
-			export_1.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 			
-			export_1_row = export_1.row(align=True)
-			export_1_row.alignment = 'LEFT'
+			export_options.prop(exportData, "export_format")
+			export_options.prop(exportData, "export_copyright")
+			export_options.separator()
+			export_options.separator()
 
-			export_1_label = export_1_row.column(align=True)
-			export_1_label.alignment = 'LEFT'
-			export_1_label.label(text="Export Format:")
-			export_1_label.label(text="Export Copyright:")
-			export_1_label.separator()
-			export_1_label.label(text="Texture Format:")
-			export_1_label.label(text="Texture Directory:")
+			export_options.prop(exportData, "export_image_format")
+			export_options.prop(exportData, "export_texture_dir")
+			export_options.separator()
+			export_options.separator()
 
-			export_1_dropdowns = export_1_row.column(align=True)
-			export_1_dropdowns.alignment = 'EXPAND'
-			export_1_dropdowns.prop(exportData, "export_format", text="")
-			export_1_dropdowns.prop(exportData, "export_copyright", text="")
-			export_1_dropdowns.separator()
-			export_1_dropdowns.prop(exportData, "export_image_format", text="")
-			export_1_dropdowns.prop(exportData, "export_texture_dir", text="")
+			export_options.prop(exportData, "export_cameras")
+			export_options.prop(exportData, "export_lights")
+			export_options.prop(exportData, "export_custom_properties")
 
-			export_main.separator()
+			export_options.separator()
 
 		if exp.gltf_menu_options == 'Transform':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "export_y_up")
-			export_1.separator()
+			export_options.prop(exportData, "export_y_up")
+			export_options.separator()
 
-			# export_main.separator()
-			# export_main.separator()
-			# export_main.separator()
+			# export_options.separator()
+			# export_options.separator()
+			# export_options.separator()
 
-			# export_2 = export_main.column(align=True)
-			# export_1.prop(exportData, "export_y_up")
+			# export_2 = export_options.column(align=True)
+			# export_options.prop(exportData, "export_y_up")
 			# export_2.separator()
 
-			export_main.separator()
+			export_options.separator()
 
-		elif exp.gltf_menu_options == 'Object':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+		elif exp.gltf_menu_options == 'Attributes':
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1_row = export_1.row(align=True)
-			export_1_row.alignment = 'LEFT'
+			export_options.prop(exportData, "export_texcoords")
+			export_options.prop(exportData, "export_normals")
+			export_options.prop(exportData, "export_tangents")
+			export_options.prop(exportData, "export_colors")
+			export_options.prop(exportData, "export_displacement")
+			export_options.separator()
+			export_options.separator()
 
-			export_1_label = export_1_row.column(align=True)
-			export_1.prop(exportData, "export_draco_mesh_compression_enable")
-			export_1.separator()
-			export_1.prop(exportData, "export_draco_mesh_compression_level")
-			export_1.prop(exportData, "export_draco_position_quantization")
-			export_1.prop(exportData, "export_draco_normal_quantization")
-			export_1.prop(exportData, "export_draco_texcoord_quantization")
-			export_1.prop(exportData, "export_draco_color_quantization")
-			export_1.prop(exportData, "export_draco_generic_quantization")
+			export_options.prop(exportData, "export_materials")
 
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
+			export_options.separator()
 
-			export_2 = export_main.column(align=True)
-			export_2.prop(exportData, "export_texcoords")
-			export_2.prop(exportData, "export_normals")
-			export_2.prop(exportData, "export_tangents")
-			export_2.prop(exportData, "export_materials")
-			export_2.prop(exportData, "export_colors")
-			export_2.prop(exportData, "export_displacement")
-			export_2.separator()
+		elif exp.gltf_menu_options == 'Draco':
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_main.separator()
+			export_options.prop(exportData, "export_draco_mesh_compression_enable")
+			export_options.separator()
+
+			draco_options = export_options.column(align=True)
+			draco_options.active = exportData.export_draco_mesh_compression_enable
+			draco_options.prop(exportData, "export_draco_mesh_compression_level", text="Mesh Compression")
+			draco_options.prop(exportData, "export_draco_position_quantization", text="Position Quantization")
+			draco_options.prop(exportData, "export_draco_normal_quantization", text="Normal Quantization")
+			draco_options.prop(exportData, "export_draco_texcoord_quantization", text="UV Quantization")
+			draco_options.prop(exportData, "export_draco_color_quantization", text="Color Quantization")
+			draco_options.prop(exportData, "export_draco_generic_quantization", text="Other Quantization")
+
+			export_options.separator()
 
 		elif exp.gltf_menu_options == 'Animation':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "export_frame_range")
-			export_1.prop(exportData, "export_force_sampling")
-			export_1.prop(exportData, "export_current_frame")
-			export_1.prop(exportData, "export_nla_strips")
-			export_1.prop(exportData, "export_def_bones ")
-			export_1.prop(exportData, "export_all_influences")
-			export_1.separator()
-			export_1.prop(exportData, "export_frame_step")
-			export_1.separator()
+			animation_options = export_options.column(align=True)
+			animation_options.prop(exportData, "export_frame_range")
+			
+			animation_options.prop(exportData, "export_current_frame")
+			animation_options.prop(exportData, "export_nla_strips")
+			animation_options.prop(exportData, "export_def_bones")
+			animation_options.separator()
+			animation_options.separator()
 
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
+			sample_row = export_options.row(align=True, heading="Force Sampling")
+			sample_row.separator()
+			sample_sub = sample_row.row(align=True)
+			sample_sub.prop(exportData, "export_force_sampling", text="")
 
-			export_2 = export_main.column(align=True)
-			export_2.prop(exportData, "export_skins")
-			# export_2.prop(exportData, "export_bake_skins")
-			export_2.prop(exportData, "export_morph")
-			export_2.prop(exportData, "export_morph_normal")
-			export_2.prop(exportData, "export_morph_tangent")
-			export_2.separator()
+			samplerate_sub = sample_sub.row(align=True)
+			samplerate_sub.active = exportData.export_force_sampling
+			samplerate_sub.prop(exportData, "export_frame_step", text="")
+			sample_row.separator()
 
-			export_main.separator()
+			export_options.separator()
+			export_options.separator()
+
+			shapekey_options = export_options.column(align=True, heading="Shape Key Options")
+			shapekey_options.prop(exportData, "export_morph")
+			shapekey_sub = shapekey_options.column(align=True)
+			shapekey_sub.active = exportData.export_morph
+			shapekey_sub.prop(exportData, "export_morph_normal")
+			shapekey_sub.prop(exportData, "export_morph_tangent")
+			shapekey_options.separator()
+			shapekey_options.separator()
+
+			skinning_options = export_options.column(align=True, heading="Skinning Options")
+			skinning_options.prop(exportData, "export_skins")
+			skinning_sub = skinning_options.column(align=True)
+			skinning_sub.active = exportData.export_skins
+			skinning_sub.prop(exportData, "export_all_influences")
+
+			export_options.separator()
