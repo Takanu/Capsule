@@ -48,8 +48,10 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		name="Global Scale",
 		description="The exported scale of the objects.",
 		default=1.0,
+		min=0.01,
 		soft_min=0.1,
-		soft_max=1000.0,
+		soft_max=100.0,
+		max=1000,
 		)
 
 	axis_up: EnumProperty(
@@ -80,6 +82,13 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		)
 
 	# mesh
+
+	use_edges: BoolProperty(
+		name="Use Edges",
+		description="Include edges in the export.",
+		default=True,
+		)
+		#TODO: Check whether or not this should be on by default, not included in Blender's own UI.
 
 	use_smooth_groups: BoolProperty(
 		name="Use Smoothing Groups",
@@ -123,6 +132,12 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		default=False,
 		)
 
+	triangulate_faces: BoolProperty(
+		name="Triangulate Faces",
+		description="Converts all faces to triangles.",
+		default=False,
+	)
+
 
 	def export(self, export_preset, filePath):
 		"""
@@ -134,15 +149,15 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			check_existing=False, 
 			use_selection=True, 
 			use_animation=self.export_per_frame, 
-			use_mesh_modifiers=True, 
+			use_mesh_modifiers=export_preset.apply_modifiers, 
 
-			use_edges=True, 
+			use_edges=self.use_edges, 
 			use_smooth_groups=self.use_smooth_groups, 
 			use_smooth_groups_bitflags=self.use_smooth_groups_bitflags, 
 			use_normals=self.use_normals, 
 			use_uvs=self.use_uvs, 
 			use_materials=self.use_materials, 
-			use_triangles=False, 
+			use_triangles=self.triangulate_faces, 
 			use_nurbs=self.use_nurbs, 
 			use_vertex_groups=self.use_vertex_groups, 
 			
@@ -183,8 +198,6 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_main.separator()
 
 			export_1 = export_main.column(align=True)
-			export_1.label(text="Group Options")
-			export_1.separator()
 			export_1.prop(exportData, "use_blen_objects")
 			export_1.prop(exportData, "group_by_object")
 			export_1.prop(exportData, "group_by_material")
@@ -239,6 +252,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_main = filepresets_box.row(align=True)
 			export_main.separator()
 			export_1 = export_main.column(align=True)
+			export_1.prop(exportData, "use_edges")
 			export_1.prop(exportData, "use_smooth_groups")
 			export_1.prop(exportData, "use_smooth_groups_bitflags")
 			export_1.prop(exportData, "use_vertex_groups")
@@ -252,6 +266,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_2.prop(exportData, "use_materials")
 			export_2.prop(exportData, "use_uvs")
 			export_2.prop(exportData, "use_nurbs")
+			export_2.prop(exportData, "triangulate_faces")
 			export_2.prop(exportData, "keep_vertex_order")
 			export_2.separator()
 
