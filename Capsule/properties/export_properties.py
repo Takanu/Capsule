@@ -19,6 +19,7 @@ from ..export_formats import (
     CAP_FormatData_Alembic, 
     CAP_FormatData_Collada,
     CAP_FormatData_STL,
+    CAP_FormatData_USD,
 )
 
 
@@ -115,6 +116,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
             ('Alembic', "Alembic", "Export assets in the Alembic file format.  Ideal for moving assets between 3D modelling programs."),
             ('Collada', "Collada", "Export assets in the Collada file format.  Ideal for moving assets between 3D modelling programs."),
             ('STL', "STL", "Export assets as STL files.  Ideal for 3D printing applications."),
+            ('USD', "USD", "Export assets as USD files.  A modern file format with limited export capabilities."),
             ),
         description="Defines what file type objects with this preset will export to and the export options available for this preset.",
         )
@@ -136,6 +138,10 @@ class CAPSULE_ExportPreset(PropertyGroup):
 
     # the data stored for STL presets.
     data_stl: PointerProperty(type=CAP_FormatData_STL)
+
+    # the data stored for USD presets.
+    data_usd: PointerProperty(type=CAP_FormatData_USD)
+
 
     # A special system variable that defines whether it can be deleted from the Global Presets list.
     x_global_user_deletable: BoolProperty(default=True)

@@ -307,7 +307,9 @@ class CAP_AddonPreferences(AddonPreferences):
                 
                 elif currentExp.format_type == 'STL':
                     currentExp.data_stl.draw_addon_preferences(filepresets_box, currentExp.data_stl, exp)
-
+                
+                elif currentExp.format_type == 'USD':
+                    currentExp.data_usd.draw_addon_preferences(filepresets_box, currentExp.data_usd, exp)
             else:
                 preset_unselected = filepresets_box.column(align=True)
                 preset_unselected.label(text="Select a preset in order to view preset settings.")
@@ -438,6 +440,7 @@ classes = (
     CAP_FormatData_Alembic,
     CAP_FormatData_Collada,
     CAP_FormatData_STL,
+    CAP_FormatData_USD,
 
     # properties
     ObjectListItem, 

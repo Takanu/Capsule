@@ -8,6 +8,7 @@ from .export_format_gltf import CAP_FormatData_GLTF
 from .export_format_abc import CAP_FormatData_Alembic
 from .export_format_dae import CAP_FormatData_Collada
 from .export_format_stl import CAP_FormatData_STL
+from .export_format_usd import CAP_FormatData_USD
 
 # classes = (
 #     # CAP_ExportFormat,
