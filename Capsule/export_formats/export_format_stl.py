@@ -94,33 +94,18 @@ class CAP_FormatData_STL(PropertyGroup):
         Draws the panel that represents all the options that the export format has.
         """
 
-        filepresets_box = layout.column(align=True)
-        filepresets_box.separator()
+        options = layout.column(align=True)
+        options.use_property_split = True
+        options.use_property_decorate = False  # removes animation options
 
-        export_tabs = filepresets_box.row(align=True)
-
-        # tab bar and tab bar padding
-        # export_tabs.separator()
-        # export_tabs.prop(exp, "fbx_menu_options", expand=True)
-        # export_tabs.separator()
-
-        # separation space between tab bar and contents
-        export_separator = filepresets_box.column(align=True)
-
-        export_main = filepresets_box.row(align=True)
-        export_main.separator()
-
-        export_1 = export_main.column(align=True)
-        export_1.separator()
-        export_1.prop(exportData, "save_as_ascii")
-        export_1.prop(exportData, "use_scene_unit")
-        export_1.separator()
+        options.separator()
+        options.prop(exportData, "save_as_ascii")
+        options.prop(exportData, "use_scene_unit")
+        options.separator()
         
-        export_1.prop(exportData, "axis_up")
-        export_1.prop(exportData, "axis_forward")
-        export_1.separator()
-        export_1.prop(exportData, "global_scale")
-        export_1.separator()
-
-        export_main.separator()
+        options.prop(exportData, "axis_up")
+        options.prop(exportData, "axis_forward")
+        options.separator()
+        options.prop(exportData, "global_scale")
+        options.separator()
 

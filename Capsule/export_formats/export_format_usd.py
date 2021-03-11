@@ -76,24 +76,19 @@ class CAP_FormatData_USD(PropertyGroup):
         Draws the panel that represents all the options that the export format has.
         """
 
-        filepresets_box = layout.column(align=True)
-        filepresets_box.separator()
+        options = layout.column(align=True, heading="Export Filters")
+        options.use_property_split = True
+        options.use_property_decorate = False  # removes animation options
 
-        export_tabs = filepresets_box.row(align=True)
-
-        export_separator = filepresets_box.column(align=True)
-
-        export_main = filepresets_box.row(align=True)
-        export_main.separator()
-
-        export_1 = export_main.column(align=True)
-        export_1.separator()
-        export_1.prop(exportData, "export_hair")
-        export_1.prop(exportData, "export_uvmaps")
-        export_1.prop(exportData, "export_normals")
-        export_1.prop(exportData, "export_materials")
-        export_1.separator()
-        export_1.prop(exportData, "use_instancing")
-
-        export_main.separator()
+        options.separator()
+        # options.label(text="Export Filters")
+        options.prop(exportData, "export_hair")
+        options.prop(exportData, "export_uvmaps")
+        options.prop(exportData, "export_normals")
+        options.prop(exportData, "export_materials")
+        options.separator()
+        options.separator()
+        
+        options.prop(exportData, "use_instancing")
+        options.separator()
 

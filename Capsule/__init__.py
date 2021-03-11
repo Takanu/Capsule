@@ -21,7 +21,7 @@
 bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
-    "version": (1, 2, 0),
+    "version": (1, 2, 1),
     "blender": (2, 80, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
@@ -140,6 +140,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
     # Addon Preferences Dropdowns
     saved_export_presets_dropdown: BoolProperty(default=False)
+    file_export_presets_dropdown: BoolProperty(default=False)
     presets_dropdown: BoolProperty(default = False)
     options_dropdown: BoolProperty(default = False)
 
@@ -199,45 +200,42 @@ class CAP_AddonPreferences(AddonPreferences):
         #---------------------------------------------------------
         # Export UI
         #---------------------------------------------------------
-        export_box = layout.box()
-        col_export_title = export_box.row(align=True)
 
-        if addon_prefs.presets_dropdown is False:
-            col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
-            col_export_title.label(text="Export Presets")
-
+        if addon_prefs.saved_export_presets_dropdown is False:
+            savedpresets_box = layout.box()
+            col_saved_title = savedpresets_box.row(align=True)
+            col_saved_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            col_saved_title.label(text="Saved Presets")
 
         else:
-            col_export_title.prop(addon_prefs, "presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            #col_export_title.operator("cap_tutorial.tags", text="", icon='INFO')
-            col_export_title.label(text="Export Presets")
+            savedpresets_box = layout.box()
+            col_saved_title = savedpresets_box.row(align=True)
+            col_saved_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            col_saved_title.label(text="Saved Presets")
 
-            if addon_prefs.saved_export_presets_dropdown is False:
-                savedpresets_box = export_box.box()
-                col_saved_title = savedpresets_box.row(align=True)
-                col_saved_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-                col_saved_title.label(text="Saved Presets")
+            col_savedpresets = savedpresets_box.row(align=True)
+            col_savedpresets_list = col_savedpresets.column(align=True)
+            col_savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
+            col_savedpresets_list.operator("cap.create_current_preset", text="Add to File Presets", icon="FORWARD")
 
-            else:
-                savedpresets_box = export_box.box()
-                col_saved_title = savedpresets_box.row(align=True)
-                col_saved_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-                col_saved_title.label(text="Saved Presets")
+            col_savedpresets_options = col_savedpresets.column(align=True)
+            col_savedpresets_options.operator("cap.delete_global_preset", text="", icon="REMOVE")
 
-                col_savedpresets = savedpresets_box.row(align=True)
-                col_savedpresets_list = col_savedpresets.column(align=True)
-                col_savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
-                col_savedpresets_list.operator("cap.create_current_preset", text="Add to File Presets", icon="FORWARD")
+        # //////////
 
-                col_savedpresets_options = col_savedpresets.column(align=True)
-                col_savedpresets_options.operator("cap.delete_global_preset", text="", icon="REMOVE")
+        if addon_prefs.file_export_presets_dropdown is False:
+            file_presets_box = layout.box()
+            col_saved_title = file_presets_box.row(align=True)
+            col_saved_title.prop(addon_prefs, "file_export_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            col_saved_title.label(text="Active Export Presets")
 
+        else:
+            file_presets_box = layout.box()
+            col_saved_title = file_presets_box.row(align=True)
+            col_saved_title.prop(addon_prefs, "file_export_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            col_saved_title.label(text="Active Export Presets")
 
-            filepresets_box = export_box.box()
-            filepresets_box.label(text="Current File Presets")
-
-            row_defaults = filepresets_box.row(align=True)
+            row_defaults = file_presets_box.row(align=True)
             col_defaultslist = row_defaults.column(align=True)
             col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", exp, "export_presets", exp, "export_presets_listindex", rows=3, maxrows=6)
             col_defaultslist.operator("cap.add_global_preset", text="Add to Saved Presets", icon="FORWARD")
@@ -251,67 +249,55 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 currentExp = exp.export_presets[exp.export_presets_listindex]
 
-                filepresets_box.label(text="Basic Settings")
-                filepresets_options = filepresets_box.column(align=True)
+                general_options_box = file_presets_box.box()
+                general_options = general_options_box.column(align=True)
+                general_options.label(text="General Export Options", icon="OBJECT_DATA")
+                general_options.separator()
 
-                filepresets_options_1_col = filepresets_options.row(align=True)
-                filepresets_options_1_col.alignment = 'LEFT'
-
-                filepresets_options_1_label = filepresets_options_1_col.column(align=True)
-                filepresets_options_1_label.alignment = 'LEFT'
-                filepresets_options_1_label.label(text="Format Type:")
-
-                filepresets_options_1_dropdowns = filepresets_options_1_col.column(align=True)
-                filepresets_options_1_dropdowns.alignment = 'EXPAND'
-                filepresets_options_1_dropdowns.prop(currentExp, "format_type", text="")
-
-                filepresets_options_2_col = filepresets_options.column(align=True)
-                filepresets_options_2_col.separator()
-                filepresets_options_2_col.alignment = 'LEFT'
-                filepresets_options_2_col.separator()
+                general_options.use_property_split = True
+                general_options.use_property_decorate = False  # removes animation options
                 
+                general_options.prop(currentExp, "filter_by_rendering")
+                general_options.prop(currentExp, "export_animation")
+                general_options.prop(currentExp, "apply_modifiers")
+                general_options.prop(currentExp, "preserve_armature_constraints")
+                general_options.separator()
 
-                # this was removed from 1.01 onwards due to implementation issues.
-                # filepresets_options_1.prop(currentExp, "reset_rotation")
-                filepresets_options_2_col.prop(currentExp, "filter_by_rendering")
-                filepresets_options_2_col.prop(currentExp, "export_animation")
-                filepresets_options_2_col.prop(currentExp, "apply_modifiers")
-                filepresets_options_2_col.prop(currentExp, "preserve_armature_constraints")
+                ## Format Options
 
-                # filepresets_options_2_col.label(text="Sub-directory:")
-                # filepresets_options_2_col.separator()
-                # filepresets_options_2_col.prop(currentExp, "sub_directory", text="")
-                # filepresets_options_2_col.operator_menu_enum("scene.cap_add_exportpreset_path_tag", "path_tags")
-                
+                format_type_box = file_presets_box.box()
+                format_type = format_type_box.column(align=True)
 
-                filepresets_options.separator()
+                # Used a split here to recreate the use_property_split with a custom design.
+                format_type_selector = format_type.row(align=True)
+                format_type_selector_split = format_type_selector.split(factor=0.4, align=True)
+                format_type_selector_split.label(text="Export File Type", icon="OBJECT_DATA")
+                format_type_selector_split.prop(currentExp, "format_type", text="")
 
-
-                filepresets_box.label(text="Format Type Settings")
-                #filepresets_box.separator()
+                format_type.separator()
 
                 if currentExp.format_type == 'FBX':
-                    currentExp.data_fbx.draw_addon_preferences(filepresets_box, currentExp.data_fbx, exp)
+                    currentExp.data_fbx.draw_addon_preferences(format_type_box, currentExp.data_fbx, exp)
 
                 elif currentExp.format_type == 'OBJ':
-                    currentExp.data_obj.draw_addon_preferences(filepresets_box, currentExp.data_obj, exp)
+                    currentExp.data_obj.draw_addon_preferences(format_type_box, currentExp.data_obj, exp)
 
                 elif currentExp.format_type == 'GLTF':
-                    currentExp.data_gltf.draw_addon_preferences(filepresets_box, currentExp.data_gltf, exp)
+                    currentExp.data_gltf.draw_addon_preferences(format_type_box, currentExp.data_gltf, exp)
                 
                 elif currentExp.format_type == 'Alembic':
-                    currentExp.data_abc.draw_addon_preferences(filepresets_box, currentExp.data_abc, exp)
+                    currentExp.data_abc.draw_addon_preferences(format_type_box, currentExp.data_abc, exp)
                 
                 elif currentExp.format_type == 'Collada':
-                    currentExp.data_dae.draw_addon_preferences(filepresets_box, currentExp.data_dae, exp)
+                    currentExp.data_dae.draw_addon_preferences(format_type_box, currentExp.data_dae, exp)
                 
                 elif currentExp.format_type == 'STL':
-                    currentExp.data_stl.draw_addon_preferences(filepresets_box, currentExp.data_stl, exp)
+                    currentExp.data_stl.draw_addon_preferences(format_type_box, currentExp.data_stl, exp)
                 
                 elif currentExp.format_type == 'USD':
-                    currentExp.data_usd.draw_addon_preferences(filepresets_box, currentExp.data_usd, exp)
+                    currentExp.data_usd.draw_addon_preferences(format_type_box, currentExp.data_usd, exp)
             else:
-                preset_unselected = filepresets_box.column(align=True)
+                preset_unselected = format_type_box.column(align=True)
                 preset_unselected.label(text="Select a preset in order to view preset settings.")
                 preset_unselected.separator()
                 return
