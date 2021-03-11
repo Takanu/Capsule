@@ -102,9 +102,9 @@ class CAPSULE_PT_Header(Panel):
 class CAPSULE_PT_Selection(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_category = "View"
+    bl_category = "Capsule"
     bl_context = "objectmode"
-    bl_label = "Capsule"
+    bl_label = "Selected Export Options"
     
 
     # bl_space_type = "PROPERTIES"
