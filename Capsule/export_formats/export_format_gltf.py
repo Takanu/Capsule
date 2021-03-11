@@ -25,7 +25,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	export_copyright: StringProperty(
 		name='Copyright Info',
-		description='',
+		description='(Optional) Defines the legal rights and conditions for the model.',
 		default=''
 		)
 
@@ -41,12 +41,17 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	export_image_format: EnumProperty(
 		name='Export Image Format',
-		description='Decides how images associated with the 3D object are exported.',
+		description='(Optional) Decides how images associated with the 3D object are exported.',
 		items=(
-			('NAME', 'Automatic', 'Decides the format to be exported from the image name associated with it in Blender.'),
-			('JPEG', 'JPEG', 'Encodes and saves all images as JPEG files.  Can result in a loss of quality.'),
-			('PNG', 'PNG', 'Encodes and saves all images as PNG files.')
+			('AUTO', 'Automatic', 'Decides the format to be exported from the image name associated with it in Blender.  PNGs will remain PNGs and JPEGs will remain JPEGs'),
+			('JPEG', 'JPEG', 'Encodes and saves all images as JPEG files unless the image has alpha, which are instead saved as a PNG.  Can result in a loss of quality.')
 			),
+	)
+
+	export_texture_dir: StringProperty(
+		name='Export Texture Directory',
+		description="What location to place the textures in (relative to the exported GLTF file).",
+		default="",
 	)
 
 	export_cameras: BoolProperty(
@@ -68,15 +73,16 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	)
 
 	export_draco_mesh_compression_enable: BoolProperty(
-		name="Draco Mesh Compression",
+		name="Use Draco Mesh Compression",
 		description="Try it, who knows! ¯\_(ツ)_/¯",
+		#TODO: Come back when you know what this is, smh.
 		default=False
 	)
 
 	export_draco_mesh_compression_level: IntProperty(
 		name="Draco Mesh Compression Level",
 		description=" Quantization bits for position values (0 = no quantization)",
-		default=1,
+		default=3,
 		min=0,
 		max=6,
 	)
@@ -84,7 +90,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	export_draco_position_quantization: IntProperty(
 		name="Draco Mesh Position Quantization",
 		description="Quantization bits for vertex position values (0 = no quantization)",
-		default=1,
+		default=14,
 		min=0,
 		max=30,
 	)
@@ -92,7 +98,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	export_draco_normal_quantization: IntProperty(
 		name="Draco Mesh Position Quantization",
 		description="Quantization bits for normal values (0 = no quantization)",
-		default=1,
+		default=10,
 		min=0,
 		max=30,
 	)
@@ -100,7 +106,23 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	export_draco_texcoord_quantization: IntProperty(
 		name="Draco UV Quantization",
 		description="Quantization bits for UV values (0 = no quantization)",
-		default=1,
+		default=12,
+		min=0,
+		max=30,
+	)
+
+	export_draco_color_quantization: IntProperty(
+		name="Draco Color Quantization",
+		description="Quantization bits for color values (0 = no quantization)",
+		default=10,
+		min=0,
+		max=30,
+	)
+
+	export_draco_generic_quantization: IntProperty(
+		name="Draco Generic Quantization",
+		description="Quantization bits for generic coordinate values like weights or joints (0 = no quantization)",
+		default=12,
 		min=0,
 		max=30,
 	)
@@ -116,7 +138,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	# attributes
 
 	export_texcoords: BoolProperty(
-		name='Export Texture Coordinates',
+		name='Export UVs',
 		description='Exports any UV coordinate sets associated with meshes.',
 		default=True
 	)
@@ -133,10 +155,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default=True
 	)
 
-	export_materials: BoolProperty(
+	export_materials: EnumProperty(
 		name='Export Materials',
-		description='',
-		default=True
+		description='Decides how materials are exported.',
+		items=(
+			('EXPORT', 'Export', 'Export all materials.'),
+			('PLACEHOLDER', 'Placeholder', 'Do not export materials, but write multiple primitive groups per mesh, keeping material slot information.'),
+			('NONE', 'None', "Do not export materials and combine mesh primitive groups.  This will result in the loss of all material slot information.")
+			),
 	)
 
 	export_colors: BoolProperty(
@@ -169,6 +195,18 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		name='Export Current Frame',
 		description='Exports the scene in the current given animation frame.',
 		default=True
+	)
+
+	export_nla_strips: BoolProperty(
+		name='Group by NLA Track',
+		description='When on, multiple actions become part of the same glTF animation if they’re pushed onto NLA tracks with the same name. When off, all the currently assigned actions become one glTF animation',
+		default=False
+	)
+
+	export_def_bones: BoolProperty(
+		name='Export Deformation Bones Only',
+		description='When on, only the deformation bones will be exported (and needed bones in the hierarchy)',
+		default=False
 	)
 
 	export_all_influences: BoolProperty(
@@ -239,6 +277,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_format=self.export_format,
 			export_copyright=self.export_copyright,
 			export_image_format=self.export_image_format,
+			export_texture_dir =self.export_texture_dir ,
 
 			# object filtering
 			export_selected=True,
@@ -252,6 +291,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_draco_position_quantization=self.export_draco_position_quantization,
 			export_draco_normal_quantization=self.export_draco_normal_quantization,
 			export_draco_texcoord_quantization=self.export_draco_texcoord_quantization,
+			export_draco_color_quantization=self.export_draco_color_quantization,
+			export_draco_generic_quantization=self.export_draco_generic_quantization,
 
 			# mesh data
 			export_yup=self.export_y_up,
@@ -269,6 +310,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_frame_range=self.export_frame_range,
 			export_frame_step=self.export_frame_step,
 			export_force_sampling=self.export_force_sampling,
+			export_nla_strips=self.export_nla_strips,
+			export_def_bones=self.export_def_bones,
 			export_current_frame=self.export_current_frame,
 			export_all_influences=self.export_all_influences,
 
@@ -310,7 +353,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_1.prop(exportData, "export_lights")
 			export_1.prop(exportData, "export_custom_properties")
 			export_1.separator()
-
+			
 			export_1_row = export_1.row(align=True)
 			export_1_row.alignment = 'LEFT'
 
@@ -318,12 +361,17 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_1_label.alignment = 'LEFT'
 			export_1_label.label(text="Export Format:")
 			export_1_label.label(text="Export Copyright:")
+			export_1_label.separator()
+			export_1_label.label(text="Texture Format:")
+			export_1_label.label(text="Texture Directory:")
 
 			export_1_dropdowns = export_1_row.column(align=True)
 			export_1_dropdowns.alignment = 'EXPAND'
 			export_1_dropdowns.prop(exportData, "export_format", text="")
 			export_1_dropdowns.prop(exportData, "export_copyright", text="")
 			export_1_dropdowns.separator()
+			export_1_dropdowns.prop(exportData, "export_image_format", text="")
+			export_1_dropdowns.prop(exportData, "export_texture_dir", text="")
 
 			export_main.separator()
 
@@ -360,6 +408,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_1.prop(exportData, "export_draco_position_quantization")
 			export_1.prop(exportData, "export_draco_normal_quantization")
 			export_1.prop(exportData, "export_draco_texcoord_quantization")
+			export_1.prop(exportData, "export_draco_color_quantization")
+			export_1.prop(exportData, "export_draco_generic_quantization")
 
 			export_main.separator()
 			export_main.separator()
@@ -384,6 +434,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_1.prop(exportData, "export_frame_range")
 			export_1.prop(exportData, "export_force_sampling")
 			export_1.prop(exportData, "export_current_frame")
+			export_1.prop(exportData, "export_nla_strips")
+			export_1.prop(exportData, "export_def_bones ")
 			export_1.prop(exportData, "export_all_influences")
 			export_1.separator()
 			export_1.prop(exportData, "export_frame_step")

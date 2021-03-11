@@ -352,9 +352,9 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 			export_2_label = export_2_row.column(align=True)
 			export_2_label.alignment = 'RIGHT'
-			export_2_label.label(text="Axis Up:")
-			export_2_label.label(text="Axis Forward:")
-			export_2_label.label(text="Apply Scale Options:")
+			export_2_label.label(text="Axis Up: ")
+			export_2_label.label(text="Axis Forward: ")
+			export_2_label.label(text="Apply Scale Options: ")
 
 			export_2_dropdowns = export_2_row.column(align=True)
 			export_2_dropdowns.alignment = 'EXPAND'

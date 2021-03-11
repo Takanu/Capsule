@@ -104,7 +104,7 @@ class CAPSULE_PT_Selection(Panel):
     bl_region_type = "UI"
     bl_category = "Capsule"
     bl_context = "objectmode"
-    bl_label = "Selected Export Options"
+    bl_label = "Export Options"
     
 
     # bl_space_type = "PROPERTIES"
