@@ -24,7 +24,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			default=False
 		)
 
-	export_types: EnumProperty(
+	export_object_types: EnumProperty(
 		name="Object Types",
 		options={'ENUM_FLAG'},
 		items=(('MESH', "Mesh", ""),
@@ -57,7 +57,13 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('FBX_SCALE_CUSTOM', "FBX Custom Scale", "Apply custom scaling to FBX scale, and units scaling to each object transformation."),
 			('FBX_SCALE_ALL', "FBX All", "Apply custom scaling and units scaling to FBX scale."),
 			),
-		description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule.",
+		description="Defines what kinds of objects will be exported by the FBX exporter, and will filter out objects for export even if Enable Export is ticked.",
+	)
+
+	use_space_transform: BoolProperty(
+		name="Use Space Transform",
+		description="Apply global space transform to the object rotations. When disabled only the axis space is written to the file and all object transforms are left as-is",
+		default=False
 	)
 
 	bake_space_transform: BoolProperty(
@@ -95,13 +101,13 @@ class CAP_FormatData_FBX(PropertyGroup):
 		default='-Z'
 	)
 
-	loose_edges: BoolProperty(
-		name="Loose Edges",
+	convert_loose_edges: BoolProperty(
+		name="Convert Loose Edges",
 		description="Makes any separate edges a two-verted polygon.",
 		default=False
 	)
 
-	normals: EnumProperty(
+	export_normal_type: EnumProperty(
 		name="Normal Export Type",
 		description="Defines how mesh normals are exported.",
 		items=(
@@ -111,15 +117,15 @@ class CAP_FormatData_FBX(PropertyGroup):
 			),
 	)
 
-	tangent_space: BoolProperty(
-		name="Tangent Space",
+	use_tangent_space: BoolProperty(
+		name="Use Tangent Space",
 		description="Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
 		default=False
 	)
 
 	use_armature_deform_only: BoolProperty(
 		name="Only Include Deform Bones",
-		description="Makes any separate edges a two-verted polygon.",
+		description="Only write deforming bones (and non-deforming ones when they have deforming children)",
 		default=False
 	)
 
@@ -160,7 +166,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 	armature_nodetype: EnumProperty(
 		name="FBX Armature NodeType",
-		description="Defines the type of FBX object Armatures will be exported as.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender.",
+		description="Defines the type of FBX object Blender Armatures will be represented as when exported.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender.",
 		items=(
 			('NULL', 'Null', "‘Null’ FBX node, similar to Blender’s Empty (default)."),
 			('ROOT', 'Root', "‘Root’ FBX node, supposed to be the root of chains of bones."),
@@ -171,19 +177,20 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 	bake_anim_use_all_bones: BoolProperty(
 		name="Key All Bones",
-		description="If enabled, this forces the export of one key animation for all bones (required for target apps like UE4).",
+		description="If enabled, this forces the export of one key animation for all bones (required for applications like UE4).",
 		default=False
 	)
 
 	bake_anim_use_nla_strips: BoolProperty(
 		name="Use NLA Strips",
-		description="If enabled, NLA strips will be exported as animation data.",
+		description="If enabled, all non-muted NLA strips will be exported as a separated FBX AnimStack instead of global scene animation.",
 		default=False
 	)
 
 	bake_anim_use_all_actions: BoolProperty(
 		name="Use All Actions",
-		description="If enabled, all animation actions in the group or object will be exported.",
+		description="If enabled, all animation actions will be exported as a separate FBX AnimStack instead of global scene animation  (note that animated objects will get all actions compatible with them, others will get no animation at all).",
+		#TODO: This warning is unclear, figure out what this means and write something better.
 		default=False
 	)
 
@@ -203,7 +210,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		name="Sampling Rate",
 		description="Defines how often, in frames, the export process should evaluate keyframes.",
 		default=1,
-		min=0,
+		min=0.01,
 		max=100,
 		soft_min=0.1,
 		soft_max=10
@@ -242,13 +249,14 @@ class CAP_FormatData_FBX(PropertyGroup):
 			apply_scale_options=self.apply_scale_options,
 			axis_forward=self.axis_forward,
 			axis_up=self.axis_up,
+			use_space_transform=self.use_space_transform,
 			bake_space_transform=self.bake_space_transform,
-			object_types=self.export_types,
+			object_types=self.export_object_types,
 			use_mesh_modifiers=export_preset.apply_modifiers,
-			mesh_smooth_type=self.normals,
-			use_mesh_edges=self.loose_edges,
-			use_tspace=self.tangent_space,
-			use_custom_props=False,
+			mesh_smooth_type=self.export_normal_type,
+			use_mesh_edges=self.convert_loose_edges,
+			use_tspace=self.use_tangent_space,
+			use_custom_props=False,  #TODO: Check what this does and if it should be enabled
 			
 			# Animation
 			add_leaf_bones=self.add_leaf_bones,
@@ -312,7 +320,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_2.label(text="Exportable Object Types")
 			export_2.separator()
 			#export_types = export_1.row(align=True)
-			export_2.prop(exportData, "export_types")
+			export_2.prop(exportData, "export_object_types")
 			export_2.separator()
 
 			export_main.separator()
@@ -322,11 +330,12 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_main.separator()
 
 			export_1 = export_main.column(align=True)
-			export_scale = export_1.row(align=True)
-			export_scale.prop(exportData, "global_scale")
-			export_scale.prop(exportData, "apply_unit_scale", text="", icon='NDOF_TRANS')
+			export_1.prop(exportData, "global_scale")
+			export_1.prop(exportData, "apply_unit_scale")
+
 			export_1.separator()
 
+			export_1.prop(exportData, "use_space_transform")
 			export_1.prop(exportData, "bake_space_transform")
 			
 
@@ -360,8 +369,8 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_main = filepresets_box.row(align=True)
 			export_main.separator()
 			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "loose_edges")
-			export_1.prop(exportData, "tangent_space")
+			export_1.prop(exportData, "convert_loose_edges")
+			export_1.prop(exportData, "use_tangent_space")
 			export_1.separator()
 
 			export_2 = export_main.row(align=True)
@@ -372,7 +381,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 			export_2_dropdowns = export_2.column(align=True)
 			export_2_dropdowns.alignment = 'EXPAND'
-			export_2_dropdowns.prop(exportData, "normals", text="")
+			export_2_dropdowns.prop(exportData, "export_normal_type", text="")
 			export_2_dropdowns.separator()
 
 			export_main.separator()
