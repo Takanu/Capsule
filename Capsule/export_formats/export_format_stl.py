@@ -40,7 +40,7 @@ class CAP_FormatData_STL(PropertyGroup):
         description = "Save the file in an ASCII file format.",
         default = False,
     )
-
+    
     axis_up: EnumProperty(
 		name="Axis Up",
 		description="What the Up Axis will be defined as when the model is exported.",
@@ -84,7 +84,7 @@ class CAP_FormatData_STL(PropertyGroup):
             # all
             global_scale = self.global_scale,
             use_scene_unit = self.use_scene_unit,
-            ascii = self.save_as_ascii,
+            use_ascii = self.save_as_ascii,
             axis_forward = self.axis_forward,
             axis_up = self.axis_up
         )

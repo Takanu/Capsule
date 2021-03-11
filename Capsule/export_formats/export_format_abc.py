@@ -71,6 +71,12 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		default = False
 	)
 
+	export_custom_properties: BoolProperty(
+		name = "Export Custom Properties",
+		description = "Export custom properties to Alembic .userProperties.",
+		default = False
+	)
+
 	global_scale: FloatProperty(
 		name = "Global Scale",
 		description = "The value to which all objects will be scaled with respect to the world's origin point.",
@@ -113,6 +119,33 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		default = False
 	)
 
+	# object > triangulate
+	triangulate : BoolProperty(
+		name = "Triangulate",
+		description = "Export polygons (quads and n-gons) as triangles.",
+		default = False
+	)
+
+	quad_method : EnumProperty(
+		name='Quad Method',
+		description='The method used for splitting quads into triangles.',
+		items=(
+			('BEAUTY', 'Beauty', 'Splits quads in nice triangles, a slower method.'),
+			('FIXED', 'Fixed', 'Splits every quad on the first and third vertices.'),
+			('FIXED_ALTERNATE', 'Fixed Alternate', 'Splits every quads on the 2nd and 4th vertices.'),
+			('SHORTEST_DIAGONAL', 'Shortest Diagonal', 'Split the quads based on the distance between the vertices.'),
+			),
+	)
+
+	ngon_method : EnumProperty(
+		name='N-Gon Method',
+		description='The method used for splitting n-gons into triangles.',
+		items=(
+			('BEAUTY', 'Beauty', 'Arranges the new triangles evenly, a slower method.'),
+			('CLIP', 'Clip', 'Splits the polygons with an ear clipping algorithm.'),
+			),
+	)
+
 
 
 	use_subdiv_schema: BoolProperty(
@@ -130,6 +163,12 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	export_curves_as_mesh: BoolProperty(
 		name = "Export Curves as Meshes",
 		description = "Export curves and NURBS surfaces as meshes.",
+		default = False
+	)
+
+	use_instancing: BoolProperty(
+		name = "Use Instancing",
+		description = "Export data of duplicated objects as Alembic instances; speeds up the export and can be disabled for compatibility with other software.",
 		default = False
 	)
 
@@ -190,11 +229,15 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			normals = self.export_normals,
 			vcolors = self.export_colors,
 			face_sets = self.export_face_sets,
+			triangulate = self.triangulate,
+			quad_method = self.quad_method,
+			ngon_method = self.ngon_method,
 
 			subdiv_schema = self.use_subdiv_schema,
 			apply_subdiv = self.apply_subdiv,
 			curves_as_mesh = self.export_curves_as_mesh,
 			compression_type = self.compression_type,
+			use_instancing = self.use_instancing,
 			# trianglulate = False,  # part of the API, but Capsule does this elsewhere.
 			# quad_method = ???      # see above, although I should provide options like this API does.
 			# ngon_method = ???      # ^
@@ -243,6 +286,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			export_2 = export_main.column(align=True)
 			export_2.separator()
 			export_2.prop(exportData, "flatten_hierarchy")
+			export_2.prop(exportData, "export_custom_properties")
 			export_2.separator()
 			export_2.prop(exportData, "transform_samples")
 			export_2.prop(exportData, "geometry_samples")
@@ -260,6 +304,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			export_1.prop(exportData, "use_subdiv_schema")
 			export_1.prop(exportData, "apply_subdiv")
 			export_1.prop(exportData, "export_curves_as_mesh")
+			export_1.prop(exportData, "use_instancing")
 			export_1.separator()
 			export_1.prop(exportData, "compression_type")
 			export_1.separator()
@@ -275,6 +320,9 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			export_2.prop(exportData, "export_normals")
 			export_2.prop(exportData, "export_colors")
 			export_2.prop(exportData, "export_face_sets")
+			export_2.prop(exportData, "triangulate")
+			export_2.prop(exportData, "quad_method")
+			export_2.prop(exportData, "ngon_method")
 			export_2.separator()
 
 			export_main.separator()
