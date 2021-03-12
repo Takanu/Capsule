@@ -236,8 +236,10 @@ class CAPSULE_ExportData(PropertyGroup):
         description="",
         items=(
         ('Main', 'Main', 'A tab containing general export paramaters.'),
-        ('Object', 'Object', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Animation', 'Animation', 'A tab containing options for how animations and armatures are exported.'),
+        ('Geometry', 'Geometry', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Armature', 'Armature', 'A tab containing options for how armatures are exported.'),
+        ('Animation', 'Animation', 'A tab containing options for how Animation are exported.'),
+        ('Extra', 'Extra', 'Miscellaneous export options for specific purposes.'),
         ),
     )
 
