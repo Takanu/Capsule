@@ -269,78 +269,78 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		export_separator.separator()
 
 		if exp.alembic_menu_options == 'Scene':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.separator()
-			export_1.prop(exportData, "start_frame")
-			export_1.prop(exportData, "end_frame")
-			export_1.prop(exportData, "shutter_open")
-			export_1.prop(exportData, "shutter_close")
+			export_options.prop(exportData, "flatten_hierarchy")
+			export_options.prop(exportData, "export_custom_properties")
+			export_options.separator()
 
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
+			export_options.prop(exportData, "transform_samples")
+			export_options.prop(exportData, "geometry_samples")
+			export_options.prop(exportData, "global_scale")
+			export_options.separator()
+			export_options.separator()
 
-			export_2 = export_main.column(align=True)
-			export_2.separator()
-			export_2.prop(exportData, "flatten_hierarchy")
-			export_2.prop(exportData, "export_custom_properties")
-			export_2.separator()
-			export_2.prop(exportData, "transform_samples")
-			export_2.prop(exportData, "geometry_samples")
-			export_2.prop(exportData, "global_scale")
-			export_2.separator()
+			animation_options = export_options.column(align=True, heading="Scene Animation Options")
+			animation_options.prop(exportData, "start_frame")
+			animation_options.prop(exportData, "end_frame")
+			animation_options.prop(exportData, "shutter_open")
+			animation_options.prop(exportData, "shutter_close")
+			animation_options.separator()
 
-			export_main.separator()
+			
 
-		if exp.alembic_menu_options == 'Object':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+		elif exp.alembic_menu_options == 'Object':
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.separator()
-			export_1.prop(exportData, "use_subdiv_schema")
-			export_1.prop(exportData, "apply_subdiv")
-			export_1.prop(exportData, "export_curves_as_mesh")
-			export_1.prop(exportData, "use_instancing")
-			export_1.separator()
-			export_1.prop(exportData, "compression_type")
-			export_1.separator()
+			export_options.prop(exportData, "use_subdiv_schema")
+			export_options.prop(exportData, "apply_subdiv")
+			export_options.prop(exportData, "export_curves_as_mesh")
+			export_options.prop(exportData, "use_instancing")
+			export_options.separator()
+			export_options.separator()
 
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
-
-			export_2 = export_main.column(align=True)
-			export_2.separator()
-			export_2.prop(exportData, "export_uvs")
-			export_2.prop(exportData, "pack_uvs")
-			export_2.prop(exportData, "export_normals")
-			export_2.prop(exportData, "export_colors")
-			export_2.prop(exportData, "export_face_sets")
-			export_2.prop(exportData, "triangulate")
-			export_2.prop(exportData, "quad_method")
-			export_2.prop(exportData, "ngon_method")
-			export_2.separator()
+			export_options.prop(exportData, "compression_type")
+			export_options.separator()
 
 			export_main.separator()
+			export_main.separator()
+			export_main.separator()
+
+			
+		elif exp.alembic_menu_options == 'Geometry':
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
+
+			export_options.prop(exportData, "export_uvs")
+			export_options.prop(exportData, "pack_uvs")
+			export_options.prop(exportData, "export_normals")
+			export_options.prop(exportData, "export_colors")
+			export_options.prop(exportData, "export_face_sets")
+			export_options.separator()
+			export_options.separator()
+
+			export_options.prop(exportData, "triangulate")
+			export_options.separator()
+			export_options.prop(exportData, "quad_method")
+			export_options.prop(exportData, "ngon_method")
+			export_options.separator()
+		
 
 		elif exp.alembic_menu_options == 'Particles':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "export_hair")
-			export_1.prop(exportData, "export_particles")
-			export_1.separator()
-
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
-
-			export_2 = export_main.row(align=True)
-			export_2.separator()
-
-			export_main.separator()
+			export_options.prop(exportData, "export_hair")
+			export_options.prop(exportData, "export_particles")
+			export_options.separator()

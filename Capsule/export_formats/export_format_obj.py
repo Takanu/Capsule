@@ -194,81 +194,55 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		export_separator.separator()
 
 		if exp.obj_menu_options == 'Export':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "use_blen_objects")
-			export_1.prop(exportData, "group_by_object")
-			export_1.prop(exportData, "group_by_material")
-			export_1.prop(exportData, "export_per_frame")
-			export_1.separator()
-
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
-
-			export_2 = export_main.column(align=True)
-			#export_2.label(text="Exportable Object Types")
-			export_2.separator()
-			#export_types = export_1.row(align=True)
-			#export_2.prop(exportData, "export_types")
-			export_2.separator()
-
-			export_main.separator()
+			export_options.prop(exportData, "use_blen_objects")
+			export_options.prop(exportData, "group_by_object")
+			export_options.prop(exportData, "group_by_material")
+			export_options.prop(exportData, "export_per_frame")
+			export_options.separator()
 
 		if exp.obj_menu_options == 'Transform':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_scale = export_1.row(align=True)
-			export_scale.prop(exportData, "global_scale")
-			export_1.separator()
+			export_options.prop(exportData, "axis_up")
+			export_options.prop(exportData, "axis_forward")
+			export_options.separator()
 
+		elif exp.obj_menu_options == 'Geometry':
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
+			export_options.prop(exportData, "use_edges")
+			export_options.prop(exportData, "use_smooth_groups")
+			export_options.prop(exportData, "use_smooth_groups_bitflags")
+			export_options.prop(exportData, "use_vertex_groups")
+			export_options.separator()
+			export_options.separator()
 
-			export_2 = export_main.column(align=True)
-			export_2_row = export_2.row(align=True)
-			export_2_row.alignment = 'RIGHT'
-
-			export_2_label = export_2_row.column(align=True)
-			export_2_label.alignment = 'RIGHT'
-			export_2_label.label(text="Axis Up:")
-			export_2_label.label(text="Axis Forward:")
-
-			export_2_dropdowns = export_2_row.column(align=True)
-			export_2_dropdowns.alignment = 'EXPAND'
-			export_2_dropdowns.prop(exportData, "axis_up", text="")
-			export_2_dropdowns.prop(exportData, "axis_forward", text="")
-			export_2_dropdowns.separator()
+			export_options.prop(exportData, "triangulate_faces")
+			export_options.prop(exportData, "keep_vertex_order")
+			export_options.separator()
 
 			export_main.separator()
+		
+		elif exp.obj_menu_options == 'Attributes':
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-		elif exp.obj_menu_options == 'Object':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "use_edges")
-			export_1.prop(exportData, "use_smooth_groups")
-			export_1.prop(exportData, "use_smooth_groups_bitflags")
-			export_1.prop(exportData, "use_vertex_groups")
-
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
-
-			export_2 = export_main.column(align=True)
-			export_2.prop(exportData, "use_normals")
-			export_2.prop(exportData, "use_materials")
-			export_2.prop(exportData, "use_uvs")
-			export_2.prop(exportData, "use_nurbs")
-			export_2.prop(exportData, "triangulate_faces")
-			export_2.prop(exportData, "keep_vertex_order")
-			export_2.separator()
-
-			export_main.separator()
+			export_options.prop(exportData, "use_normals")
+			export_options.prop(exportData, "use_materials")
+			export_options.prop(exportData, "use_uvs")
+			export_options.prop(exportData, "use_nurbs")
+			export_options.separator()
 	

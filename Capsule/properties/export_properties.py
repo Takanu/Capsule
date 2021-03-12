@@ -203,7 +203,8 @@ class CAPSULE_ExportData(PropertyGroup):
         items=(
         ('Export', 'Export', 'A tab containing general export paramaters.'),
         ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
-        ('Object', 'Geometry', 'A tab containing options for how object geometry, materials and other associated assets are exported.'),
+        ('Geometry', 'Geometry', 'A tab containing options for how object geometry, is exported.'),
+        ('Attributes', 'Attributes', 'A tab containing options for how different sets of data are exported.'),
         ),
     )
 
@@ -224,7 +225,8 @@ class CAPSULE_ExportData(PropertyGroup):
         description="",
         items=(
         ('Scene', 'Scene', 'A tab containing general scene paramaters.'),
-        ('Object', 'Object', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Object', 'Object', 'A tab containing options for how certain object attributes are exported.'),
+        ('Geometry', 'Geometry', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
         ('Particles', 'Particles', 'A tab containing options for how particles are exported.'),
         ),
     )
