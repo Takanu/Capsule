@@ -304,137 +304,91 @@ class CAP_FormatData_FBX(PropertyGroup):
 		export_separator.separator()
 
 		if exp.fbx_menu_options == 'Export':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.label(text="Additional Options")
-			export_1.separator()
-			export_1.prop(exportData, "bundle_textures")
+			export_options.prop(exportData, "bundle_textures")
+			export_options.separator()
 
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
+			export_options.prop(exportData, "export_object_types")
+			export_options.separator()
 
-			export_2 = export_main.column(align=True)
-			export_2.label(text="Exportable Object Types")
-			export_2.separator()
-			#export_types = export_1.row(align=True)
-			export_2.prop(exportData, "export_object_types")
-			export_2.separator()
-
-			export_main.separator()
+			export_options.separator()
 
 		if exp.fbx_menu_options == 'Transform':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "global_scale")
-			export_1.prop(exportData, "apply_unit_scale")
-
-			export_1.separator()
-
-			export_1.prop(exportData, "use_space_transform")
-			export_1.prop(exportData, "bake_space_transform")
+			export_options.prop(exportData, "global_scale")
+			export_options.separator()
+			export_options.prop(exportData, "apply_unit_scale")
+			export_options.separator()
+			export_options.separator()
 			
+			export_options.prop(exportData, "use_space_transform")
+			export_options.prop(exportData, "bake_space_transform")
+			export_options.separator()
+			export_options.separator()
 
-			export_1.separator()
+			export_options.prop(exportData, "axis_up")
+			export_options.prop(exportData, "axis_forward")
+			export_options.prop(exportData, "apply_scale_options")
 
-
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
-
-			export_2 = export_main.column(align=True)
-			export_2_row = export_2.row(align=True)
-			export_2_row.alignment = 'RIGHT'
-
-			export_2_label = export_2_row.column(align=True)
-			export_2_label.alignment = 'RIGHT'
-			export_2_label.label(text="Axis Up: ")
-			export_2_label.label(text="Axis Forward: ")
-			export_2_label.label(text="Apply Scale Options: ")
-
-			export_2_dropdowns = export_2_row.column(align=True)
-			export_2_dropdowns.alignment = 'EXPAND'
-			export_2_dropdowns.prop(exportData, "axis_up", text="")
-			export_2_dropdowns.prop(exportData, "axis_forward", text="")
-			export_2_dropdowns.prop(exportData, "apply_scale_options", text="")
-			export_2_dropdowns.separator()
-
-			export_main.separator()
+			export_options.separator()
 
 		elif exp.fbx_menu_options == 'Geometry':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "convert_loose_edges")
-			export_1.prop(exportData, "use_tangent_space")
-			export_1.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_2 = export_main.row(align=True)
-			export_2.alignment = 'RIGHT'
-			export_2_label = export_2.column(align=True)
-			export_2_label.alignment = 'RIGHT'
-			export_2_label.label(text="Normals:")
+			export_options.prop(exportData, "convert_loose_edges")
+			export_options.prop(exportData, "use_tangent_space")
+			export_options.separator()
+			export_options.separator()
 
-			export_2_dropdowns = export_2.column(align=True)
-			export_2_dropdowns.alignment = 'EXPAND'
-			export_2_dropdowns.prop(exportData, "export_normal_type", text="")
-			export_2_dropdowns.separator()
+			export_options.prop(exportData, "export_normal_type")
+			export_options.separator()
 
 			export_main.separator()
 
 		elif exp.fbx_menu_options == 'Armature':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "use_armature_deform_only")
-			export_1.prop(exportData, "add_leaf_bones")
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
+			export_options.prop(exportData, "use_armature_deform_only")
+			export_options.prop(exportData, "add_leaf_bones")
+			export_options.separator()
+			export_options.separator()
 
-			export_2 = export_main.row(align=True)
-			export_2.alignment = 'RIGHT'
-			export_2_label = export_2.column(align=True)
-			export_2_label.alignment = 'RIGHT'
-			export_2_label.label(text="Primary Bone Axis:")
-			export_2_label.label(text="Secondary Bone Axis:")
-			export_2_label.label(text="Armature Node Type:")
+			export_options.prop(exportData, "primary_bone_axis")
+			export_options.prop(exportData, "secondary_bone_axis")
+			export_options.prop(exportData, "armature_nodetype")
+			export_options.separator()
 
-			export_2_dropdowns = export_2.column(align=True)
-			export_2_dropdowns.alignment = 'EXPAND'
-			export_2_dropdowns.prop(exportData, "primary_bone_axis", text="")
-			export_2_dropdowns.prop(exportData, "secondary_bone_axis", text="")
-			export_2_dropdowns.prop(exportData, "armature_nodetype", text="")
-			export_2_dropdowns.separator()
-
-			export_main.separator()
 
 		elif exp.fbx_menu_options == 'Animation':
-			export_main = filepresets_box.row(align=True)
-			export_main.separator()
+			export_options = filepresets_box.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
 
-			export_1 = export_main.column(align=True)
-			export_1.prop(exportData, "bake_anim_use_all_bones")
-			export_1.prop(exportData, "bake_anim_use_nla_strips")
-			export_1.prop(exportData, "bake_anim_use_all_actions")
-			export_1.prop(exportData, "bake_anim_force_startend_keying")
-			export_1.prop(exportData, "optimise_keyframes")
-			export_1.separator()
+			export_options.prop(exportData, "bake_anim_use_all_bones")
+			export_options.prop(exportData, "bake_anim_use_nla_strips")
+			export_options.prop(exportData, "bake_anim_use_all_actions")
+			export_options.prop(exportData, "bake_anim_force_startend_keying")
+			export_options.prop(exportData, "optimise_keyframes")
+			export_options.separator()
+			export_options.separator()
 
-			export_main.separator()
-			export_main.separator()
-			export_main.separator()
-
-			export_2 = export_main.column(align=True)
-			export_2.prop(exportData, "bake_anim_step")
-			export_2.prop(exportData, "bake_anim_simplify_factor")
-			export_2.separator()
-
-			export_main.separator()
+			export_options.prop(exportData, "bake_anim_step")
+			export_options.prop(exportData, "bake_anim_simplify_factor")
+			export_options.separator()
 
 

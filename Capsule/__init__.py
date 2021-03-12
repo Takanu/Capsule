@@ -297,7 +297,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 elif currentExp.format_type == 'USD':
                     currentExp.data_usd.draw_addon_preferences(format_type_box, currentExp.data_usd, exp)
             else:
-                preset_unselected = format_type_box.column(align=True)
+                preset_unselected = file_presets_box.column(align=True)
                 preset_unselected.label(text="Select a preset in order to view preset settings.")
                 preset_unselected.separator()
                 return
