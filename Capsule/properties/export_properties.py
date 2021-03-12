@@ -110,15 +110,15 @@ class CAPSULE_ExportPreset(PropertyGroup):
         name="Format Type",
         items=
             (
-            ('FBX', "FBX", "Export assets in the FBX file format.  Ideal for 3D game engines."),
-            ('OBJ', "OBJ", "Export assets in the OBJ file format.  Ideal for simple objects and older software compatibility."),
-            ('GLTF', "GLTF", "Export assets in the GLTF file format."),
-            ('Alembic', "Alembic", "Export assets in the Alembic file format.  Ideal for moving assets between 3D modelling programs."),
-            ('Collada', "Collada", "Export assets in the Collada file format.  Ideal for moving assets between 3D modelling programs."),
-            ('STL', "STL", "Export assets as STL files.  Ideal for 3D printing applications."),
-            ('USD', "USD", "Export assets as USD files.  A modern file format with limited export capabilities."),
+            ('FBX', "FBX", "Export assets in the FBX file format.  The popular choice for game development and accepted universally for 3D game engines"),
+            ('OBJ', "OBJ", "Export assets in the OBJ file format.  Ideal for simple objects and older software compatibility"),
+            ('GLTF', "GLTF", "Export assets in the GLTF file format.  A modern successor to FBX for game development (has limited software support)"),
+            ('Alembic', "Alembic", "Export assets in the Alembic file format.  A reference-quality file format ideal for moving assets between 3D modelling programs"),
+            ('Collada', "Collada", "Export assets in the Collada file format.  An older file format used for import with specific modelling programs and online games"),
+            ('STL', "STL", "Export assets as STL files.  Ideal for 3D printing applications"),
+            ('USD', "USD", "Export assets as USD files.  A modern, reference-quality file format with limited export capabilities"),
             ),
-        description="Defines what file type objects with this preset will export to and the export options available for this preset.",
+        description="Defines what file type objects with this preset will export to and the export options available for this preset",
         )
 
     # the data stored for FBX presets.
