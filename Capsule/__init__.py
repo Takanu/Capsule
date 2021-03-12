@@ -250,10 +250,16 @@ class CAP_AddonPreferences(AddonPreferences):
                 currentExp = exp.export_presets[exp.export_presets_listindex]
 
                 general_options_box = file_presets_box.box()
-                general_options = general_options_box.column(align=True)
-                general_options.label(text="General Export Options", icon="OBJECT_DATA")
-                general_options.separator()
+                general_options_content = general_options_box.column(align=True)
+                general_options_content.separator()
 
+                general_options_heading = general_options_content.row(align=True)
+                general_options_heading.label(text="General Export Options", icon="OBJECT_DATA")
+                general_options_heading.separator()
+                general_options_content.separator()
+
+
+                general_options = general_options_content.column(align=True)
                 general_options.use_property_split = True
                 general_options.use_property_decorate = False  # removes animation options
                 
@@ -267,12 +273,14 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 format_type_box = file_presets_box.box()
                 format_type = format_type_box.column(align=True)
+                format_type.separator()
 
                 # Used a split here to recreate the use_property_split with a custom design.
                 format_type_selector = format_type.row(align=True)
                 format_type_selector_split = format_type_selector.split(factor=0.4, align=True)
                 format_type_selector_split.label(text="Export File Type", icon="FILE")
                 format_type_selector_split.prop(currentExp, "format_type", text="")
+                format_type_selector.separator()
 
                 format_type.separator()
 

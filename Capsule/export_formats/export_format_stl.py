@@ -94,18 +94,30 @@ class CAP_FormatData_STL(PropertyGroup):
         Draws the panel that represents all the options that the export format has.
         """
 
-        options = layout.column(align=True)
-        options.use_property_split = True
-        options.use_property_decorate = False  # removes animation options
+        filepresets_box = layout.column(align=True)
+        filepresets_box.separator()
 
-        options.separator()
-        options.prop(exportData, "save_as_ascii")
-        options.prop(exportData, "use_scene_unit")
-        options.separator()
-        
-        options.prop(exportData, "axis_up")
-        options.prop(exportData, "axis_forward")
-        options.separator()
-        options.prop(exportData, "global_scale")
-        options.separator()
+        export_area = filepresets_box.row(align=True)
+
+        # left padding
+        export_area.separator()
+
+        # area for revealed export options
+        export_options = export_area.column(align=True)
+        export_options.use_property_split = True
+        export_options.use_property_decorate = False  # removes animation options
+
+        export_options.separator()
+        export_options.prop(exportData, "save_as_ascii")
+        export_options.prop(exportData, "use_scene_unit")
+        export_options.separator()
+
+        export_options.prop(exportData, "axis_up")
+        export_options.prop(exportData, "axis_forward")
+        export_options.separator()
+        export_options.prop(exportData, "global_scale")
+        export_options.separator()
+
+        # right padding
+        export_area.separator()
 

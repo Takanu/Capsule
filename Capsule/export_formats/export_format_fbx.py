@@ -291,20 +291,23 @@ class CAP_FormatData_FBX(PropertyGroup):
 		filepresets_box = layout.column(align=True)
 		filepresets_box.separator()
 
-		export_tabs = filepresets_box.row(align=True)
+		export_area = filepresets_box.row(align=True)
 
-		# tab bar and tab bar padding
-		export_tabs.separator()
-		export_tabs.prop(exp, "fbx_menu_options", expand=True)
-		export_tabs.separator()
+		# left padding
+		export_area.separator()
 
-		# separation space between tab bar and contents
-		export_separator = filepresets_box.column(align=True)
-		export_separator.separator()
-		export_separator.separator()
+		# internal column for tabs and contents
+		export_tab_area = export_area.column(align=True)
+		export_tab_row = export_tab_area.row(align=True)
+		export_tab_row.prop(exp, "fbx_menu_options", expand=True)
+		export_tab_area.separator()
+		export_tab_area.separator()
+
+		# area for revealed export options
+		export_options_area = export_tab_area.column(align=True)
 
 		if exp.fbx_menu_options == 'Export':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -318,7 +321,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 
 		if exp.fbx_menu_options == 'Transform':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -341,7 +344,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 
 		elif exp.fbx_menu_options == 'Geometry':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -357,7 +360,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_main.separator()
 
 		elif exp.fbx_menu_options == 'Armature':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -374,7 +377,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 
 		elif exp.fbx_menu_options == 'Animation':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -390,5 +393,8 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.prop(exportData, "bake_anim_step")
 			export_options.prop(exportData, "bake_anim_simplify_factor")
 			export_options.separator()
+		
+		# right padding
+		export_area.separator()
 
 

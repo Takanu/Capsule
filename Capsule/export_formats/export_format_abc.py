@@ -256,20 +256,23 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		filepresets_box = layout.column(align=True)
 		filepresets_box.separator()
 
-		export_tabs = filepresets_box.row(align=True)
+		export_area = filepresets_box.row(align=True)
 
-		# tab bar and tab bar padding
-		export_tabs.separator()
-		export_tabs.prop(exp, "alembic_menu_options", expand=True)
-		export_tabs.separator()
+		# left padding
+		export_area.separator()
 
-		# separation space between tab bar and contents
-		export_separator = filepresets_box.column(align=True)
-		export_separator.separator()
-		export_separator.separator()
+		# internal column for tabs and contents
+		export_tab_area = export_area.column(align=True)
+		export_tab_row = export_tab_area.row(align=True)
+		export_tab_row.prop(exp, "alembic_menu_options", expand=True)
+		export_tab_area.separator()
+		export_tab_area.separator()
+		
+		# area for revealed export options
+		export_options_area = export_tab_area.column(align=True)
 
 		if exp.alembic_menu_options == 'Scene':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -294,7 +297,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			
 
 		elif exp.alembic_menu_options == 'Object':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -315,7 +318,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 
 			
 		elif exp.alembic_menu_options == 'Geometry':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -336,7 +339,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		
 
 		elif exp.alembic_menu_options == 'Particles':
-			export_options = filepresets_box.column(align=True)
+			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -344,3 +347,6 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			export_options.prop(exportData, "export_hair")
 			export_options.prop(exportData, "export_particles")
 			export_options.separator()
+		
+		# right padding
+		export_area.separator()
