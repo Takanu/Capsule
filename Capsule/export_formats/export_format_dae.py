@@ -102,8 +102,8 @@ class CAP_FormatData_Collada(PropertyGroup):
 
 	## TODO: Test this, the wording is really weird.
 	include_armatures : BoolProperty(
-		name="Include Armatures",
-		description="Export related armatures (even if not selected).",
+		name="Include Related Armatures",
+		description="Export related armatures (even if not enabled).",
 		default=False
 	)
 
@@ -159,7 +159,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 	)
 
 	keep_flat_curves : BoolProperty(
-		name="All Keyed Curves",
+		name="Include All Keyed Curves",
 		description="Export also curves which have only one key or are totally flat",
 		default=False
 	)
@@ -172,7 +172,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 
 	use_texture_copies : BoolProperty(
 		name="Export Textures",
-		description="Copy textures to same folder where the .dae file is exported",
+		description="Export textures to same folder where the .dae file is exported",
 		default=False
 	)
 
@@ -204,7 +204,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 
 	open_sim : BoolProperty(
 		name="Export to SL/OpenSim",
-		description="Compatibility mode for SL, OpenSim and other compatible online worlds",
+		description="Export in compatibility mode for Second Life, OpenSim and other compatible online worlds",
 		default=False
 	)
 
@@ -225,8 +225,8 @@ class CAP_FormatData_Collada(PropertyGroup):
 	export_transform_type : EnumProperty(
 		name="Export Transform",
 		items=(
-			('matrix', "Matrix", "Use <matrix> representation for exported transformations"),
-			('decomposed', "Decomposed", "Use <rotate>, <translate> and <scale> representation for exported transformations"),
+			('0', "Matrix", "Use <matrix> representation for exported transformations"),
+			('1', "Decomposed", "Use <rotate>, <translate> and <scale> representation for exported transformations"),
 			),
 		description="Defines the type of transformation data exported for both objects and animations.",
 	)
@@ -237,6 +237,12 @@ class CAP_FormatData_Collada(PropertyGroup):
 		Calls the Collada Export API to export the currently selected objects with the given settings.
 		"""
 
+		# if self.export_transform_type == '0':
+		# 	anim_transform_type = 'matrix'
+		# else:
+		# 	anim_transform_type = 'decomposed'
+
+
 		bpy.ops.wm.collada_export(
 
 			# core
@@ -244,6 +250,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 			check_existing = False,
 			apply_modifiers = export_preset.apply_modifiers,
 			selected = True,
+			include_animations = export_preset.export_animation,
 
 			export_mesh_type_selection = self.export_mesh_type_selection,
 			export_global_forward_selection = self.export_global_forward_selection,
@@ -252,7 +259,6 @@ class CAP_FormatData_Collada(PropertyGroup):
 			include_armatures = self.include_armatures,
 			include_shapekeys = self.include_shapekeys,
 			deform_bones_only = self.deform_bones_only,
-			include_animations = self.include_animations,
 			include_all_actions = self.include_all_actions,
 			export_animation_type_selection = self.export_animation_type_selection,
 			sampling_rate = self.sampling_rate,
@@ -271,9 +277,11 @@ class CAP_FormatData_Collada(PropertyGroup):
 			limit_precision = self.limit_precision,
 			keep_bind_info = self.keep_bind_info,
 
-			export_object_transformation_type_selection = self.export_transform_type,
-			export_animation_transformation_type = self.export_transform_type,
+			## TODO: Confirm this worked the way I expect it to.
+			export_object_transformation_type = int(self.export_transform_type),
+			export_animation_transformation_type = int(self.export_transform_type),
 
+			
 		)
 	
 	def draw_addon_preferences(self, layout, exportData, exp):
@@ -339,6 +347,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
+			export_options.prop(exportData, "include_armatures")
 			export_options.prop(exportData, "open_sim")
 			export_options.prop(exportData, "deform_bones_only")
 
@@ -353,6 +362,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 
 			export_options.prop(exportData, "keep_flat_curves")
 			export_options.prop(exportData, "include_all_actions")
+			export_options.prop(exportData, "include_shapekeys")
 			export_options.separator()
 			export_options.separator()
 
