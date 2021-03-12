@@ -345,7 +345,7 @@ def ExportCollectionList(context, exp, collection_list, global_record):
         origin_point = collection.CAPCol.origin_point
         root_definition = None
         if origin_point == 'Object':
-            root_definition = bpy.context.scene.objects.get(collection.CAPCol.root_object)
+            root_definition = bpy.context.scene.objects.get(collection.CAPCol.root_object.name)
             print(' R O O T - ', root_definition)
 
         # Collect all objects that are applicable for this export

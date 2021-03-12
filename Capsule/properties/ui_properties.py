@@ -127,10 +127,10 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         update=CAP_Update_ProxyCollectionOriginPoint,
         )
         
-    col_root_object: StringProperty(
+    col_root_object: PointerProperty(
+        type=bpy.types.Object,
         name="Origin Object",
         description="Defines the origin point of the exported collection object.",
-        default="",
         update=CAP_Update_ProxyCollectionRootObject,
         )
 

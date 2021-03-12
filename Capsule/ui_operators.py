@@ -273,98 +273,6 @@ class CAPSULE_OT_Shift_Path_Down(Operator):
 
         return {'FINISHED'}
 
-class CAPSULE_OT_Set_Root_Object(Operator):
-    """Allows you to set the Origin Object through an interactive tool.  Right-Click: Select the object you wish to be the origin point for the scene.  Esc - Quit the tool."""
-
-    bl_idname = "scene.cap_setroot"
-    bl_label = "Remove"
-
-    def finish(self):
-        # This def helps us tidy the shit we started
-        # Restore the active area's header to its initial state.
-        bpy.context.area.header_text_set(None)
-
-
-    def execute(self, context):
-        scn = context.scene.CAPScn
-
-        preferences = context.preferences
-        self.addon_prefs = preferences.addons[__package__].preferences
-
-        # Get collections and selections
-        self.collections = collection_utils.GetEditableCollections(context)
-        self.select_record = select_utils.SaveSelections()
-
-        # Get key configs for click select
-        wm = context.window_manager
-        keyconfig = wm.keyconfigs.active
-        self.select = getattr(keyconfig.preferences, "select_mouse", "LEFT")
-
-        context.window_manager.modal_handler_add(self)
-        self._timer = context.window_manager.event_timer_add(0.05, window=context.window)
-        bpy.ops.object.select_all(action='DESELECT')
-
-        # Set the header text with USEFUL INSTRUCTIONS :O
-        # TODO 2.0 : Learn how to really format Python text, c'mon.
-        if self.select == 'LEFT':
-            context.area.header_text_set(
-                "Select the object you want to use as a root object.  " +
-                "Left Mouse: Select Collision Object, Esc: Exit"
-            )
-            self.event = 'LEFTMOUSE'
-        else:
-            context.area.header_text_set(
-                "Select the object you want to use as a root object.  " +
-                "Right Mouse: Select Collision Object, Esc: Exit"
-            )
-            self.event = 'RIGHTMOUSE'
-
-        return {'RUNNING_MODAL'}
-
-    def modal(self,context,event):
-        # If escape is pressed, exit
-        if event.type in {'ESC'}:
-            select_utils.RestoreSelections(self.select_record)
-            self.finish()
-            return{'FINISHED'}
-
-        # When an object is selected, set it as a child to the object, and finish.
-        elif event.type == self.event:
-
-            # Check only one object was selected
-            if context.active_object != None and len(context.selected_objects) == 1:
-
-                new_root_object = context.active_object.name
-                for collection in self.collections:
-                    collection.CAPCol.root_object = new_root_object
-
-                bpy.ops.object.select_all(action='DESELECT')
-                select_utils.RestoreSelections(self.select_record)
-
-                self.finish()
-
-                return{'FINISHED'}
-
-        return {'PASS_THROUGH'}
-
-    def cancel(self, context):
-        context.window_manager.event_timer_remove(self._timer)
-        return {'FINISHED'}
-
-
-class CAPSULE_OT_Clear_Root_Object(Operator):
-    """Clear the currently chosen origin object for the collection."""
-
-    bl_idname = "scene.cap_clearroot"
-    bl_label = "Remove"
-
-    def execute(self, context):
-        print(self)
-
-        context.scene.CAPProxy.col_root_object = ""
-
-        return {'FINISHED'}
-
 
 class CAPSULE_OT_Clear_List(Operator):
     """Delete all objects from the export list, and un-mark them for export"""
@@ -609,7 +517,7 @@ class CAPSULE_OT_Refresh_Actions(Operator):
 
 
 class CAPSULE_OT_Create_ExportData(Operator):
-    """Create a new empty object for which Capsule data is stored, and where both file presets and other scene data is stored."""
+    """Create a new empty object for which Capsule data is stored, and where both Active Export Presets and other scene data is stored."""
 
     bl_idname = "cap.exportdata_create"
     bl_label = "Create Capsule Data"
@@ -644,7 +552,7 @@ class CAPSULE_OT_Create_ExportData(Operator):
 
 
 class CAPSULE_OT_Add_Stored_Presets(Operator):
-    """Add the currently selected saved preset into the file presets list, enabling it's use for exports in this .blend file."""
+    """Add the currently selected saved preset into the Active Export Presets list, enabling it's use for exports in this .blend file."""
     bl_idname = "cap.create_current_preset"
     bl_label = "Default Presets"
 

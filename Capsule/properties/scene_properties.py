@@ -310,10 +310,10 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
         )
 
-    root_object: StringProperty(
+    root_object: PointerProperty(
+        type=bpy.types.Object,
         name="Origin Object",
         description="Defines what object will be used as the exported collection's origin point.",
-        default="",
         )
     
     child_export_option: EnumProperty(

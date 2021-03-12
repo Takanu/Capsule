@@ -216,7 +216,7 @@ class CAP_AddonPreferences(AddonPreferences):
             col_savedpresets = savedpresets_box.row(align=True)
             col_savedpresets_list = col_savedpresets.column(align=True)
             col_savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
-            col_savedpresets_list.operator("cap.create_current_preset", text="Add to File Presets", icon="FORWARD")
+            col_savedpresets_list.operator("cap.create_current_preset", text="Add to Active Export Presets", icon="FORWARD")
 
             col_savedpresets_options = col_savedpresets.column(align=True)
             col_savedpresets_options.operator("cap.delete_global_preset", text="", icon="REMOVE")
@@ -481,8 +481,6 @@ classes = (
     CAPSULE_OT_Delete_Export,
     CAPSULE_OT_Shift_Path_Up,
     CAPSULE_OT_Shift_Path_Down,
-    CAPSULE_OT_Set_Root_Object,
-    CAPSULE_OT_Clear_Root_Object,
     CAPSULE_OT_Clear_List,
     CAPSULE_OT_Refresh_List,
     CAPSULE_OT_Reset_Scene,

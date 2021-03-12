@@ -324,12 +324,7 @@ class CAPSULE_PT_Selection(Panel):
                 rawr.label(text="Origin Point:")
                 rawr.separator()
                 rawr.prop(proxy, "col_origin_point", text="")
-                
-                if proxy.col_origin_point == 'Object':
-                    rawr_row = rawr.row(align=True)
-                    rawr_row.prop(proxy, "col_root_object", icon="OBJECT_DATA", text="")
-                    rawr_row.operator("scene.cap_setroot", text="", icon="EYEDROPPER")
-                    rawr_row.operator("scene.cap_clearroot", text="", icon="X")
+                rawr.prop(proxy, "col_root_object", text="")
 
                 rawr_other = layout.column(align=True)
                 rawr_other.label(text="Child Export Options:")
@@ -469,7 +464,7 @@ class CAPSULE_PT_List(Panel):
                 col_origin_point.prop(grp, "origin_point", text="")
                 
                 if grp.origin_point == 'Object':
-                    col_origin_point.prop(grp, "root_object", icon="OBJECT_DATA", text="")
+                    col_origin_point.prop(grp, "root_object", text="")
 
                 col_export_options = layout.column(align=True)
                 col_export_options.label(text="Child Export Options:")
