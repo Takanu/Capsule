@@ -204,25 +204,21 @@ class CAPSULE_PT_Selection(Panel):
             if ob != None:
 
                 # now build the UI with that proxy
-                obj_settings = layout.column(align=True)
+                obj_settings = layout.column(align=False)
+                obj_settings.use_property_split = True
+                obj_settings.use_property_decorate = False
                 obj_settings.separator()
+
                 obj_settings.prop(proxy, "obj_enable_export")
                 obj_settings.separator()
+                obj_settings.prop(proxy, "obj_origin_point")
                 obj_settings.separator()
-                obj_settings.label(text="Origin Point:")
+                obj_settings.prop(proxy, "obj_location_preset")
                 obj_settings.separator()
-                obj_settings.prop(proxy, "obj_origin_point", text="")
-                obj_settings.separator()
-                obj_settings.label(text="Folder Location:")
-                obj_settings.separator()
-                obj_settings.prop(proxy, "obj_location_preset", icon="FILE_FOLDER", text="")
-                obj_settings.separator()
-                obj_settings.label(text="Export Preset:")
-                obj_settings.separator()
-                obj_settings.prop(proxy, "obj_export_preset", text="")
+                obj_settings.prop(proxy, "obj_export_preset")
                 obj_settings.separator()
                 obj_settings.separator()
-                obj_settings.separator()
+
                 obj_settings.operator("scene.cap_export_all")
                 obj_settings.operator("scene.cap_export_selected")
 
@@ -316,32 +312,32 @@ class CAPSULE_PT_Selection(Panel):
             if grp != None:
 
                 # now build the UI with that proxy
-                rawr = layout.column(align=True)
-                rawr.separator()
-                rawr.prop(proxy, "col_enable_export", text="Enable Export")
-                rawr.separator()
-                rawr.separator()
-                rawr.label(text="Origin Point:")
-                rawr.separator()
-                rawr.prop(proxy, "col_origin_point", text="")
-                rawr.prop(proxy, "col_root_object", text="")
+                group_layout = layout.column(align=False)
+                group_layout.use_property_split = True
+                group_layout.use_property_decorate = False
+                group_layout.separator()
 
-                rawr_other = layout.column(align=True)
-                rawr_other.label(text="Child Export Options:")
-                rawr_other.separator()
-                rawr_other.prop(proxy, "col_child_export_option", text="")
-                rawr_other.separator()
-                rawr_other.label(text="Export Location:")
-                rawr_other.separator()
-                rawr_other.prop(proxy, "col_location_preset", icon="FILE_FOLDER", text="")
-                rawr_other.separator()
-                rawr_other.label(text="Export Preset:")
-                rawr_other.separator()
-                rawr_other.prop(proxy, "col_export_preset", text="")
-                rawr_other.separator()
-                rawr_other.separator()
-                rawr_other.operator("scene.cap_export_all")
-                rawr_other.operator("scene.cap_export_selected")
+                group_layout.prop(proxy, "col_enable_export")
+                group_layout.separator()
+
+                root_object_ui = group_layout.column(align=True)
+                root_object_ui.prop(proxy, "col_origin_point")
+
+                if grp.origin_point == 'Object':
+                    root_object_ui.prop(proxy, "col_root_object", text=" ")
+                
+                root_object_ui.separator()
+
+                group_layout.prop(proxy, "col_child_export_option")
+                group_layout.separator()
+                group_layout.prop(proxy, "col_location_preset") 
+                group_layout.separator()
+                group_layout.prop(proxy, "col_export_preset")
+                group_layout.separator()
+                group_layout.separator()
+
+                group_layout.operator("scene.cap_export_all")
+                group_layout.operator("scene.cap_export_selected")
 
             # If no collection was eventually found, bring up warning labels.
             else:
@@ -429,19 +425,16 @@ class CAPSULE_PT_List(Panel):
                             ob = item
             
             if obj is not None:
-                col_export_options = layout.column(align=True)
-                col_export_options.separator()
-                col_export_options.label(text="Origin Point:")
-                col_export_options.separator()
-                col_export_options.prop(obj, "origin_point", text="")
-                col_export_options.separator()
-                col_export_options.label(text="Folder Location:")
-                col_export_options.separator()
-                col_export_options.prop(obj, "location_preset", icon="FILE_FOLDER", text="")
-                col_export_options.separator()
-                col_export_options.label(text="Export Preset:")
-                col_export_options.separator()
-                col_export_options.prop(obj, "export_preset", text="")
+                object_options_list = layout.column(align=False)
+                object_options_list.use_property_split = True
+                object_options_list.use_property_decorate = False
+                object_options_list.separator()
+
+                object_options_list.prop(obj, "origin_point")
+                object_options_list.separator()
+                object_options_list.prop(obj, "location_preset")
+                object_options_list.separator()
+                object_options_list.prop(obj, "export_preset")
         
         # Group selection
         elif listTab == 2:
@@ -457,27 +450,24 @@ class CAPSULE_PT_List(Panel):
                         gr = collection
             
             if grp is not None:
-                col_origin_point = layout.column(align=True)
-                col_origin_point.separator()
-                col_origin_point.label(text="Origin Point:")
-                col_origin_point.separator()
-                col_origin_point.prop(grp, "origin_point", text="")
+                group_options_list = layout.column(align=False)
+                group_options_list.use_property_split = True
+                group_options_list.use_property_decorate = False
+                group_options_list.separator()
                 
-                if grp.origin_point == 'Object':
-                    col_origin_point.prop(grp, "root_object", text="")
+                root_object_ui = group_options_list.column(align=True)
+                root_object_ui.prop(grp, "origin_point")
 
-                col_export_options = layout.column(align=True)
-                col_export_options.label(text="Child Export Options:")
-                col_export_options.separator()
-                col_export_options.prop(grp, "child_export_option", text="")
-                col_export_options.separator()
-                col_export_options.label(text="Export Location:")
-                col_export_options.separator()
-                col_export_options.prop(grp, "location_preset", icon="FILE_FOLDER", text="")
-                col_export_options.separator()
-                col_export_options.label(text="Export Preset:")
-                col_export_options.separator()
-                col_export_options.prop(grp, "export_preset", text="")
+                if grp.origin_point == 'Object':
+                    root_object_ui.prop(grp, "root_object", text=" ")
+                
+                root_object_ui.separator()
+
+                group_options_list.prop(grp, "child_export_option")
+                group_options_list.separator()
+                group_options_list.prop(grp, "location_preset")
+                group_options_list.separator()
+                group_options_list.prop(grp, "export_preset")
 
         layout.separator()
 
@@ -529,18 +519,18 @@ class CAPSULE_PT_Location(Panel):
         #row_location.operator("scene.cap_shiftup", text="", icon="TRIA_UP")
         #row_location.operator("scene.cap_shiftdown", text="", icon="TRIA_DOWN")
 
-        file = layout.column(align=True)
-        file.alignment = 'EXPAND'
+        location_options = layout.column(align=False)
+        location_options.use_property_split = True
+        location_options.use_property_decorate = False
+        location_options.separator()
 
         count = 0
         for i, item in enumerate(exp.location_presets, 1):
             count += 1
 
         if exp.location_presets_listindex > -1 and exp.location_presets_listindex < count:
-            file.label(text="File Path:")
-            file.separator()
-            file.prop(exp.location_presets[exp.location_presets_listindex], "path", text="")
-            file.operator_menu_enum("scene.cap_add_location_path_tag", "path_tags")
+            location_options.prop(exp.location_presets[exp.location_presets_listindex], "path")
+            location_options.operator_menu_enum("scene.cap_add_location_path_tag", "path_tags")
 
 class CAPSULE_PT_Export(Panel):
     bl_space_type = "PROPERTIES"

@@ -661,8 +661,6 @@ class CAPSULE_OT_Store_Presets(Operator):
 #     CAPSULE_OT_Delete_Pass,
 #     CAPSULE_OT_Shift_Path_Up,
 #     CAPSULE_OT_Shift_Path_Down,
-#     CAPSULE_OT_Set_Root_Object,
-#     CAPSULE_OT_Clear_Root_Object,
 #     CAPSULE_OT_Clear_List,
 #     CAPSULE_OT_Refresh_List,
 #     CAPSULE_OT_Reset_Scene,

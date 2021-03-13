@@ -255,7 +255,7 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         )
 
     origin_point: EnumProperty(
-        name="Export Origin",
+        name="Origin Export",
         description="Determines what the origin point of the exported file is set to.",
         items=(
         ('Object', 'Object', "Sets the exported origin point to the object's origin point."),
@@ -269,13 +269,13 @@ class CAPSULE_Object_Preferences(PropertyGroup):
     #     )
 
     location_preset: EnumProperty(
-        name="Select Location Preset",
+        name="File Location",
         description="Defines the file path that the object will be exported to.",
         items=GetLocationPresets,
         )
 
     export_preset: EnumProperty(
-        name="Select Export Preset",
+        name="Export Preset",
         description="Defines the export settings used on the object.",
         items=GetExportDefaults,
         )
@@ -303,7 +303,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         )
     
     origin_point: EnumProperty(
-        name="Export Origin",
+        name="Origin Export",
         description="Determines what the origin point of the exported file is set to.",
         items=(
         ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object."),
@@ -317,7 +317,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         )
     
     child_export_option: EnumProperty(
-        name="Child Export Options",
+        name="Hierarchy",
         description="Lets you set how children of a collection are included in the export.",
         items=(
         ('All', 'All Children', "Will export the children of this collection as well as every object associated to a child of this collection."),
@@ -331,22 +331,23 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         )
 
     location_preset: EnumProperty(
-        name="Select Export Location",
+        name="File Location",
         description="Defines the Location that the collection will be exported to.",
         items=GetLocationPresets,
         )
 
     export_preset: EnumProperty(
-        name="Select Export Default",
+        name="Export Preset",
         description="Defines the export settings used on the collection.",
         items=GetExportDefaults,
         )
     
-    export_preset: EnumProperty(
-        name="Select Export Default",
-        description="Defines the export settings used on the collection.",
-        items=GetExportDefaults,
-        )
+    # TODO: why is there two identical properties here?
+    # export_preset: EnumProperty(
+    #     name="Select Export Default",
+    #     description="Defines the export settings used on the collection.",
+    #     items=GetExportDefaults,
+    #     )
     
     enable_edit: BoolProperty(
         name="",

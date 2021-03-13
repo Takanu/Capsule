@@ -22,10 +22,10 @@ bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
     "version": (1, 2, 1),
-    "blender": (2, 80, 0),
+    "blender": (2, 92, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
-    "description": "An export manager that helps you export 3D objects into multiple files and formats.",
+    "description": "An export manager that makes the process of repeat and bulk exports simple.",
     "tracker_url": "",
     "category": "Import-Export"
 }
@@ -45,7 +45,7 @@ from .export_utils import *
 from .export_menu import *
 from .ui_operators import *
 
-
+import rna_keymap_ui
 
 from bpy.props import (
     IntProperty, 
@@ -314,39 +314,66 @@ class CAP_AddonPreferences(AddonPreferences):
         # Options
         #---------------------------------------------------------
         options_box = layout.box()
-        optionsUI = options_box.row(align=True)
+        extras_dropdown = options_box.row(align=True)
 
         if addon_prefs.options_dropdown is False:
-            optionsUI.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            optionsUI.label(text="Extra Settings")
+            extras_dropdown.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            extras_dropdown.label(text="Extra Settings")
 
         else:
-            optionsUI.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            optionsUI.label(text="Extra Settings")
-            options_main = options_box.row(align=True)
-            options_main.separator()
+            extras_dropdown.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            extras_dropdown.label(text="Extra Settings")
+            options_box.separator()
 
-            options_1 = options_main.column(align=False)
-            #options_1.alignment = 'CENTER'
-            options_1.label(text="Additional List Options")
-            options_1.separator()
-            options_1.prop(addon_prefs, "list_feature", text="", expand=False)
-            options_1.separator()
-            options_1.prop(addon_prefs, "substitute_directories", expand=False)
+            extras_content = options_box.column(align=True)
+            extras_content.use_property_split = True
+            extras_content.use_property_decorate = False  # removes 
 
-            options_main.separator()
-            options_main.separator()
-            options_main.separator()
-            options_main.separator()
-            options_main.separator()
+            extras_content.prop(addon_prefs, "list_feature")
+            extras_content.separator()
+            extras_content.prop(addon_prefs, "substitute_directories")
+            
+            extras_content.separator()
+            extras_content.separator()
 
-            options_2 = options_main.column(align=False)
-            options_2.label(text="Reset")
-            options_2.separator()
-            options_2.operator("scene.cap_resetsceneprops", text="Reset Scene")
-            options_2.separator()
+            keymap_options = options_box.column(align=True) 
+            keymap_options.label(text="Keyboard Shortcut List:",icon="KEYINGSET")
 
-            options_main.separator()
+            # Brings up the kinda-native keymap interface for plugin keymaps.
+            wm = bpy.context.window_manager
+            kc = wm.keyconfigs.user
+            old_km_name = ""
+            get_kmi_l = []
+            for km_add, kmi_add in addon_keymaps:
+                for km_con in kc.keymaps:
+                    if km_add.name == km_con.name:
+                        km = km_con
+                        break
+
+                for kmi_con in km.keymap_items:
+                    if kmi_add.idname == kmi_con.idname:
+                        if kmi_add.name == kmi_con.name:
+                            get_kmi_l.append((km,kmi_con))
+
+            get_kmi_l = sorted(set(get_kmi_l), key=get_kmi_l.index)
+
+            for km, kmi in get_kmi_l:
+                if not km.name == old_km_name:
+                    keymap_options.label(text=str(km.name),icon="DOT")
+                    keymap_options.context_pointer_set("keymap", km)
+                    rna_keymap_ui.draw_kmi([], kc, km, kmi, keymap_options, 0)
+                    keymap_options.separator()
+                    old_km_name = km.name
+
+            options_box.separator()
+            options_box.separator()
+
+            erase_options = options_box.row(align=True, heading="Reset Options")
+            erase_options_split = erase_options.split(factor=0.4, align=True)
+            # erase_options_split.label(text="Reset Options")
+            erase_options_split.operator("scene.cap_resetsceneprops", text="Reset Capsule Scene Data")
+
+            options_box.separator()
 
 @persistent
 def CreateDefaultData(scene):
@@ -423,8 +450,38 @@ def CheckSelectedObject(scene):
         addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
         return
 
+#---------------------------------------------------------
+# Keymaps
+#---------------------------------------------------------
 
 addon_keymaps = []
+
+def add_hotkeys():
+    wm = bpy.context.window_manager
+    if wm.keyconfigs.addon:
+
+        # Object Mode
+        km = wm.keyconfigs.addon.keymaps.new(name='Object Mode')
+        kmi = km.keymap_items.new('wm.call_menu_pie', 'E', 'PRESS')
+        kmi.properties.name = "pie.capsule_main"
+        # kmi.active = True
+        addon_keymaps.append((km, kmi))
+
+
+# TODO: This needs to actually work for multiple keymaps if I introduce more later
+def remove_hotkeys():
+    ''' clears all addon level keymap hotkeys stored in addon_keymaps '''
+    wm = bpy.context.window_manager
+    kc = wm.keyconfigs.addon
+    km = kc.keymaps['Object Mode']
+    
+    for km, kmi in addon_keymaps:
+        km.keymap_items.remove(kmi)
+    
+    wm.keyconfigs.addon.keymaps.remove(km)
+
+    addon_keymaps.clear()
+
 
 classes = (
     # export_formats
@@ -536,33 +593,14 @@ def register():
     bpy.app.handlers.load_pre.append(CreateDefaultData)
     bpy.app.handlers.depsgraph_update_post.append(CheckSelectedObject)
 
-
-    # Register keymaps
-    wm = bpy.context.window_manager
-    if wm.keyconfigs.addon:
-        print("REGISTERING KEYMAP?")
-        # Object Mode
-        km = wm.keyconfigs.addon.keymaps.new(name='Object Mode')
-        kmi = km.keymap_items.new('wm.call_menu_pie', 'E', 'PRESS')
-        kmi.properties.name = "pie.capsule_main"
-#        kmi.active = True
-        addon_keymaps.append(kmi)
-
+    add_hotkeys()
 
 def unregister():
     """
     Unregisters itself and any extra pointer properties, handlers and keymaps from Blender.
     """
 
-    # Remove keymaps
-    wm = bpy.context.window_manager
-    kc = wm.keyconfigs.addon
-    if kc:
-        km = kc.keymaps['Object Mode']
-        for kmi in km.keymap_items:
-            if kmi.idname == 'wm.call_menu_pie':
-                if kmi.properties.name == "pie.capsule_main":
-                    km.keymap_items.remove(kmi)
+    remove_hotkeys()
     
     # export_presets.DeletePresets()
     bpy.app.handlers.load_pre.remove(CreateDefaultData)

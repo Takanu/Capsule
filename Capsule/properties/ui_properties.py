@@ -89,7 +89,7 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         )
 
     obj_origin_point: EnumProperty(
-        name="Export Origin",
+        name="Origin Export",
         description="Determines what the origin point of the exported file is set to.",
         items=(
         ('Object', 'Object', "Sets the exported origin point to the object's origin point."),
@@ -98,14 +98,14 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         )
 
     obj_location_preset: EnumProperty(
-        name="Select Location Preset",
+        name="File Location",
         description="Defines the file path that the object will be exported to.",
         items=GetLocationPresets,
         update=CAP_Update_ProxyObjectLocationPreset
         )
 
     obj_export_preset: EnumProperty(
-        name="Select Export Preset",
+        name="Export Preset",
         description="Defines the export settings used on the object.",
         items=GetExportDefaults,
         update=CAP_Update_ProxyObjectExportPreset
@@ -119,7 +119,7 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         )
     
     col_origin_point: EnumProperty(
-        name="Export Origin",
+        name="Origin Export",
         description="Determines what the origin point of the exported file is set to.",
         items=(
         ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object."),
@@ -135,7 +135,7 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         )
 
     col_child_export_option: EnumProperty(
-        name="Child Export Options",
+        name="Hierarchy",
         description="Lets you set how children of a collection are included in the export.",
         items=(
         ('All', 'All Children', "Will export the children of this collection as well as every object associated to a child of this collection."),
@@ -150,14 +150,14 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         )
 
     col_location_preset: EnumProperty(
-        name="Select Export Location",
+        name="File Location",
         description="Defines the Location that the collection will be exported to.",
         items=GetLocationPresets,
         update=CAP_Update_ProxyCollectionLocationPreset,
         )
 
     col_export_preset: EnumProperty(
-        name="Select Export Default",
+        name="Export Preset",
         description="Defines the export settings used on the collection.",
         items=GetExportDefaults,
         update=CAP_Update_ProxyCollectionExportDefault
