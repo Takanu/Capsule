@@ -19,18 +19,21 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	instance_id: IntProperty(default=-1)
 
 	# scene
+	# the property for 'start'.
 	start_frame: IntProperty(
 		name = "Start Frame",
 		description = "The start frame of the export.  Leave at the default value (1) to take the start frame of the current scene.",
 		default = 1,
 	)
 
+	# the property for 'end'.
 	end_frame: IntProperty(
 		name = "End Frame",
 		description = "The end frame of the export.  Leave at the default value (250) to take the start frame of the current scene.",
 		default = 250,
 	)
 
+	# the property for 'xsamples'.
 	transform_samples: IntProperty(
 		name = "Transform Samples",
 		description = "The number of times per-frame transformations are sampled.",
@@ -39,6 +42,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		max = 128,
 	)
 
+	# the property for 'gsamples'.
 	geometry_samples: IntProperty(
 		name = "Geometry Samples",
 		description = "The number of times per-frame object data is sampled.",
@@ -47,6 +51,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		max = 128,
 	)
 
+	# the property for 'sh_open'.
 	shutter_open: FloatProperty(
 		name = "Shutter Open",
 		description = "The time at which the shutter is open.",
@@ -56,6 +61,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		max = 1,
 	)
 
+	# the property for 'sh_close'.
 	shutter_close: FloatProperty(
 		name = "Shutter Close",
 		description = "The time at which the shutter is closed.",
@@ -65,6 +71,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		max = 1,
 	)
 
+	# the property for 'flatten'.
 	flatten_hierarchy: BoolProperty(
 		name = "Flatten Hierarchy",
 		description = "Do not preserve object parent/child relationships on export.",
@@ -74,7 +81,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	export_custom_properties: BoolProperty(
 		name = "Export Custom Properties",
 		description = "Export custom properties to Alembic .userProperties.",
-		default = False
+		default = True
 	)
 
 	global_scale: FloatProperty(
@@ -88,38 +95,41 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		max = 1000,
 	)
 
-	# object
+	# the property for 'uvs'
 	export_uvs: BoolProperty(
 		name = "Export UVs",
 		description = "Include mesh UVs with the export.",
 		default = True
 	)
 
+	# the property for 'packuv'
 	pack_uvs: BoolProperty(
 		name = "Pack UV Islands",
 		description = "Export UVs with packed islands.",
 		default = True
 	)
 
+	# the property for 'normals'
 	export_normals: BoolProperty(
 		name = "Export Normals",
 		description = "Include mesh normals with the export.",
 		default = True
 	)
 
+	# the property for 'vcolors'
 	export_colors: BoolProperty(
 		name = "Export Vertex Colors",
 		description = "Include vertex colors with the export.",
 		default = False
 	)
 
+	# the property for 'face_sets'
 	export_face_sets: BoolProperty(
 		name = "Export Face Sets",
 		description = "Export per-face shading group assignments.",
 		default = False
 	)
 
-	# object > triangulate
 	triangulate : BoolProperty(
 		name = "Triangulate",
 		description = "Export polygons (quads and n-gons) as triangles.",
@@ -147,7 +157,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	)
 
 
-
+	# the property for 'subdiv_schema'
 	use_subdiv_schema: BoolProperty(
 		name = "Use Subdivision Schema",
 		description = "Export meshes using Alembic’s subdivision schema.",
@@ -160,6 +170,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		default = False
 	)
 
+	# the property for 'curves_as_mesh'
 	export_curves_as_mesh: BoolProperty(
 		name = "Export Curves as Meshes",
 		description = "Export curves and NURBS surfaces as meshes.",
@@ -169,16 +180,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	use_instancing: BoolProperty(
 		name = "Use Instancing",
 		description = "Export data of duplicated objects as Alembic instances; speeds up the export and can be disabled for compatibility with other software.",
-		default = False
-	)
-
-	compression_type: EnumProperty(
-		name='Compression Type',
-		description='???',
-		items=(
-			('OGAWA', 'OGAWA', '???'),
-			('HDF5', 'HDF5', '???'),
-			),
+		default = True
 	)
 	
 
@@ -188,13 +190,13 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	export_hair: BoolProperty(
 		name = "Export Hair",
 		description = "Exports hair particle systems as animated curves.",
-		default = False
+		default = True
 	)
 
 	export_particles: BoolProperty(
 		name = "Export Particles",
 		description = "Exports non-hair particle systems.",
-		default = False
+		default = True
 	)
 
 	def export(self, context, export_preset, filePath):
@@ -211,7 +213,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 
 			selected = True,
 			renderable_only = False,
-			visible_layers_only = False,
+			visible_objects_only = False,
 
 			# scene
 			start = self.start_frame,
@@ -236,15 +238,14 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			subdiv_schema = self.use_subdiv_schema,
 			apply_subdiv = self.apply_subdiv,
 			curves_as_mesh = self.export_curves_as_mesh,
-			compression_type = self.compression_type,
 			use_instancing = self.use_instancing,
-			# trianglulate = False,  # part of the API, but Capsule does this elsewhere.
-			# quad_method = ???      # see above, although I should provide options like this API does.
-			# ngon_method = ???      # ^
 			
 			# particles
 			export_hair = self.export_hair,
 			export_particles = self.export_particles,
+
+			#extra
+			export_custom_properties = self.export_custom_properties,
 
 		)
 	
@@ -290,8 +291,8 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			animation_options = export_options.column(align=True, heading="Scene Animation Options")
 			animation_options.prop(exportData, "start_frame")
 			animation_options.prop(exportData, "end_frame")
-			animation_options.prop(exportData, "shutter_open")
-			animation_options.prop(exportData, "shutter_close")
+			animation_options.prop(exportData, "shutter_open", slider=True)
+			animation_options.prop(exportData, "shutter_close", slider=True)
 			animation_options.separator()
 
 			
@@ -306,14 +307,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			export_options.prop(exportData, "apply_subdiv")
 			export_options.prop(exportData, "export_curves_as_mesh")
 			export_options.prop(exportData, "use_instancing")
-			export_options.separator()
-			export_options.separator()
 
-			export_options.prop(exportData, "compression_type")
-			export_options.separator()
-
-			export_main.separator()
-			export_main.separator()
 			export_main.separator()
 
 			
