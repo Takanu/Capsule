@@ -4,7 +4,6 @@ from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, Po
 from bpy.types import PropertyGroup
 
 from ..update.update_objects import (
-    CAP_Update_ObjectListName, 
     CAP_Update_ObjectListExport, 
     CAP_Update_ActionItemName, 
     CAP_Update_FocusObject,  
@@ -13,7 +12,6 @@ from ..update.update_objects import (
 )
 
 from ..update.update_collections import (
-    CAP_Update_CollectionListName, 
     CAP_Update_CollectionListExport, 
     CAP_Update_FocusCollection, 
     CAP_Update_SelectCollection, 
@@ -26,24 +24,22 @@ class ObjectListItem(PropertyGroup):
     """
     Defines an object as a list property, for use when displaying objects in the user interface.
     """
-    name: StringProperty(
-        name="",
-        description="The name of the object.",
-        update=CAP_Update_ObjectListName
-        )
 
-    prev_name: StringProperty(
-        name="",
-        description="Internal only, used for tracking name updates."
+    #URGENT: This needs an update property!
+    object: PointerProperty(
+        type=bpy.types.Object,
+        name="Object",
+        description="A pointer for the object this list item represents",
         )
 
     enable_export: BoolProperty(
         name="",
-        description="Enables or disables the ability to export this object.",
+        description="Enables or disables the ability to export this object",
         default=False,
         update=CAP_Update_ObjectListExport
         )
 
+    # Secondary functions
     sel: BoolProperty(
         name="Select",
         description="Selects the object in the scene",
@@ -69,10 +65,10 @@ class CollectionListItem(PropertyGroup):
     """
     Defines a collection as a list property, for use when displaying collections in the user interface.
     """
-    name: StringProperty(
-        name="",
-        description="The name of the collection.",
-        update=CAP_Update_CollectionListName
+    collection: PointerProperty(
+        type=bpy.types.Collection,
+        name="Collection",
+        description="The collection data this list entry represents.",
         )
 
     prev_name: StringProperty(

@@ -187,7 +187,7 @@ def UpdateObjectList(scene, object, enableExport):
 
     # Check a list entry for the object doesn't already exist.
     for item in scene.CAPScn.object_list:
-        if item.name == object.name:
+        if item.object.name == object.name:
             print("Changing", object.name, "'s export from list.'")
             item.enable_export = enableExport
             return
@@ -196,8 +196,7 @@ def UpdateObjectList(scene, object, enableExport):
     if enableExport is True:
         print("Adding", object.name, "to list.")
         entry = scn.object_list.add()
-        entry.name = object.name
-        entry.prev_name = object.name
+        entry.object = object
         entry.enable_export = enableExport
 
         object.CAPObj.in_export_list = True
@@ -211,27 +210,24 @@ def CAP_Update_FocusObject(self, context):
 
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
-
-    for object in context.scene.objects:
-        if object.name == self.name:
             
-            bpy.ops.object.select_all(action='DESELECT')
-            select_utils.SelectObject(object)
+    bpy.ops.object.select_all(action='DESELECT')
+    select_utils.SelectObject(self.object)
 
-            # As the context won't be correct when the icon is clicked
-            # We have to find the actual 3D view and override the context of the operator
-            for area in bpy.context.screen.areas:
-                if area.type == 'VIEW_3D':
-                    for region in area.regions:
-                        if region.type == 'WINDOW':
-                            override = {'area': area, 
-                                        'region': region, 
-                                        'edit_object': bpy.context.edit_object, 
-                                        'scene': bpy.context.scene, 
-                                        'screen': bpy.context.screen, 
-                                        'window': bpy.context.window}
+    # As the context won't be correct when the icon is clicked
+    # We have to find the actual 3D view and override the context of the operator
+    for area in bpy.context.screen.areas:
+        if area.type == 'VIEW_3D':
+            for region in area.regions:
+                if region.type == 'WINDOW':
+                    override = {'area': area, 
+                                'region': region, 
+                                'edit_object': bpy.context.edit_object, 
+                                'scene': bpy.context.scene, 
+                                'screen': bpy.context.screen, 
+                                'window': bpy.context.window}
 
-                            bpy.ops.view3d.view_selected(override)
+                    bpy.ops.view3d.view_selected(override)
     return None
 
 
@@ -240,39 +236,13 @@ def CAP_Update_SelectObject(self, context):
     Selects (but doesn't focus) the given object.
     """
 
-    preferences = context.preferences
-    addon_prefs = preferences.addons['Capsule'].preferences
-
-    for object in context.scene.objects:
-        if object.name == self.name:
-
-            select_utils.ActivateObject(object)
-            select_utils.SelectObject(object)
+    bpy.ops.object.select_all(action='DESELECT')
+    select_utils.ActivateObject(self.object)
+    select_utils.SelectObject(self.object)
 
     return None
 
 
-def CAP_Update_ObjectListName(self, context):
-    """
-    Updates the name of an object once edited from the list menu.
-    Note - Do not use this in any other place apart from when an object is represented in a list.
-    """
-
-    print("Finding object name to replace")
-    scn = context.scene.CAPScn
-
-    # Set the name of the item to the collection name
-    for item in context.scene.objects:
-        if item.name == self.prev_name:
-            print("Found object name ", item.name)
-            item.name = self.name
-            self.prev_name = item.name
-
-            print("object Name = ", item.name)
-            print("List Name = ", self.name)
-            print("Prev Name = ", self.prev_name)
-
-    return None
 
 def CAP_Update_ObjectListExport(self, context):
     """
@@ -280,17 +250,8 @@ def CAP_Update_ObjectListExport(self, context):
     Note - Do not use this in any other place apart from when an object is represented in a list.
     """
 
-    print("Changing Enable Export... (List)")
-
-    preferences = context.preferences
-    addon_prefs = preferences.addons['Capsule'].preferences
-    scn = context.scene.CAPScn
-        
-    # Set the name of the item to the collection name
-    for item in context.scene.objects:
-        if item.name == self.name:
-            print("Found object name ", item.name)
-            item.CAPObj.enable_export = self.enable_export
+    print("Changing Enable Export... (List)")  
+    self.object.CAPObj.enable_export = self.enable_export
 
 
     return None
@@ -310,13 +271,9 @@ def CAP_Update_ObjectListRemove(self, context):
     # Search through the object list to find a matching name
     for item in scn.object_list:
         if item.name == self.name:
-            # Search through scene objects to untick export
-            for sceneObj in context.scene.objects:
-                if sceneObj.name == self.name:
-                    print("Deleting", sceneObj.name, "from the list.")
 
-                    sceneObj.CAPObj.enable_export = False
-                    sceneObj.CAPObj.in_export_list = False
+            self.object.CAPObj.enable_export = False
+            self.object.CAPObj.in_export_list = False
 
             # Whether or not we find a successful match in the scene,
             # remove it from the list

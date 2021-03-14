@@ -172,7 +172,7 @@ def UpdateCollectionList(scene, collection, enableExport):
     for item in scene.CAPScn.collection_list:
         print(item)
         if item is not None:
-            if item.name == collection.name:
+            if item.collection.name == collection.name:
                 print("Changing", collection.name, "'s export from list.'")
                 item.enable_export = enableExport
                 return
@@ -180,10 +180,9 @@ def UpdateCollectionList(scene, collection, enableExport):
     if enableExport is True:
         print("Adding", collection.name, "to list.")
         entry = scn.collection_list.add()
-        entry.name = collection.name
-        entry.prev_name = collection.name
-        entry.enable_export = enableExport
+        entry.collection = collection
         collection.CAPCol.in_export_list = True
+
 
 def CAP_Update_FocusCollection(self, context):
 
@@ -191,32 +190,26 @@ def CAP_Update_FocusCollection(self, context):
     Focuses the camera to a particular collection, moving it to ensure all objects are in the frame and can be seen clearly.
     TODO 2.0: The camera movement interpolation no longer works.
     """
+    bpy.ops.object.select_all(action='DESELECT')
 
-    preferences = context.preferences
-    addon_prefs = preferences.addons['Capsule'].preferences
+    for object in self.collection.objects:
+        select_utils.ActivateObject(object)
+        select_utils.SelectObject(object)
 
-    for collection in collection_utils.GetSceneCollections(context.scene, True):
-        if collection.name == self.name:
+    # As the context won't be correct when the icon is clicked
+    # We have to find the actual 3D view and override the context of the operator
+    for area in bpy.context.screen.areas:
+        if area.type == 'VIEW_3D':
+            for region in area.regions:
+                if region.type == 'WINDOW':
+                    override = {'area': area, 
+                                'region': region, 
+                                'edit_object': bpy.context.edit_object, 
+                                'scene': bpy.context.scene, 
+                                'screen': bpy.context.screen, 
+                                'window': bpy.context.window}
 
-            bpy.ops.object.select_all(action='DESELECT')
-
-            for object in collection.objects:
-                select_utils.SelectObject(object)
-
-            # As the context won't be correct when the icon is clicked
-            # We have to find the actual 3D view and override the context of the operator
-            for area in bpy.context.screen.areas:
-                if area.type == 'VIEW_3D':
-                    for region in area.regions:
-                        if region.type == 'WINDOW':
-                            override = {'area': area, 
-                                        'region': region, 
-                                        'edit_object': bpy.context.edit_object, 
-                                        'scene': bpy.context.scene, 
-                                        'screen': bpy.context.screen, 
-                                        'window': bpy.context.window}
-
-                            bpy.ops.view3d.view_selected(override)
+                    bpy.ops.view3d.view_selected(override)
 
     return None
 
@@ -225,61 +218,22 @@ def CAP_Update_SelectCollection(self, context):
     """
     Selects (but doesn't focus) the given collection.
     """
+    bpy.ops.object.select_all(action='DESELECT')
 
-    preferences = context.preferences
-    addon_prefs = preferences.addons['Capsule'].preferences
-
-    for collection in select_utils.GetSceneCollections(context.scene, True):
-        if collection.name == self.name:
-
-            #bpy.ops.object.select_all(action='DESELECT')
-
-            for object in collection.objects:
-                select_utils.ActivateObject(object)
-                select_utils.SelectObject(object)
+    for object in self.collection.objects:
+        select_utils.ActivateObject(object)
+        select_utils.SelectObject(object)
 
     return None
 
-def CAP_Update_CollectionListName(self, context):
-    """
-    Updates the name of an collection once edited from the list menu.
-    Note - Do not use this in any other place apart from when an object is represented in a list.
-    """
-    # Set the name of the item to the collection name
-    for collection in collection_utils.GetSceneCollections(context.scene, True):
-        print("Finding collection name to replace")
-        if collection.name == self.prev_name:
-
-            print("Found collection name ", collection.name)
-            collection.name = self.name
-            self.prev_name = collection.name
-
-            print("Collection Name = ", collection.name)
-            print("List Name = ", self.name)
-            print("Prev Name = ", self.prev_name)
-
-    return None
 
 def CAP_Update_CollectionListExport(self, context):
     """
     Updates the "Enable Export" collection status once changed from the list menu.
     Note - Do not use this in any other place apart from when an object is represented in a list.
     """
-    print("Changing Enable Export... (List)")
 
-    preferences = context.preferences
-    addon_prefs = preferences.addons['Capsule'].preferences
-    scn = context.scene.CAPScn
-
-
-    # Set the name of the item to the collection name
-    for collection in collection_utils.GetSceneCollections(context.scene, True):
-        print("Finding collection name to replace")
-        if collection.name == self.name:
-            print("Found object name ", collection.name)
-            collection.CAPCol.enable_export = self.enable_export
-
-
+    self.collection.CAPCol.enable_export = self.enable_export
     return None
 
 
@@ -296,13 +250,9 @@ def CAP_Update_CollectionListRemove(self, context):
 
     for item in scn.collection_list:
         if item.name == self.name:
-            # Search through scene groups to untick export
-            for sceneGroup in collection_utils.GetSceneCollections(context.scene, True):
-                if sceneGroup.name == self.name:
-                    print("Deleting", sceneGroup.name, "from the list.")
 
-                    sceneGroup.CAPCol.enable_export = False
-                    sceneGroup.CAPCol.in_export_list = False
+            self.collection.CAPCol.enable_export = False
+            self.collection.CAPCol.in_export_list = False
 
             # Whether or not we find a successful match in the scene,
             # remove it from the list

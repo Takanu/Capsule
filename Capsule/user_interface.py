@@ -19,7 +19,7 @@ class CAPSULE_UL_Object(UIList):
         addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
-        layout.prop(item, "name", text="", emboss=False)
+        layout.prop(item.object, "name", text="", emboss=False)
         layout.prop(item, "enable_export", text="")
 
         # A switch to change the extra tool on the Object list entries.
@@ -40,7 +40,7 @@ class CAPSULE_UL_Collection(UIList):
         addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
-        layout.prop(item, "name", text="", emboss=False)
+        layout.prop(item.collection, "name", text="", emboss=False)
         layout.prop(item, "enable_export", text="")
 
         # A switch to change the extra tool on the Collection list entries.
@@ -158,15 +158,15 @@ class CAPSULE_PT_Selection(Panel):
 
                 # LABEL - If we have MORE THAN ONE OBJECT
                 elif len(context.selected_objects) > 1:
-                    objectCount = 0
+                    object_count = 0
                     selected = []
 
                     for sel in context.selected_objects:
-                        objectCount += 1
+                        object_count += 1
                         selected.append(sel)
 
                     edit_enable_list = True
-                    selection_label = str(objectCount) + " objects selected"
+                    selection_label = str(object_count) + " objects selected"
                 
                 # No dropdown, indicate objects to be edited
                 if addon_prefs.edit_enable_dropdown is False:
@@ -415,14 +415,12 @@ class CAPSULE_PT_List(Panel):
             obj = None
             ob = None
 
+            # TODO: This is trash
             if len(scn.object_list) is not 0:
                 if len(scn.object_list) > scn.object_list_index:
                     entry = scn.object_list[scn.object_list_index]
-
-                    for item in context.scene.objects:
-                        if item.name == entry.name:
-                            obj = item.CAPObj
-                            ob = item
+                    obj = entry.object.CAPObj
+                    ob = entry.object
             
             if obj is not None:
                 object_options_list = layout.column(align=False)
@@ -441,13 +439,12 @@ class CAPSULE_PT_List(Panel):
             grp = None 
             gr = None
 
+            # TODO: This is trash
             if len(scn.collection_list) > 0:
                 entry = scn.collection_list[scn.collection_list_index]
-
-                for collection in collection_utils.GetSceneCollections(context.scene, True):
-                    if collection.name == entry.name:
-                        grp = collection.CAPCol
-                        gr = collection
+                grp = entry.collection.CAPCol
+                gr = entry.collection
+                        
             
             if grp is not None:
                 group_options_list = layout.column(align=False)

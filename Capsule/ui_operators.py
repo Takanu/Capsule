@@ -319,8 +319,7 @@ class CAPSULE_OT_Refresh_List(Operator):
             for obj in context.scene.objects:
                 if obj.CAPObj.in_export_list is True:
                     entry = scn.object_list.add()
-                    entry.name = obj.name
-                    entry.prev_name = obj.name
+                    entry.object = obj
                     entry.enable_export = obj.CAPObj.enable_export
 
 
@@ -329,8 +328,7 @@ class CAPSULE_OT_Refresh_List(Operator):
             for collection in collection_utils.GetSceneCollections(context.scene, True):
                 if collection.CAPCol.in_export_list is True:
                         entry = scn.collection_list.add()
-                        entry.name = collection.name
-                        entry.prev_name = collection.name
+                        entry.collection = collection
                         entry.enable_export = collection.CAPCol.enable_export
 
         return {'FINISHED'}
