@@ -279,7 +279,7 @@ class CAPSULE_OT_PieMainMenu(Menu):
     """
 
     bl_idname = "pie.capsule_main"
-    bl_label = "Capsule Export"
+    bl_label = "Capsule Export Menu"
 
     def draw(self, context):
         layout = self.layout

@@ -142,6 +142,7 @@ class CAP_AddonPreferences(AddonPreferences):
     saved_export_presets_dropdown: BoolProperty(default=False)
     file_export_presets_dropdown: BoolProperty(default=False)
     presets_dropdown: BoolProperty(default = False)
+    keymap_dropdown: BoolProperty(default = False)
     options_dropdown: BoolProperty(default = False)
 
     # Selection Dropdowns
@@ -203,23 +204,26 @@ class CAP_AddonPreferences(AddonPreferences):
 
         if addon_prefs.saved_export_presets_dropdown is False:
             savedpresets_box = layout.box()
-            col_saved_title = savedpresets_box.row(align=True)
-            col_saved_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            col_saved_title.label(text="Saved Presets")
+            savedpresets_title = savedpresets_box.row(align=True)
+            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            savedpresets_title.label(text="Saved Presets")
 
         else:
             savedpresets_box = layout.box()
-            col_saved_title = savedpresets_box.row(align=True)
-            col_saved_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            col_saved_title.label(text="Saved Presets")
 
-            col_savedpresets = savedpresets_box.row(align=True)
-            col_savedpresets_list = col_savedpresets.column(align=True)
-            col_savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
-            col_savedpresets_list.operator("cap.create_current_preset", text="Add to Active Export Presets", icon="FORWARD")
+            savedpresets_title = savedpresets_box.row(align=True)
+            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            savedpresets_title.label(text="Saved Presets")
 
-            col_savedpresets_options = col_savedpresets.column(align=True)
-            col_savedpresets_options.operator("cap.delete_global_preset", text="", icon="REMOVE")
+            savedpresets_items = savedpresets_box.row(align=True)
+            savedpresets_list = savedpresets_items.column(align=True)
+            savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
+            savedpresets_list.operator("cap.create_current_preset", text="Add to Active Export Presets", icon="FORWARD")
+
+            savedpresets_listedit = savedpresets_items.column(align=True)
+            savedpresets_listedit.operator("cap.delete_global_preset", text="", icon="REMOVE")
+
+            
 
         # //////////
 
@@ -312,33 +316,24 @@ class CAP_AddonPreferences(AddonPreferences):
                 return
 
         #---------------------------------------------------------
-        # Options
+        # Shortcut Keys
         #---------------------------------------------------------
-        options_box = layout.box()
-        extras_dropdown = options_box.row(align=True)
+        keymap_box = layout.box()
+        keymap_menu = keymap_box.row(align=True)
 
-        if addon_prefs.options_dropdown is False:
-            extras_dropdown.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            extras_dropdown.label(text="Extra Settings")
+        if addon_prefs.keymap_dropdown is False:
+            keymap_menu.prop(addon_prefs, "keymap_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            keymap_menu.label(text="Key Shortcuts")
 
         else:
-            extras_dropdown.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            extras_dropdown.label(text="Extra Settings")
-            options_box.separator()
+            keymap_menu.prop(addon_prefs, "keymap_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            keymap_menu.label(text="Key Shortcuts")
 
-            extras_content = options_box.column(align=True)
-            extras_content.use_property_split = True
-            extras_content.use_property_decorate = False  # removes 
-
-            extras_content.prop(addon_prefs, "list_feature")
-            extras_content.separator()
-            extras_content.prop(addon_prefs, "substitute_directories")
+            # Added L/R padding
+            keymap_area = keymap_box.row(align=True)
+            keymap_area.separator()
             
-            extras_content.separator()
-            extras_content.separator()
-
-            keymap_options = options_box.column(align=True) 
-            keymap_options.label(text="Keyboard Shortcut List:",icon="KEYINGSET")
+            keymap_options = keymap_area.column(align=True) 
 
             # Brings up the kinda-native keymap interface for plugin keymaps.
             wm = bpy.context.window_manager
@@ -365,16 +360,50 @@ class CAP_AddonPreferences(AddonPreferences):
                     rna_keymap_ui.draw_kmi([], kc, km, kmi, keymap_options, 0)
                     keymap_options.separator()
                     old_km_name = km.name
+            
+            # right padding
+            keymap_area.separator()
 
-            options_box.separator()
+        #---------------------------------------------------------
+        # Options
+        #---------------------------------------------------------
+        options_box = layout.box()
+        extras_dropdown = options_box.row(align=True)
+
+        if addon_prefs.options_dropdown is False:
+            extras_dropdown.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            extras_dropdown.label(text="Extra Settings")
+
+        else:
+            extras_dropdown.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            extras_dropdown.label(text="Extra Settings")
             options_box.separator()
 
-            erase_options = options_box.row(align=True, heading="Reset Options")
-            erase_options_split = erase_options.split(factor=0.4, align=True)
+            # Added L/R padding
+            extras_area = options_box.row(align=True)
+            extras_area.separator()
+
+            extras_content = extras_area.column(align=True)
+            extras_content.use_property_split = True
+            extras_content.use_property_decorate = False  # removes 
+
+            extras_content.prop(addon_prefs, "list_feature")
+            extras_content.separator()
+            extras_content.prop(addon_prefs, "substitute_directories")
+            extras_content.separator()
+            extras_content.separator()
+            extras_content.separator()
+
+            erase_options = extras_content.column(align=True)
+            erase_options.operator("scene.cap_resetsceneprops", text="Reset Capsule Scene Data")
+            erase_options.separator()
+            # TODO: Work this out for later!
+            # erase_options_split = erase_options.split(factor=0.4, align=False)
             # erase_options_split.label(text="Reset Options")
-            erase_options_split.operator("scene.cap_resetsceneprops", text="Reset Capsule Scene Data")
+            # erase_options_split.operator("scene.cap_resetsceneprops", text="Reset Capsule Scene Data")
 
-            options_box.separator()
+            # right padding
+            extras_area.separator()
 
 @persistent
 def CreateDefaultData(scene):
