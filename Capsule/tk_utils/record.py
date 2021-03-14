@@ -384,21 +384,6 @@ def CheckCapsuleErrors(context):
             # self.export_stats['expected_export_quantity'] += 1
 
 
-    # If we're using Unity export options, ensure that every object mesh has a single user
-    # FIXME : Determine if this is still needed or not.
-
-    # Support for Unity 5 was removed since 2017.3 + Blender 2.79 fixes those problems.
-    # if export.format_type == 'FBX' and export.data_fbx.x_unity_rotation_fix is True:
-    #     for item in context.scene.objects:
-    #         data = item.data
-    #         if data is not None:
-    #             print(data.users)
-    #             if data.users > 1:
-    #                 select_utils.FocusObject(item)
-    #                 statement = "Sorry, but currently, this Unity Export Preset requires that all scene objects be single-user only.  Please ensure all objects have only one user, before using it."
-    #                 return statement
-
-
     # Check all scene collections for potential errors
     for collection in collection_utils.GetSceneCollections(context.scene, True):
 

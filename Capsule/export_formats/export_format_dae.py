@@ -62,7 +62,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 	export_mesh_type_selection : EnumProperty(
 		name="Modifier Resolution Export",
 		items=(
-			('view', "View", "The viewport modifier settings will be exported."),
+			('view', "View", "The viewport modifier settings will be exported (IF you have Apply Modifiers enabled)."),
 			('render', "Render", "The render modifier settings will be exported"),
 			),
 		description="Defines what modifier settings are used for the export.",

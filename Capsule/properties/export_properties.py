@@ -190,7 +190,7 @@ class CAPSULE_ExportData(PropertyGroup):
         description="",
         items=(
         ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
-        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
+        ('Scene', 'Scene', 'A tab containing options to how scene properties are exported.'),
         ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
         ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
         ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')

@@ -19,11 +19,18 @@ class CAP_FormatData_FBX(PropertyGroup):
 	instance_id: IntProperty(default=-1)
 
 	bundle_textures: BoolProperty(
-			name="Bundle Textures",
-			description="If enabled, allows any textures that are packed in the .blend file and applied to an object or group that's tagged for export, to be bundled with it inside the FBX file.",
-			default=False
-		)
+		name="Bundle Textures",
+		description="If enabled, allows any textures that are packed in the .blend file and applied to an object or group that's tagged for export to be bundled with it inside the FBX file",
+		default=False
+	)
 
+	use_custom_props: BoolProperty(
+		name="Export Custom Properties",
+		description="Exports custom properties",
+		default=False
+	)
+
+	# the property for 'object_types'
 	export_object_types: EnumProperty(
 		name="Object Types",
 		options={'ENUM_FLAG'},
@@ -33,7 +40,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('LIGHT', "Light", ""),
 			('EMPTY', "Empty", ""),
 			('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),),
-		description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule.",
+		description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule",
 		default={'EMPTY', 'CAMERA', 'LIGHT', 'ARMATURE', 'MESH', 'OTHER'},
 	)
 
@@ -46,7 +53,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 	apply_unit_scale: BoolProperty(
 		name="Apply Unit Scale",
 		description="Apply Unit, Take into account current Blender units settings (if unset, raw Blender Units values are used as-is)",
-		default=False
+		default=True
 	)
 
 	apply_scale_options: EnumProperty(
@@ -63,7 +70,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 	use_space_transform: BoolProperty(
 		name="Use Space Transform",
 		description="Apply global space transform to the object rotations. When disabled only the axis space is written to the file and all object transforms are left as-is",
-		default=False
+		default=True
 	)
 
 	bake_space_transform: BoolProperty(
@@ -101,25 +108,37 @@ class CAP_FormatData_FBX(PropertyGroup):
 		default='-Z'
 	)
 
+	
+
+	# the property for 'mesh_smooth_type'
+	export_normal_type: EnumProperty(
+		name="Normal Export Type",
+		description="Defines how mesh normals are exported.",
+		items=(
+			('OFF', 'Normals Only', 'Exports the current custom normals of the model.'),
+			('FACE', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
+			('EDGE', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
+			),
+	)
+
+	# the property for 'use_tspace'
+	use_tangent_space: BoolProperty(
+		name="Use Tangent Space",
+		description="Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
+		default=False
+	)
+
+	# the property for 'use_mesh_edges'
 	convert_loose_edges: BoolProperty(
 		name="Convert Loose Edges",
 		description="Makes any separate edges a two-verted polygon.",
 		default=False
 	)
 
-	export_normal_type: EnumProperty(
-		name="Normal Export Type",
-		description="Defines how mesh normals are exported.",
-		items=(
-			('EDGE', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
-			('FACE', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
-			('OFF', 'Normals Only', 'Exports the current custom normals of the model.')
-			),
-	)
 
-	use_tangent_space: BoolProperty(
-		name="Use Tangent Space",
-		description="Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
+	use_subsurf : BoolProperty(
+		name="Export Subdivision Surface Data",
+		description="Export the last Catmull-Rom subdivision modifier as FBX subdivision (does not apply the modifier even if ‘Apply Modifiers’ is enabled)",
 		default=False
 	)
 
@@ -200,12 +219,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 		default=False
 		)
 
-	optimise_keyframes: BoolProperty(
-		name="Optimise Keyframes",
-		description="If enabled, removes double keyframes from exported animations.",
-		default=False
-	)
-
 	bake_anim_step: FloatProperty(
 		name="Sampling Rate",
 		description="Defines how often, in frames, the export process should evaluate keyframes.",
@@ -217,7 +230,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 	)
 
 	bake_anim_simplify_factor: FloatProperty(
-		name="Simplify Factor",
+		name="Simplify",
 		description="A measure for how much when exported, animations should be simplified.  Setting this value to 0 will disable simplification.  The higher the value, the greater the simplification.",
 		default=1,
 		min=0,
@@ -226,59 +239,61 @@ class CAP_FormatData_FBX(PropertyGroup):
 		soft_max=10
 	)
 
-	# A secret fix embedded in the Unity 5 export option, to fix rotated objects.
-	x_unity_rotation_fix: BoolProperty(default=False)
-
 
 	def export(self, export_preset, filePath):
 		"""
 		Calls the FBX Export API to export the currently selected objects with the given settings.
 		"""
 
-		#print("APPLY UNIT SCALE, IS IT FUCKING ON?", self.apply_unit_scale)
-
 		print("Exporting", "*"*70)
 		bpy.ops.export_scene.fbx(
-			check_existing=False,
-			filepath=filePath+ ".fbx",
-			filter_glob="*.fbx",
-			use_selection=True,
-			use_active_collection=False,
-			global_scale=self.global_scale,
-			apply_unit_scale=self.apply_unit_scale,
-			apply_scale_options=self.apply_scale_options,
-			axis_forward=self.axis_forward,
-			axis_up=self.axis_up,
-			use_space_transform=self.use_space_transform,
-			bake_space_transform=self.bake_space_transform,
-			object_types=self.export_object_types,
-			use_mesh_modifiers=export_preset.apply_modifiers,
-			mesh_smooth_type=self.export_normal_type,
-			use_mesh_edges=self.convert_loose_edges,
-			use_tspace=self.use_tangent_space,
-			use_custom_props=False,  #TODO: Check what this does and if it should be enabled
 			
-			# Animation
-			add_leaf_bones=self.add_leaf_bones,
-			primary_bone_axis=self.primary_bone_axis,
-			secondary_bone_axis=self.secondary_bone_axis,
-			use_armature_deform_only=self.use_armature_deform_only,
-			armature_nodetype=self.armature_nodetype,
+			# core
+			check_existing = False,
+			filepath = filePath+ ".fbx",
+			filter_glob = "*.fbx",
+			use_selection = True,
+			use_active_collection = False,
+			# TODO: This prevents Shape Key export, must warn the user.
+			use_mesh_modifiers = export_preset.apply_modifiers,
+			# use_mesh_modifiers_render - Excluded in Blender 2.8 according to docs.
 
-			bake_anim=export_preset.export_animation,
-			bake_anim_use_all_bones=self.bake_anim_use_all_bones,
-			bake_anim_use_nla_strips=self.bake_anim_use_nla_strips,
-			bake_anim_use_all_actions=self.bake_anim_use_all_actions,
-			bake_anim_force_startend_keying=self.bake_anim_force_startend_keying,
-			bake_anim_step=self.bake_anim_step,
-			bake_anim_simplify_factor=self.bake_anim_simplify_factor,
-
-			# Export Details
 			path_mode='ABSOLUTE',
 			embed_textures=self.bundle_textures,
 			batch_mode='OFF',
 			use_batch_own_dir=False,
-			use_metadata=False
+			use_metadata=False,
+
+			# scene
+			global_scale = self.global_scale,
+			apply_unit_scale = self.apply_unit_scale,
+			apply_scale_options = self.apply_scale_options,
+			axis_forward = self.axis_forward,
+			axis_up = self.axis_up,
+			use_space_transform = self.use_space_transform,
+			bake_space_transform = self.bake_space_transform,
+			object_types = self.export_object_types,
+			mesh_smooth_type = self.export_normal_type,
+			use_mesh_edges = self.convert_loose_edges,
+			use_subsurf = self.use_subsurf,
+			use_tspace = self.use_tangent_space,
+			use_custom_props = self.use_custom_props,
+			
+			# Animation
+			add_leaf_bones = self.add_leaf_bones,
+			primary_bone_axis = self.primary_bone_axis,
+			secondary_bone_axis = self.secondary_bone_axis,
+			use_armature_deform_only = self.use_armature_deform_only,
+			armature_nodetype = self.armature_nodetype,
+
+			bake_anim = export_preset.export_animation,
+			bake_anim_use_all_bones = self.bake_anim_use_all_bones,
+			bake_anim_use_nla_strips = self.bake_anim_use_nla_strips,
+			bake_anim_use_all_actions = self.bake_anim_use_all_actions,
+			bake_anim_force_startend_keying = self.bake_anim_force_startend_keying,
+			bake_anim_step = self.bake_anim_step,
+			bake_anim_simplify_factor = self.bake_anim_simplify_factor,
+			
 		
 		)
 	
@@ -313,14 +328,15 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 
 			export_options.prop(exportData, "bundle_textures")
+			export_options.prop(exportData, "use_custom_props")
+			export_options.separator()
 			export_options.separator()
 
 			export_options.prop(exportData, "export_object_types")
 			export_options.separator()
+			
 
-			export_options.separator()
-
-		if exp.fbx_menu_options == 'Transform':
+		if exp.fbx_menu_options == 'Scene':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
@@ -351,13 +367,12 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 			export_options.prop(exportData, "convert_loose_edges")
 			export_options.prop(exportData, "use_tangent_space")
+			export_options.prop(exportData, "use_subsurf")
 			export_options.separator()
 			export_options.separator()
 
 			export_options.prop(exportData, "export_normal_type")
 			export_options.separator()
-
-			export_main.separator()
 
 		elif exp.fbx_menu_options == 'Armature':
 			export_options = export_options_area.column(align=True)
@@ -386,7 +401,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.prop(exportData, "bake_anim_use_nla_strips")
 			export_options.prop(exportData, "bake_anim_use_all_actions")
 			export_options.prop(exportData, "bake_anim_force_startend_keying")
-			export_options.prop(exportData, "optimise_keyframes")
 			export_options.separator()
 			export_options.separator()
 

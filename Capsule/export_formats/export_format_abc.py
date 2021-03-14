@@ -325,11 +325,15 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			export_options.separator()
 			export_options.separator()
 
+
 			export_options.prop(exportData, "triangulate")
 			export_options.separator()
-			export_options.prop(exportData, "quad_method")
-			export_options.prop(exportData, "ngon_method")
-			export_options.separator()
+
+			triangulate_options = export_options.column(align=True)
+			triangulate_options.active = exportData.triangulate
+			triangulate_options.prop(exportData, "quad_method")
+			triangulate_options.prop(exportData, "ngon_method")
+			triangulate_options.separator()
 		
 
 		elif exp.alembic_menu_options == 'Particles':
