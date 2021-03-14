@@ -66,6 +66,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default=False,
 	)
 
+	# the property for 'export_extras'
 	export_custom_properties: BoolProperty(
 		name='Export Custom Properties',
 		description='Export any custom properties as GLTF extras',
@@ -128,7 +129,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	)
 
 	# transform
-
+	# the property for 'export_yup'
 	export_y_up: BoolProperty(
 		name='Axis Up as +Y',
 		description='',
@@ -281,6 +282,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			# object filtering
 			export_selected=True,
+			# use_selection - For some reason there's two properties that do the same thing :l
 			export_cameras=self.export_cameras,
 			export_lights=self.export_lights,
 			export_extras=self.export_custom_properties,
@@ -297,6 +299,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			# mesh data
 			export_yup=self.export_y_up,
 			export_apply=export_preset.apply_modifiers,
+			# TODO: Must warn user that applying modifiers will prevent shape key exporting.
 
 			export_texcoords=self.export_texcoords,
 			export_normals=self.export_normals,
