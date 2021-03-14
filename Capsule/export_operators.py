@@ -133,6 +133,9 @@ class CAPSULE_OT_ExportAll(Operator):
         output += ".  "
         output += "Total of "
 
+        # This counting wont work for future versions but for now it's oookay.
+        self.export_stats['file_export_count'] = self.export_stats['object_export_count'] + self.export_stats['collection_export_count']
+
         if self.export_stats['file_export_count'] > 1:
             output += str(self.export_stats['file_export_count']) + " files exported."
         elif self.export_stats['file_export_count'] == 1:
@@ -257,6 +260,9 @@ class CAPSULE_OT_ExportSelected(Operator):
 
         output += ".  "
         output += "Total of "
+
+        # This counting wont work for future versions but for now it's oookay.
+        self.export_stats['file_export_count'] = self.export_stats['object_export_count'] + self.export_stats['collection_export_count']
 
         if self.export_stats['file_export_count'] > 1:
             output += str(self.export_stats['file_export_count']) + " files exported."
