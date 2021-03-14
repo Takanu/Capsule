@@ -35,10 +35,24 @@ class CAP_FormatData_STL(PropertyGroup):
         default = False,
     )
 
+    # the property for 'ascii'
     save_as_ascii: BoolProperty(
         name = "Save as ASCII",
         description = "Save the file in an ASCII file format.",
         default = False,
+    )
+
+    axis_forward: EnumProperty(
+        name="Axis Forward",
+        description="What the Forward Axis will be defined as when the model is exported.",
+        items=(
+            ('X', 'X', ''),
+            ('Y', 'Y', ''),
+            ('Z', 'Z', ''),
+            ('-X', '-X', ''),
+            ('-Y', '-Y', ''),
+            ('-Z', '-Z', '')),
+        default='Y'
     )
     
     axis_up: EnumProperty(
@@ -51,21 +65,10 @@ class CAP_FormatData_STL(PropertyGroup):
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
 			('-Z', '-Z', '')),
-		default='Y',
+		default='Z',
 	)
 
-    axis_forward: EnumProperty(
-        name="Axis Forward",
-        description="What the Forward Axis will be defined as when the model is exported.",
-        items=(
-            ('X', 'X', ''),
-            ('Y', 'Y', ''),
-            ('Z', 'Z', ''),
-            ('-X', '-X', ''),
-            ('-Y', '-Y', ''),
-            ('-Z', '-Z', '')),
-        default='Z'
-        )
+    
     
     def export(self, context, export_preset, filePath):
         """
@@ -84,7 +87,7 @@ class CAP_FormatData_STL(PropertyGroup):
             # all
             global_scale = self.global_scale,
             use_scene_unit = self.use_scene_unit,
-            use_ascii = self.save_as_ascii,
+            ascii = self.save_as_ascii,
             axis_forward = self.axis_forward,
             axis_up = self.axis_up
         )

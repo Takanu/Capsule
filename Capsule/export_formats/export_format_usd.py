@@ -20,44 +20,52 @@ class CAP_FormatData_USD(PropertyGroup):
 
     export_hair: BoolProperty(
         name = "Export Hair",
-        description = "When enabled, hair will be exported as USD curves.",
+        description = "When enabled, hair will be exported as USD curves",
         default = False,
     )
 
     export_uvmaps: BoolProperty(
         name = "Export UVs",
-        description = "When enabled, all UV maps of exported meshes are included in the export.",
+        description = "When enabled, all UV maps of exported meshes are included in the export",
         default = False,
     )
 
     export_normals: BoolProperty(
         name = "Export Normals",
-        description = "When checked, normals of exported meshes are included in the export.",
+        description = "When checked, normals of exported meshes are included in the export",
         default = False,
     )
 
     export_materials: BoolProperty(
         name = "Export Materials",
-        description = "When enabled, the viewport settings of materials are exported as USD preview materials, and material assignments are exported as geometry subsets.",
+        description = "When enabled, the viewport settings of materials are exported as USD preview materials, and material assignments are exported as geometry subsets",
         default = False,
     )
 
     use_instancing: BoolProperty(
-        name = "Use Instancing",
-        description = "When checked, instanced objects are exported as references in USD. When unchecked, instanced objects are exported as real objects.",
+        name = "Use Instancing (Experimental)",
+        description = "When checked, instanced objects are exported as references in USD. When unchecked, instanced objects are exported as real objects",
         default = False,
     )
+
+    evaluation_mode : EnumProperty(
+		name="Evaluation Mode",
+		items=(
+			('RENDER', "Render", "Use Render settings for object visibility, modifier settings, etc."),
+			('VIEWPORT', "Viewport", "Use Viewport settings for object visibility, modifier settings, etc"),
+			),
+		description="Determines what visibility layer affects the visibility of exported objects, modifier settings and other areas where settings differ between Viewport and Render mode.  (Be careful if you're using Filter by Rendering in General Export Options as it will also modify the objects eligible for export)",
+	)
 
     def export(self, context, export_preset, filePath):
         """
         Calls the USD export operator module to export the currently selected objects.
         """
-        #TODO: THIS DOESNT SUPPORT MODIFIER APPLICATION!  AAAA!
-
+        #TODO: Turn Filter by Rendering off for USD export, and ask people to use Evaluation Mode instead.
         bpy.ops.wm.usd_export(
 
             # core
-            filepath = filePath + ".usd",
+            filepath = filePath,
             check_existing = False,
             selected_objects_only  = True,
             visible_objects_only = False,
@@ -98,6 +106,10 @@ class CAP_FormatData_USD(PropertyGroup):
         export_options.separator()
 
         export_options.prop(exportData, "use_instancing")
+        export_options.separator()
+        export_options.separator()
+
+        export_options.prop(exportData, "evaluation_mode")
         export_options.separator()
 
         # left padding

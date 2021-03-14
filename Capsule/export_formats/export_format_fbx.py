@@ -190,8 +190,8 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('NULL', 'Null', "‘Null’ FBX node, similar to Blender’s Empty (default)."),
 			('ROOT', 'Root', "‘Root’ FBX node, supposed to be the root of chains of bones."),
 			('LIMBNODE', 'LimbNode', "‘LimbNode’ FBX node, a regular joint between two bones.")
-			)
 		)
+	)
 
 
 	bake_anim_use_all_bones: BoolProperty(
