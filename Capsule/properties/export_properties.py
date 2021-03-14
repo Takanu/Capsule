@@ -22,21 +22,20 @@ from ..export_formats import (
     CAP_FormatData_USD,
 )
 
-
-def DrawAnimationWarning(self, context):
-        layout = self.layout
-        layout.label(text="Hey!  The animation feature may result in objects being incorrectly positioned")
-        layout.label(text="if you define the Origin as anything other than Scene for exports with complex")
-        layout.label(text="dependencies and animations (armature animations will be unaffected).")
-        layout.separator()
-        layout.label(text="If you find objects have moved after the export operation simply use the undo tool.")
-        layout.separator()
-
-
-def CAP_Update_AnimationWarning(self, context):
-    if self.export_animation_prev is False and self.export_animation is True:
-        bpy.context.window_manager.popup_menu(DrawAnimationWarning, title="Animation Warning", icon='INFO')
-    self.export_animation_prev = self.export_animation
+# Disabled as it's outdated.
+# TODO: hmm...
+# def DrawAnimationWarning(self, context):
+#         layout = self.layout
+#         layout.label(text="Hey!  The animation feature may result in objects being incorrectly positioned")
+#         layout.label(text="if you define the Origin as anything other than Scene for exports with complex")
+#         layout.label(text="dependencies and animations (armature animations will be unaffected).")
+#         layout.separator()
+#         layout.label(text="If you find objects have moved after the export operation simply use the undo tool.")
+#         layout.separator()
+# def CAP_Update_AnimationWarning(self, context):
+#     if self.export_animation_prev is False and self.export_animation is True:
+#         bpy.context.window_manager.popup_menu(DrawAnimationWarning, title="Animation Warning", icon='INFO')
+#     self.export_animation_prev = self.export_animation
 
 
 class CAPSULE_ExportPreset(PropertyGroup):
@@ -63,28 +62,27 @@ class CAPSULE_ExportPreset(PropertyGroup):
 
     sub_directory: StringProperty(
         name="Sub-directory",
-        description="Allows you to extend the file path of the export from the Location Preset assigned to it.",
+        description="Allows you to extend the file path of the export from the Location Preset assigned to it",
         default="/"
         )
 
     filter_by_rendering: BoolProperty(
         name="Filter by Render Visibility",
-        description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
+        description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin"
         )
     
     # FIXME 1.2 : Move as exporter-specific data?
     export_animation: BoolProperty(
         name="Export Animation",
-        description="(EXPERIMENTAL) If ticked, animations found will be exported (Collada, FBX and GLTF only).",
+        description="If ticked, animation data will be exported depending on the File Format.  STL does not support animation data",
         default=False,
-        update=CAP_Update_AnimationWarning
         )
 
     export_animation_prev: BoolProperty(default=False)
 
     apply_modifiers: BoolProperty(
         name="Apply Modifiers",
-        description="If enabled, all modifiers will be applied to the export.",
+        description="If enabled, all modifiers will be applied to the export",
         default=False
         )
 

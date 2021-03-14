@@ -199,7 +199,7 @@ class CAP_AddonPreferences(AddonPreferences):
         ob = context.object
 
         #---------------------------------------------------------
-        # Export UI
+        # Saved Presets
         #---------------------------------------------------------
 
         if addon_prefs.saved_export_presets_dropdown is False:
@@ -225,7 +225,9 @@ class CAP_AddonPreferences(AddonPreferences):
 
             
 
-        # //////////
+        #---------------------------------------------------------
+        # Active Export Presets
+        #---------------------------------------------------------
 
         if addon_prefs.file_export_presets_dropdown is False:
             file_presets_box = layout.box()
@@ -313,7 +315,6 @@ class CAP_AddonPreferences(AddonPreferences):
                 preset_unselected = file_presets_box.column(align=True)
                 preset_unselected.label(text="Select a preset in order to view preset settings.")
                 preset_unselected.separator()
-                return
 
         #---------------------------------------------------------
         # Shortcut Keys

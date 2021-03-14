@@ -67,7 +67,6 @@ def CreatePresets():
         i += 1
 
     # Create the new presets
-    CreatePresetBasicExport(exp)
     CreatePresetUE4Standard(exp)
     CreatePresetUnityStandard(exp)
 
@@ -82,23 +81,7 @@ def CreatePresets():
         sort.remove(0)
         i += 1
 
-def CreatePresetBasicExport(exp):
-    """
-    Generates a basic saved export preset.
-    """
-    # -------------------------------------------------------------------------
-    # Basic Export All
-    # -------------------------------------------------------------------------
-    export = exp.add()
-    export.name = "Basic Export All"
-    export.description = "Creates a basic Export Preset with ideal settings for most purposes."
-    export.x_global_user_deletable = False
-    export.export_animation = False
 
-    export.data_fbx.axis_forward = "-Z"
-    export.data_fbx.axis_up = "Y"
-    export.data_fbx.global_scale = 1.0
-    export.data_fbx.apply_unit_scale = True
 
 def CreatePresetUE4Standard(exp):
     """
@@ -111,13 +94,18 @@ def CreatePresetUE4Standard(exp):
     export.name = "UE4 Standard"
     export.description = "Creates an Export Preset for exporting FBX files for Unreal Engine 4, with optimised settings.  Enables the bundling of Collision objects in a format readable by UE4."
     export.x_global_user_deletable = False
-    export.export_animation = False
+    export.export_animation = True
+    export.apply_modifiers = True
+    export.preserve_armature_constraints = False
+    
+    export.format_type = 'FBX'
+    export.data_fbx.use_custom_props = True
 
     export.data_fbx.axis_forward = "-Z"
     export.data_fbx.axis_up = "Y"
     export.data_fbx.global_scale = 1.0
     export.data_fbx.apply_unit_scale = True
-    export.data_fbx.export_types = {'MESH', 'ARMATURE'}
+    export.data_fbx.export_object_types = {'MESH', 'ARMATURE'}
 
     export.data_fbx.bake_anim_use_all_bones = True
     export.data_fbx.bake_anim_use_all_actions = True
@@ -134,16 +122,21 @@ def CreatePresetUnityStandard(exp):
     # -------------------------------------------------------------------------
     export = exp.add()
     export.name = "Unity Standard"
-    export.description = "Creates an Export Preset for exporting FBX files for Unity 5, with optimised settings."
+    export.description = "Creates an Export Preset for exporting FBX files for Unity, with optimised settings."
     export.x_global_user_deletable = False
-    export.export_animation = False
+    export.export_animation = True
+    export.apply_modifiers = True
+    export.preserve_armature_constraints = False
+
+    export.format_type = 'FBX'
+    export.data_fbx.use_custom_props = True
 
     export.data_fbx.axis_forward = "Z"
     export.data_fbx.axis_up = "Y"
     export.data_fbx.global_scale = 1.0
     export.data_fbx.apply_scale_options = 'FBX_SCALE_UNITS'
-    export.data_fbx.export_types = {'MESH', 'ARMATURE'}
-    export.data_fbx.bake_space_transform = True
+    export.data_fbx.export_object_types = {'MESH', 'ARMATURE'}
+    export.data_fbx.use_space_transform = True
 
     export.data_fbx.bake_anim_use_all_bones = True
     export.data_fbx.bake_anim_use_all_actions = True
