@@ -545,6 +545,9 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
     
     elif export_preset.format_type == 'STL':
         export_preset.data_stl.export(context, export_preset, object_file_path)
+
+    elif export_preset.format_type == 'USD':
+        export_preset.data_usd.export(context, export_preset, object_file_path)
     
 
 # TODO 2.0 : This probably doesn't work

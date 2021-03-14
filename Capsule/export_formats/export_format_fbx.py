@@ -250,7 +250,8 @@ class CAP_FormatData_FBX(PropertyGroup):
 			
 			# core
 			check_existing = False,
-			filepath = filePath+ ".fbx",
+			filepath = filePath + ".fbx",
+			# TODO: What is this again?
 			filter_glob = "*.fbx",
 			use_selection = True,
 			use_active_collection = False,

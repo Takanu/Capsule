@@ -27,19 +27,19 @@ class CAP_FormatData_USD(PropertyGroup):
     export_uvmaps: BoolProperty(
         name = "Export UVs",
         description = "When enabled, all UV maps of exported meshes are included in the export",
-        default = False,
+        default = True,
     )
 
     export_normals: BoolProperty(
         name = "Export Normals",
         description = "When checked, normals of exported meshes are included in the export",
-        default = False,
+        default = True,
     )
 
     export_materials: BoolProperty(
         name = "Export Materials",
         description = "When enabled, the viewport settings of materials are exported as USD preview materials, and material assignments are exported as geometry subsets",
-        default = False,
+        default = True,
     )
 
     use_instancing: BoolProperty(
@@ -54,18 +54,20 @@ class CAP_FormatData_USD(PropertyGroup):
 			('RENDER', "Render", "Use Render settings for object visibility, modifier settings, etc."),
 			('VIEWPORT', "Viewport", "Use Viewport settings for object visibility, modifier settings, etc"),
 			),
-		description="Determines what visibility layer affects the visibility of exported objects, modifier settings and other areas where settings differ between Viewport and Render mode.  (Be careful if you're using Filter by Rendering in General Export Options as it will also modify the objects eligible for export)",
+		description="Determines what visibility layer affects the visibility of exported objects, modifier settings and other areas where settings differ between Viewport and Render mode.  (Be careful if you're using Filter by Rendering in General Export Options, as it will also filter objects out of the export by whether it is set to Render)",
 	)
 
     def export(self, context, export_preset, filePath):
         """
         Calls the USD export operator module to export the currently selected objects.
         """
-        #TODO: Turn Filter by Rendering off for USD export, and ask people to use Evaluation Mode instead.
+        
+
+
         bpy.ops.wm.usd_export(
 
             # core
-            filepath = filePath,
+            filepath = filePath + ".usdc",
             check_existing = False,
             selected_objects_only  = True,
             visible_objects_only = False,
@@ -77,6 +79,7 @@ class CAP_FormatData_USD(PropertyGroup):
             export_normals = self.export_normals,
             export_materials = self.export_materials,
             use_instancing = self.use_instancing,
+            evaluation_mode = self.evaluation_mode,
         )
     
     def draw_addon_preferences(self, layout, exportData, exp):
