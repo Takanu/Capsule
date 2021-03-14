@@ -323,7 +323,7 @@ class CAPSULE_PT_Selection(Panel):
                 root_object_ui = group_layout.column(align=True)
                 root_object_ui.prop(proxy, "col_origin_point")
 
-                if grp.origin_point == 'Object':
+                if proxy.col_origin_point == 'Object':
                     root_object_ui.prop(proxy, "col_root_object", text=" ")
                 
                 root_object_ui.separator()
@@ -415,7 +415,6 @@ class CAPSULE_PT_List(Panel):
             obj = None
             ob = None
 
-            # TODO: This is trash
             if len(scn.object_list) is not 0:
                 if len(scn.object_list) > scn.object_list_index:
                     entry = scn.object_list[scn.object_list_index]
@@ -439,7 +438,6 @@ class CAPSULE_PT_List(Panel):
             grp = None 
             gr = None
 
-            # TODO: This is trash
             if len(scn.collection_list) > 0:
                 entry = scn.collection_list[scn.collection_list_index]
                 grp = entry.collection.CAPCol

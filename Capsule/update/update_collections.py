@@ -249,7 +249,7 @@ def CAP_Update_CollectionListRemove(self, context):
     backupListLength = len(scn.collection_list)
 
     for item in scn.collection_list:
-        if item.name == self.name:
+        if item.collection.name == self.collection.name:
 
             self.collection.CAPCol.enable_export = False
             self.collection.CAPCol.in_export_list = False

@@ -270,7 +270,7 @@ def CAP_Update_ObjectListRemove(self, context):
 
     # Search through the object list to find a matching name
     for item in scn.object_list:
-        if item.name == self.name:
+        if item.object.name == self.object.name:
 
             self.object.CAPObj.enable_export = False
             self.object.CAPObj.in_export_list = False
