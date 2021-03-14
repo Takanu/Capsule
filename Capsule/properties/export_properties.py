@@ -25,13 +25,11 @@ from ..export_formats import (
 
 def DrawAnimationWarning(self, context):
         layout = self.layout
-        layout.label(text="Hey!  The animation feature is currently experimental, and may result in")
-        layout.label(text="objects being repositioned after exporting in the scene and in the FBX file.")
+        layout.label(text="Hey!  The animation feature may result in objects being incorrectly positioned")
+        layout.label(text="if you define the Origin as anything other than Scene for exports with complex")
+        layout.label(text="dependencies and animations (armature animations will be unaffected).")
         layout.separator()
-        layout.label(text="The animation features should work fine if you're exporting armature animations,")
-        layout.label(text="any other kinds of object animations are unlikely to export correctly, and if")
-        layout.label(text="attempted you may find your scene translated slightly.  If this happens though")
-        layout.label(text="simply use the undo tool.")
+        layout.label(text="If you find objects have moved aftet the export operation, simply use the undo tool.")
         layout.separator()
 
 
@@ -70,7 +68,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
         )
 
     filter_by_rendering: BoolProperty(
-        name="Filter by Rendering",
+        name="Filter by Render Visibility",
         description="Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin."
         )
     
@@ -190,7 +188,7 @@ class CAPSULE_ExportData(PropertyGroup):
         description="",
         items=(
         ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
-        ('Scene', 'Scene', 'A tab containing options to how scene properties are exported.'),
+        ('Scene', 'Scene', 'A tab containing options for how scene properties are exported.'),
         ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
         ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
         ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
@@ -202,7 +200,7 @@ class CAPSULE_ExportData(PropertyGroup):
         description="",
         items=(
         ('Export', 'Export', 'A tab containing general export paramaters.'),
-        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
+        ('Scene', 'Scene', 'A tab containing options for how scene properties are exported.'),
         ('Geometry', 'Geometry', 'A tab containing options for how object geometry, is exported.'),
         ('Attributes', 'Attributes', 'A tab containing options for how different sets of data are exported.'),
         ),

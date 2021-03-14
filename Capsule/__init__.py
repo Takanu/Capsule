@@ -263,9 +263,10 @@ class CAP_AddonPreferences(AddonPreferences):
                 general_options.use_property_split = True
                 general_options.use_property_decorate = False  # removes animation options
                 
-                general_options.prop(currentExp, "filter_by_rendering")
                 general_options.prop(currentExp, "export_animation")
                 general_options.prop(currentExp, "apply_modifiers")
+                general_options.separator()
+                general_options.prop(currentExp, "filter_by_rendering")
                 general_options.prop(currentExp, "preserve_armature_constraints")
                 general_options.separator()
 

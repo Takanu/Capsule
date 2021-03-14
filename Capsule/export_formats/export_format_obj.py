@@ -13,19 +13,19 @@ class CAP_FormatData_OBJ(PropertyGroup):
 	# export
 
 	use_blen_objects: BoolProperty(
-		name="Export Objects as OBJ Objects",
+		name="OBJ Objects",
 		description="Exports an object as an OBJ object.  This along with Export Objects as OBJ Groups doesn't really matter to Blender, but may matter to the program you're exporting to.",
-		default=False,
+		default=True,
 		)
 
 	group_by_object: BoolProperty(
-		name="Export Objects as OBJ Groups",
+		name="OBJ Groups",
 		description="Exports an object as an OBJ group.  This along with Export Objects as OBJ Objects doesn't really matter to Blender, but may matter to the program you're exporting to.",
 		default=False,
 		)
 
 	group_by_material: BoolProperty(
-		name="Create OBJ Object by Material",
+		name="Material Groups",
 		description="Exports objects into OBJ groups by the material assigned to them.",
 		default=False,
 		)
@@ -35,12 +35,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		description="The exporter will attempt to map your defined vertex groups into OBJ Polygroups, which is designed to group faces.  If you have any single vertices defined in a vertex group, you will still lose them when using this feature.",
 		default=False,
 		)
-	
-	export_per_frame: BoolProperty(
-		name="Export OBJ File Per-Frame",
-		description="An OBJ file will be written for each frame of animation.  Not recommended for most people, if you want to export assets with animation, use FBX or GLTF instead.",
-		default=False
-	)
+
 
 	# transform
 
@@ -53,6 +48,19 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		soft_max=100.0,
 		max=1000,
 		)
+	
+	axis_forward: EnumProperty(
+		name="Axis Forward",
+		description="What the Forward Axis will be defined as when the model is exported.",
+		items=(
+			('X', 'X', ''),
+			('Y', 'Y', ''),
+			('Z', 'Z', ''),
+			('-X', '-X', ''),
+			('-Y', '-Y', ''),
+			('-Z', '-Z', '')),
+		default='-Z'
+	)
 
 	axis_up: EnumProperty(
 		name="Axis Up",
@@ -65,26 +73,15 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			('-Y', '-Y', ''),
 			('-Z', '-Z', '')),
 		default='Y',
-		)
+	)
 
 
-	axis_forward: EnumProperty(
-		name="Axis Forward",
-		description="What the Forward Axis will be defined as when the model is exported.",
-		items=(
-			('X', 'X', ''),
-			('Y', 'Y', ''),
-			('Z', 'Z', ''),
-			('-X', '-X', ''),
-			('-Y', '-Y', ''),
-			('-Z', '-Z', '')),
-		default='-Z'
-		)
+	
 
 	# mesh
 
 	use_edges: BoolProperty(
-		name="Use Edges",
+		name="Include Edges",
 		description="Include edges in the export.",
 		default=True,
 		)
@@ -121,17 +118,18 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		)
 
 	use_nurbs: BoolProperty(
-		name="Preserve NURBS",
-		description="Write nurbs curves as OBJ nurbs rather than converting them to geometry.",
+		name="Convert NURBS",
+		description="Write NURBS curves as OBJ nurbs rather than converting them to geometry.",
 		default=False,
 		)
-
+	
 	keep_vertex_order: BoolProperty(
 		name="Preserve Vertex Order",
 		description="Preserves the vertex order of your models when exporting.",
 		default=False,
 		)
 
+	# the property for 'use_triangles'
 	triangulate_faces: BoolProperty(
 		name="Triangulate Faces",
 		description="Converts all faces to triangles.",
@@ -148,7 +146,8 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			filepath=filePath + ".obj", 
 			check_existing=False, 
 			use_selection=True, 
-			use_animation=self.export_per_frame, 
+			# TODO: Add a warning to recommend people not use OBJ for animated objects.
+			use_animation=export_preset.export_animation, 
 			use_mesh_modifiers=export_preset.apply_modifiers, 
 
 			use_edges=self.use_edges, 
@@ -202,13 +201,16 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
-			export_options.prop(exportData, "use_blen_objects")
-			export_options.prop(exportData, "group_by_object")
-			export_options.prop(exportData, "group_by_material")
-			export_options.prop(exportData, "export_per_frame")
+			export_options.prop(exportData, "global_scale")
 			export_options.separator()
 
-		if exp.obj_menu_options == 'Transform':
+			object_options = export_options.column(align=True, heading="Objects as")
+			object_options.prop(exportData, "use_blen_objects")
+			object_options.prop(exportData, "group_by_object")
+			object_options.prop(exportData, "group_by_material")
+			object_options.separator()
+
+		if exp.obj_menu_options == 'Scene':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
