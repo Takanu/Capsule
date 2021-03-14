@@ -114,7 +114,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 	)
 
 	deform_bones_only : BoolProperty(
-		name="Include Deform Bones Only",
+		name="Only Include Deform Bones",
 		description="If selected, only deforming bones in armatures will be exported.",
 		default=False
 	)
@@ -165,8 +165,8 @@ class CAP_FormatData_Collada(PropertyGroup):
 	)
 
 	active_uv_only : BoolProperty(
-		name="Only Export Selected UV Map",
-		description="Export only the selected UV Map",
+		name="Only Export Active UV Map",
+		description="Export only the active UV Map",
 		default=False
 	)
 
@@ -307,7 +307,21 @@ class CAP_FormatData_Collada(PropertyGroup):
 		# area for revealed export options
 		export_options_area = export_tab_area.column(align=True)
 
-		if exp.collada_menu_options == 'Main':
+		if exp.collada_menu_options == 'File':
+			export_options = export_options_area.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
+
+			export_options.prop(exportData, "use_object_instantiation")
+			export_options.prop(exportData, "sort_by_name")
+			export_options.prop(exportData, "use_blender_profile")
+			export_options.prop(exportData, "limit_precision")
+			export_options.prop(exportData, "use_texture_copies")
+
+			export_options.separator()
+		
+		elif exp.collada_menu_options == 'Scene':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
@@ -320,41 +334,21 @@ class CAP_FormatData_Collada(PropertyGroup):
 			export_options.separator()
 			export_options.prop(exportData, "export_transform_type")
 			export_options.separator()
-			export_options.separator()
 
-			export_options.prop(exportData, "use_object_instantiation")
-			export_options.separator()
-			export_options.separator()
-
-			export_options.prop(exportData, "active_uv_only")
-			export_options.prop(exportData, "use_texture_copies")
-
-			export_options.separator()
-
-		elif exp.collada_menu_options == 'Geometry':
+		elif exp.collada_menu_options == 'Mesh':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
 			export_options.prop(exportData, "triangulate")
+			export_options.prop(exportData, "active_uv_only")
 			export_options.separator()
 			export_options.prop(exportData, "export_mesh_type_selection")
 			
 
 			export_options.separator()
 
-		elif exp.collada_menu_options == 'Armature':
-			export_options = export_options_area.column(align=True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
-
-			export_options.prop(exportData, "include_armatures")
-			export_options.prop(exportData, "open_sim")
-			export_options.prop(exportData, "deform_bones_only")
-
-			export_options.separator()
 
 		elif exp.collada_menu_options == 'Animation':
 			export_options = export_options_area.column(align=True)
@@ -393,19 +387,20 @@ class CAP_FormatData_Collada(PropertyGroup):
 			samples_optional.prop(exportData, "keep_keyframes")
 			samples_optional.separator()
 
-		
-		elif exp.collada_menu_options == 'Extra':
+
+		elif exp.collada_menu_options == 'Armature':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
-			export_options.prop(exportData, "use_blender_profile")
-			export_options.prop(exportData, "sort_by_name")
-			export_options.prop(exportData, "limit_precision")
+			export_options.prop(exportData, "include_armatures")
+			export_options.prop(exportData, "deform_bones_only")
+			export_options.prop(exportData, "open_sim")
 			export_options.prop(exportData, "keep_bind_info")
 
 			export_options.separator()
+
 		
 		# right padding
 		export_area.separator()

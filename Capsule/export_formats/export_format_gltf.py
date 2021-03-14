@@ -73,9 +73,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default=False
 	)
 
+
+	# DRACO
+
 	export_draco_mesh_compression_enable: BoolProperty(
 		name="Use Draco Mesh Compression",
-		description="Try it, who knows! ¯\_(ツ)_/¯",
+		description="A compression library for GLTF to reduce file sizes and improve file streaming over the web.  Recommended for web content",
 		#TODO: Come back when you know what this is, smh.
 		default=False
 	)
@@ -349,7 +352,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		# area for revealed export options
 		export_options_area = export_tab_area.column(align=True)
 
-		if exp.gltf_menu_options == 'Export':
+		if exp.gltf_menu_options == 'File':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
@@ -365,13 +368,11 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.separator()
 			export_options.separator()
 
-			export_options.prop(exportData, "export_cameras")
-			export_options.prop(exportData, "export_lights")
 			export_options.prop(exportData, "export_custom_properties")
-
 			export_options.separator()
 
-		if exp.gltf_menu_options == 'Transform':
+
+		if exp.gltf_menu_options == 'Scene':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
@@ -379,54 +380,32 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_options.prop(exportData, "export_y_up")
 			export_options.separator()
-
-			# export_options.separator()
-			# export_options.separator()
-			# export_options.separator()
-
-			# export_2 = export_options.column(align=True)
-			# export_options.prop(exportData, "export_y_up")
-			# export_2.separator()
-
 			export_options.separator()
 
-		elif exp.gltf_menu_options == 'Attributes':
+			export_options.prop(exportData, "export_cameras")
+			export_options.prop(exportData, "export_lights")
+			export_options.separator()
+
+
+		elif exp.gltf_menu_options == 'Mesh':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
-			export_options.prop(exportData, "export_texcoords")
-			export_options.prop(exportData, "export_normals")
-			export_options.prop(exportData, "export_tangents")
-			export_options.prop(exportData, "export_colors")
-			export_options.prop(exportData, "export_displacement")
-			export_options.separator()
-			export_options.separator()
+			mesh_options = export_options.column(align=True, heading="Mesh Data")
+			mesh_options.prop(exportData, "export_texcoords")
+			mesh_options.prop(exportData, "export_normals")
+			mesh_options.prop(exportData, "export_tangents")
+			mesh_options.prop(exportData, "export_colors")
+			mesh_options.prop(exportData, "export_displacement")
+			mesh_options.separator()
+			mesh_options.separator()
 
 			export_options.prop(exportData, "export_materials")
 
 			export_options.separator()
 
-		elif exp.gltf_menu_options == 'Draco':
-			export_options = export_options_area.column(align=True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
-
-			export_options.prop(exportData, "export_draco_mesh_compression_enable")
-			export_options.separator()
-
-			draco_options = export_options.column(align=True)
-			draco_options.active = exportData.export_draco_mesh_compression_enable
-			draco_options.prop(exportData, "export_draco_mesh_compression_level", text="Mesh Compression")
-			draco_options.prop(exportData, "export_draco_position_quantization", text="Position Quantization")
-			draco_options.prop(exportData, "export_draco_normal_quantization", text="Normal Quantization")
-			draco_options.prop(exportData, "export_draco_texcoord_quantization", text="UV Quantization")
-			draco_options.prop(exportData, "export_draco_color_quantization", text="Color Quantization")
-			draco_options.prop(exportData, "export_draco_generic_quantization", text="Other Quantization")
-
-			export_options.separator()
 
 		elif exp.gltf_menu_options == 'Animation':
 			export_options = export_options_area.column(align=True)
@@ -435,11 +414,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.separator()
 
 			animation_options = export_options.column(align=True)
+			animation_options.prop(exportData, "export_current_frame")
+			animation_options.prop(exportData, "export_def_bones")
+			animation_options.prop(exportData, "export_nla_strips")
 			animation_options.prop(exportData, "export_frame_range")
 			
-			animation_options.prop(exportData, "export_current_frame")
-			animation_options.prop(exportData, "export_nla_strips")
-			animation_options.prop(exportData, "export_def_bones")
+			
 			animation_options.separator()
 			animation_options.separator()
 
@@ -470,6 +450,26 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			skinning_sub = skinning_options.column(align=True)
 			skinning_sub.active = exportData.export_skins
 			skinning_sub.prop(exportData, "export_all_influences")
+
+			export_options.separator()
+		
+		elif exp.gltf_menu_options == 'Draco':
+			export_options = export_options_area.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
+
+			export_options.prop(exportData, "export_draco_mesh_compression_enable")
+			export_options.separator()
+
+			draco_options = export_options.column(align=True)
+			draco_options.active = exportData.export_draco_mesh_compression_enable
+			draco_options.prop(exportData, "export_draco_mesh_compression_level", text="Mesh Compression")
+			draco_options.prop(exportData, "export_draco_position_quantization", text="Position Quantization")
+			draco_options.prop(exportData, "export_draco_normal_quantization", text="Normal Quantization")
+			draco_options.prop(exportData, "export_draco_texcoord_quantization", text="UV Quantization")
+			draco_options.prop(exportData, "export_draco_color_quantization", text="Color Quantization")
+			draco_options.prop(exportData, "export_draco_generic_quantization", text="Other Quantization")
 
 			export_options.separator()
 		

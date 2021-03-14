@@ -272,59 +272,53 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		# area for revealed export options
 		export_options_area = export_tab_area.column(align=True)
 
+		if exp.alembic_menu_options == 'File':
+			export_options = export_options_area.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
+			
+			export_options.prop(exportData, "flatten_hierarchy")
+			export_options.prop(exportData, "use_instancing")			
+			export_options.prop(exportData, "export_custom_properties")
+			export_options.prop(exportData, "export_curves_as_mesh")
+
+			export_options.separator()
+
 		if exp.alembic_menu_options == 'Scene':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
-			export_options.prop(exportData, "flatten_hierarchy")
-			export_options.prop(exportData, "export_custom_properties")
-			export_options.separator()
-
 			export_options.prop(exportData, "transform_samples")
 			export_options.prop(exportData, "geometry_samples")
+			export_options.separator()
 			export_options.prop(exportData, "global_scale")
 			export_options.separator()
 			export_options.separator()
 
-			animation_options = export_options.column(align=True, heading="Scene Animation Options")
-			animation_options.prop(exportData, "start_frame")
-			animation_options.prop(exportData, "end_frame")
-			animation_options.prop(exportData, "shutter_open", slider=True)
-			animation_options.prop(exportData, "shutter_close", slider=True)
-			animation_options.separator()
-
 			
-
-		elif exp.alembic_menu_options == 'Object':
+		elif exp.alembic_menu_options == 'Mesh':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
-
-			export_options.prop(exportData, "use_subdiv_schema")
-			export_options.prop(exportData, "apply_subdiv")
-			export_options.prop(exportData, "export_curves_as_mesh")
-			export_options.prop(exportData, "use_instancing")
-
-			export_main.separator()
-
 			
-		elif exp.alembic_menu_options == 'Geometry':
-			export_options = export_options_area.column(align=True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
+			mesh_options = export_options.column(align=True, heading="Mesh Data")
+			mesh_options.prop(exportData, "export_normals")
+			mesh_options.prop(exportData, "export_colors")
+			mesh_options.prop(exportData, "export_face_sets")
+			mesh_options.prop(exportData, "export_uvs")
+			mesh_options.prop(exportData, "pack_uvs")
+			mesh_options.separator()
+			mesh_options.separator()
 
-			export_options.prop(exportData, "export_uvs")
-			export_options.prop(exportData, "pack_uvs")
-			export_options.prop(exportData, "export_normals")
-			export_options.prop(exportData, "export_colors")
-			export_options.prop(exportData, "export_face_sets")
-			export_options.separator()
-			export_options.separator()
-
+			subdiv_options = export_options.column(align=True, heading="Subdivision Data")
+			subdiv_options.prop(exportData, "use_subdiv_schema")
+			subdiv_options.prop(exportData, "apply_subdiv")
+			subdiv_options.separator()
+			subdiv_options.separator()
 
 			export_options.prop(exportData, "triangulate")
 			export_options.separator()
@@ -335,6 +329,20 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			triangulate_options.prop(exportData, "ngon_method")
 			triangulate_options.separator()
 		
+
+		elif exp.alembic_menu_options == 'Animation':
+			export_options = export_options_area.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
+
+			export_options.prop(exportData, "start_frame")
+			export_options.prop(exportData, "end_frame")
+			export_options.separator()
+			export_options.prop(exportData, "shutter_open", slider=True)
+			export_options.prop(exportData, "shutter_close", slider=True)
+			export_options.separator()
+
 
 		elif exp.alembic_menu_options == 'Particles':
 			export_options = export_options_area.column(align=True)

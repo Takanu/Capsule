@@ -195,13 +195,10 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		# area for revealed export options
 		export_options_area = export_tab_area.column(align=True)
 
-		if exp.obj_menu_options == 'Export':
+		if exp.obj_menu_options == 'File':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
-
-			export_options.prop(exportData, "global_scale")
 			export_options.separator()
 
 			object_options = export_options.column(align=True, heading="Objects as")
@@ -216,15 +213,25 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
+			export_options.prop(exportData, "global_scale")
+			export_options.separator()
+
 			export_options.prop(exportData, "axis_up")
 			export_options.prop(exportData, "axis_forward")
 			export_options.separator()
 
-		elif exp.obj_menu_options == 'Geometry':
+		elif exp.obj_menu_options == 'Mesh':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
+
+			mesh_options = export_options.column(align=True, heading="Mesh Data")
+			mesh_options.prop(exportData, "use_normals")
+			mesh_options.prop(exportData, "use_materials")
+			mesh_options.prop(exportData, "use_uvs")
+			mesh_options.prop(exportData, "use_nurbs")
+			mesh_options.separator()
 
 			export_options.prop(exportData, "use_edges")
 			export_options.prop(exportData, "use_smooth_groups")
@@ -239,17 +246,8 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 			export_options.separator()
 		
-		elif exp.obj_menu_options == 'Attributes':
-			export_options = export_options_area.column(align=True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
 
-			export_options.prop(exportData, "use_normals")
-			export_options.prop(exportData, "use_materials")
-			export_options.prop(exportData, "use_uvs")
-			export_options.prop(exportData, "use_nurbs")
-			export_options.separator()
+			
 		
 		# right padding
 		export_area.separator()

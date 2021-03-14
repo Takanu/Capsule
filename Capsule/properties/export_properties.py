@@ -29,7 +29,7 @@ def DrawAnimationWarning(self, context):
         layout.label(text="if you define the Origin as anything other than Scene for exports with complex")
         layout.label(text="dependencies and animations (armature animations will be unaffected).")
         layout.separator()
-        layout.label(text="If you find objects have moved aftet the export operation, simply use the undo tool.")
+        layout.label(text="If you find objects have moved after the export operation simply use the undo tool.")
         layout.separator()
 
 
@@ -97,7 +97,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
 
     preserve_armature_constraints: BoolProperty(
         name="Preserve Armature Constraints",
-        description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  \n\nTurn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this.",
+        description="(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  \n\nTurn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this",
         default=True
         )
 
@@ -108,13 +108,13 @@ class CAPSULE_ExportPreset(PropertyGroup):
         name="Format Type",
         items=
             (
-            ('FBX', "FBX", "Export assets in the FBX file format.  The popular choice for game development and accepted universally in 3D game engines"),
-            ('OBJ', "OBJ", "Export assets in the OBJ file format.  An ancient file format suitable for simple objects and older software compatibility"),
-            ('GLTF', "GLTF", "Export assets in the GLTF file format.  A modern successor to FBX for game development (has limited software support)"),
-            ('Alembic', "Alembic", "Export assets in the Alembic file format.  A reference-quality file format ideal for moving assets between 3D modelling programs"),
-            ('Collada', "Collada", "Export assets in the Collada file format.  An older file format used for import with specific modelling programs and online games"),
-            ('STL', "STL", "Export assets as STL files.  Specifically for 3D printing applications"),
-            ('USD', "USD", "Export assets as USD files.  A modern, reference-quality file format with limited export capabilities"),
+            ('Alembic', "Alembic (.abc)", "Export assets in the Alembic file format.  A lossy file format designed to bake complex assets for caching and production purposes"),
+            ('Collada', "Collada (.dae)", "Export assets in the Collada file format.  An older file format used for import with various modelling programs and some online games"),
+            ('FBX', "FBX (.fbx)", "Export assets in the FBX file format.  A proprietary Autodesk format suitable for exchanging data with Autodesk apps and a popular format for game engines."),
+            ('GLTF', "GLTF (.gltf, .glb)", "Export assets in the GLTF file format.  An efficient, lossy 3D format designed for web apps and games."),
+            ('OBJ', "OBJ (.obj)", "Export assets in the OBJ file format.  An ancient file format with limited options suitable for simple static objects"),
+            ('STL', "STL (.stl)", "Export assets as STL files.  An older file format used specifically for CAD and 3D printing applications"),
+            ('USD', "USD (.usda)", "Export assets as USD files.  A modern, highly detailed file format but Blender's implementation is new and offers limited capabilities"),
             ),
         description="Defines what file type objects with this preset will export to and the export options available for this preset",
         )
@@ -183,48 +183,14 @@ class CAPSULE_ExportData(PropertyGroup):
     # the location selected on the Locations panel, inside the 3D view
     location_presets_listindex: IntProperty(default=0)
 
-    fbx_menu_options: EnumProperty(
-        name="Export Options",
-        description="",
-        items=(
-        ('Export', 'Export', 'A tab containing additional export paramaters exclusive to Capsule.'),
-        ('Scene', 'Scene', 'A tab containing options for how scene properties are exported.'),
-        ('Geometry', 'Geometry', 'A tab containing options for how object geometry is interpreted in the export.'),
-        ('Armature', 'Armature', 'A tab containing options for how armature objects are interpreted in the export.'),
-        ('Animation', 'Animation', 'A tab containing options for how animations are interpreted and used in the export.')
-        ),
-    )
-
-    obj_menu_options: EnumProperty(
-        name="Export Options",
-        description="",
-        items=(
-        ('Export', 'Export', 'A tab containing general export paramaters.'),
-        ('Scene', 'Scene', 'A tab containing options for how scene properties are exported.'),
-        ('Geometry', 'Geometry', 'A tab containing options for how object geometry, is exported.'),
-        ('Attributes', 'Attributes', 'A tab containing options for how different sets of data are exported.'),
-        ),
-    )
-
-    gltf_menu_options: EnumProperty(
-        name="Export Options",
-        description="",
-        items=(
-        ('Export', 'Export', 'A tab containing general export paramaters.'),
-        ('Transform', 'Transform', 'A tab containing options to how objects are scaled and orientated in the export.'),
-        ('Attributes', 'Attributes', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Draco', 'Draco','A tab containing Draco compression options.'),
-        ('Animation', 'Animation', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ),
-    )
-
     alembic_menu_options: EnumProperty(
         name="Export Options",
         description="",
         items=(
-        ('Scene', 'Scene', 'A tab containing general scene paramaters.'),
-        ('Object', 'Object', 'A tab containing options for how certain object attributes are exported.'),
-        ('Geometry', 'Geometry', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is handled and exported.'),
         ('Particles', 'Particles', 'A tab containing options for how particles are exported.'),
         ),
     )
@@ -233,13 +199,51 @@ class CAPSULE_ExportData(PropertyGroup):
         name="Export Options",
         description="",
         items=(
-        ('Main', 'Main', 'A tab containing general export paramaters.'),
-        ('Geometry', 'Geometry', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Armature', 'Armature', 'A tab containing options for how armatures are exported.'),
-        ('Animation', 'Animation', 'A tab containing options for how Animation are exported.'),
-        ('Extra', 'Extra', 'Miscellaneous export options for specific purposes.'),
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported.'),
+        ('Armature', 'Armature', 'A tab containing options for how armature and armature-related data are exported.'),
         ),
     )
+
+    fbx_menu_options: EnumProperty(
+        name="Export Options",
+        description="",
+        items=(
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported.'),
+        ('Armature', 'Armature', 'A tab containing options for how armature and armature-related data are exported.'),
+        ),
+    )
+
+    gltf_menu_options: EnumProperty(
+        name="Export Options",
+        description="",
+        items=(
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported.'),
+        ('Draco', 'Draco','A tab containing Draco compression options.'),
+        ),
+    )
+
+    obj_menu_options: EnumProperty(
+        name="Export Options",
+        description="",
+        items=(
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ),
+    )
+
+    
+
+
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
 # decided to do it all in __init__ instead, skipping for now.

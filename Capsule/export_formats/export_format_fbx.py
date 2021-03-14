@@ -32,7 +32,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 	# the property for 'object_types'
 	export_object_types: EnumProperty(
-		name="Object Types",
+		name="Object Type Filtering",
 		options={'ENUM_FLAG'},
 		items=(('MESH', "Mesh", ""),
 			('ARMATURE', "Armature", ""),
@@ -322,7 +322,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		# area for revealed export options
 		export_options_area = export_tab_area.column(align=True)
 
-		if exp.fbx_menu_options == 'Export':
+		if exp.fbx_menu_options == 'File':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
@@ -331,10 +331,8 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.prop(exportData, "bundle_textures")
 			export_options.prop(exportData, "use_custom_props")
 			export_options.separator()
-			export_options.separator()
 
-			export_options.prop(exportData, "export_object_types")
-			export_options.separator()
+			
 			
 
 		if exp.fbx_menu_options == 'Scene':
@@ -349,18 +347,24 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 			export_options.separator()
 			
-			export_options.prop(exportData, "use_space_transform")
-			export_options.prop(exportData, "bake_space_transform")
-			export_options.separator()
-			export_options.separator()
+			transform_options = export_options.column(align=True, heading="Transform Options")
+			transform_options.prop(exportData, "use_space_transform")
+			transform_options.prop(exportData, "bake_space_transform")
+			transform_options.separator()
+			transform_options.separator()
 
 			export_options.prop(exportData, "axis_up")
 			export_options.prop(exportData, "axis_forward")
 			export_options.prop(exportData, "apply_scale_options")
+			export_options.separator()
+			export_options.separator()
+
+			export_options.prop(exportData, "export_object_types")
+			export_options.separator()
 
 			export_options.separator()
 
-		elif exp.fbx_menu_options == 'Geometry':
+		elif exp.fbx_menu_options == 'Mesh':
 			export_options = export_options_area.column(align=True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
@@ -373,6 +377,24 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 
 			export_options.prop(exportData, "export_normal_type")
+			export_options.separator()
+		
+		elif exp.fbx_menu_options == 'Animation':
+			export_options = export_options_area.column(align=True)
+			export_options.use_property_split = True
+			export_options.use_property_decorate = False  # removes animation options
+			export_options.separator()
+
+			export_options.prop(exportData, "bake_anim_force_startend_keying")
+			export_options.prop(exportData, "bake_anim_use_all_bones")
+			export_options.prop(exportData, "bake_anim_use_nla_strips")
+			export_options.prop(exportData, "bake_anim_use_all_actions")
+			
+			export_options.separator()
+			export_options.separator()
+
+			export_options.prop(exportData, "bake_anim_step")
+			export_options.prop(exportData, "bake_anim_simplify_factor")
 			export_options.separator()
 
 		elif exp.fbx_menu_options == 'Armature':
@@ -392,22 +414,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 
 
-		elif exp.fbx_menu_options == 'Animation':
-			export_options = export_options_area.column(align=True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
-
-			export_options.prop(exportData, "bake_anim_use_all_bones")
-			export_options.prop(exportData, "bake_anim_use_nla_strips")
-			export_options.prop(exportData, "bake_anim_use_all_actions")
-			export_options.prop(exportData, "bake_anim_force_startend_keying")
-			export_options.separator()
-			export_options.separator()
-
-			export_options.prop(exportData, "bake_anim_step")
-			export_options.prop(exportData, "bake_anim_simplify_factor")
-			export_options.separator()
+		
 		
 		# right padding
 		export_area.separator()
