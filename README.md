@@ -1,20 +1,19 @@
 
-Capsule is an export manager for Blender that allows you to automate the export of hundreds of objects in a scene with a single click. 
+Capsule is a plugin for Blender that makes the process of exporting quick and seamless, leveraging Blender's inbuilt export formats to let you export hundreds of assets into multiple formats with a single click.
 
 
 ## Features
 
-- Create reusable Export Presets that can be used across .blend files.
+* **Batch Exports** - Mark hundreds of objects and groups in a scene for export and export them all with one click. If you've made changes to assets in the scene and need to re-export them, it's as simple as one more click.
 
-- Lets you export hundreds of Objects and Collections automatically with a single click.
+* **Export Lists** - Get an overview of all objects prepared for export and quickly change their settings from the list menus.
 
-- Supports Alembic, Collada, FBX, GLTF, OBJ, STL and USD export formats.
+* **Export Presets** - Create detailed sets of export settings, supporting Alembic, Collada, FBX, GLTF, OBJ, STL and USD export formats.
 
-- Automatically aligns export targets to the scene origin (with a few caveats).
+* **Origin Point Export** - You can decide where the origin point is in your exports, no need to manually move around your objects before exporting.
 
-- Organise your Objects and Collection export candidates with an interactive Export List.
+* **Automated Folder Structures** - Capsule lets you automatically generate folders for your exports to help keep complex export setups organised.
 
-- Delicious export pie menus for convenient export edits 🥧
 
 
 ## Installation
@@ -24,6 +23,35 @@ Capsule is an export manager for Blender that allows you to automate the export 
 - Under Blender’s User Preferences Menu, in the Add-ons section, click, “Install From File”, and select the ZIP file.
 
 - The add-on will appear in the list, simply click the checkbox next to it’s title to activate it.
+
+
+## FAQ
+
+**What version of Blender does the plugin work with?**
+
+The current version supports Blender 2.92.
+
+
+**Are there things that Capsule can't currently export?**
+
+Theres a few use cases where Capsule may have trouble exporting assets from your scene:
+
+* Animations that aren't attached to Armature Bones - If you try to do this when the asset is using an Object Origin Point for export it will likely fail, keep these to using Scene origin points.
+
+* Bone Constraints - The "Preserve Armature Constraints" button under the Armature tab in the Export Presets menu can help if you need to export an armature with bone constraints, as it is unlikely to export properly when left. This however is currently an experimental feature, so results may vary.
+
+
+**What if i have a problem or bug with the add-on?**
+
+* You can post an issue on my GitHub repository (https://github.com/Takanu/Capsule/issues), this is the best place to post an issue as I can categorize and keep track of them in one place.
+
+
+
+**Do you have any other cool add-ons?**
+
+Yep, and they're all completely free - check out my GitHub account for other Blender goodies, including the Blender theme used in the video (https://github.com/Takanu).
+
+
 
 
 ---
