@@ -26,6 +26,10 @@ Capsule is a plugin for Blender that makes the process of exporting quick and se
 
 
 ## FAQ
+**How do I use this plugin?**
+
+Check out the Github Wiki for quick instructions on getting started - https://github.com/Takanu/Capsule/wiki.
+
 
 **What version of Blender does the plugin work with?**
 
@@ -43,7 +47,7 @@ Theres a few use cases where Capsule may have trouble exporting assets from your
 
 **What if i have a problem or bug with the add-on?**
 
-* You can post an issue on my GitHub repository (https://github.com/Takanu/Capsule/issues), this is the best place to post an issue as I can categorize and keep track of them in one place.
+* You can post an issue on the GitHub page (https://github.com/Takanu/Capsule/issues), this is the best place to post an issue as I can categorize and keep track of them in one place.
 
 
 
