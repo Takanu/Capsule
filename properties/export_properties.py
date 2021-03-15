@@ -164,7 +164,7 @@ class CAPSULE_ExportData(PropertyGroup):
     """
 
     # the version of Capsule this datablock was created with
-    version_number: FloatProperty(default=1.10)
+    version_number: FloatProperty(default=1.30)
 
     # the available file presets
     export_presets: CollectionProperty(type=CAPSULE_ExportPreset)

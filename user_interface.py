@@ -117,19 +117,19 @@ class CAPSULE_PT_Selection(Panel):
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-
-        # UI Prompt for when the .blend Capsule data can no longer be found.
-        try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-        except KeyError:
-            Draw_CreateCapsuleData(layout)
-
-
         scn = context.scene.CAPScn
         proxy = context.scene.CAPProxy
         selectTab = int(str(scn.selection_switch))
 
         layout = self.layout
+        
+        # UI Prompt for when the .blend Capsule data can no longer be found.
+        try:
+            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        except KeyError:
+            Draw_CreateCapsuleData(layout)
+            return
+
         col_selection_title_tab = layout.row(align=True)
         col_selection_title_tab.prop(scn, "selection_switch", expand=True)
 

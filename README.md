@@ -8,7 +8,7 @@ Capsule is an export manager for Blender that allows you to automate the export 
 
 - Lets you export hundreds of Objects and Collections automatically with a single click.
 
-- Supports FBX, GLTF, OBJ, Collada, Alembic and STL export formats.
+- Supports Alembic, Collada, FBX, GLTF, OBJ, STL and USD export formats.
 
 - Automatically aligns export targets to the scene origin (with a few caveats).
 
@@ -19,7 +19,7 @@ Capsule is an export manager for Blender that allows you to automate the export 
 
 ## Installation
 
-- ZIP the folder named "Capsule".
+- Download the latest release from the releases page.
 
 - Under Blender’s User Preferences Menu, in the Add-ons section, click, “Install From File”, and select the ZIP file.
 
