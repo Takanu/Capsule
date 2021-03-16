@@ -18,7 +18,7 @@ Capsule is a plugin for Blender that makes the process of exporting quick and se
 
 ## Installation
 
-- Download the latest release from the releases page and **RENAME THE ZIP FILE to "Capsule" (Blender wont install addons with dots in the ZIP file name).**
+- Download the latest release from the releases page, unzip the download and then ZIP the "Capsule" folder.
 
 - Under Blender’s User Preferences Menu, in the Add-ons section, click, “Install From File”, and select the ZIP file.
 
