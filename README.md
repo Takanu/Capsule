@@ -53,7 +53,7 @@ Theres a few use cases where Capsule may have trouble exporting assets from your
 
 **Do you have any other cool add-ons?**
 
-Yep, and they're all completely free - check out my GitHub account for other Blender goodies, including the Blender theme used in the video (https://github.com/Takanu).
+Yep, and they're all completely free - check out my GitHub account for other Blender goodies (https://github.com/Takanu).
 
 
 
