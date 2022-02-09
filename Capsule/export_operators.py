@@ -85,8 +85,8 @@ class CAPSULE_OT_ExportAll(Operator):
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)
         
-        print(export_objects)
-        print(export_collections)
+        #print(export_objects)
+        #print(export_objects)
 
         # /////////////////////////////////////////////////
         # OBJECT EXPORT
@@ -172,7 +172,7 @@ class CAPSULE_OT_ExportSelected(Operator):
         export_objects = []
         export_collections = []
 
-        print('selected objects - ', context.selected_objects)
+        #print('selected objects - ', context.selected_objects)
 
         for object in context.selected_objects:
             if object.CAPObj.enable_export is True:
@@ -182,8 +182,8 @@ class CAPSULE_OT_ExportSelected(Operator):
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)
         
-        print(export_objects)
-        print(export_collections)
+        #print(export_objects)
+        #print(export_objects)
 
 
         # /////////////////////////////////////////////////
@@ -352,7 +352,7 @@ def ExportCollectionList(context, exp, collection_list, global_record):
         root_definition = None
         if origin_point == 'Object':
             root_definition = bpy.context.scene.objects.get(collection.CAPCol.root_object.name)
-            print(' R O O T - ', root_definition)
+            #print(' R O O T - ', root_definition)
 
         # Collect all objects that are applicable for this export
         child_export_option = collection.CAPCol.child_export_option
@@ -367,7 +367,7 @@ def ExportCollectionList(context, exp, collection_list, global_record):
             
             targets = renderable
 
-        print("PREPARING TO EXPORT COLLECTION ", collection.name)
+        #print("PREPARING TO EXPORT COLLECTION ", collection.name)
 
         # E X P O R T
         export_result = ExportTarget(context, targets, collection.name, export_preset, location_preset, origin_point, root_definition, meta)
@@ -392,14 +392,14 @@ def GetRootLocationDefinition(context, export_name, origin_point, root_definitio
     result['location'] = [0.0, 0.0, 0.0]
     result['rotation'] = [0.0, 0.0, 0.0]
 
-    print('AAAAAAAA')
+    #print('AAAAAAAA')
 
     if origin_point == 'Scene':
-        print('origin point is SCENE')
+        #print('origin point is SCENE')
         return result
 
     elif origin_point == "Object":
-        print('origin point is OBJECT')
+        #print('origin point is OBJECT')
         # Not currently needed
         # if len(targets) > 1:
         #     result['warning'] = "The '" + export_name + "' collection has no root object assigned to it.  ASSIGN ONE."
@@ -415,7 +415,7 @@ def GetRootLocationDefinition(context, export_name, origin_point, root_definitio
                                 root_definition.rotation_euler[1], 
                                 root_definition.rotation_euler[2]]
         
-        print('found root location : ', result['location'])
+        #print('found root location : ', result['location'])
     
     return result
 
@@ -454,7 +454,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
         result['warning'] = path
         return result
 
-    print("Path created...", path)
+    #print("Path created...", path)
 
     # /////////////////////////////////////////////////
     # OBJECT MOVEMENT
@@ -468,8 +468,8 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
         return result
 
     if origin_point == "Object":
-        print('origin point is object, moving...')
-        print('META - ', meta['region'])
+        #print('origin point is object, moving...')
+        #print('origin point is object, moving...')
         object_transform.MoveAllFailsafe(context, root_definition, [0.0, 0.0, 0.0], meta['region'])
 
 
@@ -495,7 +495,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     if origin_point == "Object":
         object_transform.MoveAllFailsafe(context, root_definition, root_location['location'], meta['region'])
 
-    print(">>> Pass Complete <<<")
+    #print(">>> Pass Complete <<<")
 
     # Cleans up any armature constraint modification (only works if Preserve Armature Constraints is off)
     if export_preset.preserve_armature_constraints == True:
@@ -509,7 +509,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # self.export_stats['object_export_count'] += 1
     # self.export_stats['expected_export_quantity'] += 1
     # # context.window_manager.progress_update(self.export_stats['expected_export_quantity'])
-    # print(">>> Object Export Complete <<<")
+    # #print(">>> Object Export Complete <<<")
 
     return {}
 
@@ -518,19 +518,19 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
     Exports a selection of objects into a single file.
     """
 
-    print(">>> Exporting Combined Pass <<<")
-    print("Checking export preferences...")
+    #print(">>> Exporting Combined Pass <<<")
+    #print(">>> Exporting Combined Pass <<<")
 
     bpy.ops.object.select_all(action='DESELECT')
 
     for item in targets:
-        print("Exporting: ", item.name)
-        print(item.name, "has export set to", item.CAPObj.enable_export)
+        #print("Exporting: ", item.name)
+        #print("Exporting: ", item.name)
         select_utils.SelectObject(item)
 
 
     object_file_path = path + export_name
-    print("Final File Path.", object_file_path)
+    #print("Final File Path.", object_file_path)
 
 
     # based on the export location, send it to the right place
@@ -563,12 +563,12 @@ def PrepareExportIndividual(context, targets, path, export_preset):
     Exports a selection of objects, saving each object into it's own file.
     """
 
-    print(">>> Individual Pass <<<")
+    #print(">>> Individual Pass <<<")
     for item in targets:
-        print("-"*70)
-        print("Exporting...... ", item.name)
+        #print("-"*70)
+        #print("-"*70)
         individual_file_path = path + item.name
-        print("Final File Path.", individual_file_path)
+        #print("Final File Path.", individual_file_path)
 
         # For the time being, manually move the object back and forth to
         # the world origin point.

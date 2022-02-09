@@ -9,20 +9,20 @@ def DeletePresets():
     """
     Removes all Export Presets that that can be deleted by the user from the saved presets list.
     """
-    print(">>>>>>>>>> Deleting presets...")
+    #print(">>>>>>>>>> Deleting presets...")
     preferences = bpy.context.preferences
     addon_prefs = preferences.addons[__package__].preferences
     exp = addon_prefs.saved_export_presets
     presetsToKeep = []
 
     i = len(exp) - 1
-    print("i = ", i)
+    #print("i = ", i)
 
     while i != -1:
         item = exp[i]
-        print("item = ", item)
+        #print("item = ", item)
         if item.x_global_user_deletable is False:
-            print("Removing default exp...", exp[i])
+            #print("Removing default exp...", exp[i])
             exp.remove(i)
         i -= 1
 
@@ -39,30 +39,30 @@ def CreatePresets():
     addon_prefs = preferences.addons[__package__].preferences
     exp = addon_prefs.saved_export_presets
     sort = addon_prefs.sort_presets
-    print(">>>>>>>>>> Adding presets...")
+    #print(">>>>>>>>>> Adding presets...")
 
     # Erase the previous sort entries (delayed)
-    print("Clearing sort presets")
+    #print("Clearing sort presets")
     x = 0
     lenX = len(sort)
     while x < lenX:
-        print("Deleting sort preset...", sort[0])
+        #print("Deleting sort preset...", sort[0])
         sort.remove(0)
         x += 1
 
     # Copy all the currently-saved presets to a temporary sort preset location.
     i = 0
     lenI = len(exp)
-    print("lenI = ", lenI)
-    print("Saving Presets...")
-    print(exp)
+    #print("lenI = ", lenI)
+    #print("lenI = ", lenI)
+    #print("lenI = ", lenI)
     while i < lenI:
         if exp[0].x_global_user_deletable is True:
-            print("Copying user-defined preset...", exp[0])
+            #print("Copying user-defined preset...", exp[0])
             newPreset = sort.add()
             CopyPreset(exp[0], newPreset)
 
-        print("Deleting preset...", exp[0])
+        #print("Deleting preset...", exp[0])
         exp.remove(0)
         i += 1
 
@@ -73,9 +73,9 @@ def CreatePresets():
     # Add the copied presets back
     i = 0
     lenI = len(sort)
-    print(sort)
+    #print(sort)
     while i < lenI:
-        print("Adding back preset...", sort[0])
+        #print("Adding back preset...", sort[0])
         newPreset = exp.add()
         CopyPreset(sort[0], newPreset)
         sort.remove(0)

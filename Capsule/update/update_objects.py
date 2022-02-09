@@ -122,12 +122,12 @@ def CAP_Update_ActionItemName(self, context):
     Updates an animation actions name when edited from a list.
     """
     active = context.active_object
-    print(">>> Changing Action Name <<<")
-    print(self)
+    #print(">>> Changing Action Name <<<")
+    #print(">>> Changing Action Name <<<")
 
     if active.animation_data is not None:
         animData = active.animation_data
-        print("Checking Object Animation Names...")
+        #print("Checking Object Animation Names...")
 
         if animData.action is not None:
             if animData.action.name == self.prev_name:
@@ -136,7 +136,7 @@ def CAP_Update_ActionItemName(self, context):
                 return None
 
         for nla in active.animation_data.nla_tracks:
-            print("Checking NLA...", nla, nla.name)
+            #print("Checking NLA...", nla, nla.name)
             if nla.name == self.prev_name:
                 nla.name = self.name
                 self.prev_name = self.name
@@ -151,7 +151,7 @@ def CAP_Update_ActionItemName(self, context):
     if armature is not None:
         if armature.animation_data is not None:
             animData = armature.animation_data
-            print("Checking Armature Animation Names...")
+            #print("Checking Armature Animation Names...")
 
             if animData.action is not None:
                 if animData.action.name == self.prev_name:
@@ -165,7 +165,7 @@ def CAP_Update_ActionItemName(self, context):
                     self.prev_name = self.name
                     return None
 
-    print("No name could be changed for action", self.prev_name, ".  Oh no!")
+    #print("No name could be changed for action", self.prev_name, ".  Oh no!")
 
 
 
@@ -180,7 +180,7 @@ def UpdateObjectList(scene, object, enableExport):
     to ensure that all UI elements are kept in sync.
     """
     scn = scene.CAPScn
-    print("Hey, this object is %s" % object)
+    #print("Hey, this object is %s" % object)
 
     if object is None:
         return
@@ -188,13 +188,13 @@ def UpdateObjectList(scene, object, enableExport):
     # Check a list entry for the object doesn't already exist.
     for item in scene.CAPScn.object_list:
         if item.object.name == object.name:
-            print("Changing", object.name, "'s export from list.'")
+            #print("Changing", object.name, "'s export from list.'")
             item.enable_export = enableExport
             return
 
     # If an entry couldn't be found in the list, add it.
     if enableExport is True:
-        print("Adding", object.name, "to list.")
+        #print("Adding", object.name, "to list.")
         entry = scn.object_list.add()
         entry.object = object
         entry.enable_export = enableExport
@@ -250,7 +250,7 @@ def CAP_Update_ObjectListExport(self, context):
     Note - Do not use this in any other place apart from when an object is represented in a list.
     """
 
-    print("Changing Enable Export... (List)")  
+    #print("Changing Enable Export... (List)")  
     self.object.CAPObj.enable_export = self.enable_export
 
 
@@ -261,7 +261,7 @@ def CAP_Update_ObjectListRemove(self, context):
     """
     Used in a list to remove an object from both the export list, while disabling it's "Enable Export" status.
     """
-    print("-----DELETING OBJECT FROM LIST-----")
+    #print("-----DELETING OBJECT FROM LIST-----")
     i = 0
     scn = context.scene.CAPScn
     # To avoid issues within the list, the selected list item needs to be preserved.

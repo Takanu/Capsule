@@ -166,19 +166,19 @@ def UpdateCollectionList(scene, collection, enableExport):
     scn = scene.CAPScn
 
     # Check a list entry for the collection doesn't already exist.
-    print("UPDATING COLLECTION LIST!")
-    print(scene.CAPScn.collection_list)
+    #print("UPDATING COLLECTION LIST!")
+    #print("UPDATING COLLECTION LIST!")
 
     for item in scene.CAPScn.collection_list:
-        print(item)
+        #print(item)
         if item is not None:
             if item.collection.name == collection.name:
-                print("Changing", collection.name, "'s export from list.'")
+                #print("Changing", collection.name, "'s export from list.'")
                 item.enable_export = enableExport
                 return
 
     if enableExport is True:
-        print("Adding", collection.name, "to list.")
+        #print("Adding", collection.name, "to list.")
         entry = scn.collection_list.add()
         entry.collection = collection
         collection.CAPCol.in_export_list = True
@@ -241,7 +241,7 @@ def CAP_Update_CollectionListRemove(self, context):
     """
     Used in a list to remove a collection from both the export list, while disabling it's "Enable Export" status.
     """
-    print("-----DELETING GROUP FROM LIST-----")
+    #print("-----DELETING GROUP FROM LIST-----")
     i = 0
     scn = context.scene.CAPScn
     # To avoid issues within the list, the selected list item needs to be preserved.

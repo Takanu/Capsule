@@ -29,7 +29,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
             location_path = drive_split[1]
     
 
-    print("Current Location Path - ", location_path)
+    #print("Current Location Path - ", location_path)
 
     # Now substitute any tags
     location_path = FillTags(location_path, targets, collection, replace_invalid_chars, meta)
@@ -53,7 +53,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
     if not os.path.exists(location_path):
         os.makedirs(location_path)
     
-    print("Final Location Path - ", location_path)
+    #print("Final Location Path - ", location_path)
     
     return location_path
 
@@ -162,7 +162,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
 def SubstituteDirectoryCharacters(path):
   # Replaces invalid directory characters in names
 
-  print("Checking Directory...", path)
+  #print("Checking Directory...", path)
   result = path
   if platform.system() == 'Windows':
       invalid_characters = ["\\", "/", "*", "?", "\"", "<", ">", "|", ":"]
@@ -184,7 +184,7 @@ def SubstituteDirectoryCharacters(path):
 def SubstitutePathCharacters(path):
   # Replaces invalid directory characters in full export paths
 
-  print("Checking Directory...", path)
+  #print("Checking Directory...", path)
   result = path
   if platform.system() == 'Windows':
       invalid_characters = ["*", "?", "<", ">", "|", ":"]
@@ -208,7 +208,7 @@ def SubstitutePathCharacters(path):
 def CheckSystemChar(path):
   # Checks for invalid directory characters in names
 
-  print("Checking Directory...", path)
+  #print("Checking Directory...", path)
   if platform.system() == 'Windows':
       invalid_characters = ["/", "*", "?", "\"", "<", ">", "|", ":"]
       invalid_captured = []
@@ -230,5 +230,5 @@ def CheckSystemChar(path):
           if path.find(char) != -1:
               invalid_captured.append(char)
 
-  print("Invalid characters found...", invalid_captured)
+  #print("Invalid characters found...", invalid_captured)
   return invalid_captured

@@ -74,11 +74,11 @@ from .properties.export_properties import (
 # This sequence checks the files currently loaded? (CHECKME)
 # I actually don't know what this quite does anymore, commenting out for now.
 
-# print("Checking modules...")
+# #print("Checking modules...")
 
 # if "bpy" in locals():
 #     import imp
-#     print("------------------Reloading Capsule------------------")
+#     #print("------------------Reloading Capsule------------------")
 #     if "tk_utils" in locals():
 #         imp.reload(tk_utils)
 #     if "properties" in locals():
@@ -102,7 +102,7 @@ from .properties.export_properties import (
 #     if "update_collections" in locals():
 #         imp.reload(update_collections)
 
-# print("Importing modules...")
+# #print("Importing modules...")
 
 
 def GetGlobalPresets(scene, context):
@@ -417,7 +417,7 @@ def CreateDefaultData(scene):
 
     # Figure out if an object already exists, if yes do nothing
     for object in bpy.data.objects:
-        print(object)
+        #print(object)
         if object.name == addon_prefs.default_datablock:
             return
 
@@ -606,7 +606,7 @@ def register():
 
     # Register classes
     for cls in classes:
-        print("Registering ", cls)
+        #print("Registering ", cls)
         bpy.utils.register_class(cls)
 
     # Assign datablocks now all classes have been registered.

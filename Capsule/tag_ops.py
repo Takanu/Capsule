@@ -25,7 +25,7 @@ def RemoveObjectTag(context, object, export_preset):
 
     scn = context.scene.CAPScn
 
-    print(">>> Removing Tags <<<")
+    #print(">>> Removing Tags <<<")
 
     # Create a new string to return
     newString = ""
@@ -79,22 +79,22 @@ def RemoveObjectTag(context, object, export_preset):
                 if tag.name_filter_type is '1':
                     if text_ops.CheckSuffix(object.name, tag.name_filter) is True:
                         newString = object.name.replace(tag.name_filter, "")
-                        print("Tag removed, new name:", newString)
+                        #print("Tag removed, new name:", newString)
                         return newString
 
                 elif tag.name_filter_type is '2':
                     if object.name.find(tag.name_filter) == 0:
                         newString = object.name.replace(tag.name_filter, "")
-                        print("Tag removed, new name:", newString)
+                        #print("Tag removed, new name:", newString)
                         return newString
 
                 elif tag.name_filter_type is '3':
                     if object.name.find(tag.name_filter) != -1:
                         newString = object.name.replace(tag.name_filter, "")
-                        print("Tag removed, new name:", newString)
+                        #print("Tag removed, new name:", newString)
                         return newString
 
-    print("Could not remove tag, none found.  Exiting...")
+    #print("Could not remove tag, none found.  Exiting...")
     return ""
 
 # FIXME : No longer needed for 2.0, migrate or destroy.
@@ -102,7 +102,7 @@ def IdentifyObjectTag(context, object, export_preset):
 
     scn = context.scene
 
-    print(">>> Checking Name Filter <<<")
+    #print(">>> Checking Name Filter <<<")
 
     i = 0
 
@@ -170,11 +170,11 @@ def IdentifyObjectTag(context, object, export_preset):
 
         if tag.object_type != '1':
             if object.type == typeFilter:
-                print("Object matches type filter")
+                #print("Object matches type filter")
                 passed_type_filter = True
 
         if passed_type_filter is True and passed_name_filter is True:
-            print("Filter Found! ...", str(i))
+            #print("Filter Found! ...", str(i))
             return i
 
         i += 1
@@ -184,7 +184,7 @@ def IdentifyObjectTag(context, object, export_preset):
 def CompareObjectWithTag(context, object, tag):
     scn = context.scene
 
-    print(">>> Comparing Object With Tag <<<")
+    #print(">>> Comparing Object With Tag <<<")
 
     # NAME CHECK!
     passed_name_filter = False
@@ -250,10 +250,10 @@ def CompareObjectWithTag(context, object, tag):
             passed_type_filter = True
 
     if passed_type_filter is True and passed_name_filter is True:
-        print("Object matches tag!")
+        #print("Object matches tag!")
         return True
 
-    print("Object doesn't match tag...")
+    #print("Object doesn't match tag...")
     return False
 
 # FIXME : No longer needed for 2.0, migrate or destroy.
@@ -261,7 +261,7 @@ def FindObjectWithTag(context, object_name, tag):
 
     scn = context.scene
 
-    print(">>> Checking Name Filter <<<")
+    #print(">>> Checking Name Filter <<<")
 
     # First, we need to make the name of the object to search for
     search_name = ""
@@ -313,8 +313,8 @@ def FindObjectWithTag(context, object_name, tag):
 
             if tag.object_type != '1':
                 if search_object.type == typeFilter:
-                    print("Object matches type filter")
+                    #print("Object matches type filter")
                     return search_object
 
-    print("Object doesn't match type filter")
+    #print("Object doesn't match type filter")
     return None

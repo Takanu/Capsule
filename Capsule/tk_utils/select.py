@@ -36,7 +36,7 @@ def SelectObject(target, force_select = False):
     - force_select: If true the target will be selected regardless of any hide settings it has, otherwise it won't.
     """
 
-    # print('selecting... ', target)
+    # #print('selecting... ', target)
 
     if force_select == False:
         if target.hide_get() is True and target.hide_select is True:
@@ -49,9 +49,9 @@ def SelectObject(target, force_select = False):
     if target.hide_select is True:
         target.hide_select = False
 
-    # print('attempting to select... ', target)
-    # print(target.hide_viewport)
-    # print(target.hide_select)
+    # #print('attempting to select... ', target)
+    # #print('attempting to select... ', target)
+    # #print('attempting to select... ', target)
 
     target.select_set(True)
 

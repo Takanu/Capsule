@@ -12,7 +12,7 @@ def MoveObject(target, context, location):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
-    print(">>>>>> Moving Object <<<<<<")
+    #print(">>>>>> Moving Object <<<<<<")
 
     copyLocation = Vector((location[0], location[1], location[2]))
 
@@ -78,7 +78,7 @@ def MoveObjectFailsafe(target, context, location, region):
 	# This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
-    print(">>>>>> Moving Object <<<<<<")
+    #print(">>>>>> Moving Object <<<<<<")
 
     copyLocation = Vector((location[0], location[1], location[2]))
 
@@ -246,19 +246,19 @@ def MoveObjects(targetLead, targets, context, location):
 
     # Check if any targets are children of any other object
     for child in targetLead.children:
-        print("Checking TargetLead for Children...")
+        #print("Checking TargetLead for Children...")
         for target in targets:
             if child.name == target.name:
-                print("Removing Target", target.name)
+                #print("Removing Target", target.name)
                 targetsToRemove.append(target)
 
     for target in targets:
-        print("Checking Targets for Children...", target.name)
+        #print("Checking Targets for Children...", target.name)
         for child in target.children:
-            print("Found Child ", child.name)
+            #print("Found Child ", child.name)
             for otherTarget in targets:
                 if child.name == otherTarget.name:
-                    print("Removing Target", child.name)
+                    #print("Removing Target", child.name)
                     targetsToRemove.append(child)
 
     for target in targetsToRemove:
@@ -387,7 +387,7 @@ def MoveAll(target, context, location):
     # This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
-    print('Moving all objects...')
+    #print('Moving all objects...')
 
     copyLocation = [0.0, 0.0, 0.0]
     copyLocation[0] = location[0]
@@ -411,15 +411,15 @@ def MoveAll(target, context, location):
     bpy.ops.view3d.snap_cursor_to_selected()
     root_location = (0.0, 0.0, 0.0)
 
-    print('Getting cursor...')
+    #print('Getting cursor...')
 
     root_location = context.scene.cursor.location
 
-    print('Did it break?  aaaaaaaa')
+    #print('Did it break?  aaaaaaaa')
 
     # for area in context.screen.areas:
     #     if area.type == 'VIEW_3D':
-    #         print(area.spaces[0].cursor.location)
+    #         #print(area.spaces[0].cursor.location)
     #         root_location = area.spaces[0].cursor.location
 
     # Calculate the movement difference
@@ -433,7 +433,7 @@ def MoveAll(target, context, location):
 
     previous_mode = bpy.context.active_object.mode
 
-    print('ok now moving for realsies - ', locationDiff)
+    #print('ok now moving for realsies - ', locationDiff)
 
     # 2.79 translate
     bpy.ops.transform.translate(
@@ -446,7 +446,7 @@ def MoveAll(target, context, location):
         release_confirm = False,
     )
     
-    print('All objects moved, resetting cursor...')
+    #print('All objects moved, resetting cursor...')
 
     bpy.ops.object.mode_set(mode=previous_mode)
 
@@ -457,7 +457,7 @@ def MoveAll(target, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = auto_key
     target.lock_location = lock_transform
 
-    print('Move finished.')
+    #print('Move finished.')
 
 def MoveAllFailsafe(context, target, destination, region):
     """
@@ -467,7 +467,7 @@ def MoveAllFailsafe(context, target, destination, region):
     # This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
-    print('MOVEMENT TEST')
+    #print('MOVEMENT TEST')
 
     target_location = [0.0, 0.0, 0.0]
     target_location[0] = destination[0]
@@ -491,15 +491,15 @@ def MoveAllFailsafe(context, target, destination, region):
     bpy.ops.view3d.snap_cursor_to_selected()
     root_location = (0.0, 0.0, 0.0)
 
-    print('Getting cursor...')
+    #print('Getting cursor...')
 
     root_location = context.scene.cursor.location
 
-    print('Did it break?  aaaaaaaa')
+    #print('Did it break?  aaaaaaaa')
 
     # for area in context.screen.areas:
     #     if area.type == 'VIEW_3D':
-    #         print(area.spaces[0].cursor.location)
+    #         #print(area.spaces[0].cursor.location)
     #         root_location = area.spaces[0].cursor.location
 
     # Calculate the movement difference
@@ -513,7 +513,7 @@ def MoveAllFailsafe(context, target, destination, region):
 
     previous_mode = bpy.context.active_object.mode
 
-    print('ok now moving for realsies - ', locationDiff)
+    #print('ok now moving for realsies - ', locationDiff)
 
     override = {'region': region}
 
@@ -529,7 +529,7 @@ def MoveAllFailsafe(context, target, destination, region):
         release_confirm = False,
     )
     
-    print('All objects moved, resetting cursor...')
+    #print('All objects moved, resetting cursor...')
 
     bpy.ops.object.mode_set(mode=previous_mode)
 
@@ -540,7 +540,7 @@ def MoveAllFailsafe(context, target, destination, region):
     context.scene.tool_settings.use_keyframe_insert_auto = auto_key
     target.lock_location = lock_transform
 
-    print('Move finished.')
+    #print('Move finished.')
 
 def RotateAll(target, context, rotation, constraintAxis):
     """

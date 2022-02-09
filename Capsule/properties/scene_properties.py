@@ -400,13 +400,13 @@ class CAPSULE_Action_Preferences(PropertyGroup):
 # )
 
 # def register():
-#     print("~~~Registering Generic Properties~~~")
+#     #print("~~~Registering Generic Properties~~~")
 #     for cls in classes:
 #         bpy.utils.register_class(cls)
 
 
 # def unregister():
-#     print("~~~Un-registering Generic Properties~~~")
+#     #print("~~~Un-registering Generic Properties~~~")
 #     for cls in reversed(classes):
 #         bpy.utils.unregister_class(cls)
 

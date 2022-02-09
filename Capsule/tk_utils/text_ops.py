@@ -30,16 +30,16 @@ def CheckPrefix(string, prefix):
     prefixLength = len(prefix)
     index = string.find(prefix)
 
-    print("String..........", string)
-    print("Prefix..........", prefix)
-    print("String Length...", strLength)
-    print("Prefix Length...", prefixLength)
-    print("Index...........", index)
+    #print("String..........", string)
+    #print("String..........", string)
+    #print("String..........", string)
+    #print("String..........", string)
+    #print("String..........", string)
 
     if index == 0:
-        print("Suffix is True")
+        #print("Suffix is True")
         return True
 
     else:
-        print("Suffix is False")
+        #print("Suffix is False")
         return False

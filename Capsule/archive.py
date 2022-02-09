@@ -9,7 +9,7 @@ def StartSceneMovement(self, context, target, targetObjects, targetRot):
     """
 
     if self.origin_point is "Object":
-        print("Moving scene...")
+        #print("Moving scene...")
         object_transform.MoveAll_TEST(target, context, [0.0, 0.0, 0.0], self.region_override)
 
 def FinishSceneMovement(self, context, target, targetObjects, targetLoc, targetRot):

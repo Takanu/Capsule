@@ -26,7 +26,7 @@ class CAPSULE_OT_ToggleExport(Operator):
 
     def execute(self, context):
 
-        print("*" * 40)
+        #print("*" * 40)
         scn = context.scene.CAPScn
         proxy = context.scene.CAPProxy
         sel = context.selected_objects

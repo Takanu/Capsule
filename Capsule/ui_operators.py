@@ -19,7 +19,7 @@ class CAPSULE_OT_Add_Path(Operator):
     bl_label = "Add"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
@@ -48,7 +48,7 @@ class CAPSULE_OT_Delete_Path(Operator):
     bl_label = "Remove"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
@@ -83,7 +83,7 @@ class CAPSULE_OT_Add_Location_Path_Tag(Operator):
     )
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
@@ -138,7 +138,7 @@ class CAPSULE_OT_Add_ExportPreset_Path_Tag(Operator):
     )
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
@@ -184,7 +184,7 @@ class CAPSULE_OT_Add_Export(Operator):
         return newID
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
@@ -223,7 +223,7 @@ class CAPSULE_OT_Delete_Export(Operator):
         return False
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
@@ -246,7 +246,7 @@ class CAPSULE_OT_Shift_Path_Up(Operator):
     bl_label = "Add"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         scn = context.scene.CAPScn
         obj = context.active_object.CAPObj
@@ -263,7 +263,7 @@ class CAPSULE_OT_Shift_Path_Down(Operator):
     bl_label = "Remove"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         scn = context.scene.CAPScn
         obj = context.active_object.CAPObj
@@ -281,7 +281,7 @@ class CAPSULE_OT_Clear_List(Operator):
     bl_label = "Delete All"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         scn = context.scene.CAPScn
         objectTab = int(str(scn.list_switch))
@@ -309,7 +309,7 @@ class CAPSULE_OT_Refresh_List(Operator):
     bl_label = "Refresh"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         scn = context.scene.CAPScn
         objectTab = int(str(scn.list_switch))
@@ -341,7 +341,7 @@ class CAPSULE_OT_Reset_Scene(Operator):
     bl_label = "Reset Scene"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         self.export_stats['object_export_count'] = 0
 
@@ -389,13 +389,13 @@ class CAPSULE_OT_Reset_Defaults(Operator):
     bl_label = "Reset Scene"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
 
         if addon_prefs == None:
-            print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")
+            #print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")
             return
 
         # Figure out if an object already exists, if yes, DELETE IT
@@ -423,7 +423,7 @@ class CAPSULE_OT_UI_Group_Separate(Operator):
     bl_label = ""
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         scn = context.scene.CAPScn
         ui = context.scene.CAPUI
@@ -442,7 +442,7 @@ class CAPSULE_OT_UI_Group_Options(Operator):
     bl_label = ""
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         scn = context.scene.CAPScn
         ui = context.scene.CAPUI
@@ -462,7 +462,7 @@ class CAPSULE_OT_Refresh_Actions(Operator):
     bl_label = "Refresh"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         ui = context.scene.CAPUI
         active = context.active_object
@@ -521,14 +521,14 @@ class CAPSULE_OT_Create_ExportData(Operator):
     bl_label = "Create Capsule Data"
 
     def execute(self, context):
-        print(self)
+        #print(self)
 
         preferences = bpy.context.preferences
         addon_prefs = preferences.addons[__package__].preferences
 
         # Figure out if an object already exists, if yes do nothing
         for object in bpy.data.objects:
-            print(object)
+            #print(object)
             if object.name == addon_prefs.default_datablock:
                 self.report({'WARNING'}, "Capsule data for the blend file has been found, a new one will not be created.")
                 return {'CANCELLED'}
