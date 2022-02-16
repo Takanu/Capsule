@@ -420,7 +420,7 @@ def CheckCapsuleErrors(context):
         #print("Checking File Paths...", defaultFilePath)
 
         if defaultFilePath == "":
-            statement = "The path for " + exp.location_presets[enumIndex].name + " cannot be empty.  Please give the Location a valid file path."
+            statement = "The File Location '" + exp.location_presets[enumIndex].name + "' has no file path.  Please set one before attempting to export."
             return statement
 
         i += 1
