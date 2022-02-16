@@ -240,7 +240,7 @@ class CAPSULE_PT_Selection(Panel):
         #/////////////////////////////////////////////////////////////////
         #////////////////////////// COLLECTION UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
-        elif selectTab is 2:
+        elif selectTab == 2:
 
             # Get the first collection pointer we need
             grp = None
@@ -415,13 +415,13 @@ class CAPSULE_PT_List(Panel):
             obj = None
             ob = None
 
-            if len(scn.object_list) is not 0:
+            if len(scn.object_list) != 0:
                 if len(scn.object_list) > scn.object_list_index:
                     entry = scn.object_list[scn.object_list_index]
                     obj = entry.object.CAPObj
                     ob = entry.object
             
-            if obj is not None:
+            if obj != None:
                 object_options_list = layout.column(align=False)
                 object_options_list.use_property_split = True
                 object_options_list.use_property_decorate = False

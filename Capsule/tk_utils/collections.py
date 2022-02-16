@@ -101,7 +101,7 @@ def GetExportableCollectionObjects(context, collection, child_export_option):
         object_list = []
         
         # If we've over-extended, return
-        if current_layer > max_layer and max_layer is not -1:
+        if current_layer > max_layer and max_layer != -1:
             return []
             
         # If not, add the current objects

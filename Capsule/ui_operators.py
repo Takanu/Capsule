@@ -343,7 +343,7 @@ class CAPSULE_OT_Reset_Scene(Operator):
     def execute(self, context):
         #print(self)
 
-        self.export_stats['object_export_count'] = 0
+        #self.export_stats['object_export_count'] = 0
 
         # Keep a record of the selected and active objects to restore later
         active = None
@@ -358,10 +358,9 @@ class CAPSULE_OT_Reset_Scene(Operator):
         for collection in collection_utils.GetSceneCollections(context.scene, False):
             col = collection.CAPCol
             col.enable_export = False
-            col.root_object = ""
+            col.root_object = None
             col.location_preset = '0'
             col.export_preset = '0'
-            col.normals = '1'
 
         for object in context.scene.objects:
             obj = object.CAPObj
@@ -369,10 +368,6 @@ class CAPSULE_OT_Reset_Scene(Operator):
             obj.origin_export = "Object"
             obj.location_preset = '0'
             obj.export_preset = '0'
-            obj.normals = '1'
-
-        bpy.ops.scene.cap_refobjects()
-        bpy.ops.scene.cap_refgroups()
 
         # Re-select the objects previously selected
         select_utils.FocusObject(active)
