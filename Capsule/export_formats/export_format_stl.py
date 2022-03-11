@@ -42,30 +42,32 @@ class CAP_FormatData_STL(PropertyGroup):
         default = False,
     )
 
-    axis_forward: EnumProperty(
-        name="Axis Forward",
-        description="What the Forward Axis will be defined as when the model is exported.",
-        items=(
+    # the property for 'axis_forward'
+    forward_axis: EnumProperty(
+        name = "Forward Axis",
+        description = "What the Forward Axis will be defined as when the model is exported.",
+        items = (
             ('X', 'X', ''),
-            ('Y', 'Y', ''),
+            ('Y', 'Y (Default)', ''),
             ('Z', 'Z', ''),
             ('-X', '-X', ''),
             ('-Y', '-Y', ''),
             ('-Z', '-Z', '')),
-        default='Y'
+        default = 'Y',
     )
     
-    axis_up: EnumProperty(
-		name="Axis Up",
-		description="What the Up Axis will be defined as when the model is exported.",
-		items=(
+    # the property for 'axis_up'
+    up_axis: EnumProperty(
+		name = "Up Axis",
+		description = "What the Up Axis will be defined as when the model is exported.",
+		items = (
 			('X', 'X', ''),
 			('Y', 'Y', ''),
-			('Z', 'Z', ''),
+			('Z', 'Z (Default)', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
 			('-Z', '-Z', '')),
-		default='Z',
+		default = 'Z',
 	)
 
     
@@ -88,9 +90,10 @@ class CAP_FormatData_STL(PropertyGroup):
             global_scale = self.global_scale,
             use_scene_unit = self.use_scene_unit,
             ascii = self.save_as_ascii,
-            axis_forward = self.axis_forward,
-            axis_up = self.axis_up
+            axis_forward = self.forward_axis,
+            axis_up = self.up_axis
         )
+
     
     def draw_addon_preferences(self, layout, exportData, exp):
         """
@@ -114,11 +117,13 @@ class CAP_FormatData_STL(PropertyGroup):
         export_options.prop(exportData, "save_as_ascii")
         export_options.prop(exportData, "use_scene_unit")
         export_options.separator()
-
-        export_options.prop(exportData, "axis_up")
-        export_options.prop(exportData, "axis_forward")
         export_options.separator()
+
         export_options.prop(exportData, "global_scale")
+        export_options.separator()
+        export_options.separator()
+        export_options.prop(exportData, "forward_axis")
+        export_options.prop(exportData, "up_axis")
         export_options.separator()
 
         # right padding

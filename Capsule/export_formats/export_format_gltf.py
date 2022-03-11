@@ -21,7 +21,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	instance_id: IntProperty(default=-1)
 
-	# export
+	# ////////////////
+	# EXPORT
 
 	export_copyright: StringProperty(
 		name='Copyright Info',
