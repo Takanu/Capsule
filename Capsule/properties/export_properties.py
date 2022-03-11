@@ -185,11 +185,11 @@ class CAPSULE_ExportData(PropertyGroup):
         name="Export Options",
         description="",
         items=(
-        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
-        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
-        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Animation', 'Animation', 'A tab containing options for animation-related data is handled and exported.'),
-        ('Particles', 'Particles', 'A tab containing options for how particles are exported.'),
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh data is exported'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is handled and exported'),
+        ('Particles', 'Particles', 'A tab containing options for how particles are exported'),
         ),
     )
 
@@ -197,11 +197,11 @@ class CAPSULE_ExportData(PropertyGroup):
         name="Export Options",
         description="",
         items=(
-        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
-        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
-        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported.'),
-        ('Armature', 'Armature', 'A tab containing options for how armature and armature-related data are exported.'),
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh data is exported'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported'),
+        ('Armature', 'Armature', 'A tab containing options for how armature and armature-related data are exported'),
         ),
     )
 
@@ -209,11 +209,11 @@ class CAPSULE_ExportData(PropertyGroup):
         name="Export Options",
         description="",
         items=(
-        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
-        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
-        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported.'),
-        ('Armature', 'Armature', 'A tab containing options for how armature and armature-related data are exported.'),
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh data is exported'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported'),
+        ('Armature', 'Armature', 'A tab containing options for how armature and armature-related data are exported'),
         ),
     )
 
@@ -221,11 +221,11 @@ class CAPSULE_ExportData(PropertyGroup):
         name="Export Options",
         description="",
         items=(
-        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
-        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
-        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported.'),
-        ('Draco', 'Draco','A tab containing Draco compression options.'),
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh data is exported'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported'),
+        ('Draco', 'Draco','A tab containing Draco compression options'),
         ),
     )
 
@@ -233,12 +233,24 @@ class CAPSULE_ExportData(PropertyGroup):
         name="Export Options",
         description="",
         items=(
-        ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
-        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
-        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
-        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported.'),
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
+        ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
+        ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh data is exported'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported'),
         ),
     )
+
+    # placeholder for when USD matures as a file format
+    # usd_menu_options: EnumProperty(
+    #     name="Export Options",
+    #     description="",
+    #     items=(
+    #     ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
+    #     ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
+    #     ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh data is exported'),
+    #     ('Animation', 'Animation', 'A tab containing options for animation-related data is exported'),
+    #     ),
+    # )
 
     
 
