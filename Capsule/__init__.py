@@ -21,8 +21,8 @@
 bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
-    "version": (1, 3, 0),
-    "blender": (2, 92, 0),
+    "version": (1, 3, 1),
+    "blender": (3, 1, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
     "description": "An export manager that makes the process of repeat and bulk exports simple.",
@@ -316,7 +316,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     currentExp.data_gltf.draw_addon_preferences(format_type_box, currentExp.data_gltf, exp, currentExp)
                 
                 elif currentExp.format_type == 'Alembic':
-                    currentExp.data_abc.draw_addon_preferences(format_type_box, currentExp.data_abc, exp)
+                    currentExp.data_abc.draw_addon_preferences(format_type_box, currentExp.data_abc, exp, currentExp)
                 
                 elif currentExp.format_type == 'Collada':
                     currentExp.data_dae.draw_addon_preferences(format_type_box, currentExp.data_dae, exp)

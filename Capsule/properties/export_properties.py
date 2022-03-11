@@ -164,7 +164,7 @@ class CAPSULE_ExportData(PropertyGroup):
     """
 
     # the version of Capsule this datablock was created with
-    version_number: FloatProperty(default=1.30)
+    version_number: FloatProperty(default=1.31)
 
     # the available file presets
     export_presets: CollectionProperty(type=CAPSULE_ExportPreset)
@@ -189,7 +189,6 @@ class CAPSULE_ExportData(PropertyGroup):
         ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
         ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh data is exported'),
         ('Animation', 'Animation', 'A tab containing options for animation-related data is handled and exported'),
-        ('Particles', 'Particles', 'A tab containing options for how particles are exported'),
         ),
     )
 
