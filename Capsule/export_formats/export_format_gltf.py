@@ -100,19 +100,19 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	# MESH DATA
 
 	export_texcoords: BoolProperty(
-		name = 'UVs',
+		name = 'Export UVs',
 		description = 'Exports any UV coordinate sets associated with meshes',
 		default = True
 	)
 
 	export_normals: BoolProperty(
-		name = 'Normals',
+		name = 'Export Normals',
 		description = 'Exports vertex normals with meshes',
 		default = True
 	)
 
 	export_tangents: BoolProperty(
-		name = 'Tangents',
+		name = 'Export Tangents',
 		description = 'Export vertex tangents with meshes',
 		default = True
 	)
@@ -128,13 +128,13 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	)
 
 	use_mesh_edges: BoolProperty(
-		name = 'Loose Edges',
+		name = 'Include Loose Edges',
 		description = 'Export loose edges as lines, using the material from the first material slot',
 		default = False
 	)
 
 	use_mesh_vertices: BoolProperty(
-		name = 'Loose Points',
+		name = 'Include Loose Points',
 		description = 'Export loose points as glTF points, using the material from the first material slot',
 		default = False
 	)
@@ -455,7 +455,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
-			mesh_options = export_options.column(align = True, heading = "Export Mesh Data")
+			mesh_options = export_options.column(align = True, heading = "Mesh Data")
 			mesh_options.prop(exportData, "export_texcoords")
 			mesh_options.prop(exportData, "export_normals")
 			mesh_options.prop(exportData, "export_tangents")
