@@ -58,13 +58,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = "",
 	)
 
-	# the property for 'export_keep_original'
+	# the property for 'export_keep_originals'
 	export_keep_original_tex: BoolProperty(
 		name = 'Keep Original Images',
 		description = "(Only available with the 'GLTF Separate' Export Format) Keep original textures files if possible. WARNING: if you use more than one texture, where pbr standard requires only one, only one texture will be used. This can lead to unexpected results",
 		default = False,
 	)
-
 	
 
 	# the property for 'export_extras'
@@ -169,21 +168,10 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = True
 	)
 
-	export_force_sampling: BoolProperty(
-		name = 'Always Sample Animations',
-		description = 'Apply sampling to all animations',
-		default = True
-	)
-
+	
 	export_nla_strips: BoolProperty(
 		name = 'Group by NLA Track',
 		description = 'When on, multiple actions become part of the same glTF animation if they’re pushed onto NLA tracks with the same name. When off, all the currently assigned actions become one glTF animation',
-		default = True
-	)
-
-	optimize_animation_size: BoolProperty(
-		name = 'Optimize Animation Size',
-		description = 'Reduces exported filesize by removing duplicate keyframes.  WARNING - Can cause problems with stepped animation',
 		default = True
 	)
 
@@ -192,11 +180,20 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		description = 'When on, only the deformation bones will be exported (and needed bones in the hierarchy)',
 		default = False
 	)
+	
 
-	export_all_influences: BoolProperty(
-		name = 'Include All Bone Influences',
-		description = 'Allows >4 joint vertex influences. Models may appear incorrectly in many viewers',
-		default = False
+	optimize_animation_size: BoolProperty(
+		name = 'Optimize Animation Size',
+		description = 'Reduces exported filesize by removing duplicate keyframes.  WARNING - Can cause problems with stepped animation',
+		default = True
+	)
+
+	# ////////
+	
+	export_force_sampling: BoolProperty(
+		name = 'Always Sample Animations',
+		description = 'Apply sampling to all animations',
+		default = True
 	)
 
 	export_frame_step: IntProperty(
@@ -209,28 +206,36 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	# ////////
 
+	export_morph: BoolProperty(
+		name = 'Export Shape Keys',
+		description = 'Export shape keys (Also known as morph targets)',
+		default = True
+	)
+
+	export_morph_normal: BoolProperty(
+		name = 'Export Shape Key Normals',
+		description = 'Export vertex normals with shape keys',
+		default = True
+	)
+
+	export_morph_tangent: BoolProperty(
+		name = 'Export Shape Key Tangents',
+		description = 'Export vertex tangents with shape keys',
+		default = True
+	)
+
+	# ////////
+
 	export_skins: BoolProperty(
 		name = 'Export Skinning',
 		description = '',
 		default = False
 	)
 
-	export_morph: BoolProperty(
-		name = 'Export Shape Keys',
-		description = '',
-		default = True
-	)
-
-	export_morph_normal: BoolProperty(
-		name = 'Export Shape Key Normals',
-		description = '',
-		default = True
-	)
-
-	export_morph_tangent: BoolProperty(
-		name = 'Export Shape Key Tangents',
-		description = '',
-		default = True
+	export_all_influences: BoolProperty(
+		name = 'Include All Bone Influences',
+		description = 'Allows >4 joint vertex influences. Models may appear incorrectly in many viewers',
+		default = False
 	)
 
 	# TODO: Missing some new animation properties
@@ -241,7 +246,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	export_draco_mesh_compression_enable: BoolProperty(
 		name = "Use Draco Mesh Compression",
-		description = "A compression library for GLTF to reduce file sizes and improve file streaming over the web.  Recommended for web content",
+		description = "A compression library for GLTF to reduce file sizes and improve file streaming over the web.  Recommended for web content.  WARNING - Not all applications that read GLTF files can read files using Draco compression",
 		#TODO: Come back when you know what this is, smh.
 		default = False
 	)
@@ -347,26 +352,26 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			use_mesh_vertices = self.use_mesh_vertices,
 
 			export_displacement = self.export_displacement,
-			
 
 
 			# ANIMATION
-			export_animations = export_preset.export_animation,
+			export_current_frame = self.export_current_frame,
 
+			export_animations = export_preset.export_animation,
 			export_frame_range = self.export_frame_range,
-			export_frame_step = self.export_frame_step,
-			export_force_sampling = self.export_force_sampling,
 			export_nla_strips = self.export_nla_strips,
+			export_def_bones = self.export_def_bones,
 			optimize_animation_size = self.optimize_animation_size,
 
-			export_def_bones = self.export_def_bones,
-			export_current_frame = self.export_current_frame,
-			export_all_influences = self.export_all_influences,
+			export_force_sampling = self.export_force_sampling,
+			export_frame_step = self.export_frame_step,
 
-			export_skins = self.export_skins,
 			export_morph = self.export_morph,
 			export_morph_normal = self.export_morph_normal,
 			export_morph_tangent = self.export_morph_tangent,
+
+			export_skins = self.export_skins,
+			export_all_influences = self.export_all_influences,
 
 
 			# DRACO
@@ -473,7 +478,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
-
+			
 			# Shapekey warning
 			if preset.apply_modifiers == True:
 				export_options_warning = export_options.box()
@@ -489,13 +494,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 				export_options_warning_l.label(text="Export Animation is currently disabled in the General Export Options")
 				export_options.separator()
 				export_options.separator()
+			
+			export_options.prop(exportData, "export_current_frame")
+			export_options.separator()
+			export_options.separator()
+
 
 			animation_options = export_options.column(align = True)
 			animation_options.active = preset.export_animation
-
-			animation_options.prop(exportData, "export_current_frame")
-			animation_options.separator()
-			animation_options.separator()
 
 			generic_sub = animation_options.column(align = True, heading = "Animation Options")
 			generic_sub.prop(exportData, "export_def_bones")
