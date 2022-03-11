@@ -372,14 +372,6 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
-			# Shapekey warning
-			if preset.apply_modifiers == True:
-				export_options_warning = export_options.box()
-				export_options_warning_l = export_options_warning.row(align=True)
-				export_options_warning_l.label(text="WARNING - While Apply Modifiers is active you will not be able to export Shapekeys")
-				export_options.separator()
-				export_options.separator()
-
 			export_options.prop(exportData, "convert_loose_edges")
 			export_options.prop(exportData, "use_tangent_space")
 			export_options.prop(exportData, "use_subsurf")
@@ -399,20 +391,32 @@ class CAP_FormatData_FBX(PropertyGroup):
 			if preset.apply_modifiers == True:
 				export_options_warning = export_options.box()
 				export_options_warning_l = export_options_warning.row(align=True)
-				export_options_warning_l.label(text="WARNING - While Apply Modifiers is active you will not be able to export Shapekeys")
+				export_options_warning_l.label(text="While Apply Modifiers is active you will not be able to export Shape Keys")
+				export_options.separator()
 				export_options.separator()
 			
-			export_options.prop(exportData, "bake_anim_force_startend_keying")
-			export_options.prop(exportData, "bake_anim_use_all_bones")
-			export_options.prop(exportData, "bake_anim_use_nla_strips")
-			export_options.prop(exportData, "bake_anim_use_all_actions")
-			
-			export_options.separator()
-			export_options.separator()
+			# Disabled Animations Warning
+			if preset.export_animation == False:
+				export_options_warning = export_options.box()
+				export_options_warning_l = export_options_warning.row(align=True)
+				export_options_warning_l.label(text="Export Animation is currently disabled in the General Export Options")
+				export_options.separator()
+				export_options.separator()
 
-			export_options.prop(exportData, "bake_anim_step")
-			export_options.prop(exportData, "bake_anim_simplify_factor")
-			export_options.separator()
+			animation_options = export_options.column(align = True)
+			animation_options.active = preset.export_animation
+			
+			animation_options.prop(exportData, "bake_anim_force_startend_keying")
+			animation_options.prop(exportData, "bake_anim_use_all_bones")
+			animation_options.prop(exportData, "bake_anim_use_nla_strips")
+			animation_options.prop(exportData, "bake_anim_use_all_actions")
+			
+			animation_options.separator()
+			animation_options.separator()
+
+			animation_options.prop(exportData, "bake_anim_step")
+			animation_options.prop(exportData, "bake_anim_simplify_factor")
+			animation_options.separator()
 
 		elif exp.fbx_menu_options == 'Armature':
 			export_options = export_options_area.column(align=True)

@@ -251,7 +251,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_options.use_property_decorate = False
 			export_options.separator()
 
-			# Shapekey warning
+			# Disabled Animations Warning
 			if preset.export_animation == False:
 				export_options_warning = export_options.box()
 				export_options_warning_l = export_options_warning.row(align=True)
@@ -260,12 +260,12 @@ class CAP_FormatData_OBJ(PropertyGroup):
 				export_options.separator()
 
 			
-			mesh_options = export_options.column(align = True, heading = "")
-			mesh_options.active = preset.export_animation
+			anim_options = export_options.column(align = True, heading = "")
+			anim_options.active = preset.export_animation
 			
-			mesh_options.prop(exportData, "start_frame")
-			mesh_options.prop(exportData, "end_frame")
-			export_options.separator()
+			anim_options.prop(exportData, "start_frame")
+			anim_options.prop(exportData, "end_frame")
+			anim_options.separator()
 			
 		
 		# right padding

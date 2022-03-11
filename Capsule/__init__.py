@@ -295,6 +295,9 @@ class CAP_AddonPreferences(AddonPreferences):
                 # TODO: exp is an ambiguous name, rename it!
                 # TODO: Add "default" markers for any complex dropdowns like Axis Up/Forward (smart thinking OBJ exporter)
                 # TODO: Standardize Axis Labelling
+                # TODO: Allow exporters to report issues and warnings based on configurations to be populated higher
+                # in the UI hierarchy.
+                # TODO: When a tab is changed in one format type, try to have it changed in all other types using an updater.
                 if currentExp.format_type == 'FBX':
                     currentExp.data_fbx.draw_addon_preferences(format_type_box, currentExp.data_fbx, exp, currentExp)
 
@@ -302,7 +305,7 @@ class CAP_AddonPreferences(AddonPreferences):
                     currentExp.data_obj.draw_addon_preferences(format_type_box, currentExp.data_obj, exp, currentExp)
 
                 elif currentExp.format_type == 'GLTF':
-                    currentExp.data_gltf.draw_addon_preferences(format_type_box, currentExp.data_gltf, exp)
+                    currentExp.data_gltf.draw_addon_preferences(format_type_box, currentExp.data_gltf, exp, currentExp)
                 
                 elif currentExp.format_type == 'Alembic':
                     currentExp.data_abc.draw_addon_preferences(format_type_box, currentExp.data_abc, exp)
