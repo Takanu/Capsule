@@ -18,103 +18,105 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 	instance_id: IntProperty(default=-1)
 
-	bundle_textures: BoolProperty(
-		name="Bundle Textures",
-		description="If enabled, allows any textures that are packed in the .blend file and applied to an object or group that's tagged for export to be bundled with it inside the FBX file",
-		default=False
+	embed_textures: BoolProperty(
+		name = "Embed Textures",
+		description = "If enabled, textures used by objects marked for export will be embedded in the FBX binary file",
+		default = False
 	)
 
 	use_custom_props: BoolProperty(
-		name="Export Custom Properties",
-		description="Exports custom properties",
-		default=False
+		name = "Export Custom Properties",
+		description = "Exports custom properties",
+		default = False
 	)
 
 	# the property for 'object_types'
 	export_object_types: EnumProperty(
-		name="Object Type Filtering",
-		options={'ENUM_FLAG'},
-		items=(('MESH', "Mesh", ""),
+		name = "Object Type Filtering",
+		options = {'ENUM_FLAG'},
+		items = (('MESH', "Mesh", ""),
 			('ARMATURE', "Armature", ""),
 			('CAMERA', "Camera", ""),
 			('LIGHT', "Light", ""),
 			('EMPTY', "Empty", ""),
 			('OTHER', "Other", "Includes other mesh types like Curves and Metaballs, which are converted to meshes on export"),),
-		description="Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options in Capsule",
-		default={'EMPTY', 'CAMERA', 'LIGHT', 'ARMATURE', 'MESH', 'OTHER'},
+		description = "Defines what kinds of objects will be exported by the FBX exporter, regardless of any other options defined in Capsule",
+		default = {'EMPTY', 'CAMERA', 'LIGHT', 'ARMATURE', 'MESH', 'OTHER'},
 	)
 
 	global_scale: FloatProperty(
-		name="Global Scale",
-		description="The exported scale of the objects.",
-		default=1.0
+		name = "Global Scale",
+		description = "The exported scale of the objects",
+		min = 0.001,
+		max = 1000,
+		default = 1.0,
 	)
 	
 	apply_unit_scale: BoolProperty(
-		name="Apply Unit Scale",
-		description="Apply Unit, Take into account current Blender units settings (if unset, raw Blender Units values are used as-is)",
-		default=True
+		name = "Apply Unit Scale",
+		description = "Apply Unit, Take into account current Blender units settings (if unset, raw Blender Units values are used as-is)",
+		default = True
 	)
 
 	apply_scale_options: EnumProperty(
-		name="Apply Scale Options",
-		items=(
-			('FBX_SCALE_NONE', "All Local", "Apply custom scaling and units scaling to each object transformation, FBX scale remains at 1.0."),
-			('FBX_SCALE_UNITS', "FBX Units Scale", "Apply custom scaling to each object transformation, and units scaling to FBX scale."),
-			('FBX_SCALE_CUSTOM', "FBX Custom Scale", "Apply custom scaling to FBX scale, and units scaling to each object transformation."),
-			('FBX_SCALE_ALL', "FBX All", "Apply custom scaling and units scaling to FBX scale."),
+		name = "Apply Scale Options",
+		items = (
+			('FBX_SCALE_NONE', "All Local", "Apply custom scaling and units scaling to each object transformation, FBX scale remains at 1.0"),
+			('FBX_SCALE_UNITS', "FBX Units Scale", "Apply custom scaling to each object transformation, and units scaling to FBX scale"),
+			('FBX_SCALE_CUSTOM', "FBX Custom Scale", "Apply custom scaling to FBX scale, and units scaling to each object transformation"),
+			('FBX_SCALE_ALL', "FBX All", "Apply custom scaling and units scaling to FBX scale"),
 			),
-		description="Defines what kinds of objects will be exported by the FBX exporter, and will filter out objects for export even if Enable Export is ticked.",
+		description = "Defines how Blender's unit system will be translated into the unit system of an FBX file",
 	)
 
 	use_space_transform: BoolProperty(
-		name="Use Space Transform",
-		description="Apply global space transform to the object rotations. When disabled only the axis space is written to the file and all object transforms are left as-is",
-		default=True
+		name = "Use Space Transform",
+		description = "Apply global space transform to the object rotations. When disabled only the axis space is written to the file and all object transforms are left as-is",
+		default = True
 	)
 
 	bake_space_transform: BoolProperty(
-		name="Bake Space Transform (Experimental)",
-		description="Bakes the space transform of meshes from Blender into the FBX file, when the target world space does not align with the one Blender has. (WARNING - Known broken on armatures/animations, use at your own peril!)",
-		default=False
+		name = "Bake Space Transform (Experimental)",
+		description = "Bakes the space transform of meshes from Blender into the FBX file, when the target world space does not align with the one Blender has. (WARNING - Known broken on armatures/animations, use at your own peril!)",
+		default = False
 	)
 
 
 	axis_up: EnumProperty(
-		name="Axis Up",
-		description="What the Up Axis will be defined as when the model is exported.",
-		items=(
+		name = "Axis Up",
+		description = "What the Up Axis will be defined as when the model is exported",
+		items = (
 			('X', 'X', ''),
 			('Y', 'Y', ''),
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
 			('-Z', '-Z', '')),
-		default='Y',
+		default = 'Y',
 	)
 
 
 
 	axis_forward: EnumProperty(
-		name="Axis Forward",
-		description="What the Forward Axis will be defined as when the model is exported.",
-		items=(
+		name = "Axis Forward",
+		description = "What the Forward Axis will be defined as when the model is exported",
+		items = (
 			('X', 'X', ''),
 			('Y', 'Y', ''),
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
 			('-Z', '-Z', '')),
-		default='-Z'
+		default = '-Z'
 	)
 
 	
 
 	# the property for 'mesh_smooth_type'
 	export_normal_type: EnumProperty(
-		name="Normal Export Type",
-		description="Defines how mesh normals are exported.",
-		items=(
+		name = "Normal Export Type",
+		description = "Defines how mesh normals are exported",
+		items = (
 			('OFF', 'Normals Only', 'Exports the current custom normals of the model.'),
 			('FACE', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
 			('EDGE', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
@@ -123,42 +125,42 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 	# the property for 'use_tspace'
 	use_tangent_space: BoolProperty(
-		name="Use Tangent Space",
-		description="Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
-		default=False
+		name = "Use Tangent Space",
+		description = "Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
+		default = False
 	)
 
 	# the property for 'use_mesh_edges'
 	convert_loose_edges: BoolProperty(
-		name="Convert Loose Edges",
-		description="Makes any separate edges a two-verted polygon.",
-		default=False
+		name = "Convert Loose Edges",
+		description = "Makes any separate edges a two-verted polygon",
+		default = False
 	)
 
 
 	use_subsurf : BoolProperty(
-		name="Export Subdivision Surface Data",
-		description="Export the last Catmull-Rom subdivision modifier as FBX subdivision (does not apply the modifier even if ‘Apply Modifiers’ is enabled)",
-		default=False
+		name = "Export Subdivision Surface Data",
+		description = "Export the last Catmull-Rom subdivision modifier as FBX subdivision (does not apply the modifier even if ‘Apply Modifiers’ is enabled)",
+		default = False
 	)
 
 	use_armature_deform_only: BoolProperty(
-		name="Only Include Deform Bones",
-		description="Only write deforming bones (and non-deforming ones when they have deforming children)",
-		default=False
+		name = "Only Include Deform Bones",
+		description = "Only write deforming bones (and non-deforming ones when they have deforming children)",
+		default = False
 	)
 
 	add_leaf_bones: BoolProperty(
-		name="Add Leaf Bones",
-		description="Appends an extra bone to the end of each bone chain.",
-		default=False
+		name = "Add Leaf Bones",
+		description = "Appends an extra bone to the end of each bone chain",
+		default = False
 	)
 
 
 	primary_bone_axis: EnumProperty(
-		name="Primary Bone Axis",
-		description="Defines the primary bone axis for the export.",
-		items=(
+		name = "Primary Bone Axis",
+		description = "Defines the primary bone axis for the export",
+		items = (
 			('X', 'X', ''),
 			('Y', 'Y', ''),
 			('Z', 'Z', ''),
@@ -166,13 +168,13 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('-Y', '-Y', ''),
 			('-Z', '-Z', '')
 			),
-		default='Y'
+		default = 'Y'
 	)
 
 	secondary_bone_axis: EnumProperty(
-		name="Secondary Bone Axis",
-		description="Defines the secondary bone axis for the export.",
-		items=(
+		name = "Secondary Bone Axis",
+		description = "Defines the secondary bone axis for the export",
+		items = (
 			('X', 'X', ''),
 			('Y', 'Y', ''),
 			('Z', 'Z', ''),
@@ -180,63 +182,63 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('-Y', '-Y', ''),
 			('-Z', '-Z', '')
 			),
-		default='X'
+		default = 'X'
 	)
 
 	armature_nodetype: EnumProperty(
-		name="FBX Armature NodeType",
-		description="Defines the type of FBX object Blender Armatures will be represented as when exported.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender.",
-		items=(
-			('NULL', 'Null', "‘Null’ FBX node, similar to Blender’s Empty (default)."),
-			('ROOT', 'Root', "‘Root’ FBX node, supposed to be the root of chains of bones."),
-			('LIMBNODE', 'LimbNode', "‘LimbNode’ FBX node, a regular joint between two bones.")
+		name = "FBX Armature NodeType",
+		description = "Defines the type of FBX object Blender Armatures will be represented as when exported.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender",
+		items = (
+			('NULL', 'Null', "‘Null’ FBX node, similar to Blender’s Empty (default)"),
+			('ROOT', 'Root', "‘Root’ FBX node, supposed to be the root of chains of bones"),
+			('LIMBNODE', 'LimbNode', "‘LimbNode’ FBX node, a regular joint between two bones")
 		)
 	)
 
 
 	bake_anim_use_all_bones: BoolProperty(
-		name="Key All Bones",
-		description="If enabled, this forces the export of one key animation for all bones (required for applications like UE4).",
-		default=False
+		name = "Key All Bones",
+		description = "If enabled, this forces the export of one key animation for all bones (required for applications like UE4)",
+		default = False
 	)
 
 	bake_anim_use_nla_strips: BoolProperty(
-		name="Use NLA Strips",
-		description="If enabled, all non-muted NLA strips will be exported as a separated FBX AnimStack instead of global scene animation.",
-		default=False
+		name = "Use NLA Strips",
+		description = "If enabled, all non-muted NLA strips will be exported as a separated FBX AnimStack instead of global scene animation",
+		default = False
 	)
 
 	bake_anim_use_all_actions: BoolProperty(
-		name="Use All Actions",
-		description="If enabled, all animation actions will be exported as a separate FBX AnimStack instead of global scene animation  (note that animated objects will get all actions compatible with them, others will get no animation at all).",
+		name = "Use All Actions",
+		description = "If enabled, all animation actions will be exported as a separate FBX AnimStack instead of global scene animation  (note that animated objects will get all actions compatible with them, others will get no animation at all)",
 		#TODO: This warning is unclear, figure out what this means and write something better.
-		default=False
+		default = False
 	)
 
 	bake_anim_force_startend_keying: BoolProperty(
-		name="Start/End Keying",
-		description="If enabled, this option fully keys the start and end positions of an animation.  Use this if the exported animations playback with incorrect starting positions.",
-		default=False
+		name = "Start/End Keying",
+		description = "If enabled, this option fully keys the start and end positions of an animation.  Use this if the exported animations playback with incorrect starting positions",
+		default = False
 		)
 
 	bake_anim_step: FloatProperty(
-		name="Sampling Rate",
-		description="Defines how often, in frames, the export process should evaluate keyframes.",
-		default=1,
-		min=0.01,
-		max=100,
-		soft_min=0.1,
-		soft_max=10
+		name = "Sampling Rate",
+		description = "Defines how often, in frames, the export process should evaluate keyframes",
+		default = 1,
+		min = 0.01,
+		max = 100,
+		soft_min = 0.1,
+		soft_max = 10
 	)
 
 	bake_anim_simplify_factor: FloatProperty(
-		name="Simplify",
-		description="A measure for how much when exported, animations should be simplified.  Setting this value to 0 will disable simplification.  The higher the value, the greater the simplification.",
-		default=1,
-		min=0,
-		max=100,
-		soft_min=0,
-		soft_max=10
+		name = "Simplify",
+		description = "A measure for how much when exported, animations should be simplified.  Setting this value to 0 will disable simplification.  The higher the value, the greater the simplification",
+		default = 1,
+		min = 0,
+		max = 100,
+		soft_min = 0,
+		soft_max = 10
 	)
 
 
@@ -259,9 +261,9 @@ class CAP_FormatData_FBX(PropertyGroup):
 			use_mesh_modifiers = export_preset.apply_modifiers,
 			# use_mesh_modifiers_render - Excluded in Blender 2.8 according to docs.
 
-			path_mode='ABSOLUTE',
-			embed_textures=self.bundle_textures,
-			batch_mode='OFF',
+			path_mode = 'ABSOLUTE',
+			embed_textures=self.embed_textures,
+			batch_mode = 'OFF',
 			use_batch_own_dir=False,
 			use_metadata=False,
 
@@ -328,7 +330,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
-			export_options.prop(exportData, "bundle_textures")
+			export_options.prop(exportData, "embed_textures")
 			export_options.prop(exportData, "use_custom_props")
 			export_options.separator()
 
