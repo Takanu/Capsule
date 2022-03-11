@@ -108,11 +108,11 @@ class CAPSULE_ExportPreset(PropertyGroup):
             (
             ('Alembic', "Alembic (.abc)", "Export assets in the Alembic file format.  A lossy file format designed to bake complex assets for caching and production purposes"),
             ('Collada', "Collada (.dae)", "Export assets in the Collada file format.  An older file format used for import with various modelling programs and some online games"),
-            ('FBX', "FBX (.fbx)", "Export assets in the FBX file format.  A proprietary Autodesk format suitable for exchanging data with Autodesk apps and a popular format for game engines."),
-            ('GLTF', "GLTF (.gltf, .glb)", "Export assets in the GLTF file format.  An efficient, lossy 3D format designed for web apps and games."),
+            ('FBX', "FBX (.fbx)", "Export assets in the FBX file format.  A proprietary Autodesk format suitable for exchanging data with Autodesk apps and a popular format for game engines"),
+            ('GLTF', "GLTF (.gltf, .glb)", "Export assets in the GLTF file format.  An efficient 3D format designed for web apps and games.  As it modifies and stores mesh data in a way that it can be optimally rendered in real time it is NOT suitable for archival purposes"),
             ('OBJ', "OBJ (.obj)", "Export assets in the OBJ file format.  An ancient file format with limited options suitable for simple static objects"),
             ('STL', "STL (.stl)", "Export assets as STL files.  An older file format used specifically for CAD and 3D printing applications"),
-            ('USD', "USD (.usda)", "Export assets as USD files.  A modern, highly detailed file format but Blender's implementation is new and offers limited capabilities"),
+            ('USD', "USD (.usda)", "Export assets as USD files.  A modern and highly detailed file format, Blender's implementation is new however and offers limited capabilities"),
             ),
         description="Defines what file type objects with this preset will export to and the export options available for this preset",
         )
