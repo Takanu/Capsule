@@ -247,7 +247,6 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			as_background_job = False,
 
 			selected = True,
-			renderable_only = False,
 			visible_objects_only = False,
 
 			# FILE
