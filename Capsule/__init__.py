@@ -291,8 +291,9 @@ class CAP_AddonPreferences(AddonPreferences):
 
                 format_type.separator()
 
+                # TODO: Provide full preset data and reorganize arguments.
                 if currentExp.format_type == 'FBX':
-                    currentExp.data_fbx.draw_addon_preferences(format_type_box, currentExp.data_fbx, exp)
+                    currentExp.data_fbx.draw_addon_preferences(format_type_box, currentExp.data_fbx, exp, currentExp)
 
                 elif currentExp.format_type == 'OBJ':
                     currentExp.data_obj.draw_addon_preferences(format_type_box, currentExp.data_obj, exp)

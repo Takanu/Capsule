@@ -117,42 +117,42 @@ class CAP_FormatData_FBX(PropertyGroup):
 		name = "Normal Export Type",
 		description = "Defines how mesh normals are exported",
 		items = (
-			('OFF', 'Normals Only', 'Exports the current custom normals of the model.'),
-			('FACE', 'Face', 'Writes face smoothing data for the mesh in the FBX file.'),
-			('EDGE', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file.'),
+			('OFF', 'Normals Only', 'Only exports the current custom normals of the model'),
+			('FACE', 'Face', 'Writes face smoothing data for the mesh in the FBX file'),
+			('EDGE', 'Edge', 'Writes edge smoothing data for the mesh in the FBX file'),
 			),
 	)
 
 	# the property for 'use_tspace'
 	use_tangent_space: BoolProperty(
 		name = "Use Tangent Space",
-		description = "Exports the mesh tangent vectors,  This option will only work on objects with no n-gons (faces with more than 4 vertices), so please check beforehand!",
+		description = "Exports the binormal and tangent mesh vectors.  WARNING - This option will only work on objects with no n-gons (faces with more than 4 vertices)",
 		default = False
 	)
 
 	# the property for 'use_mesh_edges'
 	convert_loose_edges: BoolProperty(
 		name = "Convert Loose Edges",
-		description = "Makes any separate edges a two-verted polygon",
+		description = "Converts any loose edges in a mesh into a two-vertex polygon",
 		default = False
 	)
 
 
 	use_subsurf : BoolProperty(
-		name = "Export Subdivision Surface Data",
+		name = "Export Subdivision Surfaces",
 		description = "Export the last Catmull-Rom subdivision modifier as FBX subdivision (does not apply the modifier even if ‘Apply Modifiers’ is enabled)",
 		default = False
 	)
 
 	use_armature_deform_only: BoolProperty(
 		name = "Only Include Deform Bones",
-		description = "Only write deforming bones (and non-deforming ones when they have deforming children)",
+		description = "Only include deforming bones (and non-deforming ones when they have deforming children) in exported armatures",
 		default = False
 	)
 
 	add_leaf_bones: BoolProperty(
 		name = "Add Leaf Bones",
-		description = "Appends an extra bone to the end of each bone chain",
+		description = "Append an extra bone to the end of each bone chain to specify the last bone length (useful for editing the armature from the export)",
 		default = False
 	)
 
@@ -186,11 +186,11 @@ class CAP_FormatData_FBX(PropertyGroup):
 	)
 
 	armature_nodetype: EnumProperty(
-		name = "FBX Armature NodeType",
+		name = "Armature FBX NodeType",
 		description = "Defines the type of FBX object Blender Armatures will be represented as when exported.  Change this from Null if you're experiencing import problems in other apps, but picking anything other than null will not guarantee a successful re-import into Blender",
 		items = (
 			('NULL', 'Null', "‘Null’ FBX node, similar to Blender’s Empty (default)"),
-			('ROOT', 'Root', "‘Root’ FBX node, supposed to be the root of chains of bones"),
+			('ROOT', 'Root', "‘Root’ FBX node, supposed to be the root of chains of bones (?)"),
 			('LIMBNODE', 'LimbNode', "‘LimbNode’ FBX node, a regular joint between two bones")
 		)
 	)
@@ -223,7 +223,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 	bake_anim_step: FloatProperty(
 		name = "Sampling Rate",
-		description = "Defines how often, in frames, the export process should evaluate keyframes",
+		description = "Defines how often (in frames) the export process should evaluate keyframes",
 		default = 1,
 		min = 0.01,
 		max = 100,
@@ -233,8 +233,8 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 	bake_anim_simplify_factor: FloatProperty(
 		name = "Simplify",
-		description = "A measure for how much when exported, animations should be simplified.  Setting this value to 0 will disable simplification.  The higher the value, the greater the simplification",
-		default = 1,
+		description = "A measure for how much animations should be simplified.  Setting this value to 0 will disable simplification.  The higher the value, the greater the simplification",
+		default = 0,
 		min = 0,
 		max = 100,
 		soft_min = 0,
@@ -259,7 +259,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			use_active_collection = False,
 			# TODO: This prevents Shape Key export, must warn the user.
 			use_mesh_modifiers = export_preset.apply_modifiers,
-			# use_mesh_modifiers_render - Excluded in Blender 2.8 according to docs.
+			# use_mesh_modifiers_render - Capsule's filtering system renders this obsolete.
 
 			path_mode = 'ABSOLUTE',
 			embed_textures=self.embed_textures,
@@ -301,7 +301,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		)
 	
 	
-	def draw_addon_preferences(self, layout, exportData, exp):
+	def draw_addon_preferences(self, layout, exportData, exp, preset):
 		"""
 		Draws the panel that represents all the options that the export format has.
 		"""
@@ -387,6 +387,13 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
+			if preset.apply_modifiers == True:
+				export_options_warning = export_options.box()
+				export_options_warning_l = export_options_warning.row(align=True)
+				export_options_warning_l.label(text="WARNING - While Apply Modifiers is active you will not be able to export Shapekeys")
+				export_options.separator()
+
+			
 			export_options.prop(exportData, "bake_anim_force_startend_keying")
 			export_options.prop(exportData, "bake_anim_use_all_bones")
 			export_options.prop(exportData, "bake_anim_use_nla_strips")
