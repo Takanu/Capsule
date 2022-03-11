@@ -292,11 +292,14 @@ class CAP_AddonPreferences(AddonPreferences):
                 format_type.separator()
 
                 # TODO: Provide full preset data and reorganize arguments.
+                # TODO: exp is an ambiguous name, rename it!
+                # TODO: Add "default" markers for any complex dropdowns like Axis Up/Forward (smart thinking OBJ exporter)
+                # TODO: Standardize Axis Labelling
                 if currentExp.format_type == 'FBX':
                     currentExp.data_fbx.draw_addon_preferences(format_type_box, currentExp.data_fbx, exp, currentExp)
 
                 elif currentExp.format_type == 'OBJ':
-                    currentExp.data_obj.draw_addon_preferences(format_type_box, currentExp.data_obj, exp)
+                    currentExp.data_obj.draw_addon_preferences(format_type_box, currentExp.data_obj, exp, currentExp)
 
                 elif currentExp.format_type == 'GLTF':
                     currentExp.data_gltf.draw_addon_preferences(format_type_box, currentExp.data_gltf, exp)

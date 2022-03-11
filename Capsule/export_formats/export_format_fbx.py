@@ -87,7 +87,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		description = "What the Up Axis will be defined as when the model is exported",
 		items = (
 			('X', 'X', ''),
-			('Y', 'Y', ''),
+			('Y', 'Y (Default)', ''),
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
@@ -106,7 +106,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
-			('-Z', '-Z', '')),
+			('-Z', '-Z (Default)', '')),
 		default = '-Z'
 	)
 
@@ -162,7 +162,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		description = "Defines the primary bone axis for the export",
 		items = (
 			('X', 'X', ''),
-			('Y', 'Y', ''),
+			('Y', 'Y (Default)', ''),
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
 			('-Y', '-Y', ''),
@@ -175,7 +175,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 		name = "Secondary Bone Axis",
 		description = "Defines the secondary bone axis for the export",
 		items = (
-			('X', 'X', ''),
+			('X', 'X (Default)', ''),
 			('Y', 'Y', ''),
 			('Z', 'Z', ''),
 			('-X', '-X', ''),
@@ -372,6 +372,14 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
+			# Shapekey warning
+			if preset.apply_modifiers == True:
+				export_options_warning = export_options.box()
+				export_options_warning_l = export_options_warning.row(align=True)
+				export_options_warning_l.label(text="WARNING - While Apply Modifiers is active you will not be able to export Shapekeys")
+				export_options.separator()
+				export_options.separator()
+
 			export_options.prop(exportData, "convert_loose_edges")
 			export_options.prop(exportData, "use_tangent_space")
 			export_options.prop(exportData, "use_subsurf")
@@ -387,12 +395,12 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
+			# Shapekey warning
 			if preset.apply_modifiers == True:
 				export_options_warning = export_options.box()
 				export_options_warning_l = export_options_warning.row(align=True)
 				export_options_warning_l.label(text="WARNING - While Apply Modifiers is active you will not be able to export Shapekeys")
 				export_options.separator()
-
 			
 			export_options.prop(exportData, "bake_anim_force_startend_keying")
 			export_options.prop(exportData, "bake_anim_use_all_bones")

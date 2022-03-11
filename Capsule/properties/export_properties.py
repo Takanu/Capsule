@@ -236,6 +236,7 @@ class CAPSULE_ExportData(PropertyGroup):
         ('File', 'File', 'A tab containing file format-specific data sets like custom properties.'),
         ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters.'),
         ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh-related assets are exported.'),
+        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported.'),
         ),
     )
 
