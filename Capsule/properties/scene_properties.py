@@ -60,6 +60,12 @@ class ObjectListItem(PropertyGroup):
         default=True,
         update=CAP_Update_ObjectListRemove
         )
+    
+    deleted_name: StringProperty(
+        name="Deleted Object",
+        description="This collection has been deleted from the Scene",
+        default="Deleted Object",
+    )
 
 class CollectionListItem(PropertyGroup):
     """
@@ -106,7 +112,7 @@ class CollectionListItem(PropertyGroup):
     
     deleted_name: StringProperty(
         name="Deleted Collection",
-        description="This collection has been deleted from the Scene",
+        description="Used by lists to show that the collection being accessed has been deleted",
         default="Deleted Collection",
     )
 

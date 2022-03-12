@@ -22,13 +22,23 @@ class CAPSULE_UL_Object(UIList):
         addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
-        layout.prop(item.object, "name", text="", emboss=False)
-        layout.prop(item, "enable_export", text="")
+        # I have to keep these two statements separate
+        # as only the object data name will work as a valid scene object check
+        if item.object == None:
+            layout.prop(item, "deleted_name", text="", emboss=False)
 
-        # A switch to change the extra tool on the Object list entries.
-        if addon_prefs.list_feature != 'none':
-            layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
+        elif bpy.context.scene.objects.get(item.object.name) == None:
+            layout.prop(item, "deleted_name", text="", emboss=False)
 
+        else:
+            layout.prop(item.object, "name", text="", emboss=False)
+            layout.prop(item, "enable_export", text="")
+
+            # A switch to change the extra tool on the Object list entries.
+            if addon_prefs.list_feature != 'none':
+                layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
+
+        # always show the remove button!
         layout.prop(item, "remove", text="", icon="X", emboss=False)
 
 
