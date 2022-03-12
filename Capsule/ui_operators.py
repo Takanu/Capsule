@@ -1,4 +1,5 @@
 
+from gc import collect
 import bpy, bmesh, random, platform
 
 from mathutils import Vector
@@ -42,7 +43,10 @@ class CAPSULE_OT_Add_Path(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Delete_Path(Operator):
-    """Delete the selected location from the list."""
+    """
+    Delete the selected location from the list.  This will also set the Location Preset of all
+    objects and collections that used this selected location to 'None'
+    """
 
     bl_idname = "scene.cap_deletepath"
     bl_label = "Remove"
@@ -54,9 +58,31 @@ class CAPSULE_OT_Delete_Path(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        exp.location_presets.remove(exp.location_presets_listindex)
+        preset_index = exp.location_presets_listindex
 
-        # TODO: ENSURE ANY EXPORTS THAT USED IT ARE ASSIGNED "NONE"
+        # Ensure that any objects with a matching preset are set to None.
+        # The index needs increasing by one as it doesnt include 'None'
+        objects = bpy.data.objects
+        for obj in objects:
+            cap_obj = obj.CAPObj
+            if cap_obj.location_preset == str(preset_index + 1):
+                cap_obj.location_preset = '0'
+
+        collections = collection_utils.GetSceneCollections(context.scene, False)
+        for collection in collections:
+            cap_col = collection.CAPCol
+            if cap_col.location_preset == str(preset_index + 1):
+                cap_col.location_preset = '0'
+        
+        # TODO: Ensure the selection interface is updated so it gets the new value!
+        # TODO: Ensure this is as efficient as it can be for large scenes
+        
+        # Once everything has been set, remove it.
+        exp.location_presets.remove(preset_index)
+
+        # ensure the selected list index is within the list bounds
+        if len(exp.location_presets) > 0:
+            exp.location_presets_listindex -= 1
         
 
         return {'FINISHED'}
@@ -207,7 +233,10 @@ class CAPSULE_OT_Add_Export(Operator):
 
 
 class CAPSULE_OT_Delete_Export(Operator):
-    """Delete the selected file preset from the list."""
+    """
+    Delete the selected export preset from the list.  This will also set the Location Preset of all
+    objects and collections that used this selected location to 'None'
+    """
 
     bl_idname = "scene.cap_deleteexport"
     bl_label = "Delete Export Preset"
@@ -232,8 +261,27 @@ class CAPSULE_OT_Delete_Export(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
 
-        # remove the data from both lists
-        exp.export_presets.remove(exp.export_presets_listindex)
+        preset_index = exp.location_presets_listindex
+
+        # Ensure that any objects with a matching preset are set to None.
+        # The index needs increasing by one as it doesnt include 'None'
+        objects = bpy.data.objects
+        for obj in objects:
+            cap_obj = obj.CAPObj
+            if cap_obj.export_preset == str(preset_index + 1):
+                cap_obj.export_preset = '0'
+
+        collections = collection_utils.GetSceneCollections(context.scene, False)
+        for collection in collections:
+            cap_col = collection.CAPCol
+            if cap_col.export_preset == str(preset_index + 1):
+                cap_col.export_preset = '0'
+        
+        # TODO: Ensure the selection interface is updated so it gets the new value!
+        # TODO: Ensure this is as efficient as it can be for large scenes
+        
+        # Once everything has been set, remove it.
+        exp.export_presets.remove(preset_index)
 
         # ensure the selected list index is within the list bounds
         if exp.export_presets_listindex > 0:

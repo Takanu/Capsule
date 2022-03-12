@@ -39,9 +39,9 @@ class CAPSULE_OT_ExportAll(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         exp = None
 
+
         # /////////////////////////////////////////////////
         # SETUP
-        # /////////////////////////////////////////////////
     
         # For the new pie menu, we need to see if any data exists before continuing
         try:
@@ -69,9 +69,9 @@ class CAPSULE_OT_ExportAll(Operator):
         # get the current time for later
         global_record['export_time'] = datetime.now()
 
+
         # /////////////////////////////////////////////////
         # FETCH
-        # /////////////////////////////////////////////////
 
         # Fetch objects and collections for export
         export_objects = []
@@ -88,9 +88,9 @@ class CAPSULE_OT_ExportAll(Operator):
         #print(export_objects)
         #print(export_objects)
 
+
         # /////////////////////////////////////////////////
         # OBJECT EXPORT
-        # /////////////////////////////////////////////////
 
         object_export_result = ExportObjectList(context, exp, export_objects, global_record)
         if 'warning' in object_export_result:
@@ -100,9 +100,9 @@ class CAPSULE_OT_ExportAll(Operator):
 
         self.export_stats['object_export_count'] = object_export_result['export_count']
         
+
         # /////////////////////////////////////////////////
         # COLLECTION EXPORT
-        # /////////////////////////////////////////////////
         
         collection_export_result = ExportCollectionList(context, exp, export_collections, global_record)
         if 'warning' in collection_export_result:
@@ -113,8 +113,8 @@ class CAPSULE_OT_ExportAll(Operator):
         self.export_stats['collection_export_count'] = collection_export_result['export_count']
         
 
-        # EXPORT SUMMARY  
         # /////////////////////////////////////////////////////////////////////////
+        # EXPORT SUMMARY  
 
         output = "Finished processing "
 
@@ -153,6 +153,8 @@ class CAPSULE_OT_ExportAll(Operator):
 
         return {'FINISHED'}
 
+
+
 class CAPSULE_OT_ExportSelected(Operator):
     """Exports all selected objects and collections in the scene that are marked for export."""
     bl_idname = "scene.cap_export_selected"
@@ -163,6 +165,7 @@ class CAPSULE_OT_ExportSelected(Operator):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
         exp = None
+
 
         # /////////////////////////////////////////////////
         # FETCH
@@ -189,7 +192,6 @@ class CAPSULE_OT_ExportSelected(Operator):
 
         # /////////////////////////////////////////////////
         # SETUP
-        # /////////////////////////////////////////////////
     
         # For the new pie menu, we need to see if any data exists before continuing
         try:
@@ -217,9 +219,9 @@ class CAPSULE_OT_ExportSelected(Operator):
         # get the current time for later
         global_record['export_time'] = datetime.now()
         
+
         # /////////////////////////////////////////////////
         # OBJECT EXPORT
-        # /////////////////////////////////////////////////
 
         object_export_result = ExportObjectList(context, exp, export_objects, global_record)
         if 'warning' in object_export_result:
@@ -229,9 +231,9 @@ class CAPSULE_OT_ExportSelected(Operator):
 
         self.export_stats['object_export_count'] = object_export_result['export_count']
         
+
         # /////////////////////////////////////////////////
         # COLLECTION EXPORT
-        # /////////////////////////////////////////////////
         
         collection_export_result = ExportCollectionList(context, exp, export_collections, global_record)
         if 'warning' in collection_export_result:
@@ -242,8 +244,8 @@ class CAPSULE_OT_ExportSelected(Operator):
         self.export_stats['collection_export_count'] = collection_export_result['export_count']
         
 
+        # /////////////////////////////////////////////////
         # EXPORT SUMMARY  
-        # /////////////////////////////////////////////////////////////////////////
 
         output = "Finished processing "
 
@@ -281,6 +283,8 @@ class CAPSULE_OT_ExportSelected(Operator):
         record_utils.RestoreSceneContext(context, global_record)
 
         return {'FINISHED'}
+
+
 
 
 def ExportObjectList(context, exp, object_list, global_record):
@@ -326,8 +330,8 @@ def ExportObjectList(context, exp, object_list, global_record):
     return result
 
 
-def ExportCollectionList(context, exp, collection_list, global_record):
 
+def ExportCollectionList(context, exp, collection_list, global_record):
     """
     Exports a list of given collections
     """
@@ -384,43 +388,6 @@ def ExportCollectionList(context, exp, collection_list, global_record):
     return result
 
 
-def GetRootLocationDefinition(context, export_name, origin_point, root_definition):
-    """
-    Filters through potential origin point definitions to return a world-space location and rotation.
-    """
-
-    result = {}
-    result['location'] = [0.0, 0.0, 0.0]
-    result['rotation'] = [0.0, 0.0, 0.0]
-
-    #print('AAAAAAAA')
-
-    if origin_point == 'Scene':
-        #print('origin point is SCENE')
-        return result
-
-    elif origin_point == "Object":
-        #print('origin point is OBJECT')
-        # Not currently needed
-        # if len(targets) > 1:
-        #     result['warning'] = "The '" + export_name + "' collection has no root object assigned to it.  ASSIGN ONE."
-        #     return result
-        
-        # TODO 2.0 - Check the root_definition argument to ensure it's the type we expect.
-
-        temp_rol = loc_utils.FindWorldSpaceObjectLocation(context, root_definition)
-        result['location'] = [temp_rol[0], 
-                                temp_rol[1], 
-                                temp_rol[2]]
-        result['rotation'] = [root_definition.rotation_euler[0], 
-                                root_definition.rotation_euler[1], 
-                                root_definition.rotation_euler[2]]
-        
-        #print('found root location : ', result['location'])
-    
-    return result
-
-
 
 def ExportTarget(context, targets, export_name, export_preset, location_preset, origin_point, root_definition, meta):
     """
@@ -436,14 +403,14 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
     # TODO 1.2 : Is this needed anymore?
     # If they asked us not preserve armature constraints, we can
-    # do our jerb and ensure they don't screw things up beyond this code
+    # do our job and ensure they don't screw things up beyond this code
     # Prepares the object for movement, will only work if Preserve Armature Constraints is false.
     if export_preset.preserve_armature_constraints == True:
         armature_record = record_utils.MuteArmatureConstraints(context)
 
+
     # /////////////////////////////////////////////////
     # FILE NAME
-    # /////////////////////////////////////////////////
     path = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories, meta)
 
     if addon_prefs.substitute_directories is True:
@@ -457,9 +424,9 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
     #print("Path created...", path)
 
+
     # /////////////////////////////////////////////////
     # OBJECT MOVEMENT
-    # /////////////////////////////////////////////////
 
     # Get the root location if we can, otherwise return early.
     # FIXME 1.2 - not using the actual location currently, can't </3
@@ -475,14 +442,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
 
     # /////////////////////////////////////////////////
-    # MODIFIERS
-    # /////////////////////////////////////////////////
-    # TODO / 2.0 : add new command system here?
-
-
-    # /////////////////////////////////////////////////
     # EXPORT PROCESS
-    # /////////////////////////////////////////////////
 
     # A separate export function call for every corner case isnt actually necessary
     PrepareExportCombined(context, targets, path, export_preset, export_name)
@@ -490,7 +450,6 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
     # /////////////////////////////////////////////////
     # DELETE/RESTORE 
-    # /////////////////////////////////////////////////
 
     # Reverse movement and rotation
     if origin_point == "Object":
@@ -502,9 +461,9 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     if export_preset.preserve_armature_constraints == True:
         record_utils.RestoreArmatureConstraints(context, armature_record)
 
+
     # /////////////////////////////////////////////////
     # TRACKER
-    # /////////////////////////////////////////////////
 
     # Count up exported objects
     # self.export_stats['object_export_count'] += 1
@@ -513,6 +472,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # #print(">>> Object Export Complete <<<")
 
     return {}
+
 
 def PrepareExportCombined(context, targets, path, export_preset, export_name):
     """
@@ -555,7 +515,8 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
 
     elif export_preset.format_type == 'USD':
         export_preset.data_usd.export(context, export_preset, object_file_path)
-    
+
+
 
 # TODO 2.0 : This probably doesn't work
 
@@ -606,3 +567,40 @@ def PrepareExportIndividual(context, targets, path, export_preset):
 
 
         object_transform.MoveObject(item, context, tempLoc)
+
+
+def GetRootLocationDefinition(context, export_name, origin_point, root_definition):
+    """
+    Filters through potential origin point definitions to return a world-space location and rotation.
+    """
+
+    result = {}
+    result['location'] = [0.0, 0.0, 0.0]
+    result['rotation'] = [0.0, 0.0, 0.0]
+
+    #print('AAAAAAAA')
+
+    if origin_point == 'Scene':
+        #print('origin point is SCENE')
+        return result
+
+    elif origin_point == "Object":
+        #print('origin point is OBJECT')
+        # Not currently needed
+        # if len(targets) > 1:
+        #     result['warning'] = "The '" + export_name + "' collection has no root object assigned to it.  ASSIGN ONE."
+        #     return result
+        
+        # TODO 2.0 - Check the root_definition argument to ensure it's the type we expect.
+
+        temp_rol = loc_utils.FindWorldSpaceObjectLocation(context, root_definition)
+        result['location'] = [temp_rol[0], 
+                                temp_rol[1], 
+                                temp_rol[2]]
+        result['rotation'] = [root_definition.rotation_euler[0], 
+                                root_definition.rotation_euler[1], 
+                                root_definition.rotation_euler[2]]
+        
+        #print('found root location : ', result['location'])
+    
+    return result

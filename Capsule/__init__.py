@@ -71,40 +71,6 @@ from .properties.export_properties import (
     )
 
 
-# This sequence checks the files currently loaded? (CHECKME)
-# I actually don't know what this quite does anymore, commenting out for now.
-
-# #print("Checking modules...")
-
-# if "bpy" in locals():
-#     import imp
-#     #print("------------------Reloading Capsule------------------")
-#     if "tk_utils" in locals():
-#         imp.reload(tk_utils)
-#     if "properties" in locals():
-#         imp.reload(properties)
-#     if "user_interface" in locals():
-#         imp.reload(user_interface)
-#     if "export_operators" in locals():
-#         imp.reload(export_operators)
-#     if "export_presets" in locals():
-#         imp.reload(export_presets)
-#     if "export_properties" in locals():
-#         imp.reload(export_properties)
-#     if "export_utils" in locals():
-#         imp.reload(export_utils)
-#     if "export_menu" in locals():
-#         imp.reload(export_menu)
-#     if "ui_operators" in locals():
-#         imp.reload(ui_operators)
-#     if "update" in locals():
-#         imp.reload(update_objects)
-#     if "update_collections" in locals():
-#         imp.reload(update_collections)
-
-# #print("Importing modules...")
-
-
 def GetGlobalPresets(scene, context):
 
     items = [
@@ -452,6 +418,8 @@ def CreateDefaultData(scene):
     defaultDatablock.select_set(True)
     defaultDatablock.hide_render = True
 
+
+
 @persistent
 def CheckSelectedObject(scene):
     """
@@ -475,11 +443,16 @@ def CheckSelectedObject(scene):
             # update the proxy objects with the current selection
             obj = bpy.context.active_object.CAPObj
 
+            # TODO: Make a better failsafe for deleted presets than this!
+            displayed_location_preset = obj.location_preset
+            displayed_export_preset = obj.export_preset
+
             proxy.disable_updates = True
             proxy.obj_enable_export = obj.enable_export
             proxy.obj_origin_point = obj.origin_point
-            proxy.obj_location_preset = obj.location_preset
-            proxy.obj_export_preset = obj.export_preset
+            proxy.obj_location_preset = displayed_location_preset
+            proxy.obj_export_preset = displayed_export_preset
+
             # TODO: Ensure this works properly with the new Collection selection code.
             proxy.disable_updates = False
     
@@ -649,6 +622,7 @@ def register():
     bpy.app.handlers.depsgraph_update_post.append(CheckSelectedObject)
 
     add_hotkeys()
+
 
 def unregister():
     """
