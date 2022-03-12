@@ -29,7 +29,7 @@ def MoveObject(target, context, location):
 
     # This line is actually super-important, not sure why though...
     # FocusObject should fill the role of deselection...
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     # Calculate the translation vector using the 3D cursor
     FocusObject(target)
@@ -48,19 +48,19 @@ def MoveObject(target, context, location):
 
     bpy.ops.transform.translate(
         value=locationDiff,
-        constraint_axis=(False, False, False),
-        orient_type='GLOBAL',
-        mirror=False,
-        use_proportional_edit=False,
-        snap=False,
-        snap_target='CLOSEST',
-        snap_point=(0.0, 0.0, 0.0),
-        snap_align=False,
-        snap_normal=(0.0, 0.0, 0.0),
-        gpencil_strokes=False,
-        texture_space=False,
-        remove_on_cancel=False,
-        release_confirm=False)
+        constraint_axis= (False, False, False),
+        orient_type = 'GLOBAL',
+        mirror= False,
+        use_proportional_edit = False,
+        snap= False,
+        snap_target= 'CLOSEST',
+        snap_point= (0.0, 0.0, 0.0),
+        snap_align= False,
+        snap_normal= (0.0, 0.0, 0.0),
+        gpencil_strokes= False,
+        texture_space= False,
+        remove_on_cancel= False,
+        release_confirm= False)
 
     # Position the cursor back to it's original location
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
@@ -95,7 +95,7 @@ def MoveObjectFailsafe(target, context, location, region):
 
     # This line is actually super-important, not sure why though...
     # FocusObject should fill the role of deselection...
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     # Calculate the translation vector using the 3D cursor
     FocusObject(target)
@@ -159,7 +159,7 @@ def MoveBone(target, bone, context, location):
 
     # This line is actually super-important, not sure why though...
     # FocusObject should fill the role of deselection...
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     # Calculate the translation vector using the 3D cursor
     prevMode = SwitchObjectMode('POSE', target)
@@ -181,19 +181,19 @@ def MoveBone(target, bone, context, location):
 
     bpy.ops.transform.translate(
         value=locationDiff,
-        constraint_axis=(False, False, False),
-        orient_type='GLOBAL',
-        mirror=False,
-        use_proportional_edit='DISABLED',
-        snap=False,
-        snap_target='CLOSEST',
-        snap_point=(0.0, 0.0, 0.0),
-        snap_align=False,
-        snap_normal=(0.0, 0.0, 0.0),
-        gpencil_strokes=False,
-        texture_space=False,
-        remove_on_cancel=False,
-        release_confirm=False)
+        constraint_axis= (False, False, False),
+        orient_type = 'GLOBAL',
+        mirror= False,
+        use_proportional_edit= 'DISABLED',
+        snap= False,
+        snap_target= 'CLOSEST',
+        snap_point= (0.0, 0.0, 0.0),
+        snap_align= False,
+        snap_normal= (0.0, 0.0, 0.0),
+        gpencil_strokes= False,
+        texture_space= False,
+        remove_on_cancel= False,
+        release_confirm= False)
 
     #print("Object", bone.name, "moved.... ", bone.location)
 
@@ -228,7 +228,7 @@ def MoveObjects(targetLead, targets, context, location):
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # Calculate the translation vector using the 3D cursor
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     FocusObject(targetLead)
     bpy.ops.view3d.snap_cursor_to_selected()
     root_location = Vector((0.0, 0.0, 0.0))
@@ -265,7 +265,7 @@ def MoveObjects(targetLead, targets, context, location):
         if target in targets:
             targets.remove(target)
 
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     # Lets try moving all the fucking objects this time
     FocusObject(targetLead)
@@ -275,19 +275,19 @@ def MoveObjects(targetLead, targets, context, location):
 
     bpy.ops.transform.translate(
         value=locationDiff,
-        constraint_axis=(False, False, False),
-        orient_type='GLOBAL',
-        mirror=False,
-        use_proportional_edit='DISABLED',
-        snap=False,
-        snap_target='CLOSEST',
-        snap_point=(0.0, 0.0, 0.0),
-        snap_align=False,
-        snap_normal=(0.0, 0.0, 0.0),
-        gpencil_strokes=False,
-        texture_space=False,
-        remove_on_cancel=False,
-        release_confirm=False)
+        constraint_axis= (False, False, False),
+        orient_type = 'GLOBAL',
+        mirror= False,
+        use_proportional_edit= 'DISABLED',
+        snap= False,
+        snap_target= 'CLOSEST',
+        snap_point= (0.0, 0.0, 0.0),
+        snap_align= False,
+        snap_normal= (0.0, 0.0, 0.0),
+        gpencil_strokes= False,
+        texture_space= False,
+        remove_on_cancel= False,
+        release_confirm= False)
 
     # Position the cursor back to it's original location
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
@@ -367,8 +367,8 @@ def RotateObjectSafe(target, context, rotation, forward):
                 value=rotation[item[0]],
                 axis=item[1],
                 constraint_axis=item[2],
-                orient_type='GLOBAL',
-                release_confirm=True
+                orient_type = 'GLOBAL',
+                release_confirm= True
                 )
 
     # Restore the pivot
@@ -406,7 +406,7 @@ def MoveAll(target, context, location):
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # Calculate the translation vector using the 3D cursor
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     FocusObject(target)
     bpy.ops.view3d.snap_cursor_to_selected()
     root_location = (0.0, 0.0, 0.0)
@@ -428,7 +428,7 @@ def MoveAll(target, context, location):
     locationDiff.append(copyLocation[1] - root_location[1])
     locationDiff.append(copyLocation[2] - root_location[2])
 
-    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.select_all(action= 'SELECT')
     ActivateObject(target)
 
     previous_mode = bpy.context.active_object.mode
@@ -486,7 +486,7 @@ def MoveAllFailsafe(context, target, destination, region):
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # Calculate the translation vector using the 3D cursor
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     FocusObject(target)
     bpy.ops.view3d.snap_cursor_to_selected()
     root_location = (0.0, 0.0, 0.0)
@@ -508,7 +508,7 @@ def MoveAllFailsafe(context, target, destination, region):
     locationDiff.append(target_location[1] - root_location[1])
     locationDiff.append(target_location[2] - root_location[2])
 
-    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.select_all(action= 'SELECT')
     ActivateObject(target)
 
     previous_mode = bpy.context.active_object.mode
@@ -550,7 +550,7 @@ def RotateAll(target, context, rotation, constraintAxis):
     auto_key = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
 
-    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.select_all(action= 'SELECT')
     ActivateObject(target)
 
     # Set the pivot to be the target object
@@ -565,10 +565,10 @@ def RotateAll(target, context, rotation, constraintAxis):
 
     bpy.ops.transform.rotate(
         value=radians(rotation),
-        axis=(1.0, 1.0, 1.0),
+        axis= (1.0, 1.0, 1.0),
         constraint_axis=constraintAxis,
-        orient_type='GLOBAL',
-        release_confirm=True
+        orient_type = 'GLOBAL',
+        release_confirm= True
         )
 
     # Restore the pivot
@@ -589,7 +589,7 @@ def RotateAllSafe(target, context, rotation, forward):
     auto_key = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
 
-    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.select_all(action= 'SELECT')
     ActivateObject(target)
 
     # Obtain the current rotation mode
@@ -652,8 +652,8 @@ def RotateAllSafe(target, context, rotation, forward):
                 value=rotation[item[0]],
                 axis=item[1],
                 constraint_axis=item[2],
-                orient_type='GLOBAL',
-                release_confirm=True
+                orient_type = 'GLOBAL',
+                release_confirm= True
                 )
 
     # Restore the pivot
@@ -673,25 +673,25 @@ def ScaleAll(context, scale, constraintAxis):
     auto_key = context.scene.tool_settings.use_keyframe_insert_auto
     context.scene.tool_settings.use_keyframe_insert_auto = False
 
-    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.select_all(action= 'SELECT')
 
     bpy.ops.transform.resize(
         value=scale,
         constraint_axis=constraintAxis,
-        orient_type='GLOBAL',
-        mirror=False,
-        proportional='DISABLED',
-        proportional_edit_falloff='SMOOTH',
-        proportional_size=1.0,
-        snap=False,
-        snap_target='CLOSEST',
-        snap_point=(0.0, 0.0, 0.0),
-        snap_align=False,
-        snap_normal=(0.0, 0.0, 0.0),
-        gpencil_strokes=False,
-        texture_space=False,
-        remove_on_cancel=False,
-        release_confirm=False
+        orient_type = 'GLOBAL',
+        mirror= False,
+        proportional= 'DISABLED',
+        proportional_edit_falloff= 'SMOOTH',
+        proportional_size= 1.0,
+        snap= False,
+        snap_target= 'CLOSEST',
+        snap_point= (0.0, 0.0, 0.0),
+        snap_align= False,
+        snap_normal= (0.0, 0.0, 0.0),
+        gpencil_strokes= False,
+        texture_space= False,
+        remove_on_cancel= False,
+        release_confirm= False
         )
 
     # Restore the previous setting

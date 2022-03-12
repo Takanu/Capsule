@@ -28,12 +28,12 @@ class CAP_FormatData_USD(PropertyGroup):
     )
 
     evaluation_mode : EnumProperty(
-		name="Evaluation Mode",
-		items=(
+		name = "Evaluation Mode",
+		items =  (
 			('RENDER', "Render (Default)", "Use Render settings for object visibility, modifier settings, etc."),
 			('VIEWPORT', "Viewport", "Use Viewport settings for object visibility, modifier settings, etc"),
 			),
-		description="Determines what visibility layer affects the visibility of exported objects, modifier settings and other areas where settings differ between Viewport and Render mode.  (Be careful if you're using Filter by Rendering in General Export Options, as objects that are hidden from the Render will not export",
+		description = "Determines what visibility layer affects the visibility of exported objects, modifier settings and other areas where settings differ between Viewport and Render mode.  (Be careful if you're using Filter by Rendering in General Export Options, as objects that are hidden from the Render will not export",
     )
 
 
@@ -131,20 +131,20 @@ class CAP_FormatData_USD(PropertyGroup):
         Draws the panel that represents all the options that the export format has.
         """
 
-        filepresets_box = layout.column(align=True)
+        filepresets_box = layout.column(align= True)
         filepresets_box.separator()
 
-        export_area = filepresets_box.row(align=True)
+        export_area = filepresets_box.row(align= True)
 
         # left padding
         export_area.separator()
 
         # area for revealed export options
-        export_options = export_area.column(align=True)
+        export_options = export_area.column(align= True)
         export_options.use_property_split = True
         export_options.use_property_decorate = False  # removes animation options
 
-        # options.label(text="Export Filters")
+        # options.label(text= "Export Filters")
         data_options = export_options.column(align = True, heading = "Scene Data")
         data_options.prop(exportData, "export_hair")
         data_options.prop(exportData, "export_uvmaps")
@@ -164,7 +164,7 @@ class CAP_FormatData_USD(PropertyGroup):
         material_sub.separator()
 
         eval_options = export_options.column(align = True)
-        eval_options.prop(exportData, "evaluation_mode", text="Use Settings For")
+        eval_options.prop(exportData, "evaluation_mode", text= "Use Settings For")
         eval_options.separator()
         eval_options.separator()
 

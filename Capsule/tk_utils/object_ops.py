@@ -9,7 +9,7 @@ def DuplicateObject(target):
     """
 
     #### Select and make target active
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
     bpy.ops.object.select_pattern(pattern=target.name)
 
@@ -24,7 +24,7 @@ def DuplicateObject(target):
     duplicate.rotation_axis_angle = target.rotation_axis_angle
 
     # To preserve the scale, it has to be applied.  Sorreh!
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    bpy.ops.object.transform_apply(location= False, rotation= False, scale= True)
 
 def DuplicateObjects(targets):
     """
@@ -33,7 +33,7 @@ def DuplicateObjects(targets):
     """
 
     #### Select and make target active
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     for target in targets:
         bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
@@ -50,7 +50,7 @@ def DuplicateObjects(targets):
     duplicate.rotation_axis_angle = target.rotation_axis_angle
 
     # To preserve the scale, it has to be applied.  Sorreh!
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    bpy.ops.object.transform_apply(location= False, rotation= False, scale= True)
 
 def DeleteObject(target):
     """

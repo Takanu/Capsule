@@ -166,7 +166,6 @@ class CAPSULE_OT_ExportSelected(Operator):
 
         # /////////////////////////////////////////////////
         # FETCH
-        # /////////////////////////////////////////////////
 
         # Fetch objects and collections for export before we set the scene
         export_objects = []
@@ -523,7 +522,7 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
     #print(">>> Exporting Combined Pass <<<")
     #print(">>> Exporting Combined Pass <<<")
 
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     for item in targets:
         #print("Exporting: ", item.name)
@@ -582,7 +581,7 @@ def PrepareExportIndividual(context, targets, path, export_preset):
         # already been moved before collectively.
         object_transform.MoveObject(item, context, (0.0, 0.0, 0.0))
 
-        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.select_all(action= 'DESELECT')
         select_utils.FocusObject(item)
 
 

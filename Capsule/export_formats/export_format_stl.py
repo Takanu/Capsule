@@ -100,16 +100,16 @@ class CAP_FormatData_STL(PropertyGroup):
         Draws the panel that represents all the options that the export format has.
         """
 
-        filepresets_box = layout.column(align=True)
+        filepresets_box = layout.column(align= True)
         filepresets_box.separator()
 
-        export_area = filepresets_box.row(align=True)
+        export_area = filepresets_box.row(align= True)
 
         # left padding
         export_area.separator()
 
         # area for revealed export options
-        export_options = export_area.column(align=True)
+        export_options = export_area.column(align= True)
         export_options.use_property_split = True
         export_options.use_property_decorate = False  # removes animation options
 

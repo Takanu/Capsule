@@ -163,13 +163,13 @@ class CAPSULE_OT_DrawError(Operator):
     message = StringProperty()
 
     def execute(self, context):
-        bpy.context.window_manager.popup_menu(self.draw(context), title=self.title, icon='INFO')
+        bpy.context.window_manager.popup_menu(self.draw(context), title=self.title, icon= 'INFO')
         return {'FINISHED'}
 
     def draw(self, context):
         layout = self.layout
         col = layout.column()
-        col.label(text="Custom Interface!")
+        col.label(text= "Custom Interface!")
 
         row = col.row()
         row.prop(self, "my_float")

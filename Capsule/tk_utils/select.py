@@ -19,10 +19,10 @@ def FocusObject(target):
     if target.mode != 'OBJECT':
         prevMode = target.mode
         bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
-        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.ops.object.mode_set(mode= 'OBJECT')
 
     #### Select and make target active
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
     bpy.ops.object.select_pattern(pattern=target.name)
 

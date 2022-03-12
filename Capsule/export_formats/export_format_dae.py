@@ -28,13 +28,13 @@ class CAP_FormatData_Collada(PropertyGroup):
 	# export_object_transformation_type : IntProperty(
 	# 	name = "Object Transform",
 	# 	description = "Object Transformation type for translation, scale and rotation",
-	# 	default=1,
+	# 	default= 1,
 	# )
 
 	# export_animation_transformation_type : IntProperty(
 	# 	name = "Animation Transform",
 	# 	description = "Animation Transformation type for translation, scale and rotation",
-	# 	default=1,
+	# 	default= 1,
 	# )
 
 
@@ -413,8 +413,8 @@ class CAP_FormatData_Collada(PropertyGroup):
 			# Disabled Animations Warning
 			if preset.export_animation == False:
 				export_options_warning = export_options.box()
-				export_options_warning_l = export_options_warning.row(align=True)
-				export_options_warning_l.label(text="Export Animation is currently disabled in the General Export Options")
+				export_options_warning_l = export_options_warning.row(align= True)
+				export_options_warning_l.label(text= "Export Animation is currently disabled in the General Export Options")
 				export_options.separator()
 				export_options.separator()
 			

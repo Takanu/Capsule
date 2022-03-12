@@ -128,9 +128,9 @@ class CAP_AddonPreferences(AddonPreferences):
 
     # The name for the empty object that exists to store .blend file level Capsule data.
     default_datablock: StringProperty(
-        name="Dummy Datablock Name",
-        description="The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
-        default=">Capsule Blend File Data<"
+        name = "Dummy Datablock Name",
+        description = "The dummy block being used to store Export Default and Location Default data, in order to enable the data to be used between scenes.",
+        default = ">Capsule Blend File Data<"
     )
 
     # Storage for the Global Presets, and it's enum UI list.
@@ -139,41 +139,41 @@ class CAP_AddonPreferences(AddonPreferences):
     saved_export_presets_index: IntProperty()
 
     # Addon Preferences Dropdowns
-    saved_export_presets_dropdown: BoolProperty(default=False)
-    file_export_presets_dropdown: BoolProperty(default=False)
+    saved_export_presets_dropdown: BoolProperty(default = False)
+    file_export_presets_dropdown: BoolProperty(default = False)
     presets_dropdown: BoolProperty(default = False)
     keymap_dropdown: BoolProperty(default = False)
     options_dropdown: BoolProperty(default = False)
 
     # Selection Dropdowns
-    edit_enable_dropdown: BoolProperty(default=False)
+    edit_enable_dropdown: BoolProperty(default = False)
 
     object_list_autorefresh: BoolProperty(
-        name="Object List Auto-Refresh",
-        description="Determines whether or not an object on the object export list will automatically be removed when Enable Export is unticked.  If this option is disabled, a manual refresh button will appear next to the list."
+        name = "Object List Auto-Refresh",
+        description = "Determines whether or not an object on the object export list will automatically be removed when Enable Export is unticked.  If this option is disabled, a manual refresh button will appear next to the list."
         )
 
     list_feature: EnumProperty(
-        name="Additional List Features",
-        description="Allows for the customisation of a secondary button next to each Object and Collection Export list entry.",
-        items=(
+        name = "Additional List Features",
+        description = "Allows for the customisation of a secondary button next to each Object and Collection Export list entry.",
+        items =  (
             ('none', 'None', 'No extra option will be added to the list'),
             ('sel', 'Select', 'Adds an option next to a list entry that allows you to select that Object or Collection in the 3D View.'),
             ('focus', 'Focus', 'Adds an option next to a list entry that allows you to select and focus the 3D view on that Object or Collection.')),
-        default='focus'
+        default= 'focus'
         )
 
     substitute_directories: BoolProperty(
-        name="Substitute Invalid Directory Characters",
-        description="If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  \n\nIf unticked, the plugin will prompt you with an error if your directories contain invalid characters.",
-        default=True
+        name = "Substitute Invalid Directory Characters",
+        description = "If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  \n\nIf unticked, the plugin will prompt you with an error if your directories contain invalid characters.",
+        default = True
         )
 
-    data_missing : BoolProperty(default=False)
-    plugin_is_ready : BoolProperty(default=False)
-    prev_selected_obj : StringProperty(default='')
-    prev_selected_obj_count : IntProperty(default=0)
-    prev_selected_col : StringProperty(default='')
+    data_missing : BoolProperty(default = False)
+    plugin_is_ready : BoolProperty(default = False)
+    prev_selected_obj : StringProperty(default= '')
+    prev_selected_obj_count : IntProperty(default= 0)
+    prev_selected_col : StringProperty(default= '')
 
     def draw(self, context):
         layout = self.layout
@@ -187,9 +187,9 @@ class CAP_AddonPreferences(AddonPreferences):
             exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
         except KeyError:
             layout = self.layout
-            col_export = layout.column(align=True)
-            col_export.label(text="No Capsule for this .blend file has been found,")
-            col_export.label(text="Please press the button below to generate new data.")
+            col_export = layout.column(align= True)
+            col_export.label(text= "No Capsule for this .blend file has been found,")
+            col_export.label(text= "Please press the button below to generate new data.")
             col_export.separator()
             col_export.separator()
             col_export.operator("cap.exportdata_create")
@@ -205,24 +205,24 @@ class CAP_AddonPreferences(AddonPreferences):
 
         if addon_prefs.saved_export_presets_dropdown is False:
             savedpresets_box = layout.box()
-            savedpresets_title = savedpresets_box.row(align=True)
-            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            savedpresets_title.label(text="Saved Presets")
+            savedpresets_title = savedpresets_box.row(align= True)
+            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text= "", icon= 'TRIA_RIGHT', emboss= False)
+            savedpresets_title.label(text= "Saved Presets")
 
         else:
             savedpresets_box = layout.box()
 
-            savedpresets_title = savedpresets_box.row(align=True)
-            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            savedpresets_title.label(text="Saved Presets")
+            savedpresets_title = savedpresets_box.row(align= True)
+            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
+            savedpresets_title.label(text= "Saved Presets")
 
-            savedpresets_items = savedpresets_box.row(align=True)
-            savedpresets_list = savedpresets_items.column(align=True)
+            savedpresets_items = savedpresets_box.row(align= True)
+            savedpresets_list = savedpresets_items.column(align= True)
             savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
-            savedpresets_list.operator("cap.create_current_preset", text="Add to Active Export Presets", icon="FORWARD")
+            savedpresets_list.operator("cap.create_current_preset", text= "Add to Active Export Presets", icon = "FORWARD")
 
-            savedpresets_listedit = savedpresets_items.column(align=True)
-            savedpresets_listedit.operator("cap.delete_global_preset", text="", icon="REMOVE")
+            savedpresets_listedit = savedpresets_items.column(align= True)
+            savedpresets_listedit.operator("cap.delete_global_preset", text= "", icon = "REMOVE")
 
             
 
@@ -232,24 +232,24 @@ class CAP_AddonPreferences(AddonPreferences):
 
         if addon_prefs.file_export_presets_dropdown is False:
             file_presets_box = layout.box()
-            col_saved_title = file_presets_box.row(align=True)
-            col_saved_title.prop(addon_prefs, "file_export_presets_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            col_saved_title.label(text="Active Export Presets")
+            col_saved_title = file_presets_box.row(align= True)
+            col_saved_title.prop(addon_prefs, "file_export_presets_dropdown", text= "", icon= 'TRIA_RIGHT', emboss= False)
+            col_saved_title.label(text= "Active Export Presets")
 
         else:
             file_presets_box = layout.box()
-            col_saved_title = file_presets_box.row(align=True)
-            col_saved_title.prop(addon_prefs, "file_export_presets_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            col_saved_title.label(text="Active Export Presets")
+            col_saved_title = file_presets_box.row(align= True)
+            col_saved_title.prop(addon_prefs, "file_export_presets_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
+            col_saved_title.label(text= "Active Export Presets")
 
-            row_defaults = file_presets_box.row(align=True)
-            col_defaultslist = row_defaults.column(align=True)
+            row_defaults = file_presets_box.row(align= True)
+            col_defaultslist = row_defaults.column(align= True)
             col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", exp, "export_presets", exp, "export_presets_listindex", rows=3, maxrows=6)
-            col_defaultslist.operator("cap.add_global_preset", text="Add to Saved Presets", icon="FORWARD")
+            col_defaultslist.operator("cap.add_global_preset", text= "Add to Saved Presets", icon = "FORWARD")
 
-            col_defaultslist_options = row_defaults.column(align=True)
-            col_defaultslist_options.operator("scene.cap_addexport", text="", icon="ADD")
-            col_defaultslist_options.operator("scene.cap_deleteexport", text="", icon="REMOVE")
+            col_defaultslist_options = row_defaults.column(align= True)
+            col_defaultslist_options.operator("scene.cap_addexport", text= "", icon = "ADD")
+            col_defaultslist_options.operator("scene.cap_deleteexport", text= "", icon = "REMOVE")
 
 
             if len(exp.export_presets) > 0 and (exp.export_presets_listindex) < len(exp.export_presets):
@@ -257,26 +257,26 @@ class CAP_AddonPreferences(AddonPreferences):
                 currentExp = exp.export_presets[exp.export_presets_listindex]
 
                 general_options_box = file_presets_box.box()
-                general_options_content = general_options_box.column(align=True)
+                general_options_content = general_options_box.column(align= True)
                 general_options_content.separator()
 
-                general_options_heading = general_options_content.row(align=True)
-                general_options_heading.label(text="General Export Options", icon="OBJECT_DATA")
+                general_options_heading = general_options_content.row(align= True)
+                general_options_heading.label(text= "General Export Options", icon = "OBJECT_DATA")
                 general_options_heading.separator()
                 general_options_content.separator()
 
 
-                general_options = general_options_content.column(align=True)
+                general_options = general_options_content.column(align= True)
                 
                 
-                general_options_anim = general_options_content.column(align=True)
+                general_options_anim = general_options_content.column(align= True)
                 general_options_anim.use_property_split = True
                 general_options_anim.use_property_decorate = False  # removes animation options
                 if currentExp.format_type == 'STL':
                     general_options_anim.active = False
                 general_options_anim.prop(currentExp, "export_animation")
                 
-                general_options_other = general_options_content.column(align=True)
+                general_options_other = general_options_content.column(align= True)
                 general_options_other.use_property_split = True
                 general_options_other.use_property_decorate = False  # removes animation options
                 general_options_other.prop(currentExp, "apply_modifiers")
@@ -288,14 +288,14 @@ class CAP_AddonPreferences(AddonPreferences):
                 ## Format Options
 
                 format_type_box = file_presets_box.box()
-                format_type = format_type_box.column(align=True)
+                format_type = format_type_box.column(align= True)
                 format_type.separator()
 
                 # Used a split here to recreate the use_property_split with a custom design.
-                format_type_selector = format_type.row(align=True)
-                format_type_selector_split = format_type_selector.split(factor=0.4, align=True)
-                format_type_selector_split.label(text="Export File Type", icon="FILE")
-                format_type_selector_split.prop(currentExp, "format_type", text="")
+                format_type_selector = format_type.row(align= True)
+                format_type_selector_split = format_type_selector.split(factor= 0.4, align= True)
+                format_type_selector_split.label(text= "Export File Type", icon = "FILE")
+                format_type_selector_split.prop(currentExp, "format_type", text= "")
                 format_type_selector.separator()
 
                 format_type.separator()
@@ -329,29 +329,29 @@ class CAP_AddonPreferences(AddonPreferences):
                     currentExp.data_usd.draw_addon_preferences(format_type_box, currentExp.data_usd, exp)
 
             else:
-                preset_unselected = file_presets_box.column(align=True)
-                preset_unselected.label(text="Select a preset in order to view preset settings.")
+                preset_unselected = file_presets_box.column(align= True)
+                preset_unselected.label(text= "Select a preset in order to view preset settings.")
                 preset_unselected.separator()
 
         #---------------------------------------------------------
         # Shortcut Keys
         #---------------------------------------------------------
         keymap_box = layout.box()
-        keymap_menu = keymap_box.row(align=True)
+        keymap_menu = keymap_box.row(align= True)
 
         if addon_prefs.keymap_dropdown is False:
-            keymap_menu.prop(addon_prefs, "keymap_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            keymap_menu.label(text="Key Shortcuts")
+            keymap_menu.prop(addon_prefs, "keymap_dropdown", text= "", icon= 'TRIA_RIGHT', emboss= False)
+            keymap_menu.label(text= "Key Shortcuts")
 
         else:
-            keymap_menu.prop(addon_prefs, "keymap_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            keymap_menu.label(text="Key Shortcuts")
+            keymap_menu.prop(addon_prefs, "keymap_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
+            keymap_menu.label(text= "Key Shortcuts")
 
             # Added L/R padding
-            keymap_area = keymap_box.row(align=True)
+            keymap_area = keymap_box.row(align= True)
             keymap_area.separator()
             
-            keymap_options = keymap_area.column(align=True) 
+            keymap_options = keymap_area.column(align= True) 
 
             # Brings up the kinda-native keymap interface for plugin keymaps.
             wm = bpy.context.window_manager
@@ -373,7 +373,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             for km, kmi in get_kmi_l:
                 if not km.name == old_km_name:
-                    keymap_options.label(text=str(km.name),icon="DOT")
+                    keymap_options.label(text=str(km.name),icon = "DOT")
                     keymap_options.context_pointer_set("keymap", km)
                     rna_keymap_ui.draw_kmi([], kc, km, kmi, keymap_options, 0)
                     keymap_options.separator()
@@ -386,22 +386,22 @@ class CAP_AddonPreferences(AddonPreferences):
         # Options
         #---------------------------------------------------------
         options_box = layout.box()
-        extras_dropdown = options_box.row(align=True)
+        extras_dropdown = options_box.row(align= True)
 
         if addon_prefs.options_dropdown is False:
-            extras_dropdown.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-            extras_dropdown.label(text="Extra Settings")
+            extras_dropdown.prop(addon_prefs, "options_dropdown", text= "", icon= 'TRIA_RIGHT', emboss= False)
+            extras_dropdown.label(text= "Extra Settings")
 
         else:
-            extras_dropdown.prop(addon_prefs, "options_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-            extras_dropdown.label(text="Extra Settings")
+            extras_dropdown.prop(addon_prefs, "options_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
+            extras_dropdown.label(text= "Extra Settings")
             options_box.separator()
 
             # Added L/R padding
-            extras_area = options_box.row(align=True)
+            extras_area = options_box.row(align= True)
             extras_area.separator()
 
-            extras_content = extras_area.column(align=True)
+            extras_content = extras_area.column(align= True)
             extras_content.use_property_split = True
             extras_content.use_property_decorate = False  # removes 
 
@@ -412,13 +412,13 @@ class CAP_AddonPreferences(AddonPreferences):
             extras_content.separator()
             extras_content.separator()
 
-            erase_options = extras_content.column(align=True)
-            erase_options.operator("scene.cap_resetsceneprops", text="Reset Capsule Scene Data")
+            erase_options = extras_content.column(align= True)
+            erase_options.operator("scene.cap_resetsceneprops", text= "Reset Capsule Scene Data")
             erase_options.separator()
             # TODO: Work this out for later!
-            # erase_options_split = erase_options.split(factor=0.4, align=False)
-            # erase_options_split.label(text="Reset Options")
-            # erase_options_split.operator("scene.cap_resetsceneprops", text="Reset Capsule Scene Data")
+            # erase_options_split = erase_options.split(factor= 0.4, align= False)
+            # erase_options_split.label(text= "Reset Options")
+            # erase_options_split.operator("scene.cap_resetsceneprops", text= "Reset Capsule Scene Data")
 
             # right padding
             extras_area.separator()
@@ -439,8 +439,8 @@ def CreateDefaultData(scene):
             return
 
     # Otherwise create the object using the addon preference data
-    bpy.ops.object.select_all(action='DESELECT')
-    bpy.ops.object.empty_add(type='PLAIN_AXES')
+    bpy.ops.object.select_all(action= 'DESELECT')
+    bpy.ops.object.empty_add(type = 'PLAIN_AXES')
 
     # set it's properties
     defaultDatablock = bpy.context.view_layer.objects.active
@@ -517,7 +517,7 @@ def add_hotkeys():
     if wm.keyconfigs.addon:
 
         # Object Mode
-        km = wm.keyconfigs.addon.keymaps.new(name='Object Mode')
+        km = wm.keyconfigs.addon.keymaps.new(name= 'Object Mode')
         kmi = km.keymap_items.new('wm.call_menu_pie', 'E', 'PRESS')
         kmi.properties.name = "pie.capsule_main"
         # kmi.active = True
@@ -634,13 +634,13 @@ def register():
         bpy.utils.register_class(cls)
 
     # Assign datablocks now all classes have been registered.
-    bpy.types.Scene.CAPScn = PointerProperty(name='Capsule Scene Properties', type=CAPSULE_Scene_Preferences)
-    bpy.types.Object.CAPObj = PointerProperty(name='Capsule Object Properties', type=CAPSULE_Object_Preferences)
-    bpy.types.Collection.CAPCol = PointerProperty(name='Capsule Collection Properties', type=CAPSULE_Collection_Preferences)
+    bpy.types.Scene.CAPScn = PointerProperty(name= 'Capsule Scene Properties', type=CAPSULE_Scene_Preferences)
+    bpy.types.Object.CAPObj = PointerProperty(name= 'Capsule Object Properties', type=CAPSULE_Object_Preferences)
+    bpy.types.Collection.CAPCol = PointerProperty(name= 'Capsule Collection Properties', type=CAPSULE_Collection_Preferences)
     # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
-    bpy.types.Object.CAPStm = PointerProperty(name='Capsule State Tracker', type=CAPSULE_Object_StateMachine)
-    bpy.types.Object.CAPExp = PointerProperty(name='Capsule Export Presets', type=CAPSULE_ExportData)
-    bpy.types.Scene.CAPProxy = PointerProperty(name='Capsule Scene Property Proxy', type=CAPSULE_Proxy_Properties)
+    bpy.types.Object.CAPStm = PointerProperty(name= 'Capsule State Tracker', type=CAPSULE_Object_StateMachine)
+    bpy.types.Object.CAPExp = PointerProperty(name= 'Capsule Export Presets', type=CAPSULE_ExportData)
+    bpy.types.Scene.CAPProxy = PointerProperty(name= 'Capsule Scene Property Proxy', type=CAPSULE_Proxy_Properties)
 
 
     # Setup data and handlers

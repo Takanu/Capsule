@@ -82,7 +82,7 @@ def AddTriangulate(targetList):
           # if we didn't find any triangulation, add it!
           if stm.has_triangulate == False:
               select_utils.FocusObject(item)
-              bpy.ops.object.modifier_add(type='TRIANGULATE')
+              bpy.ops.object.modifier_add(type = 'TRIANGULATE')
 
               for modifier in item.modifiers:
                   if modifier.type in modType:

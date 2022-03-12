@@ -482,16 +482,16 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			# Shapekey warning
 			if preset.apply_modifiers == True:
 				export_options_warning = export_options.box()
-				export_options_warning_l = export_options_warning.row(align=True)
-				export_options_warning_l.label(text="While Apply Modifiers is active you will not be able to export Shape Keys")
+				export_options_warning_l = export_options_warning.row(align= True)
+				export_options_warning_l.label(text= "While Apply Modifiers is active you will not be able to export Shape Keys")
 				export_options.separator()
 				export_options.separator()
 			
 			# Disabled Animations Warning
 			if preset.export_animation == False:
 				export_options_warning = export_options.box()
-				export_options_warning_l = export_options_warning.row(align=True)
-				export_options_warning_l.label(text="Export Animation is currently disabled in the General Export Options")
+				export_options_warning_l = export_options_warning.row(align= True)
+				export_options_warning_l.label(text= "Export Animation is currently disabled in the General Export Options")
 				export_options.separator()
 				export_options.separator()
 			

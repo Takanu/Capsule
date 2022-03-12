@@ -211,7 +211,7 @@ def CAP_Update_FocusObject(self, context):
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
             
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     select_utils.SelectObject(self.object)
 
     # As the context won't be correct when the icon is clicked
@@ -236,7 +236,7 @@ def CAP_Update_SelectObject(self, context):
     Selects (but doesn't focus) the given object.
     """
 
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     select_utils.ActivateObject(self.object)
     select_utils.SelectObject(self.object)
 

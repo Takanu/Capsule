@@ -40,7 +40,7 @@ def FindWorldSpaceBoneLocation(target, context, bone):
     previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     # Calculate the translation vector using the 3D cursor
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     prevMode = SwitchObjectMode('POSE', target)
     bpy.data.objects[target.name].data.bones.active = bpy.data.objects[target.name].pose.bones[bone.name].bone
     bpy.ops.view3d.snap_cursor_to_selected()

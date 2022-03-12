@@ -11,7 +11,7 @@ def AddParent(child, parent):
     FocusObject(child)
     bpy.ops.view3D.snap_cursor_to_selected()
 
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     SelectObject(parent)
     SelectObject(child)
@@ -43,7 +43,7 @@ def ClearParent(child):
     bpy.ops.view3D.snap_cursor_to_selected()
 
     # Clear the parent
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
     SelectObject(child)
     bpy.ops.object.parent_clear()
 

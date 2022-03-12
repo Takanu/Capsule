@@ -190,7 +190,7 @@ def CAP_Update_FocusCollection(self, context):
     Focuses the camera to a particular collection, moving it to ensure all objects are in the frame and can be seen clearly.
     TODO 2.0: The camera movement interpolation no longer works.
     """
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     for object in self.collection.objects:
         select_utils.ActivateObject(object)
@@ -218,7 +218,7 @@ def CAP_Update_SelectCollection(self, context):
     """
     Selects (but doesn't focus) the given collection.
     """
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     for object in self.collection.objects:
         select_utils.ActivateObject(object)

@@ -50,7 +50,7 @@ def SaveSceneContext(context):
 
     # Keep a record of the current object mode 
     scene_records['view_mode'] = bpy.context.mode
-    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.mode_set(mode= 'OBJECT')
 
 
     # ======================
@@ -161,7 +161,7 @@ def SaveSceneContext(context):
 
     # Now we can unhide and deselect everything
     bpy.ops.object.hide_view_clear()
-    bpy.ops.object.select_all(action='DESELECT')
+    bpy.ops.object.select_all(action= 'DESELECT')
 
     records = {}
     records['scene'] = scene_records
@@ -230,7 +230,7 @@ def RestoreSceneContext(context, record):
         select_utils.SelectObject(sel)
 
     if scene_records['active_object'] is None and len(scene_records['selected_objects']) == 0:
-        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.select_all(action= 'DESELECT')
 
     # Restore the 3D view mode
     bpy.ops.object.mode_set(mode = scene_records['view_mode'])
@@ -393,7 +393,7 @@ def CheckCapsuleErrors(context):
             exp_key = int(collection.CAPCol.export_preset) - 1
             if exp_key == -1:
 
-                bpy.ops.object.select_all(action='DESELECT')
+                bpy.ops.object.select_all(action= 'DESELECT')
                 for item in collection.all_objects:
                     select_utils.SelectObject(item)
                 statement = "The selected collection " + collection.name + " has no export default selected.  Please define!"
@@ -402,7 +402,7 @@ def CheckCapsuleErrors(context):
             # Check Export Location
             if int(collection.CAPCol.location_preset) == 0:
                 #print("FOUND BAD COLLECTION LOCATION - ", collection)
-                bpy.ops.object.select_all(action='DESELECT')
+                bpy.ops.object.select_all(action= 'DESELECT')
                 for item in collection.all_objects:
                     select_utils.SelectObject(item)
                 statement =  "The selected collection " + collection.name + " has no location preset defined, please define one!"

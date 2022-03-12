@@ -10,7 +10,7 @@ from .tk_utils import collections as collection_utils
 class CAPSULE_UL_Name(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
-            layout.prop(item, "name", text="", emboss=False)
+            layout.prop(item, "name", text= "", emboss= False)
 
 class CAPSULE_UL_Object(UIList):
     """Populates an export list based on properties that are representations of an object 
@@ -25,21 +25,21 @@ class CAPSULE_UL_Object(UIList):
         # I have to keep these two statements separate
         # as only the object data name will work as a valid scene object check
         if item.object == None:
-            layout.prop(item, "deleted_name", text="", emboss=False)
+            layout.prop(item, "deleted_name", text= "", emboss= False)
 
         elif bpy.context.scene.objects.get(item.object.name) == None:
-            layout.prop(item, "deleted_name", text="", emboss=False)
+            layout.prop(item, "deleted_name", text= "", emboss= False)
 
         else:
-            layout.prop(item.object, "name", text="", emboss=False)
-            layout.prop(item, "enable_export", text="")
+            layout.prop(item.object, "name", text= "", emboss= False)
+            layout.prop(item, "enable_export", text= "")
 
             # A switch to change the extra tool on the Object list entries.
             if addon_prefs.list_feature != 'none':
-                layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
+                layout.prop(item, addon_prefs.list_feature, text= "", emboss= False, icon= 'FULLSCREEN_EXIT')
 
         # always show the remove button!
-        layout.prop(item, "remove", text="", icon="X", emboss=False)
+        layout.prop(item, "remove", text= "", icon = "X", emboss= False)
 
 
     def draw_filter(self, context, layout):
@@ -54,17 +54,17 @@ class CAPSULE_UL_Collection(UIList):
         scn = context.scene.CAPScn
 
         if item.collection == None:
-            layout.prop(item, "deleted_name", text="", emboss=False)
+            layout.prop(item, "deleted_name", text= "", emboss= False)
 
         else:
-            layout.prop(item.collection, "name", text="", emboss=False)
-            layout.prop(item, "enable_export", text="")
+            layout.prop(item.collection, "name", text= "", emboss= False)
+            layout.prop(item, "enable_export", text= "")
 
             # A switch to change the extra tool on the Collection list entries.
             if addon_prefs.list_feature != 'none':
-                layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
+                layout.prop(item, addon_prefs.list_feature, text= "", emboss= False, icon= 'FULLSCREEN_EXIT')
 
-        layout.prop(item, "remove", text="", icon="X", emboss=False)
+        layout.prop(item, "remove", text= "", icon = "X", emboss= False)
 
     def draw_filter(self, context, layout):
         # Nothing much to say here, it's usual UI code...
@@ -74,19 +74,19 @@ class CAPSULE_UL_Path_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
-        layout.prop(item, "name", text="", emboss=False)
+        layout.prop(item, "name", text= "", emboss= False)
 
 class CAPSULE_UL_Saved_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
-        layout.prop(item, "name", text="", emboss=False)
+        layout.prop(item, "name", text= "", emboss= False)
 
 class CAPSULE_UL_Export_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         scn = context.scene.CAPScn
-        layout.prop(item, "name", text="", emboss=False)
+        layout.prop(item, "name", text= "", emboss= False)
 
 class CAPSULE_UL_Action(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -101,7 +101,7 @@ class CAPSULE_UL_Action(UIList):
         elif item.anim_type == '4':
             icon = "OUTLINER_OB_ARMATURE"
 
-        layout.prop(item, "name", text="", icon=icon, emboss=False)
+        layout.prop(item, "name", text= "", icon=icon, emboss= False)
         layout.separator()
 
 #//////////////////////// - USER INTERFACE - ////////////////////////
@@ -147,8 +147,8 @@ class CAPSULE_PT_Selection(Panel):
             Draw_CreateCapsuleData(layout)
             return
 
-        col_selection_title_tab = layout.row(align=True)
-        col_selection_title_tab.prop(scn, "selection_switch", expand=True)
+        col_selection_title_tab = layout.row(align= True)
+        col_selection_title_tab.prop(scn, "selection_switch", expand= True)
 
         if selectTab == 1:
             # Get the currently active object, whatever that might be.
@@ -188,21 +188,21 @@ class CAPSULE_PT_Selection(Panel):
                 # No dropdown, indicate objects to be edited
                 if addon_prefs.edit_enable_dropdown is False:
                     col_selection_item_box = layout.box()
-                    col_edit_indicator = col_selection_item_box.row(align=True)
+                    col_edit_indicator = col_selection_item_box.row(align= True)
 
-                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text= "", icon= 'TRIA_RIGHT', emboss= False)
                     col_edit_indicator.alignment = 'EXPAND'
-                    col_edit_indicator.label(text=selection_label, icon="OBJECT_DATA")
+                    col_edit_indicator.label(text=selection_label, icon = "OBJECT_DATA")
 
                 # Dropdown active, multiple objects selected.
                 elif edit_enable_list is True:
                     col_selection_item_box = layout.box()
-                    col_edit_indicator = col_selection_item_box.row(align=True)
+                    col_edit_indicator = col_selection_item_box.row(align= True)
 
-                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
                     col_edit_indicator.alignment = 'EXPAND'
-                    col_edit_indicator.label(text=selection_label, icon="OBJECT_DATA")
-                    col_edit_list = col_selection_item_box.column(align=True)
+                    col_edit_indicator.label(text=selection_label, icon = "OBJECT_DATA")
+                    col_edit_list = col_selection_item_box.column(align= True)
 
                     for item in context.selected_objects:
                         item_label = "Edit " + item.name
@@ -211,17 +211,17 @@ class CAPSULE_PT_Selection(Panel):
                 # Only one object selected, no need to show the list.
                 else:
                     col_selection_item_box = layout.box()
-                    col_edit_indicator = col_selection_item_box.row(align=True)
+                    col_edit_indicator = col_selection_item_box.row(align= True)
 
-                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                    col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
                     col_edit_indicator.alignment = 'EXPAND'
-                    col_edit_indicator.label(text=selection_label, icon="OBJECT_DATA")
+                    col_edit_indicator.label(text=selection_label, icon = "OBJECT_DATA")
                     
 
             if ob != None:
 
                 # now build the UI with that proxy
-                obj_settings = layout.column(align=False)
+                obj_settings = layout.column(align= False)
                 obj_settings.use_property_split = True
                 obj_settings.use_property_decorate = False
                 obj_settings.separator()
@@ -240,16 +240,16 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.operator("scene.cap_export_selected")
 
                 # TODO 2.0 : Add this back in with other object/collection switches.
-                #obj_settings.label(text="Mesh Normals:")
+                #obj_settings.label(text= "Mesh Normals:")
                 #obj_settings.separator()
-                #obj_settings.prop(obj, "normals", text="")
+                #obj_settings.prop(obj, "normals", text= "")
                 #obj_settings.separator()
 
             # If no object was eventually found, bring up warning labels.
             else:
-                object_info = layout.column(align=True)
+                object_info = layout.column(align= True)
                 object_info.separator()
-                object_info.label(text="No objects selected.")
+                object_info.label(text= "No objects selected.")
 
             layout.separator()
 
@@ -273,11 +273,11 @@ class CAPSULE_PT_Selection(Panel):
             if grp != None:
                 selection_label = grp.name
                 col_selection_item_box = layout.box()
-                col_edit_indicator = col_selection_item_box.row(align=True)
+                col_edit_indicator = col_selection_item_box.row(align= True)
 
-                col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
                 col_edit_indicator.alignment = 'EXPAND'
-                col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
+                col_edit_indicator.label(text=selection_label, icon = "MOD_ARRAY")
 
             # if len(context.selected_objects) > 0:
             #     collections_found = collection_utils.GetSelectedObjectCollections()
@@ -309,21 +309,21 @@ class CAPSULE_PT_Selection(Panel):
             #         # No dropdown, indicate objects to be edited
             #         if addon_prefs.edit_enable_dropdown is False:
             #             col_selection_item_box = layout.box()
-            #             col_edit_indicator = col_selection_item_box.row(align=True)
+            #             col_edit_indicator = col_selection_item_box.row(align= True)
 
-            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text= "", icon= 'TRIA_RIGHT', emboss= False)
             #             col_edit_indicator.alignment = 'EXPAND'
-            #             col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
+            #             col_edit_indicator.label(text=selection_label, icon = "MOD_ARRAY")
                     
             #         # Dropdown active, multiple objects selected.
             #         elif edit_enable_list is True:
             #             col_selection_item_box = layout.box()
-            #             col_edit_indicator = col_selection_item_box.row(align=True)
+            #             col_edit_indicator = col_selection_item_box.row(align= True)
 
-            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
             #             col_edit_indicator.alignment = 'EXPAND'
-            #             col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
-            #             col_edit_list = col_selection_item_box.column(align=True)
+            #             col_edit_indicator.label(text=selection_label, icon = "MOD_ARRAY")
+            #             col_edit_list = col_selection_item_box.column(align= True)
 
             #             for item in collections_found:
             #                 item_label = "Edit " + item.name
@@ -332,11 +332,11 @@ class CAPSULE_PT_Selection(Panel):
             #         # Only one object selected, no need to show the list.
             #         else:
             #             col_selection_item_box = layout.box()
-            #             col_edit_indicator = col_selection_item_box.row(align=True)
+            #             col_edit_indicator = col_selection_item_box.row(align= True)
 
-            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
             #             col_edit_indicator.alignment = 'EXPAND'
-            #             col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
+            #             col_edit_indicator.label(text=selection_label, icon = "MOD_ARRAY")
 
 
 
@@ -345,7 +345,7 @@ class CAPSULE_PT_Selection(Panel):
             if grp != None:
 
                 # now build the UI with that proxy
-                group_layout = layout.column(align=False)
+                group_layout = layout.column(align= False)
                 group_layout.use_property_split = True
                 group_layout.use_property_decorate = False
                 group_layout.separator()
@@ -353,11 +353,11 @@ class CAPSULE_PT_Selection(Panel):
                 group_layout.prop(proxy, "col_enable_export")
                 group_layout.separator()
 
-                root_object_ui = group_layout.column(align=True)
+                root_object_ui = group_layout.column(align= True)
                 root_object_ui.prop(proxy, "col_origin_point")
 
                 if proxy.col_origin_point == 'Object':
-                    root_object_ui.prop(proxy, "col_root_object", text=" ")
+                    root_object_ui.prop(proxy, "col_root_object", text= " ")
                 
                 root_object_ui.separator()
 
@@ -374,9 +374,9 @@ class CAPSULE_PT_Selection(Panel):
 
             # If no collection was eventually found, bring up warning labels.
             else:
-                collection_info = layout.column(align=True)
+                collection_info = layout.column(align= True)
                 collection_info.separator()
-                collection_info.label(text="No groups selected.")
+                collection_info.label(text= "No groups selected.")
 
             layout.separator()
 
@@ -388,13 +388,13 @@ class CAPSULE_PT_Selection(Panel):
         #/////////////////////////////////////////////////////////////////
         # Currently broken, un-comment at your own peril!
 
-        #col_location = layout.row(align=True)
+        #col_location = layout.row(align= True)
         #col_location.template_list("CAPSULE_UL_Action", "rawr", ui, "action_list", ui, "action_list_index", rows=3, maxrows=10)
 
         #col_location.separator()
 
-        #row_location = col_location.column(align=True)
-        #row_location.operator("scene.cap_refactions", text="", icon="FILE_REFRESH")
+        #row_location = col_location.column(align= True)
+        #row_location.operator("scene.cap_refactions", text= "", icon = "FILE_REFRESH")
 
         #layout.separator()
 
@@ -430,19 +430,19 @@ class CAPSULE_PT_List(Panel):
 
         listTab = int(str(scn.list_switch))
 
-        list_switch = layout.row(align=True)
-        list_switch.prop(scn, "list_switch", expand=True)
+        list_switch = layout.row(align= True)
+        list_switch.prop(scn, "list_switch", expand= True)
 
-        col_location = layout.column(align=True)
+        col_location = layout.column(align= True)
 
         if listTab == 1:
             col_location.template_list("CAPSULE_UL_Object", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
         elif listTab == 2:
             col_location.template_list("CAPSULE_UL_Collection", "rawr", scn, "collection_list", scn, "collection_list_index", rows=3, maxrows=10)
 
-        col_location_options = layout.row(align=True)
-        col_location_options.operator("scene.cap_clearlist", icon="X")
-        col_location_options.operator("scene.cap_refreshlist", icon="FILE_REFRESH")
+        col_location_options = layout.row(align= True)
+        col_location_options.operator("scene.cap_clearlist", icon = "X")
+        col_location_options.operator("scene.cap_refreshlist", icon = "FILE_REFRESH")
         export_options = layout.column(align = True)
         export_options.operator("scene.cap_export_all", text = "Export All Active")
         export_options.separator()
@@ -458,7 +458,7 @@ class CAPSULE_PT_List(Panel):
                     ob = entry.object
             
             if obj != None:
-                object_options_list = layout.column(align=False)
+                object_options_list = layout.column(align= False)
                 object_options_list.use_property_split = True
                 object_options_list.use_property_decorate = False
                 object_options_list.separator()
@@ -481,16 +481,16 @@ class CAPSULE_PT_List(Panel):
                         
             
             if grp is not None:
-                group_options_list = layout.column(align=False)
+                group_options_list = layout.column(align= False)
                 group_options_list.use_property_split = True
                 group_options_list.use_property_decorate = False
                 group_options_list.separator()
                 
-                root_object_ui = group_options_list.column(align=True)
+                root_object_ui = group_options_list.column(align= True)
                 root_object_ui.prop(grp, "origin_point")
 
                 if grp.origin_point == 'Object':
-                    root_object_ui.prop(grp, "root_object", text=" ")
+                    root_object_ui.prop(grp, "root_object", text= " ")
                 
                 root_object_ui.separator()
 
@@ -539,18 +539,18 @@ class CAPSULE_PT_Location(Panel):
         scn = context.scene.CAPScn
         ob = context.object
 
-        col_location = layout.row(align=True)
+        col_location = layout.row(align= True)
         col_location.template_list("CAPSULE_UL_Path_Default", "default", exp, "location_presets", exp, "location_presets_listindex", rows=3, maxrows=6)
 
         col_location.separator()
 
-        row_location = col_location.column(align=True)
-        row_location.operator("scene.cap_addpath", text="", icon="ADD")
-        row_location.operator("scene.cap_deletepath", text="", icon="REMOVE")
-        #row_location.operator("scene.cap_shiftup", text="", icon="TRIA_UP")
-        #row_location.operator("scene.cap_shiftdown", text="", icon="TRIA_DOWN")
+        row_location = col_location.column(align= True)
+        row_location.operator("scene.cap_addpath", text= "", icon = "ADD")
+        row_location.operator("scene.cap_deletepath", text= "", icon = "REMOVE")
+        #row_location.operator("scene.cap_shiftup", text= "", icon = "TRIA_UP")
+        #row_location.operator("scene.cap_shiftdown", text= "", icon = "TRIA_DOWN")
 
-        location_options = layout.column(align=False)
+        location_options = layout.column(align= False)
         location_options.use_property_split = True
         location_options.use_property_decorate = False
         location_options.separator()
@@ -568,9 +568,9 @@ class CAPSULE_PT_Location(Panel):
 def Draw_CreateCapsuleData(layout):
 
     # UI Prompt for when the .blend Capsule data can no longer be found.
-    col_export = layout.column(align=True)
-    col_export.label(text="No Capsule for this .blend file has been found,")
-    col_export.label(text="Please press the button below to generate new data.")
+    col_export = layout.column(align= True)
+    col_export.label(text= "No Capsule for this .blend file has been found,")
+    col_export.label(text= "Please press the button below to generate new data.")
     col_export.separator()
     col_export.separator()
     col_export.operator("cap.exportdata_create")

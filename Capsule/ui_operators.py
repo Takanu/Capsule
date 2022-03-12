@@ -68,9 +68,9 @@ class CAPSULE_OT_Add_Location_Path_Tag(Operator):
     bl_label = "Add Path Tag"
 
     path_tags: EnumProperty(
-        name="Add Path Tag",
-        description="",
-        items=(
+        name = "Add Path Tag",
+        description = "",
+        items =  (
         ('export_name', 'Export Name', 'Adds a folder with the name of the Object or Collection being exported.'),
         # ('object_type', 'Object Type', 'Adds a folder with the object type.'),
         # ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
@@ -123,9 +123,9 @@ class CAPSULE_OT_Add_ExportPreset_Path_Tag(Operator):
     bl_label = "Add Path Tag"
 
     path_tags: EnumProperty(
-        name="Add Path Tag",
-        description="",
-        items=(
+        name = "Add Path Tag",
+        description = "",
+        items =  (
         ('export_name', 'Export Name', 'Adds a folder with the name of the Object or Collection being exported.'),
         # ('object_type', 'Object Type', 'Adds a folder with the object type.'),
         # ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
@@ -212,7 +212,7 @@ class CAPSULE_OT_Delete_Export(Operator):
     bl_idname = "scene.cap_deleteexport"
     bl_label = "Delete Export Preset"
 
-    #StringProperty(default="Are you sure you wish to delete the selected preset?")
+    #StringProperty(default = "Are you sure you wish to delete the selected preset?")
 
     @classmethod
     def poll(cls, context):
@@ -402,8 +402,8 @@ class CAPSULE_OT_Reset_Defaults(Operator):
                 DeleteObject(object)
 
         # Otherwise create the object using the addon preference data
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        bpy.ops.object.select_all(action= 'DESELECT')
+        bpy.ops.object.empty_add(type = 'PLAIN_AXES')
 
         defaultDatablock = bpy.context.view_layer.objects.active
         defaultDatablock.name = addon_prefs.default_datablock
@@ -532,8 +532,8 @@ class CAPSULE_OT_Create_ExportData(Operator):
                 return {'CANCELLED'}
 
         # Otherwise create the object using the addon preference data
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.ops.object.empty_add(type='PLAIN_AXES')
+        bpy.ops.object.select_all(action= 'DESELECT')
+        bpy.ops.object.empty_add(type = 'PLAIN_AXES')
 
         defaultDatablock = bpy.context.view_layer.objects.active
         defaultDatablock.name = addon_prefs.default_datablock

@@ -10,9 +10,9 @@ from bpy.types import UILayout
 
 class CAP_FormatData_Undefined(PropertyGroup):
         test: BoolProperty(
-           name="Test!",
-           description="TEEEEEEST!",
-           default=True,
+           name = "Test!",
+           description = "TEEEEEEST!",
+           default = True,
         )
 
 # This is imported but not used anywhere.  Hmm...
@@ -29,8 +29,8 @@ class CAP_ExportFormat:
 		Draws the panel that represents all the options that the export format has.
 		"""
 
-		column = layout.column(align=True)
-		column.label(text="This export type is undefined, someone let a base class here! D:")
+		column = layout.column(align= True)
+		column.label(text= "This export type is undefined, someone let a base class here! D:")
 		return
 
 	def draw_selection_preferences(self, layout):
@@ -39,8 +39,8 @@ class CAP_ExportFormat:
 		has for specific selections of objects and groups.
 		"""
 
-		column = layout.column(align=True)
-		column.label(text="This export type is undefined, someone let a base class here! D:")
+		column = layout.column(align= True)
+		column.label(text= "This export type is undefined, someone let a base class here! D:")
 		return
 
 

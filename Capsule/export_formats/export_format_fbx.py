@@ -264,8 +264,8 @@ class CAP_FormatData_FBX(PropertyGroup):
 			path_mode = 'ABSOLUTE',
 			embed_textures=self.embed_textures,
 			batch_mode = 'OFF',
-			use_batch_own_dir=False,
-			use_metadata=False,
+			use_batch_own_dir= False,
+			use_metadata= False,
 
 			# scene
 			global_scale = self.global_scale,
@@ -306,26 +306,26 @@ class CAP_FormatData_FBX(PropertyGroup):
 		Draws the panel that represents all the options that the export format has.
 		"""
 
-		filepresets_box = layout.column(align=True)
+		filepresets_box = layout.column(align= True)
 		filepresets_box.separator()
 
-		export_area = filepresets_box.row(align=True)
+		export_area = filepresets_box.row(align= True)
 
 		# left padding
 		export_area.separator()
 
 		# internal column for tabs and contents
-		export_tab_area = export_area.column(align=True)
-		export_tab_row = export_tab_area.row(align=True)
-		export_tab_row.prop(exp, "fbx_menu_options", expand=True)
+		export_tab_area = export_area.column(align= True)
+		export_tab_row = export_tab_area.row(align= True)
+		export_tab_row.prop(exp, "fbx_menu_options", expand= True)
 		export_tab_area.separator()
 		export_tab_area.separator()
 
 		# area for revealed export options
-		export_options_area = export_tab_area.column(align=True)
+		export_options_area = export_tab_area.column(align= True)
 
 		if exp.fbx_menu_options == 'File':
-			export_options = export_options_area.column(align=True)
+			export_options = export_options_area.column(align= True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -338,7 +338,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			
 
 		if exp.fbx_menu_options == 'Scene':
-			export_options = export_options_area.column(align=True)
+			export_options = export_options_area.column(align= True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -349,7 +349,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 			export_options.separator()
 			
-			transform_options = export_options.column(align=True, heading="Transform Options")
+			transform_options = export_options.column(align= True, heading= "Transform Options")
 			transform_options.prop(exportData, "use_space_transform")
 			transform_options.prop(exportData, "bake_space_transform")
 			transform_options.separator()
@@ -367,7 +367,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 
 		elif exp.fbx_menu_options == 'Mesh':
-			export_options = export_options_area.column(align=True)
+			export_options = export_options_area.column(align= True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -382,7 +382,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 		
 		elif exp.fbx_menu_options == 'Animation':
-			export_options = export_options_area.column(align=True)
+			export_options = export_options_area.column(align= True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
@@ -390,16 +390,16 @@ class CAP_FormatData_FBX(PropertyGroup):
 			# Shapekey warning
 			if preset.apply_modifiers == True:
 				export_options_warning = export_options.box()
-				export_options_warning_l = export_options_warning.row(align=True)
-				export_options_warning_l.label(text="While Apply Modifiers is active you will not be able to export Shape Keys")
+				export_options_warning_l = export_options_warning.row(align= True)
+				export_options_warning_l.label(text= "While Apply Modifiers is active you will not be able to export Shape Keys")
 				export_options.separator()
 				export_options.separator()
 			
 			# Disabled Animations Warning
 			if preset.export_animation == False:
 				export_options_warning = export_options.box()
-				export_options_warning_l = export_options_warning.row(align=True)
-				export_options_warning_l.label(text="Export Animation is currently disabled in the General Export Options")
+				export_options_warning_l = export_options_warning.row(align= True)
+				export_options_warning_l.label(text= "Export Animation is currently disabled in the General Export Options")
 				export_options.separator()
 				export_options.separator()
 
@@ -419,7 +419,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			animation_options.separator()
 
 		elif exp.fbx_menu_options == 'Armature':
-			export_options = export_options_area.column(align=True)
+			export_options = export_options_area.column(align= True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
