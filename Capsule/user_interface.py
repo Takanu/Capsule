@@ -13,6 +13,9 @@ class CAPSULE_UL_Name(UIList):
             layout.prop(item, "name", text="", emboss=False)
 
 class CAPSULE_UL_Object(UIList):
+    """Populates an export list based on properties that are representations of an object 
+        rather than the actual object itself"""
+
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
 
         preferences = context.preferences
@@ -40,12 +43,16 @@ class CAPSULE_UL_Collection(UIList):
         addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
-        layout.prop(item.collection, "name", text="", emboss=False)
-        layout.prop(item, "enable_export", text="")
+        if item.collection == None:
+            layout.prop(item, "deleted_name", text="", emboss=False)
 
-        # A switch to change the extra tool on the Collection list entries.
-        if addon_prefs.list_feature != 'none':
-            layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
+        else:
+            layout.prop(item.collection, "name", text="", emboss=False)
+            layout.prop(item, "enable_export", text="")
+
+            # A switch to change the extra tool on the Collection list entries.
+            if addon_prefs.list_feature != 'none':
+                layout.prop(item, addon_prefs.list_feature, text="", emboss=False, icon='FULLSCREEN_EXIT')
 
         layout.prop(item, "remove", text="", icon="X", emboss=False)
 

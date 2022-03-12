@@ -88,21 +88,27 @@ class CollectionListItem(PropertyGroup):
         description="Selects the collection in the scene",
         default=True,
         update=CAP_Update_SelectCollection
-        )
+    )
 
     focus: BoolProperty(
         name="Focus Export",
         description="Focuses the camera to the entire collection.",
         default=True,
         update=CAP_Update_FocusCollection
-        )
+    )
 
     remove: BoolProperty(
         name="",
         description="Removes the collection from the list, and un-marks it for export.",
         default=True,
         update=CAP_Update_CollectionListRemove
-        )
+    )
+    
+    deleted_name: StringProperty(
+        name="Deleted Collection",
+        description="This collection has been deleted from the Scene",
+        default="Deleted Collection",
+    )
 
 class ActionListItem(PropertyGroup):
     """
