@@ -57,7 +57,7 @@ class CAPSULE_OT_Delete_Path(Operator):
         exp.location_presets.remove(exp.location_presets_listindex)
 
         # TODO: ENSURE ANY EXPORTS THAT USED IT ARE ASSIGNED "NONE"
-        exp
+        
 
         return {'FINISHED'}
 

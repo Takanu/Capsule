@@ -178,6 +178,8 @@ class CAPSULE_OT_ExportSelected(Operator):
             if object.CAPObj.enable_export is True:
                 export_objects.append(object)
         
+        # TODO: Ensure that when the selection list supports multiple objects again that
+        # this is remedied
         for collection in collection_utils.GetSelectedObjectCollections():
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)

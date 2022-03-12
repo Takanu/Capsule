@@ -169,10 +169,11 @@ class CAP_AddonPreferences(AddonPreferences):
         default=True
         )
 
-    data_missing: BoolProperty(default=False)
-    plugin_is_ready: BoolProperty(default=False)
-    prev_selected_object: StringProperty(default='')
-    prev_selected_count: IntProperty(default=0)
+    data_missing : BoolProperty(default=False)
+    plugin_is_ready : BoolProperty(default=False)
+    prev_selected_obj : StringProperty(default='')
+    prev_selected_obj_count : IntProperty(default=0)
+    prev_selected_col : StringProperty(default='')
 
     def draw(self, context):
         layout = self.layout
@@ -464,38 +465,46 @@ def CheckSelectedObject(scene):
 
     # If the active selected object changes or anything else about the selection, we need to update the edit toggles
     if bpy.context.active_object is not None:
-        if bpy.context.active_object.name != addon_prefs.prev_selected_object or len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
-            addon_prefs.prev_selected_object = bpy.context.active_object.name
-            addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
+        if bpy.context.active_object.name != addon_prefs.prev_selected_obj or len(bpy.context.selected_objects) != addon_prefs.prev_selected_obj_count:
+            addon_prefs.prev_selected_obj = bpy.context.active_object.name
+            addon_prefs.prev_selected_obj_count = len(bpy.context.selected_objects)
 
             for item in bpy.context.selected_objects:
                 item.CAPObj.enable_edit = True
-
-                for collection in item.users_collection:
-                    collection.CAPCol.enable_edit = True
             
             # update the proxy objects with the current selection
             obj = bpy.context.active_object.CAPObj
-            grp = bpy.context.active_object.users_collection[0].CAPCol
 
             proxy.disable_updates = True
             proxy.obj_enable_export = obj.enable_export
             proxy.obj_origin_point = obj.origin_point
             proxy.obj_location_preset = obj.location_preset
             proxy.obj_export_preset = obj.export_preset
-            
-            proxy.col_enable_export = grp.enable_export
-            proxy.col_origin_point = grp.origin_point
-            proxy.col_root_object = grp.root_object
-            proxy.col_location_preset = grp.location_preset
-            proxy.col_export_preset = grp.export_preset
+            # TODO: Ensure this works properly with the new Collection selection code.
+            proxy.disable_updates = False
+    
+    elif len(bpy.context.selected_objects) != addon_prefs.prev_selected_obj_count:
+        addon_prefs.prev_selected_obj_count = len(bpy.context.selected_objects)
+        return
+    
+    current_col = collection_utils.GetActiveCollection() 
+    if current_col is not None:
+        if current_col.name != addon_prefs.prev_selected_col:
+
+            addon_prefs.prev_selected_col = current_col.name
+            col = current_col.CAPCol
+            col.enable_edit = True
+
+            proxy.col_enable_export = col.enable_export
+            proxy.col_origin_point = col.origin_point
+            proxy.col_root_object = col.root_object
+            proxy.col_location_preset = col.location_preset
+            proxy.col_export_preset = col.export_preset
+            # TODO: Ensure this works properly with the new Collection selection code.
             proxy.disable_updates = False
 
             return
     
-    elif len(bpy.context.selected_objects) != addon_prefs.prev_selected_count:
-        addon_prefs.prev_selected_count = len(bpy.context.selected_objects)
-        return
 
 #---------------------------------------------------------
 # Keymaps

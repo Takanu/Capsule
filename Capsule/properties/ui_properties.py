@@ -75,11 +75,15 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
     A special property block that is held in the scene to manage selection editing and special multi-edit functionality.
     """
 
+    # TODO: Ensure this works properly with the new Collection selection code.
     disable_updates: BoolProperty(
         name = "(INTERNAL) Disable Updates",
         description = "Used by CheckSelectedObject to update the currently stored proxy properties without triggering update functions.",
         default = False,
         )
+
+    # ////////////
+    # OBJECT
 
     obj_enable_export: BoolProperty(
         name = "Enable Export",
@@ -110,6 +114,9 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         items=GetExportDefaults,
         update=CAP_Update_ProxyObjectExportPreset
         )
+    
+    # ////////////
+    # OBJECT
     
     col_enable_export: BoolProperty(
         name="Export Collection",

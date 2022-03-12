@@ -258,69 +258,85 @@ class CAPSULE_PT_Selection(Panel):
         #////////////////////////// COLLECTION UI /////////////////////////////
         #/////////////////////////////////////////////////////////////////
         elif selectTab == 2:
-
+            
+            # TODO : Rename these awful variable names
             # Get the first collection pointer we need
             grp = None
-            gr = None
 
-            if len(context.selected_objects) > 0:
-                collections_found = collection_utils.GetSelectedObjectCollections()
-                selection_label = ""
-                edit_enable_list = False
+            # TODO: Ensure that when the selection list supports multiple objects again that
+            # this is remedied
+            collections = collection_utils.GetSelectedObjectCollections()
+            if len(collections) != 0:
+                grp = collections[0]
+            
 
-                # LABEL - If we only have one collection
-                if len(collections_found) == 1:
-                    selection_label = collections_found[0].name
+            if grp != None:
+                selection_label = grp.name
+                col_selection_item_box = layout.box()
+                col_edit_indicator = col_selection_item_box.row(align=True)
 
-                elif len(collections_found) > 1:
-                    edit_enable_list = True
-                    selection_label = str(len(collections_found)) + " collections selected"
+                col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+                col_edit_indicator.alignment = 'EXPAND'
+                col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
 
-                if context.active_object is not None:
-                    if len(context.active_object.users_collection) > 0:
-                        for collection in context.active_object.users_collection:
-                            gr = collection
-                            grp = collection.CAPCol
-                            break
+            # if len(context.selected_objects) > 0:
+            #     collections_found = collection_utils.GetSelectedObjectCollections()
+            #     selection_label = ""
+            #     edit_enable_list = False
+
+            #     # LABEL - If we only have one collection
+            #     if len(collections_found) == 1:
+            #         selection_label = collections_found[0].name
+
+            #     elif len(collections_found) > 1:
+            #         edit_enable_list = True
+            #         selection_label = str(len(collections_found)) + " collections selected"
+
+            #     if context.active_object is not None:
+            #         if len(context.active_object.users_collection) > 0:
+            #             for collection in context.active_object.users_collection:
+            #                 gr = collection
+            #                 grp = collection.CAPCol
+            #                 break
                 
-                # Failsafe if we didn't find a collection label by now.
-                if gr is not None and len(collections_found) == 0:
-                    selection_label = gr.name + " collection selected."
+            #     # Failsafe if we didn't find a collection label by now.
+            #     if gr is not None and len(collections_found) == 0:
+            #         selection_label = gr.name + " collection selected."
 
-                # If we have one, we can continue onwards!
-                if selection_label != "":
+            #     # If we have one, we can continue onwards!
+            #     if selection_label != "":
                     
-                    # No dropdown, indicate objects to be edited
-                    if addon_prefs.edit_enable_dropdown is False:
-                        col_selection_item_box = layout.box()
-                        col_edit_indicator = col_selection_item_box.row(align=True)
+            #         # No dropdown, indicate objects to be edited
+            #         if addon_prefs.edit_enable_dropdown is False:
+            #             col_selection_item_box = layout.box()
+            #             col_edit_indicator = col_selection_item_box.row(align=True)
 
-                        col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
-                        col_edit_indicator.alignment = 'EXPAND'
-                        col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
+            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_RIGHT', emboss=False)
+            #             col_edit_indicator.alignment = 'EXPAND'
+            #             col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
                     
-                    # Dropdown active, multiple objects selected.
-                    elif edit_enable_list is True:
-                        col_selection_item_box = layout.box()
-                        col_edit_indicator = col_selection_item_box.row(align=True)
+            #         # Dropdown active, multiple objects selected.
+            #         elif edit_enable_list is True:
+            #             col_selection_item_box = layout.box()
+            #             col_edit_indicator = col_selection_item_box.row(align=True)
 
-                        col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-                        col_edit_indicator.alignment = 'EXPAND'
-                        col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
-                        col_edit_list = col_selection_item_box.column(align=True)
+            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            #             col_edit_indicator.alignment = 'EXPAND'
+            #             col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
+            #             col_edit_list = col_selection_item_box.column(align=True)
 
-                        for item in collections_found:
-                            item_label = "Edit " + item.name
-                            col_edit_list.prop(item.CAPCol, 'enable_edit', text=item_label)
+            #             for item in collections_found:
+            #                 item_label = "Edit " + item.name
+            #                 col_edit_list.prop(item.CAPCol, 'enable_edit', text=item_label)
 
-                    # Only one object selected, no need to show the list.
-                    else:
-                        col_selection_item_box = layout.box()
-                        col_edit_indicator = col_selection_item_box.row(align=True)
+            #         # Only one object selected, no need to show the list.
+            #         else:
+            #             col_selection_item_box = layout.box()
+            #             col_edit_indicator = col_selection_item_box.row(align=True)
 
-                        col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
-                        col_edit_indicator.alignment = 'EXPAND'
-                        col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
+            #             col_edit_indicator.prop(addon_prefs, "edit_enable_dropdown", text="", icon='TRIA_DOWN', emboss=False)
+            #             col_edit_indicator.alignment = 'EXPAND'
+            #             col_edit_indicator.label(text=selection_label, icon="MOD_ARRAY")
 
 
 

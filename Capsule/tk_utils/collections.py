@@ -1,11 +1,23 @@
 import bpy
 
+
+def GetActiveCollection():
+    """
+    Used when Capsule needs the "most important" active collection in the scene.
+    """
+    
+    collection = bpy.context.view_layer.active_layer_collection.collection
+    if collection != None:
+        return collection
+    
+    return None
+
 def GetSceneCollections(scene, hasObjects):
     """
     Returns all collections that belong to the scene, by searching through all objects belonging in it.
     """
 
-    # FIXME - There has to be a more efficient way of doing this...
+    # TODO - There 100% is a more efficient way of doing this
 
     collections = []
 
@@ -30,45 +42,14 @@ def GetEditableCollections(context):
     """
     collected = [] 
 
-    for item in context.selected_objects:
-        for new_collection in item.users_collection: 
-            
-            if new_collection.CAPCol.enable_edit is False:
-                continue
+    # TODO - Reintroduce multiple collections at some point
+    collection = bpy.context.view_layer.active_layer_collection.collection
+    if collection != None:
+        if collection.CAPCol.enable_edit is True:
+            collected.append(collection)
 
-            collection_added = False
-
-            for added_group in collected:
-                if added_group.name == new_collection.name:
-                    collection_added = True
-
-            if collection_added == False:
-                collected.append(new_collection)
 
     return collected
-
-
-def GetObjectCollections(objects):
-    """
-    Returns a unique list of all collections that belong to the given object list,
-    by searching through all objects belonging in it.
-    """
-    collections_found = []
-    collections_found.append(currentGroup)
-
-    for item in objects:
-        for collection in item.users_collection:
-            collection_added = False
-
-            for found_collection in collections_found:
-                if found_collection.name == collection.name:
-                    collection_added = True
-
-            if collection_added == False:
-                collections_found.append(collection)
-
-    return collections_found
-
 
 def GetSelectedObjectCollections():
     """
@@ -76,16 +57,10 @@ def GetSelectedObjectCollections():
     """
     collections_found = []
 
-    for item in bpy.context.selected_objects:
-        for collection in item.users_collection:
-            collection_added = False
-
-            for found_collection in collections_found:
-                if found_collection.name == collection.name:
-                    collection_added = True
-
-            if collection_added == False:
-                collections_found.append(collection)
+    # TODO - Reintroduce multiple collections at some point
+    collection = bpy.context.view_layer.active_layer_collection.collection
+    if collection != None:
+        collections_found.append(collection)
 
     return collections_found
 
@@ -94,6 +69,9 @@ def GetExportableCollectionObjects(context, collection, child_export_option):
     """
     Returns a list of objects that can be exported by the given collection, based on it's child settings.
     """
+
+    # TODO: Ensure that somewhere in our export chain if Filter by Render Visibility is used,
+    # that only objects where the parent collection is not hidden will be exported.
 
     # Now setup the recursive tree search.
     def ExportTreeSearch(current_layer, max_layer, current_collection):
