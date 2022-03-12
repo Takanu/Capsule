@@ -410,6 +410,9 @@ class CAPSULE_PT_List(Panel):
         col_location_options = layout.row(align=True)
         col_location_options.operator("scene.cap_clearlist", icon="X")
         col_location_options.operator("scene.cap_refreshlist", icon="FILE_REFRESH")
+        export_options = layout.column(align = True)
+        export_options.operator("scene.cap_export_all", text = "Export All Active")
+        export_options.separator()
 
         if listTab == 1:
             obj = None
@@ -526,32 +529,6 @@ class CAPSULE_PT_Location(Panel):
         if exp.location_presets_listindex > -1 and exp.location_presets_listindex < count:
             location_options.prop(exp.location_presets[exp.location_presets_listindex], "path")
             location_options.operator_menu_enum("scene.cap_add_location_path_tag", "path_tags")
-
-class CAPSULE_PT_Export(Panel):
-    bl_space_type = "PROPERTIES"
-    bl_region_type = "WINDOW"
-    bl_context = "scene"
-    bl_label = "Export Options"
-    bl_parent_id = "CAPSULE_PT_Header"
-
-    def draw(self, context):
-
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        layout = self.layout
-
-        # UI Prompt for when the .blend Capsule data can no longer be found.
-        try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-        except KeyError:
-            Draw_CreateCapsuleData(layout)
-            return
-
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-
-        export_buttons = layout.row(align=True)
-        export_buttons.operator("scene.cap_export_all")
-
 
 
 

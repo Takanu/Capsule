@@ -316,8 +316,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			# CAPSULE
 			filepath=final_filename,
 			check_existing = False,
-			export_selected = True,
-			# use_selection - For some reason there's two properties that do the same thing :l
+			use_selection  = True,
+
 			use_visible = False,
 			use_renderable = False,
 			use_active_collection = False,

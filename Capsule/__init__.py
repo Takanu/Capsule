@@ -609,7 +609,6 @@ classes = (
     CAPSULE_PT_Selection,
     CAPSULE_PT_List,
     CAPSULE_PT_Location,
-    CAPSULE_PT_Export,
 
     # init
     CAP_AddonPreferences,
