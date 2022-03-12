@@ -201,7 +201,7 @@ class CAPSULE_OT_ExportSelected(Operator):
             return {'FINISHED'}
 
         # We need to make a separate definition set for preserving and restoring scene data.
-        result = record_utils.CheckCapsuleErrors(context)
+        result = record_utils.CheckCapsuleErrors(context, export_objects, export_collections)
         if result is not None:
             self.report({'WARNING'}, result)
             return {'FINISHED'}

@@ -611,8 +611,8 @@ def register():
     bpy.types.Object.CAPObj = PointerProperty(name= 'Capsule Object Properties', type=CAPSULE_Object_Preferences)
     bpy.types.Collection.CAPCol = PointerProperty(name= 'Capsule Collection Properties', type=CAPSULE_Collection_Preferences)
     # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
+    bpy.types.Object.CAPFile = PointerProperty(name= 'Capsule File Data', type=CAPSULE_FileData)
     bpy.types.Object.CAPStm = PointerProperty(name= 'Capsule State Tracker', type=CAPSULE_Object_StateMachine)
-    bpy.types.Object.CAPFile = PointerProperty(name= 'Capsule Export Preset Data', type=CAPSULE_FileData)
     bpy.types.Scene.CAPProxy = PointerProperty(name= 'Capsule Scene Property Proxy', type=CAPSULE_Proxy_Properties)
 
 

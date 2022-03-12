@@ -357,7 +357,7 @@ def RestoreArmatureConstraints(context, record):
 
 
 
-def CheckCapsuleErrors(context):
+def CheckCapsuleErrors(context, target_objects, target_collections):
     # Ensures that the scene is setup with correct settings, before proceeding
     # with the export.
 
@@ -368,36 +368,44 @@ def CheckCapsuleErrors(context):
     # TODO: Collect all errors for all objects and select them all at the end
     # in order to make it easier for people to correct common mistakes.
 
+    # TODO: Find a better way to handle invalid enumerations.
+    
+    # TODO: Export Selected doesn't have any impact on this, we should only check
+    # items that are in the export.
+
     # Check all active file presets for valid directory names
     # These lists will be analysed later
     sub_directory_check = []
+    statement = None
 
-    # Stores all objects and collections that reported errors.
-    object_errors = []
-    collection_errors = []
+    if target_objects == None:
+        target_objects = context.scene.objects
+    if target_collections == None:
+        target_collections = collection_utils.GetSceneCollections(context.scene, True)
     
     # The errors that will be reported back.
-    main_error = ''
-    all_errors = {}
+    error_objects = {}
+    error_objects['no_export'] = []
+    error_objects['no_location'] = []
+
+    # ////////////////////////////////////////////////
+    # OBJECTS
+    
 
     # Checks for any easily-preventable errors
-    for item in context.scene.objects:
+    for item in target_objects:
         if item.CAPObj.enable_export is True:
             cap_obj = item.CAPObj
             
             # Check for Valid Presets
             # EnumProperty types are ints when valid and empty strings when invalid
             if cap_obj.export_preset == '':
-                select_utils.FocusObject(item)
-                statement = "The selected object '" + item.name + "' uses an Export Preset that no longer exists"
-                return statement
+                error_objects['no_export'].append(item)
+                continue
             
             if cap_obj.location_preset == '':
-                select_utils.FocusObject(item)
-                statement = "The selected object '" + item.name + "' uses a Location Preset that no longer exists"
-                return statement
-            
-            
+                error_objects['no_location'].append(item)
+                continue
             
             cap_export_enum = int(cap_obj.export_preset)
             cap_location_enum = int(cap_obj.location_preset)
@@ -406,48 +414,70 @@ def CheckCapsuleErrors(context):
 
             # Check Export Key
             if cap_export_enum == 0 or cap_export_enum > exports_len:
-                statement = "The selected object '" + item.name + "' has no export default selected.  Please define!"
-                select_utils.FocusObject(item)
-                return statement
+                error_objects['no_export'].append(item)
 
             # Check Location Preset
             if cap_location_enum == 0 or cap_location_enum > locations_len:
-                statement =  "The selected object '" + item.name + "' has no location preset defined, please define one!"
-                select_utils.FocusObject(item)
-                return statement
+                error_objects['no_location'].append(item)
 
-            # self.export_stats['expected_export_quantity'] += 1
+
+    # Total up any errors found.
+    max_error_value = 0
+    max_error = ''
+    target_objects = []
+    for k, v in error_objects.items():
+        if (len(v) > max_error_value):
+            max_error_value = len(v)
+            max_error = k
+            target_objects = v
+    
+
+    # If any were found, report the biggest issue and select the objects that had it.
+    if max_error_value > 0:
+        if max_error == 'no_export':
+            statement = "The selected object(s) require a Export Preset to be defined - check the Export Lists to see all missing properties."
+
+        elif max_error == 'no_location':
+            statement = "The selected object(s) require a Location Preset to be defined - check the Export Lists to see all missing properties."
+        
+        bpy.ops.object.select_all(action= 'DESELECT')
+
+        for item in target_objects:
+            select_utils.SelectObject(item)
+        
+        return statement
+
+
+    # ////////////////////////////////////////////////
+    # COLLECTIONS
 
     # TODO: The Collection should be selected, not the objects!
-    # TODO: Check that export/location enums aren't higher as well as lower
+
+    error_collections = {}
+    error_collections['no_export'] = []
+    error_collections['no_location'] = []
+    error_collections['no_root'] = []
+
 
     # Check all scene collections for potential errors
-    for collection in collection_utils.GetSceneCollections(context.scene, True):
-
+    for collection in target_collections:
         if collection.CAPCol.enable_export is True:
             cap_col = collection.CAPCol
+
+            # Check Origin Point
+            if cap_col.origin_point == 'Object':
+                if cap_col.root_object is None:
+                    error_collections['no_root'].append(collection)
 
             # Check for Valid Presets
             # EnumProperty types are ints when valid and empty strings when invalid
             if cap_col.export_preset == '':
-                for item in collection.all_objects:
-                    select_utils.SelectObject(item)
-                statement = "The selected collection '" + collection.name + "' uses an Export Preset that no longer exists"
-                return statement
+                error_collections['no_export'].append(collection)
+                continue
             
             if cap_col.location_preset == '':
-                for item in collection.all_objects:
-                    select_utils.SelectObject(item)
-                statement = "The selected collection '" + collection.name + "' uses a Location Preset that no longer exists"
-                return statement
-            
-            # Check Origin Point
-            if cap_col.origin_point == 'Object':
-                if cap_col.root_object is None:
-                    for item in collection.all_objects:
-                        select_utils.SelectObject(item)
-                    statement = "The selected collection '" + collection.name + "' has no root object defined, please choose before exporting!"
-                    return statement
+                error_collections['no_location'].append(collection)
+                continue
 
 
             cap_export_enum = int(cap_col.export_preset)
@@ -458,23 +488,40 @@ def CheckCapsuleErrors(context):
 
             # Check Export Key
             if cap_export_enum == 0 or cap_export_enum > exports_len:
-
-                bpy.ops.object.select_all(action= 'DESELECT')
-                for item in collection.all_objects:
-                    select_utils.SelectObject(item)
-                statement = "The selected collection '" + collection.name + "' has no export default selected, please choose before exporting!"
-                return statement
+                error_collections['no_export'].append(collection)
 
             # Check Export Location
             if cap_location_enum <= 0 or cap_location_enum > locations_len:
-                #print("FOUND BAD COLLECTION LOCATION - ", collection)
-                bpy.ops.object.select_all(action= 'DESELECT')
-                for item in collection.all_objects:
-                    select_utils.SelectObject(item)
-                statement =  "The selected collection '" + collection.name + "' has no location preset defined, please choose before exporting!"
-                return statement
+                error_collections['no_location'].append(collection)
 
 
+    # Total up any errors found.
+    max_error_value = 0
+    max_error = ''
+    target_collections = []
+    for k, v in error_collections.items():
+        if (len(v) > max_error_value):
+            max_error_value = len(v)
+            max_error = k
+            target_objects = v
+    
+
+    # If any were found, report the biggest issue and select the objects that had it.
+    if max_error_value > 0:
+        if max_error == 'no_root':
+            statement = " % s collection(s) require a Root Object to be defined - check the Export Lists to see all missing properties." % (max_error_value)
+
+        elif max_error == 'no_export':
+            statement = "% s collection(s) require an Export Preset to be defined - check the Export Lists to see all missing properties." % (max_error_value)
+
+        elif max_error == 'no_location':
+            statement = "% s collection(s) require a Location Preset to be defined - check the Export Lists to see all missing properties." % (max_error_value)
+        
+        return statement
+    
+
+    # ////////////////////////////////////////////////
+    # PATHS AND DIRECTORIES
 
     # Check all Location Presets to ensure the chatacters contained are valid.
     i = 0
@@ -488,6 +535,12 @@ def CheckCapsuleErrors(context):
         if defaultFilePath == "":
             statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' has no file path.  Please set one before attempting to export."
             return statement
+        
+        # TODO: Ensure this would properly validate a directory
+        if defaultFilePath[-1] != '\\':
+            statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' points to a file rather than a directory.  Please ensure it points to a folder."
+            return statement
+
 
         i += 1
     

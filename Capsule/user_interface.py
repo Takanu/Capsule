@@ -22,29 +22,48 @@ class CAPSULE_UL_Object(UIList):
         addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
-        # I have to keep these two statements separate
-        # as only the object data name will work as a valid scene object check
-        if item.object == None:
-            layout.prop(item, "deleted_name", text= "", emboss= False)
+        #layout.alignment = 'LEFT'
 
-        elif bpy.context.scene.objects.get(item.object.name) == None:
-            layout.prop(item, "deleted_name", text= "", emboss= False)
+        # ////////////////
+        # DELETED OBJECT LIST ITEM
+        no_object = (item.object == None)
+        if item.object != None:
+            no_object = (bpy.context.scene.objects.get(item.object.name) == None)
 
-        else:
-            layout.prop(item.object, "name", text= "", emboss= False)
-            layout.prop(item, "enable_export", text= "")
+        if no_object:
+            # spaces are here to cheat on the layout spacing
+            layout.label(text = "  Deleted Object")
+            # layout.prop(item, "deleted_name", text = "", emboss = False)
+            layout.prop(item, "remove", text = "", icon = "X", emboss= False)
+            layout.active = False
+            return
 
-            # A switch to change the extra tool on the Object list entries.
-            if addon_prefs.list_feature != 'none':
-                layout.prop(item, addon_prefs.list_feature, text= "", emboss= False, icon= 'FULLSCREEN_EXIT')
 
-        # always show the remove button!
+        # ////////////////
+        # NORMAL OBJECT LIST ITEM
+        cap_obj = item.object.CAPObj
+        missing_data = (cap_obj.export_preset == '0' or cap_obj.location_preset == '0')
+
+        layout.prop(item.object, "name", text = "", emboss = False)
+        
+        if missing_data:
+            layout.prop(item, "missing_data", text = "", icon = "ERROR", emboss = False)
+            layout.separator()
+            
+        layout.prop(item, "enable_export", text = "")
+
+        # A switch to change the extra tool on the Object list entries.
+        if addon_prefs.list_feature != 'none':
+            layout.prop(item, addon_prefs.list_feature, text= "", emboss= False, icon= 'FULLSCREEN_EXIT')
+
         layout.prop(item, "remove", text= "", icon = "X", emboss= False)
+        
 
 
     def draw_filter(self, context, layout):
         # Nothing much to say here, it's usual UI code...
         row = layout.row()
+
 
 class CAPSULE_UL_Collection(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
@@ -52,17 +71,34 @@ class CAPSULE_UL_Collection(UIList):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
-
+        
+        # ////////////////
+        # DELETED COLLECTION LIST ITEM
         if item.collection == None:
-            layout.prop(item, "deleted_name", text= "", emboss= False)
+            # spaces are here to cheat on the layout spacing
+            layout.label(text = "  Deleted Collection")
+            # layout.prop(item, "deleted_name", text = "", emboss = False)
+            layout.prop(item, "remove", text = "", icon = "X", emboss= False)
+            layout.active = False
+            return
 
-        else:
-            layout.prop(item.collection, "name", text= "", emboss= False)
-            layout.prop(item, "enable_export", text= "")
 
-            # A switch to change the extra tool on the Collection list entries.
-            if addon_prefs.list_feature != 'none':
-                layout.prop(item, addon_prefs.list_feature, text= "", emboss= False, icon= 'FULLSCREEN_EXIT')
+        # ////////////////
+        # NORMAL COLLECTION LIST ITEM
+        cap_col = item.collection.CAPCol
+        missing_data = (cap_col.export_preset == '0' or cap_col.location_preset == '0')
+
+        layout.prop(item.collection, "name", text= "", emboss= False)
+
+        if missing_data:
+            layout.prop(item, "missing_data", text = "", icon = "ERROR", emboss = False)
+            layout.separator()
+
+        layout.prop(item, "enable_export", text= "")
+
+        # A switch to change the extra tool on the Collection list entries.
+        if addon_prefs.list_feature != 'none':
+            layout.prop(item, addon_prefs.list_feature, text= "", emboss= False, icon= 'FULLSCREEN_EXIT')
 
         layout.prop(item, "remove", text= "", icon = "X", emboss= False)
 

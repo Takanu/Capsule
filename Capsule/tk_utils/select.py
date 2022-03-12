@@ -1,4 +1,11 @@
+
+# Because selections in Blender can be weird this module provides methods to ensure
+# selections are being performed the right way
+
 import bpy
+
+# ////////////////////////////////////////
+# OBJECTS
 
 def FocusObject(target):
     """
@@ -30,6 +37,7 @@ def FocusObject(target):
     if prevMode != '':
         bpy.ops.object.mode_set(mode=prevMode)
 
+
 def SelectObject(target, force_select = False):
     """
     Selects the given target in the 3D View.  This does not make the object active.
@@ -55,6 +63,7 @@ def SelectObject(target, force_select = False):
 
     target.select_set(True)
 
+
 def ActivateObject(target):
     """
     Makes the given object the one that is currently active in the 3D view.
@@ -68,7 +77,18 @@ def ActivateObject(target):
 
     bpy.context.view_layer.objects.active = bpy.data.objects[target.name]
 
-def SaveSelections():
+
+# ////////////////////////////////////////
+# COLLECTIONS
+
+# just a stub, I dont think I can select multiple collections </3
+
+
+# ////////////////////////////////////////
+# STATES
+
+
+def SaveObjectSelections():
     """
     Records the current active and selected objects and returns a dictionary.
     """
@@ -81,7 +101,8 @@ def SaveSelections():
 
     return record
 
-def RestoreSelections(record):
+
+def RestoreObjectSelections(record):
     """
     Restores a previously-recorded selection set.
     """

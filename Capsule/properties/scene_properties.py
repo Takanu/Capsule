@@ -61,10 +61,19 @@ class ObjectListItem(PropertyGroup):
         update = CAP_Update_ObjectListRemove
         )
     
-    deleted_name: StringProperty(
-        name = "Deleted Object",
-        description = "This collection has been deleted from the Scene",
-        default = "Deleted Object",
+    # this value exists purely to display a label with correct padding in a UIList
+    # no longer needed for now, keeping here just in case
+    # deleted_name: StringProperty(
+    #     name = "Deleted Object",
+    #     description = "This object has been deleted from the Scene",
+    #     default = "Deleted Object",
+    # )
+
+    # this value exists purely to enable the display of a tooltip, this property does nothing otherwise
+    missing_data: BoolProperty(
+        name = "",
+        description = "This export has missing data that will prevent it from being exported.  Make sure all export options are set",
+        default = True,
     )
 
 class CollectionListItem(PropertyGroup):
@@ -109,11 +118,20 @@ class CollectionListItem(PropertyGroup):
         default = True,
         update = CAP_Update_CollectionListRemove
     )
-    
-    deleted_name: StringProperty(
-        name = "Deleted Collection",
-        description = "Used by lists to show that the collection being accessed has been deleted",
-        default = "Deleted Collection",
+
+    # this value exists purely to display a label with correct padding in a UIList
+    # no longer needed for now, keeping here just in case    
+    # deleted_name: StringProperty(
+    #     name = "Deleted Collection",
+    #     description = "Used by lists to show that the collection being accessed has been deleted",
+    #     default = "Deleted Collection",
+    # )
+
+    # this value exists purely to enable the display of a tooltip, this property does nothing otherwise
+    missing_data: BoolProperty(
+        name = "",
+        description = "This export has missing data that will prevent it from being exported.  Make sure all export options are set",
+        default = True,
     )
 
 class ActionListItem(PropertyGroup):
