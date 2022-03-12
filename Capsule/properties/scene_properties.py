@@ -218,13 +218,13 @@ def GetLocationPresets(scene, context):
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
     try:
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
     except KeyError:
         return items
 
     u = 1
 
-    for i,x in enumerate(exp.location_presets):
+    for i,x in enumerate(cap_file.location_presets):
         items.append((str(i+1), x.name, x.name, i+1))
 
     return items
@@ -238,14 +238,14 @@ def GetExportDefaults(scene, context):
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
     try:
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
     except KeyError:
         return items
 
 
     u = 1
 
-    for i,x in enumerate(exp.export_presets):
+    for i,x in enumerate(cap_file.export_presets):
         items.append((str(i+1), x.name, x.name, i+1))
 
     return items

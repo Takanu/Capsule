@@ -291,7 +291,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 
 		)
 	
-	def draw_addon_preferences(self, layout, exportData, exp, preset):
+	def draw_addon_preferences(self, layout, exportData, cap_file, preset):
 		"""
 		Draws the panel that represents all the options that the export format has.
 		"""
@@ -307,14 +307,14 @@ class CAP_FormatData_Alembic(PropertyGroup):
 		# internal column for tabs and contents
 		export_tab_area = export_area.column(align = True)
 		export_tab_row = export_tab_area.row(align = True)
-		export_tab_row.prop(exp, "alembic_menu_options", expand = True)
+		export_tab_row.prop(cap_file, "alembic_menu_options", expand = True)
 		export_tab_area.separator()
 		export_tab_area.separator()
 		
 		# area for revealed export options
 		export_options_area = export_tab_area.column(align = True)
 
-		if exp.alembic_menu_options == 'File':
+		if cap_file.alembic_menu_options == 'File':
 			export_options = export_options_area.column(align = True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False
@@ -338,7 +338,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			export_options.separator()
 
 
-		if exp.alembic_menu_options == 'Scene':
+		if cap_file.alembic_menu_options == 'Scene':
 			export_options = export_options_area.column(align = True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False
@@ -346,7 +346,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			export_options.separator()
 
 			
-		elif exp.alembic_menu_options == 'Mesh':
+		elif cap_file.alembic_menu_options == 'Mesh':
 			export_options = export_options_area.column(align = True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False
@@ -379,7 +379,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			triangulate_sub.separator()
 		
 
-		elif exp.alembic_menu_options == 'Animation':
+		elif cap_file.alembic_menu_options == 'Animation':
 			export_options = export_options_area.column(align = True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False

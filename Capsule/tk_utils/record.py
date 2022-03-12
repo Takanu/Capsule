@@ -363,7 +363,7 @@ def CheckCapsuleErrors(context):
 
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
-    exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
     
     # TODO: Collect all errors for all objects and select them all at the end
     # in order to make it easier for people to correct common mistakes.
@@ -371,6 +371,14 @@ def CheckCapsuleErrors(context):
     # Check all active file presets for valid directory names
     # These lists will be analysed later
     sub_directory_check = []
+
+    # Stores all objects and collections that reported errors.
+    object_errors = []
+    collection_errors = []
+    
+    # The errors that will be reported back.
+    main_error = ''
+    all_errors = {}
 
     # Checks for any easily-preventable errors
     for item in context.scene.objects:
@@ -393,8 +401,8 @@ def CheckCapsuleErrors(context):
             
             cap_export_enum = int(cap_obj.export_preset)
             cap_location_enum = int(cap_obj.location_preset)
-            exports_len = len(exp.export_presets)
-            locations_len = len(exp.location_presets)
+            exports_len = len(cap_file.export_presets)
+            locations_len = len(cap_file.location_presets)
 
             # Check Export Key
             if cap_export_enum == 0 or cap_export_enum > exports_len:
@@ -444,8 +452,8 @@ def CheckCapsuleErrors(context):
 
             cap_export_enum = int(cap_col.export_preset)
             cap_location_enum = int(cap_col.location_preset)
-            exports_len = len(exp.export_presets)
-            locations_len = len(exp.location_presets)
+            exports_len = len(cap_file.export_presets)
+            locations_len = len(cap_file.location_presets)
             
 
             # Check Export Key
@@ -470,15 +478,15 @@ def CheckCapsuleErrors(context):
 
     # Check all Location Presets to ensure the chatacters contained are valid.
     i = 0
-    while i < len(exp.location_presets):
+    while i < len(cap_file.location_presets):
         enumIndex = i
         enumIndex -= 1
 
-        defaultFilePath = exp.location_presets[enumIndex].path
+        defaultFilePath = cap_file.location_presets[enumIndex].path
         #print("Checking File Paths...", defaultFilePath)
 
         if defaultFilePath == "":
-            statement = "The File Location '" + exp.location_presets[enumIndex].name + "' has no file path.  Please set one before attempting to export."
+            statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' has no file path.  Please set one before attempting to export."
             return statement
 
         i += 1

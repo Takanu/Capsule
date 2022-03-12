@@ -88,11 +88,11 @@ class CAPSULE_MT_PieLocationObject(Menu):
         obj = context.object.CAPObj
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
         i = 0
-        for loc in exp.location_presets:
-            pie.operator("capsule.location_select_object", text=exp.location_presets[i].name, icon = "FILE_FOLDER").loc = i
+        for loc in cap_file.location_presets:
+            pie.operator("capsule.location_select_object", text=cap_file.location_presets[i].name, icon = "FILE_FOLDER").loc = i
             i += 1
 
 class CAPSULE_MT_PieLocationCollection(Menu):
@@ -109,11 +109,11 @@ class CAPSULE_MT_PieLocationCollection(Menu):
         obj = context.object.CAPObj
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
         i = 0
-        for loc in exp.location_presets:
-            pie.operator("capsule.location_select_collection", text=exp.location_presets[i].name, icon = "FILE_FOLDER").loc = i
+        for loc in cap_file.location_presets:
+            pie.operator("capsule.location_select_collection", text=cap_file.location_presets[i].name, icon = "FILE_FOLDER").loc = i
             i += 1
 
 class CAPSULE_OT_ExportSelectObject(Operator):
@@ -161,11 +161,11 @@ class CAPSULE_MT_PieExportObject(Menu):
         obj = context.object.CAPObj
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
         i = 0
-        for loc in exp.export_presets:
-            pie.operator("capsule.export_select_object", text=exp.export_presets[i].name, icon = "PREFERENCES").loc = i
+        for loc in cap_file.export_presets:
+            pie.operator("capsule.export_select_object", text=cap_file.export_presets[i].name, icon = "PREFERENCES").loc = i
             i += 1
 
 class CAPSULE_MT_PieExportCollection(Menu):
@@ -182,11 +182,11 @@ class CAPSULE_MT_PieExportCollection(Menu):
         obj = context.object.CAPObj
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
         i = 0
-        for loc in exp.export_presets:
-            pie.operator("capsule.export_select_collection", text=exp.export_presets[i].name, icon = "PREFERENCES").loc = i
+        for loc in cap_file.export_presets:
+            pie.operator("capsule.export_select_collection", text=cap_file.export_presets[i].name, icon = "PREFERENCES").loc = i
             i += 1
 
 class CAPSULE_OT_PieObjectMenu(Menu):

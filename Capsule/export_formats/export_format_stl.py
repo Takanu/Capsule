@@ -95,7 +95,7 @@ class CAP_FormatData_STL(PropertyGroup):
         )
 
     
-    def draw_addon_preferences(self, layout, exportData, exp):
+    def draw_addon_preferences(self, layout, exportData, cap_file):
         """
         Draws the panel that represents all the options that the export format has.
         """

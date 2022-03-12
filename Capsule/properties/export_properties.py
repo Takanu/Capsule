@@ -158,9 +158,10 @@ class CAPSULE_LocationPreset(PropertyGroup):
         )
 
 
-class CAPSULE_ExportData(PropertyGroup):
+class CAPSULE_FileData(PropertyGroup):
     """
-    A property group passed onto the "default datablock", the empty object created in a blend file to store all the available export presets.
+    Holds all file-wide properties that Capsule requires such as Export and Location Presets.
+    This property is only read from a specially designated object inside the Blender file that acts as a storage object.
     """
 
     # the version of Capsule this datablock was created with
@@ -264,7 +265,7 @@ class CAPSULE_ExportData(PropertyGroup):
 #     CAPSULE_ExportPass, 
 #     CAPSULE_ExportPreset, 
 #     CAPSULE_LocationPreset, 
-#     CAPSULE_ExportData,
+#     CAPSULE_FileData,
 # )
 
 # def register():

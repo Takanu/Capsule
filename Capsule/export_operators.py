@@ -37,7 +37,7 @@ class CAPSULE_OT_ExportAll(Operator):
         scn = context.scene.CAPScn
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = None
+        cap_file = None
 
 
         # /////////////////////////////////////////////////
@@ -45,7 +45,7 @@ class CAPSULE_OT_ExportAll(Operator):
     
         # For the new pie menu, we need to see if any data exists before continuing
         try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+            cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
         except KeyError:
             self.report({'WARNING'}, "No Capsule Data for this blend file exists.  Please create it using the Toolshelf or Addon Preferences menu.")
             return {'FINISHED'}
@@ -92,7 +92,7 @@ class CAPSULE_OT_ExportAll(Operator):
         # /////////////////////////////////////////////////
         # OBJECT EXPORT
 
-        object_export_result = ExportObjectList(context, exp, export_objects, global_record)
+        object_export_result = ExportObjectList(context, cap_file, export_objects, global_record)
         if 'warning' in object_export_result:
             self.report({'WARNING'}, object_export_result['warning'])
             record_utils.RestoreSceneContext(context, global_record)
@@ -104,7 +104,7 @@ class CAPSULE_OT_ExportAll(Operator):
         # /////////////////////////////////////////////////
         # COLLECTION EXPORT
         
-        collection_export_result = ExportCollectionList(context, exp, export_collections, global_record)
+        collection_export_result = ExportCollectionList(context, cap_file, export_collections, global_record)
         if 'warning' in collection_export_result:
             self.report({'WARNING'}, collection_export_result['warning'])
             record_utils.RestoreSceneContext(context, global_record)
@@ -164,7 +164,7 @@ class CAPSULE_OT_ExportSelected(Operator):
         scn = context.scene.CAPScn
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = None
+        cap_file = None
 
 
         # /////////////////////////////////////////////////
@@ -195,7 +195,7 @@ class CAPSULE_OT_ExportSelected(Operator):
     
         # For the new pie menu, we need to see if any data exists before continuing
         try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+            cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
         except KeyError:
             self.report({'WARNING'}, "No Capsule Data for this blend file exists.  Please create it using the Toolshelf or Addon Preferences menu.")
             return {'FINISHED'}
@@ -223,7 +223,7 @@ class CAPSULE_OT_ExportSelected(Operator):
         # /////////////////////////////////////////////////
         # OBJECT EXPORT
 
-        object_export_result = ExportObjectList(context, exp, export_objects, global_record)
+        object_export_result = ExportObjectList(context, cap_file, export_objects, global_record)
         if 'warning' in object_export_result:
             self.report({'WARNING'}, object_export_result['warning'])
             record_utils.RestoreSceneContext(context, global_record)
@@ -235,7 +235,7 @@ class CAPSULE_OT_ExportSelected(Operator):
         # /////////////////////////////////////////////////
         # COLLECTION EXPORT
         
-        collection_export_result = ExportCollectionList(context, exp, export_collections, global_record)
+        collection_export_result = ExportCollectionList(context, cap_file, export_collections, global_record)
         if 'warning' in collection_export_result:
             self.report({'WARNING'}, collection_export_result['warning'])
             record_utils.RestoreSceneContext(context, global_record)
@@ -287,7 +287,7 @@ class CAPSULE_OT_ExportSelected(Operator):
 
 
 
-def ExportObjectList(context, exp, object_list, global_record):
+def ExportObjectList(context, cap_file, object_list, global_record):
     """
     Exports a list of given objects
     """
@@ -303,11 +303,11 @@ def ExportObjectList(context, exp, object_list, global_record):
 
         # Get the export default for the object
         export_preset_index = int(item.CAPObj.export_preset) - 1
-        export_preset = exp.export_presets[export_preset_index]
+        export_preset = cap_file.export_presets[export_preset_index]
         meta['preset_name'] = export_preset.name
 
         location_preset_index = int(item.CAPObj.location_preset) - 1
-        location_preset = exp.location_presets[location_preset_index]
+        location_preset = cap_file.location_presets[location_preset_index]
 
         origin_point = item.CAPObj.origin_point
 
@@ -331,7 +331,7 @@ def ExportObjectList(context, exp, object_list, global_record):
 
 
 
-def ExportCollectionList(context, exp, collection_list, global_record):
+def ExportCollectionList(context, cap_file, collection_list, global_record):
     """
     Exports a list of given collections
     """
@@ -347,11 +347,11 @@ def ExportCollectionList(context, exp, collection_list, global_record):
 
         # Get the export default for the object
         export_preset_index = int(collection.CAPCol.export_preset) - 1
-        export_preset = exp.export_presets[export_preset_index]
+        export_preset = cap_file.export_presets[export_preset_index]
         meta['preset_name'] = export_preset.name
 
         location_preset_index = int(collection.CAPCol.location_preset) - 1
-        location_preset = exp.location_presets[location_preset_index]
+        location_preset = cap_file.location_presets[location_preset_index]
 
         origin_point = collection.CAPCol.origin_point
         root_definition = None

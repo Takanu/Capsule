@@ -142,7 +142,7 @@ class CAPSULE_PT_Selection(Panel):
         
         # UI Prompt for when the .blend Capsule data can no longer be found.
         try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+            cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
         except KeyError:
             Draw_CreateCapsuleData(layout)
             return
@@ -410,7 +410,7 @@ class CAPSULE_PT_List(Panel):
     #     preferences = context.preferences
     #     addon_prefs = preferences.addons[__package__].preferences
     #     try:
-    #         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    #         cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
     #     except KeyError:
     #         return False
     #     return True
@@ -423,7 +423,7 @@ class CAPSULE_PT_List(Panel):
         layout = self.layout
 
         try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+            cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
         except KeyError:
             Draw_CreateCapsuleData(layout)
             return
@@ -516,7 +516,7 @@ class CAPSULE_PT_Location(Panel):
     #     addon_prefs = preferences.addons[__package__].preferences
 
     #     try:
-    #         exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+    #         cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
     #     except KeyError:
     #         return False
     #     return True
@@ -529,18 +529,18 @@ class CAPSULE_PT_Location(Panel):
 
         # UI Prompt for when the .blend Capsule data can no longer be found.
         try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+            cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
         except KeyError:
             Draw_CreateCapsuleData(layout)
             return
 
         
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
         scn = context.scene.CAPScn
         ob = context.object
 
         col_location = layout.row(align= True)
-        col_location.template_list("CAPSULE_UL_Path_Default", "default", exp, "location_presets", exp, "location_presets_listindex", rows=3, maxrows=6)
+        col_location.template_list("CAPSULE_UL_Path_Default", "default", cap_file, "location_presets", cap_file, "location_presets_listindex", rows=3, maxrows=6)
 
         col_location.separator()
 
@@ -556,11 +556,11 @@ class CAPSULE_PT_Location(Panel):
         location_options.separator()
 
         count = 0
-        for i, item in enumerate(exp.location_presets, 1):
+        for i, item in enumerate(cap_file.location_presets, 1):
             count += 1
 
-        if exp.location_presets_listindex > -1 and exp.location_presets_listindex < count:
-            location_options.prop(exp.location_presets[exp.location_presets_listindex], "path")
+        if cap_file.location_presets_listindex > -1 and cap_file.location_presets_listindex < count:
+            location_options.prop(cap_file.location_presets[cap_file.location_presets_listindex], "path")
             location_options.operator_menu_enum("scene.cap_add_location_path_tag", "path_tags")
 
 

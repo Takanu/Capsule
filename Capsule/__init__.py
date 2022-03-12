@@ -67,7 +67,7 @@ from bpy.app.handlers import persistent
 from .properties.export_properties import (
     CAPSULE_ExportPreset, 
     CAPSULE_LocationPreset, 
-    CAPSULE_ExportData,
+    CAPSULE_FileData,
     )
 
 
@@ -79,11 +79,11 @@ def GetGlobalPresets(scene, context):
 
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
-    exp = addon_prefs.saved_export_presets
+    cap_file = addon_prefs.saved_export_presets
 
     u = 1
 
-    for i,x in enumerate(exp):
+    for i,x in enumerate(cap_file):
         items.append((str(i+1), x.name, x.description, i+1))
 
     return items
@@ -146,11 +146,11 @@ class CAP_AddonPreferences(AddonPreferences):
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__name__].preferences
-        exp = None
+        cap_file = None
 
         # UI Prompt for when the .blend Capsule data can no longer be found.
         try:
-            exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+            cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
         except KeyError:
             layout = self.layout
             col_export = layout.column(align= True)
@@ -210,7 +210,7 @@ class CAP_AddonPreferences(AddonPreferences):
 
             row_defaults = file_presets_box.row(align= True)
             col_defaultslist = row_defaults.column(align= True)
-            col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", exp, "export_presets", exp, "export_presets_listindex", rows=3, maxrows=6)
+            col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", cap_file, "export_presets", cap_file, "export_presets_listindex", rows=3, maxrows=6)
             col_defaultslist.operator("cap.add_global_preset", text= "Add to Saved Presets", icon = "FORWARD")
 
             col_defaultslist_options = row_defaults.column(align= True)
@@ -218,9 +218,9 @@ class CAP_AddonPreferences(AddonPreferences):
             col_defaultslist_options.operator("scene.cap_deleteexport", text= "", icon = "REMOVE")
 
 
-            if len(exp.export_presets) > 0 and (exp.export_presets_listindex) < len(exp.export_presets):
+            if len(cap_file.export_presets) > 0 and (cap_file.export_presets_listindex) < len(cap_file.export_presets):
 
-                currentExp = exp.export_presets[exp.export_presets_listindex]
+                currentExp = cap_file.export_presets[cap_file.export_presets_listindex]
 
                 general_options_box = file_presets_box.box()
                 general_options_content = general_options_box.column(align= True)
@@ -267,32 +267,32 @@ class CAP_AddonPreferences(AddonPreferences):
                 format_type.separator()
 
                 # TODO: Provide full preset data and reorganize arguments.
-                # TODO: exp is an ambiguous name, rename it!
+                # TODO: cap_file is an ambiguous name, rename it!
                 # TODO: Add "default" markers for any complex dropdowns like Axis Up/Forward (smart thinking OBJ exporter)
                 # TODO: Standardize Axis Labelling
                 # TODO: Allow exporters to report issues and warnings based on configurations to be populated higher
                 # in the UI hierarchy.
                 # TODO: When a tab is changed in one format type, try to have it changed in all other types using an updater.
                 if currentExp.format_type == 'FBX':
-                    currentExp.data_fbx.draw_addon_preferences(format_type_box, currentExp.data_fbx, exp, currentExp)
+                    currentExp.data_fbx.draw_addon_preferences(format_type_box, currentExp.data_fbx, cap_file, currentExp)
 
                 elif currentExp.format_type == 'OBJ':
-                    currentExp.data_obj.draw_addon_preferences(format_type_box, currentExp.data_obj, exp, currentExp)
+                    currentExp.data_obj.draw_addon_preferences(format_type_box, currentExp.data_obj, cap_file, currentExp)
 
                 elif currentExp.format_type == 'GLTF':
-                    currentExp.data_gltf.draw_addon_preferences(format_type_box, currentExp.data_gltf, exp, currentExp)
+                    currentExp.data_gltf.draw_addon_preferences(format_type_box, currentExp.data_gltf, cap_file, currentExp)
                 
                 elif currentExp.format_type == 'Alembic':
-                    currentExp.data_abc.draw_addon_preferences(format_type_box, currentExp.data_abc, exp, currentExp)
+                    currentExp.data_abc.draw_addon_preferences(format_type_box, currentExp.data_abc, cap_file, currentExp)
                 
                 elif currentExp.format_type == 'Collada':
-                    currentExp.data_dae.draw_addon_preferences(format_type_box, currentExp.data_dae, exp, currentExp)
+                    currentExp.data_dae.draw_addon_preferences(format_type_box, currentExp.data_dae, cap_file, currentExp)
                 
                 elif currentExp.format_type == 'STL':
-                    currentExp.data_stl.draw_addon_preferences(format_type_box, currentExp.data_stl, exp)
+                    currentExp.data_stl.draw_addon_preferences(format_type_box, currentExp.data_stl, cap_file)
                 
                 elif currentExp.format_type == 'USD':
-                    currentExp.data_usd.draw_addon_preferences(format_type_box, currentExp.data_usd, exp)
+                    currentExp.data_usd.draw_addon_preferences(format_type_box, currentExp.data_usd, cap_file)
 
             else:
                 preset_unselected = file_presets_box.column(align= True)
@@ -411,7 +411,7 @@ def CreateDefaultData(scene):
     # set it's properties
     defaultDatablock = bpy.context.view_layer.objects.active
     defaultDatablock.name = addon_prefs.default_datablock
-    defaultDatablock.CAPExp.is_storage_object = True
+    defaultDatablock.CAPFile.is_storage_object = True
 
     # hide it!
     defaultDatablock.hide_set(True)
@@ -540,7 +540,7 @@ classes = (
     # export_properties
     CAPSULE_ExportPreset, 
     CAPSULE_LocationPreset, 
-    CAPSULE_ExportData,
+    CAPSULE_FileData,
     
     # export menu
     CAPSULE_OT_PieWarning,
@@ -612,7 +612,7 @@ def register():
     bpy.types.Collection.CAPCol = PointerProperty(name= 'Capsule Collection Properties', type=CAPSULE_Collection_Preferences)
     # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
     bpy.types.Object.CAPStm = PointerProperty(name= 'Capsule State Tracker', type=CAPSULE_Object_StateMachine)
-    bpy.types.Object.CAPExp = PointerProperty(name= 'Capsule Export Presets', type=CAPSULE_ExportData)
+    bpy.types.Object.CAPFile = PointerProperty(name= 'Capsule Export Preset Data', type=CAPSULE_FileData)
     bpy.types.Scene.CAPProxy = PointerProperty(name= 'Capsule Scene Property Proxy', type=CAPSULE_Proxy_Properties)
 
 
@@ -642,7 +642,7 @@ def unregister():
     del bpy.types.Collection.CAPCol
     # del bpy.types.Action.CAPAcn
     del bpy.types.Object.CAPStm
-    del bpy.types.Object.CAPExp
+    del bpy.types.Object.CAPFile
     del bpy.types.Scene.CAPProxy
 
 

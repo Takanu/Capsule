@@ -12,18 +12,18 @@ def DeletePresets():
     #print(">>>>>>>>>> Deleting presets...")
     preferences = bpy.context.preferences
     addon_prefs = preferences.addons[__package__].preferences
-    exp = addon_prefs.saved_export_presets
+    cap_file = addon_prefs.saved_export_presets
     presetsToKeep = []
 
-    i = len(exp) - 1
+    i = len(cap_file) - 1
     #print("i = ", i)
 
     while i != -1:
-        item = exp[i]
+        item = cap_file[i]
         #print("item = ", item)
         if item.x_global_user_deletable is False:
-            #print("Removing default exp...", exp[i])
-            exp.remove(i)
+            #print("Removing default cap_file...", cap_file[i])
+            cap_file.remove(i)
         i -= 1
 
 
@@ -37,7 +37,7 @@ def CreatePresets():
     # -------------------------------------------------------------------------
     preferences = bpy.context.preferences
     addon_prefs = preferences.addons[__package__].preferences
-    exp = addon_prefs.saved_export_presets
+    cap_file = addon_prefs.saved_export_presets
     sort = addon_prefs.sort_presets
     #print(">>>>>>>>>> Adding presets...")
 
@@ -52,23 +52,23 @@ def CreatePresets():
 
     # Copy all the currently-saved presets to a temporary sort preset location.
     i = 0
-    lenI = len(exp)
+    lenI = len(cap_file)
     #print("lenI = ", lenI)
     #print("lenI = ", lenI)
     #print("lenI = ", lenI)
     while i < lenI:
-        if exp[0].x_global_user_deletable is True:
-            #print("Copying user-defined preset...", exp[0])
+        if cap_file[0].x_global_user_deletable is True:
+            #print("Copying user-defined preset...", cap_file[0])
             newPreset = sort.add()
-            CopyPreset(exp[0], newPreset)
+            CopyPreset(cap_file[0], newPreset)
 
-        #print("Deleting preset...", exp[0])
-        exp.remove(0)
+        #print("Deleting preset...", cap_file[0])
+        cap_file.remove(0)
         i += 1
 
     # Create the new presets
-    CreatePresetUE4Standard(exp)
-    CreatePresetUnityStandard(exp)
+    CreatePresetUE4Standard(cap_file)
+    CreatePresetUnityStandard(cap_file)
 
     # Add the copied presets back
     i = 0
@@ -76,21 +76,21 @@ def CreatePresets():
     #print(sort)
     while i < lenI:
         #print("Adding back preset...", sort[0])
-        newPreset = exp.add()
+        newPreset = cap_file.add()
         CopyPreset(sort[0], newPreset)
         sort.remove(0)
         i += 1
 
 
 
-def CreatePresetUE4Standard(exp):
+def CreatePresetUE4Standard(cap_file):
     """
     Generates a saved preset for exporting UE4-compatible assets.
     """
     # -------------------------------------------------------------------------
     # UE4 Standard Template
     # -------------------------------------------------------------------------
-    export = exp.add()
+    export = cap_file.add()
     export.name = "UE4 Standard"
     export.description = "Creates an Export Preset for exporting FBX files for Unreal Engine 4, with optimised settings.  Enables the bundling of Collision objects in a format readable by UE4."
     export.x_global_user_deletable = False
@@ -113,14 +113,14 @@ def CreatePresetUE4Standard(exp):
     export.data_fbx.optimise_keyframes = True
 
 
-def CreatePresetUnityStandard(exp):
+def CreatePresetUnityStandard(cap_file):
     """
     Generates a saved preset for exporting assets compatible with Unity 5.
     """
     # -------------------------------------------------------------------------
     # Unity Standard Template
     # -------------------------------------------------------------------------
-    export = exp.add()
+    export = cap_file.add()
     export.name = "Unity Standard"
     export.description = "Creates an Export Preset for exporting FBX files for Unity, with optimised settings."
     export.x_global_user_deletable = False

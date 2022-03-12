@@ -14,7 +14,7 @@ from .scene_properties import (
 from .export_properties import (
     CAPSULE_ExportPreset,
     CAPSULE_LocationPreset,
-    CAPSULE_ExportData,
+    CAPSULE_FileData,
 )
 
 from .ui_properties import CAPSULE_Proxy_Properties

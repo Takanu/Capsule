@@ -24,10 +24,10 @@ class CAPSULE_OT_Add_Path(Operator):
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
-        newPath = exp.location_presets.add()
-        newPath.name = "Location " + str(len(exp.location_presets))
+        newPath = cap_file.location_presets.add()
+        newPath.name = "Location " + str(len(cap_file.location_presets))
         newPath.path = ""
 
         # Position the index to the current location of the
@@ -56,9 +56,9 @@ class CAPSULE_OT_Delete_Path(Operator):
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
-        preset_index = exp.location_presets_listindex
+        preset_index = cap_file.location_presets_listindex
 
         # Ensure that any objects with a matching preset are set to None.
         # The index needs increasing by one as it doesnt include 'None'
@@ -78,11 +78,11 @@ class CAPSULE_OT_Delete_Path(Operator):
         # TODO: Ensure this is as efficient as it can be for large scenes
         
         # Once everything has been set, remove it.
-        exp.location_presets.remove(preset_index)
+        cap_file.location_presets.remove(preset_index)
 
         # ensure the selected list index is within the list bounds
-        if len(exp.location_presets) > 0:
-            exp.location_presets_listindex -= 1
+        if len(cap_file.location_presets) > 0:
+            cap_file.location_presets_listindex -= 1
         
 
         return {'FINISHED'}
@@ -116,11 +116,11 @@ class CAPSULE_OT_Add_Location_Path_Tag(Operator):
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
         
         # get the selected path
-        path_index = exp.location_presets_listindex
-        new_path = exp.location_presets[path_index].path
+        path_index = cap_file.location_presets_listindex
+        new_path = cap_file.location_presets[path_index].path
         end_path = ""
 
         # directory failsafe
@@ -138,7 +138,7 @@ class CAPSULE_OT_Add_Location_Path_Tag(Operator):
         new_path += self.path_tags
         new_path += "^" + end_path
         
-        exp.location_presets[path_index].path = new_path
+        cap_file.location_presets[path_index].path = new_path
 
         return {'FINISHED'}
 
@@ -171,8 +171,8 @@ class CAPSULE_OT_Add_ExportPreset_Path_Tag(Operator):
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
-        selected_export_preset = exp.export_presets[exp.export_presets_listindex]
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
+        selected_export_preset = cap_file.export_presets[cap_file.export_presets_listindex]
 
         # get the selected path
         new_path = selected_export_preset.sub_directory
@@ -203,12 +203,12 @@ class CAPSULE_OT_Add_Export(Operator):
     bl_idname = "scene.cap_addexport"
     bl_label = "Add"
 
-    def get_unique_id(self, context, exp):
+    def get_unique_id(self, context, cap_file):
         newID = random.randrange(0, 1000000)
 
-        for preset in exp.export_presets:
+        for preset in cap_file.export_presets:
             if preset.instance_id == newID:
-                newID = self.get_unique_id(context, exp)
+                newID = self.get_unique_id(context, cap_file)
 
         return newID
 
@@ -217,16 +217,16 @@ class CAPSULE_OT_Add_Export(Operator):
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
 
         # make the new file preset
-        newDefault = exp.export_presets.add()
-        newDefault.name = "Export " + str(len(exp.export_presets))
+        newDefault = cap_file.export_presets.add()
+        newDefault.name = "Export " + str(len(cap_file.export_presets))
         newDefault.path = ""
 
         # Ensure the tag index keeps within a window
-        exp.export_presets_listindex = len(exp.export_presets) - 1
+        cap_file.export_presets_listindex = len(cap_file.export_presets) - 1
 
         return {'FINISHED'}
 
@@ -247,9 +247,9 @@ class CAPSULE_OT_Delete_Export(Operator):
     def poll(cls, context):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
-        if len(exp.export_presets) > 0:
+        if len(cap_file.export_presets) > 0:
             return True
 
         return False
@@ -259,9 +259,9 @@ class CAPSULE_OT_Delete_Export(Operator):
 
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
-        preset_index = exp.location_presets_listindex
+        preset_index = cap_file.location_presets_listindex
 
         # Ensure that any objects with a matching preset are set to None.
         # The index needs increasing by one as it doesnt include 'None'
@@ -281,11 +281,11 @@ class CAPSULE_OT_Delete_Export(Operator):
         # TODO: Ensure this is as efficient as it can be for large scenes
         
         # Once everything has been set, remove it.
-        exp.export_presets.remove(preset_index)
+        cap_file.export_presets.remove(preset_index)
 
         # ensure the selected list index is within the list bounds
-        if exp.export_presets_listindex > 0:
-            exp.export_presets_listindex -= 1
+        if cap_file.export_presets_listindex > 0:
+            cap_file.export_presets_listindex -= 1
 
         return {'FINISHED'}
 
@@ -588,7 +588,7 @@ class CAPSULE_OT_Create_ExportData(Operator):
         defaultDatablock.hide_viewport = True
         defaultDatablock.hide_render = True
         defaultDatablock.hide_select = True
-        defaultDatablock.CAPExp.is_storage_object = True
+        defaultDatablock.CAPFile.is_storage_object = True
         addon_prefs.data_missing = False
 
         self.report({'INFO'}, "Capsule data created.")
@@ -604,7 +604,7 @@ class CAPSULE_OT_Add_Stored_Presets(Operator):
     def poll(cls, context):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
         if len(addon_prefs.saved_export_presets) > 0:
             return True
@@ -617,10 +617,10 @@ class CAPSULE_OT_Add_Stored_Presets(Operator):
         # Get the current export data
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
         # Obtain the selected preset
-        new_preset = exp.export_presets.add()
+        new_preset = cap_file.export_presets.add()
         export_presets.CopyPreset(addon_prefs.saved_export_presets[addon_prefs.saved_export_presets_index], new_preset)
 
         return {'FINISHED'}
@@ -648,7 +648,7 @@ class CAPSULE_OT_Delete_Presets(Operator):
         # Get the current export data
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
         # Obtain the selected preset
         addon_prefs.saved_export_presets.remove(addon_prefs.saved_export_presets_index)
@@ -668,9 +668,9 @@ class CAPSULE_OT_Store_Presets(Operator):
     def poll(cls, context):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
-        if len(exp.export_presets) > 0:
+        if len(cap_file.export_presets) > 0:
             return True
 
         else:
@@ -682,11 +682,11 @@ class CAPSULE_OT_Store_Presets(Operator):
         # Get the current export data
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
-        exp = bpy.data.objects[addon_prefs.default_datablock].CAPExp
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
         # Obtain the selected preset
         new_preset = addon_prefs.saved_export_presets.add()
-        export_presets.CopyPreset(exp.export_presets[exp.export_presets_listindex], new_preset)
+        export_presets.CopyPreset(cap_file.export_presets[cap_file.export_presets_listindex], new_preset)
 
         return {'FINISHED'}
 
