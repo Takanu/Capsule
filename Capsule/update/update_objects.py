@@ -262,31 +262,28 @@ def CAP_Update_ObjectListRemove(self, context):
     Used in a list to remove an object from both the export list, while disabling it's "Enable Export" status.
     """
     #print("-----DELETING OBJECT FROM LIST-----")
-    i = 0
+    
     scn = context.scene.CAPScn
+
     # To avoid issues within the list, the selected list item needs to be preserved.
     backupListIndex = scn.object_list_index
     backupListLength = len(scn.object_list)
 
-    # Search through the object list to find a matching name
-    for item in scn.object_list:
-        if item.object.name == self.object.name:
+    # TODO: Ensure it can handle deleted objects!
 
-            self.object.CAPObj.enable_export = False
-            self.object.CAPObj.in_export_list = False
+    # Remove it as an export candidate
+    if self.object != None:
+        self.object.CAPObj.enable_export = False
+        self.object.CAPObj.in_export_list = False
 
-            # Whether or not we find a successful match in the scene,
-            # remove it from the list
-            context.scene.CAPScn.object_list.remove(i)
+    # remove it from the list
+    context.scene.CAPScn.object_list.remove(scn.object_list_index)
 
-            # Set the new list index
-            scn.object_list_index = i
+    # If the index is more than the list, bring it down one
+    if scn.object_list_index == len(scn.object_list):
+        scn.object_list_index -= 1
 
-            # If the index is more than the list, bring it down one
-            # to ensure a list item gets selected
-            if i == (backupListLength - 1):
-                scn.object_list_index = i - 1
+    return
+                
 
-            return
-
-        i += 1
+            

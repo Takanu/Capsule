@@ -483,6 +483,8 @@ class CAPSULE_PT_List(Panel):
         export_options.operator("scene.cap_export_all", text = "Export All Active")
         export_options.separator()
 
+        # TODO REALLY IMPORTANT: List selections can no longer rely on the object being available.
+
         if listTab == 1:
             obj = None
             ob = None
@@ -490,10 +492,10 @@ class CAPSULE_PT_List(Panel):
             if len(scn.object_list) != 0:
                 if len(scn.object_list) > scn.object_list_index:
                     entry = scn.object_list[scn.object_list_index]
-                    obj = entry.object.CAPObj
                     ob = entry.object
             
-            if obj != None:
+            if ob != None:
+                obj = entry.object.CAPObj
                 object_options_list = layout.column(align= False)
                 object_options_list.use_property_split = True
                 object_options_list.use_property_decorate = False
@@ -516,7 +518,7 @@ class CAPSULE_PT_List(Panel):
                 gr = entry.collection
                         
             
-            if grp is not None:
+            if gr is not None:
                 group_options_list = layout.column(align= False)
                 group_options_list.use_property_split = True
                 group_options_list.use_property_decorate = False
