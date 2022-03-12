@@ -319,13 +319,14 @@ class CAP_AddonPreferences(AddonPreferences):
                     currentExp.data_abc.draw_addon_preferences(format_type_box, currentExp.data_abc, exp, currentExp)
                 
                 elif currentExp.format_type == 'Collada':
-                    currentExp.data_dae.draw_addon_preferences(format_type_box, currentExp.data_dae, exp)
+                    currentExp.data_dae.draw_addon_preferences(format_type_box, currentExp.data_dae, exp, currentExp)
                 
                 elif currentExp.format_type == 'STL':
                     currentExp.data_stl.draw_addon_preferences(format_type_box, currentExp.data_stl, exp)
                 
                 elif currentExp.format_type == 'USD':
                     currentExp.data_usd.draw_addon_preferences(format_type_box, currentExp.data_usd, exp)
+
             else:
                 preset_unselected = file_presets_box.column(align=True)
                 preset_unselected.label(text="Select a preset in order to view preset settings.")

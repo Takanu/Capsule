@@ -23,46 +23,46 @@ class CAP_FormatData_Alembic(PropertyGroup):
 
 	export_hair: BoolProperty(
 		name = "Export Hair",
-		description = "Exports hair particle systems as animated curves.",
+		description = "Exports hair particle systems as animated curves",
 		default = True
 	)
 
 	export_particles: BoolProperty(
 		name = "Export Particles",
-		description = "Exports non-hair particle systems.",
+		description = "Exports non-hair particle systems",
 		default = True
 	)
 
 	# the property for 'flatten'.
 	flatten_hierarchy: BoolProperty(
 		name = "Flatten Hierarchy",
-		description = "Do not preserve object parent/child relationships on export.",
+		description = "Do not preserve object parent/child relationships on export",
 		default = False
 	)
 
 	use_instancing: BoolProperty(
 		name = "Use Instancing",
-		description = "Export data of duplicated objects as Alembic instances; speeds up the export and can be disabled for compatibility with other software.",
+		description = "Export data of duplicated objects as Alembic instances; speeds up the export and can be disabled for compatibility with other software",
 		default = True
 	)
 
 	# the property for 'curves_as_mesh'
 	export_curves_as_mesh: BoolProperty(
 		name = "Export Curves as Meshes",
-		description = "Export curves and NURBS surfaces as meshes.",
+		description = "Export curves and NURBS surfaces as meshes",
 		default = False
 	)
 
 	export_custom_properties: BoolProperty(
 		name = "Export Custom Properties",
-		description = "Export custom properties to Alembic .userProperties.",
+		description = "Export custom properties to Alembic .userProperties",
 		default = True
 	)
 
 	evaluation_mode : EnumProperty(
 		name = "Evaluation Mode",
 		items = (
-			('RENDER', "Render (Default)", "Use Render settings for object visibility, modifier settings, etc."),
+			('RENDER', "Render (Default)", "Use Render settings for object visibility, modifier settings, etc"),
 			('VIEWPORT', "Viewport", "Use Viewport settings for object visibility, modifier settings, etc"),
 			),
 		description = "Determines what visibility layer affects the visibility of exported objects, modifier settings and other areas where settings differ between Viewport and Render mode.  (Be careful if you're using Filter by Rendering in General Export Options, as objects that are hidden from the Render will not export",
@@ -76,7 +76,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 
 	global_scale: FloatProperty(
 		name = "Global Scale",
-		description = "The value to which all objects will be scaled with respect to the world's origin point.",
+		description = "The value to which all objects will be scaled with respect to the world's origin point",
 		default = 1.0,
 		soft_min = 0.1,
 		soft_max = 10,
@@ -92,28 +92,28 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	# the property for 'uvs'
 	export_uvs: BoolProperty(
 		name = "Export UVs",
-		description = "Include mesh UVs with the export.",
+		description = "Include mesh UVs with the export",
 		default = True
 	)
 
 	# the property for 'packuv'
 	pack_uvs: BoolProperty(
 		name = "Pack UV Islands",
-		description = "Export UVs with packed islands.",
+		description = "Export UVs with packed islands",
 		default = True
 	)
 
 	# the property for 'normals'
 	export_normals: BoolProperty(
 		name = "Export Normals",
-		description = "Include mesh normals with the export.",
+		description = "Include mesh normals with the export",
 		default = True
 	)
 
 	# the property for 'vcolors'
 	export_colors: BoolProperty(
 		name = "Export Vertex Colors",
-		description = "Include vertex colors with the export.",
+		description = "Include vertex colors with the export",
 		default = False
 	)
 
@@ -127,35 +127,35 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	# the property for 'face_sets'
 	export_face_sets: BoolProperty(
 		name = "Export Face Sets",
-		description = "Export per-face shading group assignments.",
+		description = "Export per-face shading group assignments",
 		default = False
 	)
 
 	triangulate : BoolProperty(
 		name = "Enable Triangulation",
-		description = "Export polygons (quads and n-gons) as triangles.",
+		description = "Export polygons (quads and n-gons) as triangles",
 		default = False
 	)
 
 	quad_method : EnumProperty(
 		name = 'Quad Method',
-		description = 'The method used for splitting quads into triangles.',
+		description = 'The method used for splitting quads into triangles',
 		items = (
-			('BEAUTY', 'Beauty', 'Splits quads in nice triangles, a slower method.'),
-			('FIXED', 'Fixed', 'Splits every quad on the first and third vertices.'),
-			('FIXED_ALTERNATE', 'Fixed Alternate', 'Splits every quads on the 2nd and 4th vertices.'),
-			('SHORTEST_DIAGONAL', 'Shortest Diagonal', 'Split the quads based on the distance between the vertices.'),
-			('LONGEST_DIAGONAL', 'Longest Diagonal', 'Split the quads along their longest diagonal.'),
+			('BEAUTY', 'Beauty', 'Splits quads in nice triangles, a slower method'),
+			('FIXED', 'Fixed', 'Splits every quad on the first and third vertices'),
+			('FIXED_ALTERNATE', 'Fixed Alternate', 'Splits every quads on the 2nd and 4th vertices'),
+			('SHORTEST_DIAGONAL', 'Shortest Diagonal', 'Split the quads based on the distance between the vertices'),
+			('LONGEST_DIAGONAL', 'Longest Diagonal', 'Split the quads along their longest diagonal'),
 			),
 		default = 'SHORTEST_DIAGONAL',
 	)
 
 	ngon_method : EnumProperty(
 		name = 'N-Gon Method',
-		description = 'The method used for splitting n-gons into triangles.',
+		description = 'The method used for splitting n-gons into triangles',
 		items = (
-			('BEAUTY', 'Beauty', 'Arranges the new triangles evenly, a slower method.'),
-			('CLIP', 'Clip', 'Splits the polygons with an ear clipping algorithm.'),
+			('BEAUTY', 'Beauty', 'Arranges the new triangles evenly, a slower method'),
+			('CLIP', 'Clip', 'Splits the polygons with an ear clipping algorithm'),
 			),
 		default = 'BEAUTY',
 	)
@@ -164,13 +164,13 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	# the property for 'subdiv_schema'
 	use_subdiv_schema: BoolProperty(
 		name = "Use Subdivision Schema",
-		description = "Export meshes using Alembic’s subdivision schema.",
+		description = "Export meshes using Alembic’s subdivision schema",
 		default = False
 	)
 
 	apply_subdiv: BoolProperty(
 		name = "Apply Subsurface Divisions",
-		description = "Export subdivision surfaces as meshes.",
+		description = "Export subdivision surfaces as meshes",
 		default = False
 	)
 
@@ -181,21 +181,21 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	# the property for 'start'.
 	start_frame: IntProperty(
 		name = "Start Frame",
-		description = "The start frame of the export.  Leave at the default value (1) to take the start frame of the current scene.",
+		description = "The start frame of the export.  Leave at the default value (1) to take the start frame of the current scene",
 		default = 1,
 	)
 
 	# the property for 'end'.
 	end_frame: IntProperty(
 		name = "End Frame",
-		description = "The end frame of the export.  Leave at the default value (250) to take the start frame of the current scene.",
+		description = "The end frame of the export.  Leave at the default value (250) to take the start frame of the current scene",
 		default = 250,
 	)
 
 	# the property for 'xsamples'.
 	transform_samples: IntProperty(
 		name = "Transform Samples",
-		description = "The number of times per-frame transformations are sampled.",
+		description = "The number of times per-frame transformations are sampled",
 		default = 1,
 		min = 1, 
 		max = 128,
@@ -204,7 +204,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	# the property for 'gsamples'.
 	geometry_samples: IntProperty(
 		name = "Geometry Samples",
-		description = "The number of times per-frame object data is sampled.",
+		description = "The number of times per-frame object data is sampled",
 		default = 1,
 		min = 1, 
 		max = 128,
@@ -213,7 +213,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	# the property for 'sh_open'.
 	shutter_open: FloatProperty(
 		name = "Shutter Open",
-		description = "The time at which the shutter is open.",
+		description = "The time at which the shutter is open",
 		default = 0.0,
 		step = 0.1,
 		min = -1,
@@ -223,7 +223,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 	# the property for 'sh_close'.
 	shutter_close: FloatProperty(
 		name = "Shutter Close",
-		description = "The time at which the shutter is closed.",
+		description = "The time at which the shutter is closed",
 		default = 1.0,
 		step = 0.1,
 		min = -1,
