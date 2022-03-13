@@ -60,11 +60,11 @@ class CAPSULE_OT_ExportAll(Operator):
         global_record = record_utils.SaveSceneContext(context)
 
         # Set export counts here
-        self.export_stats = {}
-        # self.export_stats['expected_export_quantity'] = 0
-        self.export_stats['object_export_count'] = 0
-        self.export_stats['collection_export_count'] = 0
-        self.export_stats['file_export_count'] = 0
+        export_stats = {}
+        # export_stats['expected_export_quantity'] = 0
+        export_stats['obj_exported'] = 0
+        export_stats['col_exported'] = 0
+        total_exp_count = 0
         
         # get the current time for later
         global_record['export_time'] = datetime.now()
@@ -98,7 +98,8 @@ class CAPSULE_OT_ExportAll(Operator):
             record_utils.RestoreSceneContext(context, global_record)
             return {'FINISHED'}
 
-        self.export_stats['object_export_count'] = object_export_result['export_count']
+        export_stats['obj_exported'] = object_export_result['export_count']
+        export_stats['obj_hidden'] = object_export_result['export_hidden']
         
 
         # /////////////////////////////////////////////////
@@ -110,43 +111,14 @@ class CAPSULE_OT_ExportAll(Operator):
             record_utils.RestoreSceneContext(context, global_record)
             return {'FINISHED'}
 
-        self.export_stats['collection_export_count'] = collection_export_result['export_count']
+        export_stats['col_exported'] = collection_export_result['export_count']
+        export_stats['col_hidden'] = collection_export_result['export_hidden']
         
 
-        # /////////////////////////////////////////////////////////////////////////
+        # /////////////////////////////////////////////////
         # EXPORT SUMMARY  
-
-        output = "Finished processing "
-
-        if self.export_stats['object_export_count'] > 1:
-            output += str(self.export_stats['object_export_count']) + " objects"
-        elif self.export_stats['object_export_count'] == 1:
-            output += str(self.export_stats['object_export_count']) + " object"
-
-        if self.export_stats['object_export_count'] > 0 and self.export_stats['collection_export_count'] > 0:
-            output += " and "
-        if self.export_stats['collection_export_count'] > 1:
-            output += str(self.export_stats['collection_export_count']) + " collections"
-        elif self.export_stats['collection_export_count'] == 1:
-            output += str(self.export_stats['collection_export_count']) + " collection"
-
-        output += ".  "
-        output += "Total of "
-
-        # This counting wont work for future versions but for now it's oookay.
-        self.export_stats['file_export_count'] = self.export_stats['object_export_count'] + self.export_stats['collection_export_count']
-
-        if self.export_stats['file_export_count'] > 1:
-            output += str(self.export_stats['file_export_count']) + " files exported."
-        elif self.export_stats['file_export_count'] == 1:
-            output += str(self.export_stats['file_export_count']) + " file."
-
-        # Output a nice report
-        if self.export_stats['object_export_count'] == 0 and self.export_stats['collection_export_count'] == 0:
-            self.report({'WARNING'}, 'No objects were exported.  Ensure you have objects tagged for export, and at least one pass in your export presets.')
-
-        else:
-            self.report({'INFO'}, output)
+        export_info = GetExportSummary(export_stats)
+        self.report({export_info[0]}, export_info[1])
 
 
         record_utils.RestoreSceneContext(context, global_record)
@@ -174,8 +146,6 @@ class CAPSULE_OT_ExportSelected(Operator):
         export_objects = []
         export_collections = []
 
-        #print('selected objects - ', context.selected_objects)
-
         for object in context.selected_objects:
             if object.CAPObj.enable_export is True:
                 export_objects.append(object)
@@ -185,9 +155,9 @@ class CAPSULE_OT_ExportSelected(Operator):
         for collection in collection_utils.GetSelectedObjectCollections():
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)
-        
-        #print(export_objects)
-        #print(export_objects)
+
+        print("Objects to export = ", export_objects)
+        print("Collections to export = ", export_collections)
 
 
         # /////////////////////////////////////////////////
@@ -210,11 +180,7 @@ class CAPSULE_OT_ExportSelected(Operator):
         global_record = record_utils.SaveSceneContext(context)
 
         # Set export counts here
-        self.export_stats = {}
-        # self.export_stats['expected_export_quantity'] = 0
-        self.export_stats['object_export_count'] = 0
-        self.export_stats['collection_export_count'] = 0
-        self.export_stats['file_export_count'] = 0
+        export_stats = {}
 
         # get the current time for later
         global_record['export_time'] = datetime.now()
@@ -229,7 +195,8 @@ class CAPSULE_OT_ExportSelected(Operator):
             record_utils.RestoreSceneContext(context, global_record)
             return {'FINISHED'}
 
-        self.export_stats['object_export_count'] = object_export_result['export_count']
+        export_stats['obj_exported'] = object_export_result['export_count']
+        export_stats['obj_hidden'] = object_export_result['export_hidden']
         
 
         # /////////////////////////////////////////////////
@@ -241,44 +208,17 @@ class CAPSULE_OT_ExportSelected(Operator):
             record_utils.RestoreSceneContext(context, global_record)
             return {'FINISHED'}
 
-        self.export_stats['collection_export_count'] = collection_export_result['export_count']
-        
+        export_stats['col_exported'] = collection_export_result['export_count']
+        export_stats['col_hidden'] = collection_export_result['export_hidden']
+
+
+        print("Final Export Stats = ", export_stats)        
 
         # /////////////////////////////////////////////////
         # EXPORT SUMMARY  
-
-        output = "Finished processing "
-
-        if self.export_stats['object_export_count'] > 1:
-            output += str(self.export_stats['object_export_count']) + " objects"
-        elif self.export_stats['object_export_count'] == 1:
-            output += str(self.export_stats['object_export_count']) + " object"
-
-        if self.export_stats['object_export_count'] > 0 and self.export_stats['collection_export_count'] > 0:
-            output += " and "
-        if self.export_stats['collection_export_count'] > 1:
-            output += str(self.export_stats['collection_export_count']) + " collections"
-        elif self.export_stats['collection_export_count'] == 1:
-            output += str(self.export_stats['collection_export_count']) + " collection"
-
-        output += ".  "
-        output += "Total of "
-
-        # This counting wont work for future versions but for now it's oookay.
-        self.export_stats['file_export_count'] = self.export_stats['object_export_count'] + self.export_stats['collection_export_count']
-
-        if self.export_stats['file_export_count'] > 1:
-            output += str(self.export_stats['file_export_count']) + " files exported."
-        elif self.export_stats['file_export_count'] == 1:
-            output += str(self.export_stats['file_export_count']) + " file."
-
-        # Output a nice report
-        if self.export_stats['object_export_count'] == 0 and self.export_stats['collection_export_count'] == 0:
-            self.report({'WARNING'}, 'No objects were exported.  Ensure you have objects tagged for export, and at least one pass in your export presets.')
-
-        else:
-            self.report({'INFO'}, output)
-
+        export_info = GetExportSummary(export_stats)
+        self.report({export_info[0]}, export_info[1])
+        
 
         record_utils.RestoreSceneContext(context, global_record)
 
@@ -294,6 +234,7 @@ def ExportObjectList(context, cap_file, object_list, global_record):
 
     result = {}
     result['export_count'] = 0
+    result['export_hidden'] = 0
 
     for item in object_list:
         meta = {}
@@ -312,9 +253,21 @@ def ExportObjectList(context, cap_file, object_list, global_record):
         origin_point = item.CAPObj.origin_point
 
         # Filter by rendering
+        object_hidden = False
         if export_preset.filter_by_rendering is True:
             if item.hide_render is True:
-                return result
+                result['export_hidden'] += 1
+                object_hidden = True
+                continue
+            else:
+                for collection in item.users_collection:
+                    if collection.hide_render is True:
+                        result['export_hidden'] += 1
+                        object_hidden = True
+                        break
+        
+        if object_hidden == True:
+            continue
 
         # E X P O R T
         export_result = ExportTarget(context, [item], item.name, export_preset, location_preset, origin_point, item, meta)
@@ -338,6 +291,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
 
     result = {}
     result['export_count'] = 0
+    result['export_hidden'] = 0
     
     for collection in collection_list:
         meta = {}
@@ -362,15 +316,35 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
         # Collect all objects that are applicable for this export
         child_export_option = collection.CAPCol.child_export_option
         targets = collection_utils.GetExportableCollectionObjects(context, collection, child_export_option)
+
+        #print("Current Export Targets = ", targets)
         
+        # TODO : Find an efficient way to filter out objects that have rendering turned off by the collections they're in.
         # Filter by rendering
         if export_preset.filter_by_rendering is True:
             renderable = []
+
             for target in targets:
-                if target.hide_render is False:
+                object_hidden = False
+
+                if target.hide_render is True:
+                    object_hidden = True
+
+                else:
+                    for collection in target.users_collection:
+                        if collection.hide_render is True:
+                            object_hidden = True
+                            break
+                
+                if object_hidden == False:
                     renderable.append(target)
             
             targets = renderable
+            #print("Filtered Export Targets = ", targets)
+
+            if len(targets) == 0:
+                result['export_hidden'] += 1
+                return result
 
         #print("PREPARING TO EXPORT COLLECTION ", collection.name)
 
@@ -466,9 +440,9 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # TRACKER
 
     # Count up exported objects
-    # self.export_stats['object_export_count'] += 1
-    # self.export_stats['expected_export_quantity'] += 1
-    # # context.window_manager.progress_update(self.export_stats['expected_export_quantity'])
+    # export_stats['obj_exported'] += 1
+    # export_stats['expected_export_quantity'] += 1
+    # # context.window_manager.progress_update(export_stats['expected_export_quantity'])
     # #print(">>> Object Export Complete <<<")
 
     return {}
@@ -604,3 +578,65 @@ def GetRootLocationDefinition(context, export_name, origin_point, root_definitio
         #print('found root location : ', result['location'])
     
     return result
+
+
+def GetExportSummary(stats):
+    """
+    Produces an export notification based on gathered statistics.
+    """
+
+    output = "Capsule exported "
+    output_status = 'INFO'
+
+    total_hide_count = stats['obj_hidden'] + stats['col_hidden']
+
+    # If we didn't get anywhere, return early
+    if stats['obj_exported'] == 0 and stats['col_exported'] == 0:
+        if total_hide_count > 1:
+            output_status = 'WARNING'
+            output = 'All exportables were hidden from the Render and excluded for export.  Uncheck "Filter by Render Visibility" in your Export Presets or edit your scene.'
+            return [output_status, output]
+        else:
+            output_status = 'WARNING'
+            output = 'No objects were exported.  Ensure you have objects tagged for export, and at least one pass in your export presets.'
+            return [output_status, output]
+
+
+    # This counting wont work for future versions but for now it's oookay.
+    total_exp_count = stats['obj_exported'] + stats['col_exported']
+        
+
+    if stats['obj_exported'] > 1:
+        output += str(stats['obj_exported']) + " objects"
+    elif stats['obj_exported'] == 1:
+        output += str(stats['obj_exported']) + " object"
+
+    if stats['obj_exported'] > 0 and stats['col_exported'] > 0:
+        output += " and "
+    if stats['col_exported'] > 1:
+        output += str(stats['col_exported']) + " collections"
+    elif stats['col_exported'] == 1:
+        output += str(stats['col_exported']) + " collection"
+
+    output += "."
+
+    if stats['obj_exported'] > 0 and stats['col_exported'] > 0:
+        output += "  "
+        output += "A total of "
+        output += str(total_exp_count) + " files were exported."
+
+    
+    total_hide_count = stats['obj_hidden'] + stats['col_hidden']
+    if total_hide_count > 0:
+        output += "  "
+        if total_hide_count > 1:
+            output += str(total_hide_count) + " files were not"
+        else:
+            output += str(total_hide_count) + " file was not"
+        
+        output += " exported as their contents were hidden from the Render."
+
+    return [output_status, output]
+
+    
+

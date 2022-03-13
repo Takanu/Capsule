@@ -252,6 +252,11 @@ def CAP_Update_ObjectListExport(self, context):
 
     #print("Changing Enable Export... (List)")  
     self.object.CAPObj.enable_export = self.enable_export
+    
+    # TODO / WARNING
+    # If the object is the active selection we should really change the proxy so it fits right?
+    proxy = context.scene.CAPProxy
+
 
 
     return None

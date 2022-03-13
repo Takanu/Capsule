@@ -447,13 +447,12 @@ def CheckSelectedObject(scene):
             displayed_location_preset = obj.location_preset
             displayed_export_preset = obj.export_preset
 
+            # Disable updates before editing, enable afterwards
             proxy.disable_updates = True
             proxy.obj_enable_export = obj.enable_export
             proxy.obj_origin_point = obj.origin_point
             proxy.obj_location_preset = displayed_location_preset
             proxy.obj_export_preset = displayed_export_preset
-
-            # TODO: Ensure this works properly with the new Collection selection code.
             proxy.disable_updates = False
     
     elif len(bpy.context.selected_objects) != addon_prefs.prev_selected_obj_count:
@@ -468,12 +467,13 @@ def CheckSelectedObject(scene):
             col = current_col.CAPCol
             col.enable_edit = True
 
+            # Disable updates before editing, enable afterwards
+            proxy.disable_updates = True
             proxy.col_enable_export = col.enable_export
             proxy.col_origin_point = col.origin_point
             proxy.col_root_object = col.root_object
             proxy.col_location_preset = col.location_preset
             proxy.col_export_preset = col.export_preset
-            # TODO: Ensure this works properly with the new Collection selection code.
             proxy.disable_updates = False
 
             return

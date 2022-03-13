@@ -357,7 +357,7 @@ def RestoreArmatureConstraints(context, record):
 
 
 
-def CheckCapsuleErrors(context, target_objects, target_collections):
+def CheckCapsuleErrors(context, target_objects = None, target_collections = None):
     # Ensures that the scene is setup with correct settings, before proceeding
     # with the export.
 
