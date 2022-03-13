@@ -264,10 +264,11 @@ def CAP_Update_ObjectListRemove(self, context):
     #print("-----DELETING OBJECT FROM LIST-----")
     
     scn = context.scene.CAPScn
+    object_list = context.scene.CAPScn.object_list
 
     # To avoid issues within the list, the selected list item needs to be preserved.
     backupListIndex = scn.object_list_index
-    backupListLength = len(scn.object_list)
+    backupListLength = len(object_list)
 
     # TODO: Ensure it can handle deleted objects!
 
@@ -275,12 +276,19 @@ def CAP_Update_ObjectListRemove(self, context):
     if self.object != None:
         self.object.CAPObj.enable_export = False
         self.object.CAPObj.in_export_list = False
+    
+    # Find the index and remove it from the list
+    # TODO: There's probably a more efficient way right?
+    i = None
+    try:
+        i = object_list.values().index(self)
+        object_list.remove(i)
 
-    # remove it from the list
-    context.scene.CAPScn.object_list.remove(scn.object_list_index)
-
+    except ValueError:
+        return
+    
     # If the index is more than the list, bring it down one
-    if scn.object_list_index == len(scn.object_list):
+    if scn.object_list_index > i:
         scn.object_list_index -= 1
 
     return
