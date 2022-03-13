@@ -16,7 +16,7 @@ from bpy.props import (
     CollectionProperty,
 )
 
-from .tk_utils import collections as collection_utils
+from .tk_utils import search as search_utils
 from .tk_utils import select as select_utils
 from .tk_utils import locations as loc_utils
 from .tk_utils import object_ops
@@ -81,7 +81,7 @@ class CAPSULE_OT_ExportAll(Operator):
             if object.CAPObj.enable_export is True:
                 export_objects.append(object)
         
-        for collection in collection_utils.GetSceneCollections(context.scene, True):
+        for collection in search_utils.GetSceneCollections(context.scene, True):
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)
         
@@ -150,9 +150,7 @@ class CAPSULE_OT_ExportSelected(Operator):
             if object.CAPObj.enable_export is True:
                 export_objects.append(object)
         
-        # TODO: Ensure that when the selection list supports multiple objects again that
-        # this is remedied
-        for collection in collection_utils.GetSelectedObjectCollections():
+        for collection in search_utils.GetSelectedCollections():
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)
 
@@ -315,7 +313,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
 
         # Collect all objects that are applicable for this export
         child_export_option = collection.CAPCol.child_export_option
-        targets = collection_utils.GetExportableCollectionObjects(context, collection, child_export_option)
+        targets = search_utils.GetCollectionObjectTree(context, collection, child_export_option)
 
         #print("Current Export Targets = ", targets)
         
@@ -388,7 +386,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     path = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories, meta)
 
     if addon_prefs.substitute_directories is True:
-        export_name = path_utils.SubstituteDirectoryCharacters(export_name)
+        export_name = path_utils.SubstituteNameCharacters(export_name)
 
     # If while calculating a file path a warning was found, return early.
     if path.find("WARNING") == 0:

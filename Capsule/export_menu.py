@@ -4,7 +4,7 @@ from bpy.types import Menu, Operator
 
 from .update.update_objects import CAP_Update_ProxyObjectExport, UpdateObjectList
 from .update.update_collections import CAP_Update_ProxyCollectionExport, UpdateCollectionList
-from .tk_utils import collections as collection_utils
+from .tk_utils import search as search_utils
 
 from . import tk_utils
 

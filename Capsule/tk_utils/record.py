@@ -5,7 +5,7 @@
 import bpy
 
 from mathutils import Vector
-from . import collections as collection_utils
+from . import search as search_utils
 from . import select as select_utils
 from . import locations as loc_utils
 from . import paths as path_utils
@@ -402,7 +402,7 @@ def CheckCapsuleErrors(context, target_objects = None, target_collections = None
     if target_objects == None:
         target_objects = context.scene.objects
     if target_collections == None:
-        target_collections = collection_utils.GetSceneCollections(context.scene, True)
+        target_collections = search_utils.GetSceneCollections(context.scene, True)
     
     # The errors that will be reported back.
     error_objects = {}

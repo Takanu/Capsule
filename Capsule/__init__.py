@@ -459,7 +459,7 @@ def CheckSelectedObject(scene):
         addon_prefs.prev_selected_obj_count = len(bpy.context.selected_objects)
         return
     
-    current_col = collection_utils.GetActiveCollection() 
+    current_col = search_utils.GetActiveCollection() 
     if current_col is not None:
         if current_col.name != addon_prefs.prev_selected_col:
 

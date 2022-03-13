@@ -6,7 +6,7 @@ from mathutils import Vector
 from bpy.types import Operator
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 
-from .tk_utils import collections as collection_utils
+from .tk_utils import search as search_utils
 from .tk_utils import select as select_utils
 from .export_formats import CAP_ExportFormat
 from . import export_presets
@@ -68,7 +68,7 @@ class CAPSULE_OT_Delete_Path(Operator):
             if cap_obj.location_preset == str(preset_index + 1):
                 cap_obj.location_preset = '0'
 
-        collections = collection_utils.GetSceneCollections(context.scene, False)
+        collections = search_utils.GetSceneCollections(context.scene, False)
         for collection in collections:
             cap_col = collection.CAPCol
             if cap_col.location_preset == str(preset_index + 1):
@@ -271,7 +271,7 @@ class CAPSULE_OT_Delete_Export(Operator):
             if cap_obj.export_preset == str(preset_index + 1):
                 cap_obj.export_preset = '0'
 
-        collections = collection_utils.GetSceneCollections(context.scene, False)
+        collections = search_utils.GetSceneCollections(context.scene, False)
         for collection in collections:
             cap_col = collection.CAPCol
             if cap_col.export_preset == str(preset_index + 1):
@@ -345,7 +345,7 @@ class CAPSULE_OT_Clear_List(Operator):
             scn.object_list.clear()
 
         elif objectTab == 2:
-            for collection in collection_utils.GetSceneCollections(context.scene, True):
+            for collection in search_utils.GetSceneCollections(context.scene, True):
                 col = collection.CAPCol
                 col.enable_export = False
                 col.in_export_list = False
@@ -376,7 +376,7 @@ class CAPSULE_OT_Refresh_List(Operator):
 
         elif objectTab == 2:
             scn.collection_list.clear()
-            for collection in collection_utils.GetSceneCollections(context.scene, True):
+            for collection in search_utils.GetSceneCollections(context.scene, True):
                 if collection.CAPCol.in_export_list is True:
                         entry = scn.collection_list.add()
                         entry.collection = collection
@@ -406,7 +406,7 @@ class CAPSULE_OT_Reset_Scene(Operator):
 
         active = context.active_object
 
-        for collection in collection_utils.GetSceneCollections(context.scene, False):
+        for collection in search_utils.GetSceneCollections(context.scene, False):
             col = collection.CAPCol
             col.enable_export = False
             col.root_object = None

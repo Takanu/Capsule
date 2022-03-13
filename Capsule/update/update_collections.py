@@ -2,7 +2,7 @@
 import bpy, bmesh, time
 from math import *
 
-from ..tk_utils import collections as collection_utils
+from ..tk_utils import search as search_utils
 from ..tk_utils import select as select_utils
 
 # COLLECTION DATA PROXY PROPERTIES
@@ -24,7 +24,7 @@ def CAP_Update_ProxyCollectionExport(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = collection_utils.GetSelectedObjectCollections()
+    collected = search_utils.GetEditableCollections(context)
     value = proxy.col_enable_export
     #print("Current value - ", value)
 
@@ -48,7 +48,7 @@ def CAP_Update_ProxyCollectionOriginPoint(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = collection_utils.GetEditableCollections(context)
+    collected = search_utils.GetEditableCollections(context)
     value = proxy.col_origin_point
 
     # Run through the objects
@@ -71,7 +71,7 @@ def CAP_Update_ProxyCollectionRootObject(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = collection_utils.GetEditableCollections(context)
+    collected = search_utils.GetEditableCollections(context)
     value = proxy.col_root_object
 
     # Run through the objects
@@ -94,7 +94,7 @@ def CAP_Update_ProxyCollectionChildExportOption(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = collection_utils.GetEditableCollections(context)
+    collected = search_utils.GetEditableCollections(context)
     value = proxy.col_child_export_option
 
     # Run through the objects
@@ -120,7 +120,7 @@ def CAP_Update_ProxyCollectionLocationPreset(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = collection_utils.GetEditableCollections(context)
+    collected = search_utils.GetEditableCollections(context)
     value = proxy.col_location_preset
 
     # Run through the objects
@@ -145,7 +145,7 @@ def CAP_Update_ProxyCollectionExportDefault(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = collection_utils.GetEditableCollections(context)
+    collected = search_utils.GetEditableCollections(context)
     value = proxy.col_export_preset
 
     # Run through the objects

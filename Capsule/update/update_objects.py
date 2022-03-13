@@ -2,7 +2,7 @@
 import bpy, bmesh, time
 from math import *
 
-from ..tk_utils import collections as collection_utils
+from ..tk_utils import search as search_utils
 from ..tk_utils import select as select_utils
 
 # OBJECT DATA PROXY PROPERTIES

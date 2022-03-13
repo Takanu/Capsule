@@ -18,7 +18,7 @@ from ..update.update_collections import (
     CAP_Update_CollectionListRemove
 )
 
-from ..tk_utils.collections import GetSelectedObjectCollections
+from ..tk_utils.search import GetSelectedCollections
 
 class ObjectListItem(PropertyGroup):
     """
@@ -169,7 +169,7 @@ def GetSelectedCollections(scene, context):
     scn.collection_selected_list.clear()
     u = 1
 
-    for i,x in enumerate(GetSelectedObjectCollections()):
+    for i,x in enumerate(GetSelectedCollections()):
         items.append((str(i+1), x.name, x.name, i+1))
         new_collection_entry = scn.collection_selected_list.add()
         new_collection_entry.name = x.name

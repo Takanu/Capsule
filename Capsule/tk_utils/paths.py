@@ -76,7 +76,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
             export_name = targets[0].name
 
         if replace_invalid_chars is True:
-            export_name = SubstituteDirectoryCharacters(export_name)
+            export_name = SubstituteNameCharacters(export_name)
 
         location_path = location_path.replace('^object_name^', export_name)
     
@@ -88,7 +88,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     #     type_name = type_name.capitalize()
 
     #     if replace_invalid_chars is True:
-    #         type_name = SubstituteDirectoryCharacters(type_name)
+    #         type_name = SubstituteNameCharacters(type_name)
 
     #     location_path = location_path.replace('^object_type^', type_name)
     
@@ -105,7 +105,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     #             collection_name = "Unknown Collection"
         
     #     if replace_invalid_chars is True:
-    #         collection_name = SubstituteDirectoryCharacters(collection_name)
+    #         collection_name = SubstituteNameCharacters(collection_name)
                 
     #     location_path = location_path.replace('^collection^', collection_name)
 
@@ -116,7 +116,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
         blend_name = blend_name.replace(".blend", "")
 
         if replace_invalid_chars is True:
-            blend_name = SubstituteDirectoryCharacters(blend_name)
+            blend_name = SubstituteNameCharacters(blend_name)
 
         location_path = location_path.replace('^blend_file_name^', blend_name)
     
@@ -125,7 +125,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
         preset_name = meta['preset_name']
 
         if replace_invalid_chars is True:
-            blend_name = SubstituteDirectoryCharacters(preset_name)
+            blend_name = SubstituteNameCharacters(preset_name)
 
         location_path = location_path.replace('^export_preset_name^', preset_name)
     
@@ -159,7 +159,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     return location_path    
 
     
-def SubstituteDirectoryCharacters(path):
+def SubstituteNameCharacters(path):
   # Replaces invalid directory characters in names
 
   #print("Checking Directory...", path)
