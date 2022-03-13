@@ -13,25 +13,20 @@ from . import paths as path_utils
 from . import object_ops, object_transform
 
 
-def SaveSceneContext(context):
+def BuildSceneContext(context):
     """
     Records all selection, edit mode, object constraint and view layer properties and saves it for later.
+    ALSO builds a new View Layer with which to perform edits on.
     """
-
-    #print("NEW SETUP SCENE PROCESS")
 
     scene_records = {}
 
-    # TODO: Include the active collection as a selection record.
-
     # TODO: This should verify it's own state and report an error if something was unexpected.
 
+    # //////////////////////////////////////
+    # RECORD AND CHANGE REGIONS
     # If the current context isn't the 3D View, we need to change that before anything else.
-    # TODO: This is busted, doesn't account for maximized areas.
     scene_records['active_area_type'] = bpy.context.area.type
-
-    print("Do we have any areas? = " , context.screen.areas)
-    print("Whats the area type right now? - ", bpy.context.area.type)
 
     # Areas define a unique editor in the subdivided Blender interface
     # Area Types define what that Area's editor is set to (3D View, Image Editor, etc)
@@ -42,7 +37,10 @@ def SaveSceneContext(context):
     scene_records['3d_region_override'] = context.area.regions[0]
     
 
-    # We also need to store current 3D View selections.
+    # //////////////////////////////////////
+    # PRESERVE 3D VIEW + OUTLINER STATE
+    # TODO: Include the active and selected collections in the Outliner.
+
     selected_record = []
     if context.active_object is not None:
         for sel in context.selected_objects:
@@ -65,19 +63,21 @@ def SaveSceneContext(context):
     bpy.ops.object.mode_set(mode= 'OBJECT')
 
 
-    # ======================
-    # Setup a new view layer
+    # //////////////////////////////////////
+    # CREATE NEW VIEW LAYER
 
     # I dont actually need this, might be useful later
     # scene_records['current_view_layer'] = bpy.context.view_layer.name
+
+    # TODO: Why is this performed before the outliner info is preserved?
 
     bpy.ops.scene.view_layer_add()
     bpy.context.view_layer.name = ">> Capsule <<"
     scene_records['capsule_view_layer'] = ">> Capsule <<"
 
 
-    # ======================
-    # Preserve all scene object information
+    # //////////////////////////////////////
+    # PRESERVE OBJECT INFORMATION
     
     object_records = []
 
@@ -158,7 +158,10 @@ def SaveSceneContext(context):
         object_records.append(record)
     
     
-    # Now the records have been created, we can alter constraint and object positions.
+    # //////////////////////////////////////
+    # PRESERVE CONSTRAINTS
+     # TODO: I dont know whether this is used or how this is even used, I need to investigate
+
     for record in object_records:
         if 'constraint_list' in record:
             item = record['item']
@@ -170,6 +173,12 @@ def SaveSceneContext(context):
             object_transform.MoveObjectFailsafe(item, context, record['true_location'], scene_records['3d_region_override'])
             #print("New Object Location = ", item.location)
             #print("New Object Location = ", item.location)
+    
+
+    # //////////////////////////////////////
+    # PRESERVE COLLECTION INFORMATION
+    collection_records = []
+
 
     # Now we can unhide and deselect everything
     bpy.ops.object.hide_view_clear()
@@ -186,7 +195,7 @@ def RestoreSceneContext(context, record):
     Restores all selection, edit mode, object constraint and view layer properties from a previously saved scene context.
     """
 
-    # TODO: Ensure any changes made to SaveSceneContext are replicated here.
+    # TODO: Ensure any changes made to BuildSceneContext are replicated here.
 
     scene_records = record['scene']
     object_records = record['object']

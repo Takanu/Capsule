@@ -57,7 +57,7 @@ class CAPSULE_OT_ExportAll(Operator):
             return {'FINISHED'}
         
         # Make a record of the scene before we do anything
-        global_record = record_utils.SaveSceneContext(context)
+        global_record = record_utils.BuildSceneContext(context)
 
         # Set export counts here
         export_stats = {}
@@ -177,7 +177,7 @@ class CAPSULE_OT_ExportSelected(Operator):
             return {'FINISHED'}
         
         # Make a record of the scene before we do anything
-        global_record = record_utils.SaveSceneContext(context)
+        global_record = record_utils.BuildSceneContext(context)
 
         # Set export counts here
         export_stats = {}
