@@ -24,8 +24,9 @@ def CAP_Update_ProxyCollectionExport(self, context):
     if proxy.disable_updates == True:
         return
 
-    collected = collection_utils.GetEditableCollections(context)
+    collected = collection_utils.GetSelectedObjectCollections()
     value = proxy.col_enable_export
+    print("Current value - ", value)
 
     # Run through the objects
     for collection in collected:
@@ -166,11 +167,8 @@ def UpdateCollectionList(scene, collection, enableExport):
     scn = scene.CAPScn
 
     # Check a list entry for the collection doesn't already exist.
-    #print("UPDATING COLLECTION LIST!")
-    #print("UPDATING COLLECTION LIST!")
 
     for item in scene.CAPScn.collection_list:
-        #print(item)
         if item is not None:
             if item.collection.name == collection.name:
                 #print("Changing", collection.name, "'s export from list.'")
@@ -181,6 +179,7 @@ def UpdateCollectionList(scene, collection, enableExport):
         #print("Adding", collection.name, "to list.")
         entry = scn.collection_list.add()
         entry.collection = collection
+        entry.enable_export = enableExport
         collection.CAPCol.in_export_list = True
 
 
