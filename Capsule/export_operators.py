@@ -238,7 +238,7 @@ def ExportObjectList(context, cap_file, object_list, global_record):
 
     for item in object_list:
         meta = {}
-        meta['region'] = global_record['scene']['region_override']
+        meta['3d_region'] = global_record['scene']['3d_region_override']
         meta['export_time'] = global_record['export_time']
         meta['export_name'] = item.name
 
@@ -295,7 +295,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
     
     for collection in collection_list:
         meta = {}
-        meta['region'] = global_record['scene']['region_override']
+        meta['3d_region'] = global_record['scene']['3d_region_override']
         meta['export_time'] = global_record['export_time']
         meta['export_name'] = collection.name
 
@@ -412,7 +412,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     if origin_point == "Object":
         #print('origin point is object, moving...')
         #print('origin point is object, moving...')
-        object_transform.MoveAllFailsafe(context, root_definition, [0.0, 0.0, 0.0], meta['region'])
+        object_transform.MoveAllFailsafe(context, root_definition, [0.0, 0.0, 0.0], meta['3d_region'])
 
 
     # /////////////////////////////////////////////////
@@ -427,7 +427,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
     # Reverse movement and rotation
     if origin_point == "Object":
-        object_transform.MoveAllFailsafe(context, root_definition, root_location['location'], meta['region'])
+        object_transform.MoveAllFailsafe(context, root_definition, root_location['location'], meta['3d_region'])
 
     #print(">>> Pass Complete <<<")
 

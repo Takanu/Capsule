@@ -22,17 +22,24 @@ def SaveSceneContext(context):
 
     scene_records = {}
 
+    # TODO: Include the active collection as a selection record.
+
+    # TODO: This should verify it's own state and report an error if something was unexpected.
+
     # If the current context isn't the 3D View, we need to change that before anything else.
     # TODO: This is busted, doesn't account for maximized areas.
     scene_records['active_area_type'] = bpy.context.area.type
 
-    for area in context.screen.areas:
-        if area != context.area:
-            scene_records['region_override'] = area.regions[0]
-            #print("got a region override - ", scene_records['region_override'])
-            break
+    print("Do we have any areas? = " , context.screen.areas)
+    print("Whats the area type right now? - ", bpy.context.area.type)
 
+    # Areas define a unique editor in the subdivided Blender interface
+    # Area Types define what that Area's editor is set to (3D View, Image Editor, etc)
+    # Regions define UI areas that make up an editor.
+    
+    # The view type needs changing and we need it's 3d window area for later
     context.area.type = 'VIEW_3D'
+    scene_records['3d_region_override'] = context.area.regions[0]
     
 
     # We also need to store current 3D View selections.
@@ -47,6 +54,7 @@ def SaveSceneContext(context):
 
     scene_records['active_object'] = context.active_object
     scene_records['selected_objects'] = selected_record
+    scene_records['active_layer_collection'] = context.view_layer.active_layer_collection
 
     # Save the current cursor location
     cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
@@ -159,7 +167,7 @@ def SaveSceneContext(context):
             #print("NEW CONSTRAINT LOCATION", item.name, record['constraint_location'])
 
             #print("Moving Object...", item.name, record['true_location'])
-            object_transform.MoveObjectFailsafe(item, context, record['true_location'], scene_records['region_override'])
+            object_transform.MoveObjectFailsafe(item, context, record['true_location'], scene_records['3d_region_override'])
             #print("New Object Location = ", item.location)
             #print("New Object Location = ", item.location)
 
@@ -178,17 +186,19 @@ def RestoreSceneContext(context, record):
     Restores all selection, edit mode, object constraint and view layer properties from a previously saved scene context.
     """
 
+    # TODO: Ensure any changes made to SaveSceneContext are replicated here.
+
     scene_records = record['scene']
     object_records = record['object']
 
     for record in object_records:
         item = record['item']
         
-            # Restore constraint object positions
+        # Restore constraint object positions
         if 'constraint_list' in record:
             #print(record)
             #print(record)
-            object_transform.MoveObjectFailsafe(item, context, record['constraint_location'], scene_records['region_override'])
+            object_transform.MoveObjectFailsafe(item, context, record['constraint_location'], scene_records['3d_region_override'])
             #print("New Object Location = ", item.name, item.location)
 
             # Restore Constraint Defaults
@@ -235,6 +245,8 @@ def RestoreSceneContext(context, record):
 
     if scene_records['active_object'] is None and len(scene_records['selected_objects']) == 0:
         bpy.ops.object.select_all(action= 'DESELECT')
+
+    context.view_layer.active_layer_collection = scene_records['active_layer_collection']
 
     # Restore the 3D view mode
     bpy.ops.object.mode_set(mode = scene_records['view_mode'])

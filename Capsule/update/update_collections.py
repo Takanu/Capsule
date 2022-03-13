@@ -26,7 +26,7 @@ def CAP_Update_ProxyCollectionExport(self, context):
 
     collected = collection_utils.GetSelectedObjectCollections()
     value = proxy.col_enable_export
-    print("Current value - ", value)
+    #print("Current value - ", value)
 
     # Run through the objects
     for collection in collected:
