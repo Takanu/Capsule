@@ -22,6 +22,7 @@ def BuildSceneContext(context):
     scene_records = {}
 
     # TODO: This should verify it's own state and report an error if something was unexpected.
+    # TODO: When you work out Outliner selections, include them here.
 
     # //////////////////////////////////////
     # RECORD AND CHANGE REGIONS
@@ -89,9 +90,9 @@ def BuildSceneContext(context):
         # Record object visibility
         # FIXME : hide_viewport is a global property, and isn't the same as Outliner/3D View hides.  Need to get and set that data when fixed.
         # https://devtalk.blender.org/t/view-layer-api-access-wishlist-collection-expand-set/5517
-        record['is_hidden'] = item.hide_viewport
-        record['is_selectable'] = item.hide_select
-        #print('Hide records = ', record['is_hidden'], ' ', record['is_selectable'])
+        record['hide_viewport'] = item.hide_viewport
+        record['hide_select'] = item.hide_select
+        print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
 
         item.hide_select = False
 
@@ -177,7 +178,7 @@ def BuildSceneContext(context):
 
     # //////////////////////////////////////
     # PRESERVE COLLECTION INFORMATION
-    collection_records = []
+    # TODO: Currently unable to do due to Outliner problems, come back to this later.
 
 
     # Now we can unhide and deselect everything
@@ -200,6 +201,10 @@ def RestoreSceneContext(context, record):
     scene_records = record['scene']
     object_records = record['object']
 
+
+    # //////////////////////////////////////
+    # RESTORE OBJECT RECORDS
+
     for record in object_records:
         item = record['item']
         
@@ -217,9 +222,9 @@ def RestoreSceneContext(context, record):
                 item.constraints[index].influence = constraint_record['influence']
         
         # Restore visibility defaults
-        #print('Hide records = ', record['is_hidden'], ' ', record['is_selectable'])
-        item.hide_set(record['is_hidden'])
-        item.hide_select = record['is_selectable']
+        print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
+        item.hide_viewport = record['hide_viewport']
+        item.hide_select = record['hide_select']
 
         # Restore transform locks
         if 'transform_locks' in record:
@@ -238,24 +243,15 @@ def RestoreSceneContext(context, record):
         # Restore armature mode
         if 'armature_mode' in record:
             mode = object_ops.SwitchObjectMode(record['armature_mode'], item)
+    
+    # //////////////////////////////////////
+    # DELETE VIEW LAYER
 
-
-    # ======================
-    # Delete the created view layer.
-    # ======================
     bpy.ops.scene.view_layer_remove()
 
-    # Re-select the objects previously selected
-    if scene_records['active_object'] is not None:
-        select_utils.FocusObject(scene_records['active_object'])
 
-    for sel in scene_records['selected_objects']:
-        select_utils.SelectObject(sel)
-
-    if scene_records['active_object'] is None and len(scene_records['selected_objects']) == 0:
-        bpy.ops.object.select_all(action= 'DESELECT')
-
-    context.view_layer.active_layer_collection = scene_records['active_layer_collection']
+    # //////////////////////////////////////
+    # RESTORE VIEW MODES
 
     # Restore the 3D view mode
     bpy.ops.object.mode_set(mode = scene_records['view_mode'])
@@ -266,6 +262,27 @@ def RestoreSceneContext(context, record):
     # Restore the panel type
     # FIXME : This currently doesn't work with the Blender 2.8 area bug.
     context.area.type = scene_records['active_area_type']
+
+    # //////////////////////////////////////
+    # RESTORE SCENE SELECTIONS
+
+    # TODO: Integrate selections with the object capture, this shouldn't be separate
+
+    # Re-select the objects previously selected
+    if scene_records['active_object'] is not None:
+        bpy.context.view_layer.objects.active = scene_records['active_object']
+        bpy.ops.object.select_pattern(pattern = scene_records['active_object'].name)
+        # select_utils.FocusObject(scene_records['active_object'])
+
+    for sel in scene_records['selected_objects']:
+        sel.select_set(True)
+        # select_utils.SelectObject(sel)
+
+    if scene_records['active_object'] is None and len(scene_records['selected_objects']) == 0:
+        bpy.ops.object.select_all(action= 'DESELECT')
+
+    context.view_layer.active_layer_collection = scene_records['active_layer_collection']
+    
 
     #print("Rawr")
 

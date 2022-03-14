@@ -7,10 +7,15 @@ import bpy
 # ////////////////////////////////////////
 # OBJECTS
 
+# TODO: The forcing of hide_set and hide_select can cause behaviour problems.
+# but I can't change this without knowing how much depended on this behaviour.
+# oh no.
+
 def FocusObject(target):
     """
     Focuses the given target in the 3D View while deselecting all other objects.
     """
+
     # If the target isnt visible, MAKE IT VISIBLE.
     if target.hide_get() is True:
         target.hide_set(False)
@@ -36,6 +41,8 @@ def FocusObject(target):
     # Set the mode back
     if prevMode != '':
         bpy.ops.object.mode_set(mode=prevMode)
+
+
 
 
 def SelectObject(target, force_select = False):

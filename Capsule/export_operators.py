@@ -50,14 +50,17 @@ class CAPSULE_OT_ExportAll(Operator):
             self.report({'WARNING'}, "No Capsule Data for this blend file exists.  Please create it using the Toolshelf or Addon Preferences menu.")
             return {'FINISHED'}
 
+        # Make a record of the scene before we do anything
+        global_record = record_utils.BuildSceneContext(context)
+
         # We need to make a separate definition set for preserving and restoring scene data.
         result = record_utils.CheckCapsuleErrors(context)
+
         if result is not None:
+            record_utils.RestoreSceneContext(context, global_record)
             self.report({'WARNING'}, result)
             return {'FINISHED'}
         
-        # Make a record of the scene before we do anything
-        global_record = record_utils.BuildSceneContext(context)
 
         # Set export counts here
         export_stats = {}
@@ -168,14 +171,18 @@ class CAPSULE_OT_ExportSelected(Operator):
             self.report({'WARNING'}, "No Capsule Data for this blend file exists.  Please create it using the Toolshelf or Addon Preferences menu.")
             return {'FINISHED'}
 
+        # Make a record of the scene before we do anything
+        global_record = record_utils.BuildSceneContext(context)
+
         # We need to make a separate definition set for preserving and restoring scene data.
         result = record_utils.CheckCapsuleErrors(context, export_objects, export_collections)
+        
         if result is not None:
+            record_utils.RestoreSceneContext(context, global_record)
             self.report({'WARNING'}, result)
             return {'FINISHED'}
         
-        # Make a record of the scene before we do anything
-        global_record = record_utils.BuildSceneContext(context)
+       
 
         # Set export counts here
         export_stats = {}

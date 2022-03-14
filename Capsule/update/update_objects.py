@@ -15,6 +15,9 @@ def FindEditableObjects(context):
     """
     collected = [] 
 
+    # TODO: When I am able to fetch selected Outliner entries, remove the
+    # reliance on selected objects.
+
     for item in context.selected_objects:
         if item.CAPObj.enable_edit is True:
             collected.append(item)
