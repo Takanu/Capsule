@@ -24,7 +24,7 @@ def GetActiveCollection():
     return bpy.context.layer_collection.collection
 
 
-def GetSceneCollections(scene, hasObjects):
+def GetSceneCollections(scene, hasObjects = False):
     """
     Returns all collections that belong to the scene, by searching through all objects belonging in it.
     """
@@ -32,7 +32,8 @@ def GetSceneCollections(scene, hasObjects):
     # batfinger is too good at this
     collections = [
         c for c in bpy.data.collections 
-        if bpy.context.scene.user_of_id(c)
+        if bpy.context.scene.user_of_id(c) and
+        (hasObjects is False or len(c.objects) > 0)
     ]
 
     return collections
@@ -99,7 +100,7 @@ def GetSelectedCollections():
                         # print("winner")
                         collections_found.append(col)
 
-    # print(collections_found)
+    #print(collections_found)
     return collections_found
 
 

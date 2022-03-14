@@ -52,7 +52,6 @@ def BuildSceneContext(context):
             selected_record.append(sel)
 
     scene_records['active_object'] = context.active_object
-    scene_records['selected_objects'] = selected_record
     scene_records['active_layer_collection'] = context.view_layer.active_layer_collection
 
     # Save the current cursor location
@@ -92,7 +91,9 @@ def BuildSceneContext(context):
         # https://devtalk.blender.org/t/view-layer-api-access-wishlist-collection-expand-set/5517
         record['hide_viewport'] = item.hide_viewport
         record['hide_select'] = item.hide_select
-        print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
+        record['is_selected'] = item.select_get()
+
+        #print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
 
         item.hide_select = False
 
@@ -178,7 +179,20 @@ def BuildSceneContext(context):
 
     # //////////////////////////////////////
     # PRESERVE COLLECTION INFORMATION
-    # TODO: Currently unable to do due to Outliner problems, come back to this later.
+    # TODO: Try to preserve outliner selections when i'm able to.
+
+    collection_records = []
+    for col in search_utils.GetSceneCollections(context.scene):
+        record = {}
+        record['collection'] = col
+        record['collection_name'] = col.name
+        record['hide_render'] = col.hide_render
+        record['hide_select'] = col.hide_select
+        record['hide_viewport'] = col.hide_viewport
+        collection_records.append(record)
+
+        col.hide_select = False
+
 
 
     # Now we can unhide and deselect everything
@@ -188,6 +202,7 @@ def BuildSceneContext(context):
     records = {}
     records['scene'] = scene_records
     records['object'] = object_records
+    records['collection'] = collection_records
     return records
 
 
@@ -200,6 +215,17 @@ def RestoreSceneContext(context, record):
 
     scene_records = record['scene']
     object_records = record['object']
+    collection_records = record['collection']
+
+
+    # //////////////////////////////////////
+    # RESTORE COLLECTION RECORDS
+
+    for record in collection_records:
+        col = record['collection']
+        col.hide_render = record['hide_render']
+        col.hide_select = record['hide_select']
+        col.hide_viewport = record['hide_viewport']
 
 
     # //////////////////////////////////////
@@ -225,6 +251,7 @@ def RestoreSceneContext(context, record):
         print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
         item.hide_viewport = record['hide_viewport']
         item.hide_select = record['hide_select']
+        item.select_set(record['is_selected'])
 
         # Restore transform locks
         if 'transform_locks' in record:
@@ -273,10 +300,6 @@ def RestoreSceneContext(context, record):
         bpy.context.view_layer.objects.active = scene_records['active_object']
         bpy.ops.object.select_pattern(pattern = scene_records['active_object'].name)
         # select_utils.FocusObject(scene_records['active_object'])
-
-    for sel in scene_records['selected_objects']:
-        sel.select_set(True)
-        # select_utils.SelectObject(sel)
 
     if scene_records['active_object'] is None and len(scene_records['selected_objects']) == 0:
         bpy.ops.object.select_all(action= 'DESELECT')
@@ -419,7 +442,7 @@ def CheckCapsuleErrors(context, target_objects = None, target_collections = None
     if target_objects == None:
         target_objects = context.scene.objects
     if target_collections == None:
-        target_collections = search_utils.GetSceneCollections(context.scene, True)
+        target_collections = search_utils.GetSceneCollections(context.scene, False)
     
     # The errors that will be reported back.
     error_objects = {}

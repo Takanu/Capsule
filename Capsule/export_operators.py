@@ -84,7 +84,7 @@ class CAPSULE_OT_ExportAll(Operator):
             if object.CAPObj.enable_export is True:
                 export_objects.append(object)
         
-        for collection in search_utils.GetSceneCollections(context.scene, True):
+        for collection in search_utils.GetSceneCollections(context.scene, False):
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)
         
