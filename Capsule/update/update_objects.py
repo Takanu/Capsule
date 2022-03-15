@@ -14,6 +14,7 @@ def FindEditableObjects(context):
     Finds objects that can have their values edited.
     """
     collected = [] 
+    active_obj = context.active_object
 
     # TODO: When I am able to fetch selected Outliner entries, remove the
     # reliance on selected objects.
@@ -21,6 +22,11 @@ def FindEditableObjects(context):
     for item in context.selected_objects:
         if item.CAPObj.enable_edit is True:
             collected.append(item)
+    
+    # This is to ensure some parity with the Outliner.
+    if active_obj.CAPObj.enable_edit is True:
+        if active_obj not in collected:
+            collected.append(active_obj)
 
     return collected
 
@@ -99,7 +105,7 @@ def  CAP_Update_ProxyObjectLocationPreset(self, context):
 
 def CAP_Update_ProxyObjectExportPreset(self, context):
     """
-    Updates the object's Export Default property.
+    Updates the object's Export Preset property.
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
@@ -116,6 +122,29 @@ def CAP_Update_ProxyObjectExportPreset(self, context):
     # Run through the objects
     for item in collected:
         item.CAPObj.export_preset = value
+
+    return None
+
+def CAP_Update_ProxyObjectOverride(self, context):
+    """
+    Updates the object's Override property.
+    """
+    preferences = context.preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+    
+     # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
+
+    # Setup initial targets and the value state we need to change.
+    collected = FindEditableObjects(context)
+    print(collected)
+    value = proxy.obj_override
+
+    # Run through the objects
+    for item in collected:
+        item.CAPObj.override = value
 
     return None
 

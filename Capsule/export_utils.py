@@ -62,49 +62,4 @@ def CheckAnimation(context):
 
   print(">>>> CHECKED ANIMATION <<<<")
 
-# FIXME : Not in use rn.
-def AddTriangulate(targetList):
-  """
-  Adds the triangulate modifier to any objects that don't yet have it.
-  """
-
-  modType = {'TRIANGULATE'}
-
-  for item in targetList:
-      if item.type == 'MESH':
-          stm = item.CAPStm
-          stm.has_triangulate = False
-
-          for modifier in item.modifiers:
-              if modifier.type in modType:
-                  stm.has_triangulate = True
-
-          # if we didn't find any triangulation, add it!
-          if stm.has_triangulate == False:
-              select_utils.FocusObject(item)
-              bpy.ops.object.modifier_add(type = 'TRIANGULATE')
-
-              for modifier in item.modifiers:
-                  if modifier.type in modType:
-                      #print("Triangulation Found")
-                      modifier.quad_method = 'FIXED_ALTERNATE'
-                      modifier.ngon_method = 'CLIP'
-                      stm.has_triangulate = False
-
-# FIXME : Not in use rn.
-def RemoveTriangulate(targetList):
-  """
-  Adds the triangulate modifier from objects where it was added as an export option.
-  """
-  modType = {'TRIANGULATE'}
-
-  for item in targetList:
-      if item.type == 'MESH':
-          if item.CAPStm.has_triangulate is False:
-              for modifier in item.modifiers:
-                  if modifier.type in modType:
-                      select_utils.FocusObject(item)
-                      bpy.ops.object.modifier_remove(modifier=modifier.name)
-
-
                       

@@ -273,6 +273,11 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.separator()
                 obj_settings.prop(proxy, "obj_export_preset")
                 obj_settings.separator()
+
+                if addon_prefs.use_overrides:
+                    obj_settings.prop(proxy, "obj_override")
+                    obj_settings.separator()
+
                 obj_settings.separator()
 
                 obj_settings.operator("scene.cap_export_all")
@@ -394,6 +399,11 @@ class CAPSULE_PT_Selection(Panel):
                 group_layout.separator()
                 group_layout.prop(proxy, "col_export_preset")
                 group_layout.separator()
+
+                if addon_prefs.use_overrides:
+                    group_layout.prop(proxy, "col_override")
+                    group_layout.separator()
+
                 group_layout.separator()
 
                 group_layout.operator("scene.cap_export_all")
@@ -497,6 +507,10 @@ class CAPSULE_PT_List(Panel):
                 object_options_list.prop(obj, "location_preset")
                 object_options_list.separator()
                 object_options_list.prop(obj, "export_preset")
+
+                if addon_prefs.use_overrides:
+                    object_options_list.separator()
+                    object_options_list.prop(obj, "override")
         
         # Group selection
         elif listTab == 2:
@@ -528,6 +542,11 @@ class CAPSULE_PT_List(Panel):
                 group_options_list.prop(grp, "location_preset")
                 group_options_list.separator()
                 group_options_list.prop(grp, "export_preset")
+
+                if addon_prefs.use_overrides:
+                    group_options_list.separator()
+                    group_options_list.prop(grp, "override")
+                    
 
         layout.separator()
 

@@ -15,6 +15,7 @@ from ..update.update_objects import (
     CAP_Update_ProxyObjectOriginPoint, 
     CAP_Update_ProxyObjectLocationPreset, 
     CAP_Update_ProxyObjectExportPreset, 
+    CAP_Update_ProxyObjectOverride,
 )
 
 from ..update.update_collections import (
@@ -23,7 +24,8 @@ from ..update.update_collections import (
     CAP_Update_ProxyCollectionRootObject, 
     CAP_Update_ProxyCollectionChildExportOption,
     CAP_Update_ProxyCollectionLocationPreset, 
-    CAP_Update_ProxyCollectionExportDefault, 
+    CAP_Update_ProxyCollectionExportPreset, 
+    CAP_Update_ProxyCollectionOverride,
 )
 
 from bpy.types import PropertyGroup
@@ -114,9 +116,16 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         items = GetExportDefaults,
         update = CAP_Update_ProxyObjectExportPreset
         )
+
+    obj_override: PointerProperty(
+        type = bpy.types.Text,
+        name = "Override",
+        description = "Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        update = CAP_Update_ProxyObjectOverride,
+    )
     
     # ////////////
-    # OBJECT
+    # COLLECTION
     
     col_enable_export: BoolProperty(
         name = "Export Collection",
@@ -167,5 +176,12 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         name = "Export Preset",
         description = "Defines the export settings used on the collection.",
         items = GetExportDefaults,
-        update = CAP_Update_ProxyCollectionExportDefault
-        )
+        update = CAP_Update_ProxyCollectionExportPreset
+    )
+
+    col_override: PointerProperty(
+        type = bpy.types.Text,
+        name = "Override",
+        description = "Defines a python script that will be executed just before and after Capsule exports the collection to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        update = CAP_Update_ProxyCollectionOverride,
+    )

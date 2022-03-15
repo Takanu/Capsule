@@ -22,21 +22,6 @@ from ..export_formats import (
     CAP_FormatData_USD,
 )
 
-# Disabled as it's outdated.
-# TODO: hmm...
-# def DrawAnimationWarning(self, context):
-#         layout = self.layout
-#         layout.label(text = "Hey!  The animation feature may result in objects being incorrectly positioned")
-#         layout.label(text = "if you define the Origin as anything other than Scene for exports with complex")
-#         layout.label(text = "dependencies and animations (armature animations will be unaffected).")
-#         layout.separator()
-#         layout.label(text = "If you find objects have moved after the export operation simply use the undo tool.")
-#         layout.separator()
-# def CAP_Update_AnimationWarning(self, context):
-#     if self.export_animation_prev is False and self.export_animation is True:
-#         bpy.context.window_manager.popup_menu(DrawAnimationWarning, title = "Animation Warning", icon = 'INFO')
-#     self.export_animation_prev = self.export_animation
-
 
 class CAPSULE_ExportPreset(PropertyGroup):
     # Used to define properties for a single export preset.
@@ -47,36 +32,36 @@ class CAPSULE_ExportPreset(PropertyGroup):
         name = "Preset Name",
         description = "The name of the export preset.",
         default = ""
-        )
+    )
 
     instance_id: IntProperty(
         name = "Instance ID",
         description = "INTERNAL ONLY - Unique ID used to pair with format data, that holds the full export settings for the chosen file type."
-        )
+    )
 
     description: StringProperty(
         name = "Description",
         description = "(Internal Use Only) TBA",
         default = ""
-        )
+    )
 
     sub_directory: StringProperty(
         name = "Sub-directory",
         description = "Allows you to extend the file path of the export from the Location Preset assigned to it",
         default = "/"
-        )
+    )
 
     filter_by_rendering: BoolProperty(
         name = "Filter by Render Visibility",
         description = "Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin"
-        )
+    )
     
     # FIXME 1.2 : Move as exporter-specific data?
     export_animation: BoolProperty(
         name = "Export Animation",
         description = "If ticked, animation data will be exported depending on the File Format.  STL does not support animation data",
         default = False,
-        )
+    )
 
     export_animation_prev: BoolProperty(default = False)
 
@@ -84,7 +69,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
         name = "Apply Modifiers",
         description = "If enabled, all modifiers will be applied to the export",
         default = False
-        )
+    )
 
     # Currently disabled until further notice due to reliability issues.
     # reset_rotation: BoolProperty(
@@ -97,7 +82,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
         name = "Preserve Armature Constraints",
         description = "(Experimental Feature) If enabled, Capsule will not mute specific bone constraints during the export process.  \n\nTurn this on if you rely on bone constraints for animation, but if you also need to change the origin point of these armatures, then the plugin may not succeed in doing this",
         default = True
-        )
+    )
 
 
     # TODO : This is where the Filter and Export Commands will sit
@@ -115,7 +100,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
             ('USD', "USD (.usda)", "Export assets as USD files.  A modern and highly detailed file format, Blender's implementation is new however and offers limited capabilities"),
             ),
         description = "Defines what file type objects with this preset will export to and the export options available for this preset",
-        )
+    )
 
     # the data stored for FBX presets.
     data_fbx: PointerProperty(type=CAP_FormatData_FBX)
@@ -149,13 +134,14 @@ class CAPSULE_LocationPreset(PropertyGroup):
     name: StringProperty(
         name = "",
         description = "The name of the file path default."
-        )
+    )
 
-    path: StringProperty(name = "",
+    path: StringProperty(
+        name = "",
         description = "The file path to export the object to.",
         default = "",
         subtype = "FILE_PATH"
-        )
+    )
 
 
 class CAPSULE_FileData(PropertyGroup):

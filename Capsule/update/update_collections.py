@@ -132,7 +132,7 @@ def CAP_Update_ProxyCollectionLocationPreset(self, context):
 
     return None
 
-def CAP_Update_ProxyCollectionExportDefault(self, context):
+def CAP_Update_ProxyCollectionExportPreset(self, context):
     """
     Updates the collection's Export Default property.
     """
@@ -154,6 +154,31 @@ def CAP_Update_ProxyCollectionExportDefault(self, context):
     # Run through the objects
     for collection in collected:
         collection.CAPCol.export_preset = value
+
+    return None
+
+def CAP_Update_ProxyCollectionOverride(self, context):
+    """
+    Updates the collection's Override property.
+    """
+    preferences = context.preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+    
+    # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
+
+    # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
+
+    collected = search_utils.GetEditableCollections(context)
+    value = proxy.col_override
+
+    # Run through the objects
+    for collection in collected:
+        collection.CAPCol.override = value
 
     return None
 

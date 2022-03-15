@@ -126,8 +126,7 @@ class CAPSULE_OT_ExportAll(Operator):
 
         record_utils.RestoreSceneContext(context, global_record)
 
-        return {'FINISHED'}
-
+        return {'FINISHED'}\
 
 
 class CAPSULE_OT_ExportSelected(Operator):
@@ -230,7 +229,7 @@ class CAPSULE_OT_ExportSelected(Operator):
         return {'FINISHED'}
 
 
-
+# TODO: These definition names are terrible!
 
 def ExportObjectList(context, cap_file, object_list, global_record):
     """
@@ -286,7 +285,6 @@ def ExportObjectList(context, cap_file, object_list, global_record):
         result['export_count'] += 1
     
     return result
-
 
 
 def ExportCollectionList(context, cap_file, collection_list, global_record):
@@ -365,7 +363,6 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
         result['export_count'] += 1
     
     return result
-
 
 
 def ExportTarget(context, targets, export_name, export_preset, location_preset, origin_point, root_definition, meta):
@@ -498,9 +495,6 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
 
 
 
-# TODO 2.0 : This probably doesn't work
-
-def PrepareExportIndividual(context, targets, path, export_preset):
     """
     Exports a selection of objects, saving each object into it's own file.
     """

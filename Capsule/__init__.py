@@ -104,6 +104,7 @@ class CAP_AddonPreferences(AddonPreferences):
     saved_export_presets: CollectionProperty(type=CAPSULE_ExportPreset)
     saved_export_presets_index: IntProperty()
 
+
     # Addon Preferences Dropdowns
     saved_export_presets_dropdown: BoolProperty(default = False)
     file_export_presets_dropdown: BoolProperty(default = False)
@@ -111,29 +112,38 @@ class CAP_AddonPreferences(AddonPreferences):
     keymap_dropdown: BoolProperty(default = False)
     options_dropdown: BoolProperty(default = False)
 
+
     # Selection Dropdowns
     edit_enable_dropdown: BoolProperty(default = False)
 
     object_list_autorefresh: BoolProperty(
         name = "Object List Auto-Refresh",
-        description = "Determines whether or not an object on the object export list will automatically be removed when Enable Export is unticked.  If this option is disabled, a manual refresh button will appear next to the list."
-        )
+        description = "Determines whether or not an object on the object export list will automatically be removed when Enable Export is unticked.  If this option is disabled, a manual refresh button will appear next to the list"
+    )
 
     list_feature: EnumProperty(
         name = "Additional List Features",
-        description = "Allows for the customisation of a secondary button next to each Object and Collection Export list entry.",
+        description = "Allows for the customisation of a secondary button next to each Object and Collection Export list entry",
         items =  (
             ('none', 'None', 'No extra option will be added to the list'),
             ('sel', 'Select', 'Adds an option next to a list entry that allows you to select that Object or Collection in the 3D View.'),
             ('focus', 'Focus', 'Adds an option next to a list entry that allows you to select and focus the 3D view on that Object or Collection.')),
         default= 'focus'
-        )
+    )
 
     substitute_directories: BoolProperty(
         name = "Substitute Invalid Directory Characters",
-        description = "If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  \n\nIf unticked, the plugin will prompt you with an error if your directories contain invalid characters.",
+        description = "If any of your export directories contain invalid characters for the operating system you currently use, ticking this on will substitute them with an underscore.  \n\nIf unticked, the plugin will prompt you with an error if your directories contain invalid characters",
         default = True
-        )
+    )
+
+    # if enabled, the Overrides property will appear for exports
+    use_overrides: BoolProperty(
+        name = "Enable Overrides",
+        description = "Enables Overrides, a feature that lets you assign Python scripts to exports that are executed just before and after they are exported.  Check the Capsule GitHub Wiki for more information",
+        default = False,
+    )
+
 
     data_missing : BoolProperty(default = False)
     plugin_is_ready : BoolProperty(default = False)
@@ -373,8 +383,13 @@ class CAP_AddonPreferences(AddonPreferences):
 
             extras_content.prop(addon_prefs, "list_feature")
             extras_content.separator()
+            extras_content.separator()
+
             extras_content.prop(addon_prefs, "substitute_directories")
             extras_content.separator()
+            extras_content.separator()
+            
+            extras_content.prop(addon_prefs, "use_overrides")
             extras_content.separator()
             extras_content.separator()
 
@@ -443,16 +458,15 @@ def CheckSelectedObject(scene):
             # update the proxy objects with the current selection
             obj = bpy.context.active_object.CAPObj
 
-            # TODO: Make a better failsafe for deleted presets than this!
-            displayed_location_preset = obj.location_preset
-            displayed_export_preset = obj.export_preset
-
             # Disable updates before editing, enable afterwards
             proxy.disable_updates = True
+
             proxy.obj_enable_export = obj.enable_export
             proxy.obj_origin_point = obj.origin_point
-            proxy.obj_location_preset = displayed_location_preset
-            proxy.obj_export_preset = displayed_export_preset
+            proxy.obj_location_preset = obj.location_preset
+            proxy.obj_export_preset = obj.export_preset
+            proxy.col_override = obj.override
+
             proxy.disable_updates = False
     
     elif len(bpy.context.selected_objects) != addon_prefs.prev_selected_obj_count:
@@ -469,12 +483,15 @@ def CheckSelectedObject(scene):
 
             # Disable updates before editing, enable afterwards
             proxy.disable_updates = True
+
             proxy.col_enable_export = col.enable_export
             proxy.col_origin_point = col.origin_point
             proxy.col_root_object = col.root_object
             proxy.col_child_export_option = col.child_export_option
             proxy.col_location_preset = col.location_preset
             proxy.col_export_preset = col.export_preset
+            proxy.col_override = col.override
+
             proxy.disable_updates = False
 
             return
@@ -530,7 +547,6 @@ classes = (
     CAPSULE_Scene_Preferences, 
     CAPSULE_Object_Preferences, 
     CAPSULE_Collection_Preferences, 
-    CAPSULE_Object_StateMachine, 
     # CAPSULE_Action_Preferences,
     CAPSULE_Proxy_Properties,
 
@@ -613,7 +629,6 @@ def register():
     bpy.types.Collection.CAPCol = PointerProperty(name= 'Capsule Collection Properties', type=CAPSULE_Collection_Preferences)
     # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
     bpy.types.Object.CAPFile = PointerProperty(name= 'Capsule File Data', type=CAPSULE_FileData)
-    bpy.types.Object.CAPStm = PointerProperty(name= 'Capsule State Tracker', type=CAPSULE_Object_StateMachine)
     bpy.types.Scene.CAPProxy = PointerProperty(name= 'Capsule Scene Property Proxy', type=CAPSULE_Proxy_Properties)
 
 

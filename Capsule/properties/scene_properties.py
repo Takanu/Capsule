@@ -275,7 +275,7 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         name = "Enable Export",
         description = "Enables or disables the ability to export this object",
         default = False,
-        )
+    )
 
     origin_point: EnumProperty(
         name = "Origin Export",
@@ -283,25 +283,25 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         items =  (
         ('Object', 'Object', "Sets the exported origin point to the object's origin point"),
         ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point")),
-        )
-
-    # use_scene_origin: BoolProperty(
-    #     name = "Use Scene Origin",
-    #     description = "If turned on, the scene's centre will be used as an origin point for the exported object, rather than the object's own origin point.  \n\nIf you have a complex object with many constraints and modifiers and it's not exporting properly without this feature, use this feature <3",
-    #     default = False,
-    #     )
+    )
 
     location_preset: EnumProperty(
         name = "File Location",
         description = "Defines the file path that the object will be exported to",
         items = GetLocationPresets,
-        )
+    )
 
     export_preset: EnumProperty(
         name = "Export Preset",
         description = "Defines the export settings used on the object",
         items = GetExportDefaults,
-        )
+    )
+
+    override: PointerProperty(
+        type = bpy.types.Text,
+        name = "Override",
+        description = "Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+    )
 
     enable_edit: BoolProperty(
         name = "",
@@ -312,7 +312,7 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         name = "",
         description = "(Internal Only) Prevents refreshes of the Export List from removing items not marked for export",
         default = False
-        )
+    )
 
 class CAPSULE_Collection_Preferences(PropertyGroup):
     """
@@ -337,7 +337,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         type = bpy.types.Object,
         name = "Origin Object",
         description = "Defines what object will be used as the exported collection's origin point",
-        )
+    )
     
     child_export_option: EnumProperty(
         name = "Hierarchy",
@@ -364,6 +364,12 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         description = "Defines the export settings used on the collection",
         items = GetExportDefaults,
         )
+    
+    override: PointerProperty(
+        type = bpy.types.Text,
+        name = "Override",
+        description = "Defines a python script that will be executed just before and after Capsule exports to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+    )
     
     # TODO: why is there two identical properties here?
     # export_preset: EnumProperty(
@@ -396,13 +402,6 @@ def GetExportPresets(scene, context):
 
     return items
 
-class CAPSULE_Object_StateMachine(PropertyGroup):
-
-    has_triangulate: BoolProperty(
-        name = "Has Triangulation Modifier",
-        description = "Internal variable used to monitor whether or not the object has a Triangulation modifier, when triangulating the mesh ",
-        default = False
-        )
 
 class CAPSULE_Action_Preferences(PropertyGroup):
     export: BoolProperty(
@@ -422,7 +421,6 @@ class CAPSULE_Action_Preferences(PropertyGroup):
 #     CAPSULE_Scene_Preferences, 
 #     CAPSULE_Object_Preferences, 
 #     CAPSULE_Collection_Preferences, 
-#     CAPSULE_Object_StateMachine, 
 #     # CAPSULE_Action_Preferences
 # )
 
