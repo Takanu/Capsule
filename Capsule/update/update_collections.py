@@ -26,12 +26,15 @@ def CAP_Update_ProxyCollectionExport(self, context):
 
     collected = search_utils.GetEditableCollections(context)
     value = proxy.col_enable_export
-    #print("Current value - ", value)
+    # print("Current value - ", value)
 
     # Run through the objects
+    # TODO: Not sure why a collection here would become invalid
     for collection in collected:
-        collection.CAPCol.enable_export = value
-        UpdateCollectionList(context.scene, collection, value)
+        if collection is not None:
+            # print(collection)
+            collection.CAPCol.enable_export = value
+            UpdateCollectionList(context.scene, collection, value)
 
     return None
 
@@ -169,11 +172,12 @@ def UpdateCollectionList(scene, collection, enableExport):
     # Check a list entry for the collection doesn't already exist.
 
     for item in scene.CAPScn.collection_list:
-        if item is not None:
-            if item.collection.name == collection.name:
-                #print("Changing", collection.name, "'s export from list.'")
-                item.enable_export = enableExport
-                return
+        if item:
+            if item.collection:
+                if item.collection.name == collection.name:
+                    #print("Changing", collection.name, "'s export from list.'")
+                    item.enable_export = enableExport
+                    return
 
     if enableExport is True:
         #print("Adding", collection.name, "to list.")
@@ -240,6 +244,9 @@ def CAP_Update_CollectionListRemove(self, context):
     """
     Used in a list to remove a collection from both the export list, while disabling it's "Enable Export" status.
     """
+
+    print(self)
+
     #print("-----DELETING GROUP FROM LIST-----")
     i = 0
     scn = context.scene.CAPScn
@@ -247,23 +254,28 @@ def CAP_Update_CollectionListRemove(self, context):
     backupListIndex = scn.collection_list_index
     backupListLength = len(scn.collection_list)
 
+    # If the list item is dead, remove it now and forget about the rest.
+    # if self is None or self.collection is None:
+
+
     for item in scn.collection_list:
-        if item.collection.name == self.collection.name:
+        if item.collection is not None:
+            if item.collection.name == self.collection.name:
 
-            self.collection.CAPCol.enable_export = False
-            self.collection.CAPCol.in_export_list = False
+                self.collection.CAPCol.enable_export = False
+                self.collection.CAPCol.in_export_list = False
 
-            # Whether or not we find a successful match in the scene,
-            # remove it from the list
-            context.scene.CAPScn.collection_list.remove(i)
+                # Whether or not we find a successful match in the scene,
+                # remove it from the list
+                context.scene.CAPScn.collection_list.remove(i)
 
-            # If the index is more than the list, bring it down one
-            # to ensure a list item gets selected
-            scn.collection_list_index = i
+                # If the index is more than the list, bring it down one
+                # to ensure a list item gets selected
+                scn.collection_list_index = i
 
-            if i == (backupListLength - 1):
-                scn.collection_list_index = i - 1
+                if i == (backupListLength - 1):
+                    scn.collection_list_index = i - 1
 
-            return
+                return
 
-        i += 1
+            i += 1

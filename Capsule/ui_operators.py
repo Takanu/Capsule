@@ -377,6 +377,7 @@ class CAPSULE_OT_Refresh_List(Operator):
         elif objectTab == 2:
             scn.collection_list.clear()
             for collection in search_utils.GetSceneCollections(context.scene, False):
+                print(collection)
                 if collection.CAPCol.in_export_list is True:
                         entry = scn.collection_list.add()
                         entry.collection = collection

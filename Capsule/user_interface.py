@@ -79,14 +79,16 @@ class CAPSULE_UL_Collection(UIList):
             layout.label(text = "  Deleted Collection")
             # layout.prop(item, "deleted_name", text = "", emboss = False)
             layout.prop(item, "remove", text = "", icon = "X", emboss= False)
-            layout.active = False
+            # layout.active = False
             return
 
 
         # ////////////////
         # NORMAL COLLECTION LIST ITEM
         cap_col = item.collection.CAPCol
-        missing_data = (cap_col.export_preset == '0' or cap_col.location_preset == '0')
+        missing_data = (cap_col.export_preset == '0' 
+            or cap_col.location_preset == '0'
+            or (cap_col.origin_point == 'Object' and cap_col.root_object == None))
 
         layout.prop(item.collection, "name", text= "", emboss= False)
 
@@ -105,6 +107,7 @@ class CAPSULE_UL_Collection(UIList):
     def draw_filter(self, context, layout):
         # Nothing much to say here, it's usual UI code...
         row = layout.row()
+
 
 class CAPSULE_UL_Path_Default(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):

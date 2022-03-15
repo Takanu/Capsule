@@ -21,7 +21,7 @@
 bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
-    "version": (1, 3, 1),
+    "version": (2, 0, 0),
     "blender": (3, 1, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
@@ -472,6 +472,7 @@ def CheckSelectedObject(scene):
             proxy.col_enable_export = col.enable_export
             proxy.col_origin_point = col.origin_point
             proxy.col_root_object = col.root_object
+            proxy.col_child_export_option = col.child_export_option
             proxy.col_location_preset = col.location_preset
             proxy.col_export_preset = col.export_preset
             proxy.disable_updates = False

@@ -30,11 +30,18 @@ def GetSceneCollections(scene, hasObjects = False):
     """
 
     # batfinger is too good at this
+    #print(bpy.data.collections)
     collections = [
         c for c in bpy.data.collections 
         if bpy.context.scene.user_of_id(c) and
         (hasObjects is False or len(c.objects) > 0)
     ]
+
+    # bpy.data.collections does not include the top-level collection so we need to include it separately.
+    # TODO: Re-enable when the top-level collection scene issue is fixed.
+    # if hasObjects is False or len(scene.collection.objects > 0):
+    #     collections.insert(0, scene.collection)
+    
 
     return collections
 
@@ -69,6 +76,7 @@ def GetSelectedCollections():
 
     collections_found = []
     context = bpy.context
+    scene = context.scene
 
     # TODO: Unable to get the selected IDs in the Outliner as of Blender 3.1
     # try again layer!
@@ -78,16 +86,14 @@ def GetSelectedCollections():
     #         outliner_ids = bpy.context.selected_ids
     #         print(outliner_ids)
     #         bpy.ops.outliner.id_copy()
-    
-    # As of 3.1 there is always an active_object, but never always selected_objects
-    # There is ALWAYS a layer_collection
-    # print(context.layer_collection)
-    # print(context.active_object)
-    # print(context.selected_objects)
 
     # If no objects are selected it means we can disregard the active object and just use the collection
     if len(context.selected_objects) == 0:
-        collections_found.append(context.layer_collection.collection)
+        layer_col_selection = context.layer_collection.collection
+        
+        # TODO: Remove this check when the top-level collection can be used again
+        if scene.collection != layer_col_selection:
+            collections_found.append(layer_col_selection)
 
      # Otherwise fetch every collection in every selected object.
     else:

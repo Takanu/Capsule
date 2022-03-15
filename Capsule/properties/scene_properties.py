@@ -185,10 +185,7 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
     collection_list: CollectionProperty(type=CollectionListItem)
 
     # ???
-    collection_list_index: IntProperty(
-        name = "",
-        description = "",
-        )
+    collection_list_index: IntProperty()
 
     ## ???
     collection_selected_list: CollectionProperty(type=CollectionListItem)
