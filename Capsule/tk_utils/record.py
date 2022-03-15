@@ -248,7 +248,7 @@ def RestoreSceneContext(context, record):
                 item.constraints[index].influence = constraint_record['influence']
         
         # Restore visibility defaults
-        print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
+        # print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
         item.hide_viewport = record['hide_viewport']
         item.hide_select = record['hide_select']
         item.select_set(record['is_selected'])

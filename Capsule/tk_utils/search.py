@@ -3,6 +3,7 @@
 # Gathers collections of important datablocks or properties.
 # ///////////////////////////////////////////////////////////////////
 
+from re import L
 import bpy
 
 # batfinger you legend
@@ -13,15 +14,6 @@ def TraverseCollectionTree(t):
     yield t
     for child in t.children:
         yield from TraverseCollectionTree(child)
-
-
-def GetActiveCollection():
-    """
-    Used when Capsule needs the "most important" active collection in the scene.
-    """
-
-    # TODO: Not sure if I ever need to verify if it equals none or not
-    return bpy.context.layer_collection.collection
 
 
 def GetSceneCollections(scene, hasObjects = False):
@@ -62,7 +54,41 @@ def GetEditableCollections(context):
 
     return editables
 
+def GetActiveCollection():
+    """
+    Used when Capsule needs the "most important" active collection in the scene.
+    """
 
+    context = bpy.context
+    scene = context.scene
+    layer_col_selection = context.layer_collection.collection
+
+    # The active collection can either be the selection in the outliner
+    # OR it can be based on the active object.  Oh No!
+    # THIS BEHAVIOUR MUST MATCH GETSELECTEDCOLLECTIONS()
+    
+    if len(context.selected_objects) == 0:
+        # TODO: Remove this check when the top-level collection can be used again
+        if scene.collection != layer_col_selection:
+            return layer_col_selection
+
+    else:
+        active_obj = context.active_object
+        target_col = None
+
+        if layer_col_selection in active_obj.users_collection:
+            target_col = layer_col_selection
+            
+        elif len(active_obj.users_collection):
+            target_col = active_obj.users_collection[0]
+
+        if target_col:
+            if scene.collection != layer_col_selection:
+                return target_col
+
+        return None
+
+    return bpy.context.layer_collection.collection
 
 def GetSelectedCollections():
     """
@@ -99,10 +125,12 @@ def GetSelectedCollections():
     else:
         for obj in context.selected_objects:
             for col in obj.users_collection:
-                # print(col in collections_found)
-                # print(bpy.context.scene.user_of_id(col))
-                if bpy.context.scene.user_of_id(col):
-                    if col not in collections_found:
+                
+                # TODO: Remove the scene collection check when the top-level collection can be used again
+                verified = (scene.user_of_id(col) 
+                    and scene.collection != col)
+
+                if verified and col not in collections_found:
                         # print("winner")
                         collections_found.append(col)
 

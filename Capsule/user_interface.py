@@ -403,7 +403,7 @@ class CAPSULE_PT_Selection(Panel):
             else:
                 collection_info = layout.column(align= True)
                 collection_info.separator()
-                collection_info.label(text= "No groups selected.")
+                collection_info.label(text= "No collections selected.")
 
             layout.separator()
 

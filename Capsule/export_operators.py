@@ -88,8 +88,8 @@ class CAPSULE_OT_ExportAll(Operator):
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)
         
-        #print(export_objects)
-        #print(export_objects)
+        # print(export_objects)
+        # print(export_collections)
 
 
         # /////////////////////////////////////////////////
@@ -157,8 +157,8 @@ class CAPSULE_OT_ExportSelected(Operator):
             if collection.CAPCol.enable_export is True:
                 export_collections.append(collection)
 
-        print("Objects to export = ", export_objects)
-        print("Collections to export = ", export_collections)
+        # print("Objects to export = ", export_objects)
+        # print("Collections to export = ", export_collections)
 
 
         # /////////////////////////////////////////////////
@@ -322,7 +322,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
         child_export_option = collection.CAPCol.child_export_option
         targets = search_utils.GetCollectionObjectTree(context, collection, child_export_option)
 
-        #print("Current Export Targets = ", targets)
+        # print("Current Export Targets = ", targets)
         
         # TODO : Find an efficient way to filter out objects that have rendering turned off by the collections they're in.
         # Filter by rendering
@@ -336,8 +336,8 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
                     object_hidden = True
 
                 else:
-                    for collection in target.users_collection:
-                        if collection.hide_render is True:
+                    for render_search_col in target.users_collection:
+                        if render_search_col.hide_render is True:
                             object_hidden = True
                             break
                 
@@ -345,7 +345,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
                     renderable.append(target)
             
             targets = renderable
-            #print("Filtered Export Targets = ", targets)
+            # print("Filtered Export Targets = ", targets)
 
             if len(targets) == 0:
                 result['export_hidden'] += 1
@@ -379,6 +379,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     addon_prefs = preferences.addons[__package__].preferences
 
     result = {}
+    # print("Exporting Targets - ", targets)
 
     # TODO 1.2 : Is this needed anymore?
     # If they asked us not preserve armature constraints, we can
@@ -401,7 +402,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
         result['warning'] = path
         return result
 
-    #print("Path created...", path)
+    # print("Path created...", path)
 
 
     # /////////////////////////////////////////////////
@@ -459,18 +460,18 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
     """
 
     #print(">>> Exporting Combined Pass <<<")
-    #print(">>> Exporting Combined Pass <<<")
+    print(">>> Exporting Combined Pass <<<")
 
     bpy.ops.object.select_all(action= 'DESELECT')
 
     for item in targets:
         #print("Exporting: ", item.name)
-        #print("Exporting: ", item.name)
+        print("Exporting: ", item.name)
         select_utils.SelectObject(item)
 
 
     object_file_path = path + export_name
-    #print("Final File Path.", object_file_path)
+    # print("Final File Path.", object_file_path)
 
 
     # based on the export location, send it to the right place
