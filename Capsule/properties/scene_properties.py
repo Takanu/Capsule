@@ -56,7 +56,7 @@ class ObjectListItem(PropertyGroup):
 
     remove: BoolProperty(
         name = "",
-        description = "Removes the object from the list, and un-marks it for export.",
+        description = "Removes the object from the list, and un-marks it for export",
         default = True,
         update = CAP_Update_ObjectListRemove
         )
@@ -83,17 +83,17 @@ class CollectionListItem(PropertyGroup):
     collection: PointerProperty(
         type = bpy.types.Collection,
         name = "Collection",
-        description = "The collection data this list entry represents.",
+        description = "The collection data this list entry represents",
         )
 
     prev_name: StringProperty(
         name = "",
-        description = "Internal only, used for tracking name updates."
+        description = "Internal only, used for tracking name updates"
         )
 
     enable_export: BoolProperty(
         name = "",
-        description = "Enables or disables the ability to export this collection.",
+        description = "Enables or disables the ability to export this collection",
         default = False,
         update = CAP_Update_CollectionListExport
         )
@@ -107,14 +107,14 @@ class CollectionListItem(PropertyGroup):
 
     focus: BoolProperty(
         name = "Focus Export",
-        description = "Focuses the camera to the entire collection.",
+        description = "Focuses the camera to the entire collection (if there's an object in the collection that is selectable)",
         default = True,
         update = CAP_Update_FocusCollection
     )
 
     remove: BoolProperty(
         name = "",
-        description = "Removes the collection from the list, and un-marks it for export.",
+        description = "Removes the collection from the list, and un-marks it for export",
         default = True,
         update = CAP_Update_CollectionListRemove
     )
@@ -140,18 +140,18 @@ class ActionListItem(PropertyGroup):
     """
     name: StringProperty(
         name = "",
-        description = "The name of the action.",
+        description = "The name of the action",
         update = CAP_Update_ActionItemName
         )
 
     prev_name: StringProperty(
         name = "",
-        description = "Internal only, used for tracking name updates."
+        description = "Internal only, used for tracking name updates"
         )
 
     anim_type: EnumProperty(
         name = "Animation Data Type",
-        description = "Switches the selection editing mode between individual, selected objects and collections that can be browsed and edited through a list.",
+        description = "Switches the selection editing mode between individual, selected objects and collections that can be browsed and edited through a list",
         items =  (
         ('1', 'Action Object', ''),
         ('2', 'NLA Object', ''),
@@ -210,7 +210,7 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
 
     list_switch: EnumProperty(
         name = "Object Type Switch",
-        description = "Switches the list display mode between objects and collections.",
+        description = "Switches the list display mode between objects and collections",
         items =  (
         ('1', 'Objects', 'Displays the Export List for objects in the currently visible scene.'),
         ('2', 'Collections', 'Displays the Export List for collections in the currently visible scene')),
@@ -218,7 +218,7 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
 
     selection_switch: EnumProperty(
         name = "Selection Switch",
-        description = "Switches the selection editing mode between objects and collections.",
+        description = "Switches the selection editing mode between objects and collections",
         items =  (
         ('1', 'Objects', 'Displays selected objects, and any associated export settings.'),
         ('2', 'Collections', 'Displays selected collections, and any associated export settings.')),
@@ -273,16 +273,16 @@ class CAPSULE_Object_Preferences(PropertyGroup):
 
     enable_export: BoolProperty(
         name = "Enable Export",
-        description = "Enables or disables the ability to export this object.",
+        description = "Enables or disables the ability to export this object",
         default = False,
         )
 
     origin_point: EnumProperty(
         name = "Origin Export",
-        description = "Determines what the origin point of the exported file is set to.",
+        description = "Determines what the origin point of the exported file is set to",
         items =  (
-        ('Object', 'Object', "Sets the exported origin point to the object's origin point."),
-        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
+        ('Object', 'Object', "Sets the exported origin point to the object's origin point"),
+        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point")),
         )
 
     # use_scene_origin: BoolProperty(
@@ -293,24 +293,24 @@ class CAPSULE_Object_Preferences(PropertyGroup):
 
     location_preset: EnumProperty(
         name = "File Location",
-        description = "Defines the file path that the object will be exported to.",
+        description = "Defines the file path that the object will be exported to",
         items = GetLocationPresets,
         )
 
     export_preset: EnumProperty(
         name = "Export Preset",
-        description = "Defines the export settings used on the object.",
+        description = "Defines the export settings used on the object",
         items = GetExportDefaults,
         )
 
     enable_edit: BoolProperty(
         name = "",
-        description = "Enables editing of the object's properties when selected.",
+        description = "Enables editing of the object's properties when selected",
     )
 
     in_export_list: BoolProperty(
         name = "",
-        description = "(Internal Only) Prevents refreshes of the Export List from removing items not marked for export.",
+        description = "(Internal Only) Prevents refreshes of the Export List from removing items not marked for export",
         default = False
         )
 
@@ -321,65 +321,65 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
     """
     enable_export: BoolProperty(
         name = "Export Collection",
-        description = "Enables or disables the ability to export this collection.",
+        description = "Enables or disables the ability to export this collection",
         default = False,
         )
     
     origin_point: EnumProperty(
         name = "Origin Export",
-        description = "Determines what the origin point of the exported file is set to.",
+        description = "Determines what the origin point of the exported file is set to",
         items =  (
-        ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object."),
-        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
+        ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object"),
+        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point")),
         )
 
     root_object: PointerProperty(
         type = bpy.types.Object,
         name = "Origin Object",
-        description = "Defines what object will be used as the exported collection's origin point.",
+        description = "Defines what object will be used as the exported collection's origin point",
         )
     
     child_export_option: EnumProperty(
         name = "Hierarchy",
-        description = "Lets you set how children of a collection are included in the export.",
+        description = "Lets you set how children of a collection are included in the export",
         items =  (
-        ('All', 'All Children', "Will export the children of this collection as well as every object associated to a child of this collection."),
-        ('Immediate', 'Immediate Children Only', "Will only export objects that are a child of this collection."),
-        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree."),
-        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree."),
-        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree."),
-        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree."),
-        ('Down 5', 'Five Layer Down', "Will export all children up to five layers down the hierarchy tree.")
+        ('All', 'All Children', "Will export the children of this collection as well as every object associated to a child of this collection"),
+        ('Immediate', 'Immediate Children Only', "Will only export objects that are a child of this collection"),
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
+        ('Down 5', 'Five Layer Down', "Will export all children up to five layers down the hierarchy tree")
         ),
         )
 
     location_preset: EnumProperty(
         name = "File Location",
-        description = "Defines the Location that the collection will be exported to.",
+        description = "Defines the Location that the collection will be exported to",
         items = GetLocationPresets,
         )
 
     export_preset: EnumProperty(
         name = "Export Preset",
-        description = "Defines the export settings used on the collection.",
+        description = "Defines the export settings used on the collection",
         items = GetExportDefaults,
         )
     
     # TODO: why is there two identical properties here?
     # export_preset: EnumProperty(
     #     name = "Select Export Default",
-    #     description = "Defines the export settings used on the collection.",
+    #     description = "Defines the export settings used on the collection",
     #     items = GetExportDefaults,
     #     )
     
     enable_edit: BoolProperty(
         name = "",
-        description = "Enables editing of the collection's properties.",
+        description = "Enables editing of the collection's properties",
     )
 
     in_export_list: BoolProperty(
         name = "",
-        description = "(Internal Only) Prevents refreshes of the Export List from removing items not marked for export.",
+        description = "(Internal Only) Prevents refreshes of the Export List from removing items not marked for export",
         default = False
         )
 
@@ -407,7 +407,7 @@ class CAPSULE_Object_StateMachine(PropertyGroup):
 class CAPSULE_Action_Preferences(PropertyGroup):
     export: BoolProperty(
         name = "Export",
-        description = "Determines whether the action can be exported or not.",
+        description = "Determines whether the action can be exported or not",
         default = True
         )
 

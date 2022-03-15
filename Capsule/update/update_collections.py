@@ -196,8 +196,9 @@ def CAP_Update_FocusCollection(self, context):
     bpy.ops.object.select_all(action= 'DESELECT')
 
     for object in self.collection.objects:
-        select_utils.ActivateObject(object)
-        select_utils.SelectObject(object)
+        object.select_set(True)
+        bpy.context.view_layer.objects.active = object
+
 
     # As the context won't be correct when the icon is clicked
     # We have to find the actual 3D view and override the context of the operator
@@ -224,8 +225,8 @@ def CAP_Update_SelectCollection(self, context):
     bpy.ops.object.select_all(action= 'DESELECT')
 
     for object in self.collection.objects:
-        select_utils.ActivateObject(object)
-        select_utils.SelectObject(object)
+        object.select_set(True)
+        bpy.context.view_layer.objects.active = object
 
     return None
 
