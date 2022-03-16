@@ -79,7 +79,7 @@ class CAPSULE_UL_Collection(UIList):
             layout.label(text = "  Deleted Collection")
             # layout.prop(item, "deleted_name", text = "", emboss = False)
             layout.prop(item, "remove", text = "", icon = "X", emboss= False)
-            # layout.active = False
+            layout.active = False
             return
 
 
