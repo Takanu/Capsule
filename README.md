@@ -4,11 +4,11 @@ Capsule is a plugin for Blender that makes the process of exporting quick and se
 
 ## Features
 
-* **Batch Exports** - Mark hundreds of objects and groups in a scene for export and export them all with one click. If you've made changes to assets in the scene and need to re-export them, it's as simple as one more click.
+* **Batch Exports** - Mark hundreds of objects and groups in a scene for export and export them all with one click. If you've made changes to assets in the scene and need to re-export them it's as simple as one more click.
 
 * **Export Lists** - Get an overview of all objects prepared for export and quickly change their settings from the list menus.
 
-* **Export Presets** - Create detailed sets of export settings, supporting Alembic, Collada, FBX, GLTF, OBJ, STL and USD export formats.
+* **Export Presets** - Create detailed and reusable export presets, supporting Alembic, Collada, FBX, GLTF, OBJ, STL and USD export formats.
 
 * **Origin Point Export** - You can decide where the origin point is in your exports, no need to manually move around your objects before exporting.
 
@@ -33,7 +33,7 @@ Check out the Github Wiki for quick instructions on getting started - https://gi
 
 **What version of Blender does the plugin work with?**
 
-The current version supports Blender 2.92.
+The current version supports Blender 3.1
 
 
 **Are there things that Capsule can't currently export?**
@@ -55,9 +55,3 @@ Theres a few use cases where Capsule may have trouble exporting assets from your
 
 Yep, and they're all completely free - check out my GitHub account for other Blender goodies (https://github.com/Takanu).
 
-
-
-
----
-
-If you like this plugin and want to support future development, [consider buying me a coffee](https://paypal.me/takanukyriako) ☕️.
