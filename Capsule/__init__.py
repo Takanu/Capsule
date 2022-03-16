@@ -141,7 +141,7 @@ class CAP_AddonPreferences(AddonPreferences):
     use_overrides: BoolProperty(
         name = "Enable Overrides",
         description = "Enables Overrides, a feature that lets you assign Python scripts to exports that are executed just before and after they are exported.  Check the Capsule GitHub Wiki for more information",
-        default = True,
+        default = False,
     )
 
 
