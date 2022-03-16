@@ -280,8 +280,8 @@ class CAPSULE_PT_Selection(Panel):
 
                 obj_settings.separator()
 
-                obj_settings.operator("scene.cap_export_all")
-                obj_settings.operator("scene.cap_export_selected")
+                obj_settings.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
+                obj_settings.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED'
 
                 # TODO 2.0 : Add this back in with other object/collection switches.
                 #obj_settings.label(text= "Mesh Normals:")
@@ -406,8 +406,8 @@ class CAPSULE_PT_Selection(Panel):
 
                 group_layout.separator()
 
-                group_layout.operator("scene.cap_export_all")
-                group_layout.operator("scene.cap_export_selected")
+                group_layout.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
+                group_layout.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED'
 
             # If no collection was eventually found, bring up warning labels.
             else:
@@ -465,28 +465,31 @@ class CAPSULE_PT_List(Panel):
             Draw_CreateCapsuleData(layout)
             return
 
-        listTab = int(str(scn.list_switch))
+        list_tab = int(str(scn.list_switch))
 
         list_switch = layout.row(align= True)
         list_switch.prop(scn, "list_switch", expand= True)
 
         col_location = layout.column(align= True)
 
-        if listTab == 1:
+        if list_tab == 1:
             col_location.template_list("CAPSULE_UL_Object", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
-        elif listTab == 2:
+        elif list_tab == 2:
             col_location.template_list("CAPSULE_UL_Collection", "rawr", scn, "collection_list", scn, "collection_list_index", rows=3, maxrows=10)
 
         col_location_options = layout.row(align= True)
         col_location_options.operator("scene.cap_clearlist", icon = "X")
         col_location_options.operator("scene.cap_refreshlist", icon = "FILE_REFRESH")
+
         export_options = layout.column(align = True)
-        export_options.operator("scene.cap_export_all", text = "Export All Active")
+        
+        export_options.operator("scene.cap_export", text = "Export All Active").set_mode = 'ALL'
+        export_options.operator("scene.cap_export", text = "Export Selected In List").set_mode = 'ACTIVE_LIST'
         export_options.separator()
 
         # TODO REALLY IMPORTANT: List selections can no longer rely on the object being available.
 
-        if listTab == 1:
+        if list_tab == 1:
             obj = None
             ob = None
 
@@ -513,7 +516,7 @@ class CAPSULE_PT_List(Panel):
                     object_options_list.prop(obj, "override")
         
         # Group selection
-        elif listTab == 2:
+        elif list_tab == 2:
             grp = None 
             gr = None
 

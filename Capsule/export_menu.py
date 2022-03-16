@@ -263,9 +263,9 @@ class CAPSULE_OT_PieExport(Menu):
         layout = self.layout
         pie = layout.menu_pie()
         # 4 - LEFT
-        pie.operator("scene.cap_export_all", text= "Export All", icon = "EXPORT")
+        pie.operator("scene.cap_export", text= "Export All", icon = "EXPORT").set_mode = 'ALL'
         # 6 - RIGHT
-        pie.operator("scene.cap_export_selected", text= "Export Selected", icon = "EXPORT")
+        pie.operator("scene.cap_export", text= "Export Selected", icon = "EXPORT").set_mode = 'SELECTED'
         # 2 - BOTTOM
         # 8 - TOP
         # 7 - TOP - LEFT

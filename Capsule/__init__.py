@@ -493,8 +493,7 @@ def CheckSelectedObject(scene):
             proxy.col_override = col.override
 
             proxy.disable_updates = False
-
-            return
+    
     
 
 #---------------------------------------------------------
@@ -547,12 +546,12 @@ classes = (
     CAPSULE_Scene_Preferences, 
     CAPSULE_Object_Preferences, 
     CAPSULE_Collection_Preferences, 
-    # CAPSULE_Action_Preferences,
     CAPSULE_Proxy_Properties,
+    CAPSULE_Export_Status,
+
 
     # export_operators
-    CAPSULE_OT_ExportAll,
-    CAPSULE_OT_ExportSelected,
+    CAPSULE_OT_Export,
 
     # export_properties
     CAPSULE_ExportPreset, 
@@ -624,12 +623,13 @@ def register():
         bpy.utils.register_class(cls)
 
     # Assign datablocks now all classes have been registered.
-    bpy.types.Scene.CAPScn = PointerProperty(name= 'Capsule Scene Properties', type=CAPSULE_Scene_Preferences)
-    bpy.types.Object.CAPObj = PointerProperty(name= 'Capsule Object Properties', type=CAPSULE_Object_Preferences)
-    bpy.types.Collection.CAPCol = PointerProperty(name= 'Capsule Collection Properties', type=CAPSULE_Collection_Preferences)
-    # bpy.types.Action.CAPAcn = PointerProperty(type=CAPSULE_Action_Preferences)
-    bpy.types.Object.CAPFile = PointerProperty(name= 'Capsule File Data', type=CAPSULE_FileData)
-    bpy.types.Scene.CAPProxy = PointerProperty(name= 'Capsule Scene Property Proxy', type=CAPSULE_Proxy_Properties)
+    bpy.types.Scene.CAPScn = PointerProperty(name = 'Capsule Scene Properties', type = CAPSULE_Scene_Preferences)
+    bpy.types.Object.CAPObj = PointerProperty(name = 'Capsule Object Properties', type = CAPSULE_Object_Preferences)
+    bpy.types.Collection.CAPCol = PointerProperty(name = 'Capsule Collection Properties', type = CAPSULE_Collection_Preferences)
+
+    bpy.types.Object.CAPFile = PointerProperty(name = 'Capsule File Data', type = CAPSULE_FileData)
+    bpy.types.Scene.CAPProxy = PointerProperty(name = 'Capsule Scene Property Proxy', type = CAPSULE_Proxy_Properties)
+    bpy.types.Scene.CAPStatus = PointerProperty(name = 'Capsule Export Status', type = CAPSULE_Export_Status)
 
 
     # Setup data and handlers
@@ -656,10 +656,10 @@ def unregister():
     del bpy.types.Scene.CAPScn
     del bpy.types.Object.CAPObj
     del bpy.types.Collection.CAPCol
-    # del bpy.types.Action.CAPAcn
-    del bpy.types.Object.CAPStm
+
     del bpy.types.Object.CAPFile
     del bpy.types.Scene.CAPProxy
+    del bpy.types.Scene.CAPStatus
 
 
     # Unregister classes

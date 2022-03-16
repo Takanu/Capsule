@@ -30,14 +30,14 @@ class ObjectListItem(PropertyGroup):
         type = bpy.types.Object,
         name = "Object",
         description = "A pointer for the object this list item represents",
-        )
+    )
 
     enable_export: BoolProperty(
         name = "",
         description = "Enables or disables the ability to export this object",
         default = False,
         update = CAP_Update_ObjectListExport
-        )
+    )
 
     # Secondary functions
     sel: BoolProperty(
@@ -45,21 +45,21 @@ class ObjectListItem(PropertyGroup):
         description = "Selects the object in the scene",
         default = True,
         update = CAP_Update_SelectObject
-        )
+    )
 
     focus: BoolProperty(
         name = "Focus",
         description = "Focuses the camera to the object",
         default = True,
         update = CAP_Update_FocusObject
-        )
+    )
 
     remove: BoolProperty(
         name = "",
         description = "Removes the object from the list, and un-marks it for export",
         default = True,
         update = CAP_Update_ObjectListRemove
-        )
+    )
     
     # this value exists purely to display a label with correct padding in a UIList
     # no longer needed for now, keeping here just in case
@@ -84,19 +84,19 @@ class CollectionListItem(PropertyGroup):
         type = bpy.types.Collection,
         name = "Collection",
         description = "The collection data this list entry represents",
-        )
+    )
 
     prev_name: StringProperty(
         name = "",
         description = "Internal only, used for tracking name updates"
-        )
+    )
 
     enable_export: BoolProperty(
         name = "",
         description = "Enables or disables the ability to export this collection",
         default = False,
         update = CAP_Update_CollectionListExport
-        )
+    )
     
     sel: BoolProperty(
         name = "Select",
@@ -142,12 +142,12 @@ class ActionListItem(PropertyGroup):
         name = "",
         description = "The name of the action",
         update = CAP_Update_ActionItemName
-        )
+    )
 
     prev_name: StringProperty(
         name = "",
         description = "Internal only, used for tracking name updates"
-        )
+    )
 
     anim_type: EnumProperty(
         name = "Animation Data Type",
@@ -157,52 +157,26 @@ class ActionListItem(PropertyGroup):
         ('2', 'NLA Object', ''),
         ('3', 'Action Armature', ''),
         ('4', 'NLA Armature', ''),),
-        )
+    )
 
-def GetSelectedCollections(scene, context):
-
-    items = [
-        ("0", "None",  "", 0),
-        ]
-
-    scn = context.scene.CAPScn
-    scn.collection_selected_list.clear()
-    u = 1
-
-    for i,x in enumerate(GetSelectedCollections()):
-        items.append((str(i+1), x.name, x.name, i+1))
-        new_collection_entry = scn.collection_selected_list.add()
-        new_collection_entry.name = x.name
-
-    return items
 
 class CAPSULE_Scene_Preferences(PropertyGroup):
     """
     A random assortment of scene-specific properties with some "weird" toggle stuff.
     """
 
-    # A collection that stores the list of collections that Capsule is currently displaying in the UI list.
-    collection_list: CollectionProperty(type=CollectionListItem)
-
-    # ???
-    collection_list_index: IntProperty()
-
-    ## ???
-    collection_selected_list: CollectionProperty(type=CollectionListItem)
-
-    ## ???
-    collection_selected_list_enum: EnumProperty(items = GetSelectedCollections)
-
-    ## The index of the currently selected collection from the UI list.  Will be -1 if not selected.
-    collection_selected_list_index: IntProperty()
-
     # A collection that stores the list of objects that Capsule is currently displaying in the UI list.
     object_list: CollectionProperty(type=ObjectListItem)
 
-    # ???
-    object_list_index: IntProperty(name = "",
-        description = "",
-        )
+    # The index of the selected object list item
+    object_list_index: IntProperty()
+
+    # A collection that stores the list of collections that Capsule is currently displaying in the UI list.
+    collection_list: CollectionProperty(type=CollectionListItem)
+
+    # The index of the selected collection list item
+    collection_list_index: IntProperty()
+
 
     ## Old Action list variables
     action_list: CollectionProperty(type=ActionListItem)
@@ -214,7 +188,7 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
         items =  (
         ('1', 'Objects', 'Displays the Export List for objects in the currently visible scene.'),
         ('2', 'Collections', 'Displays the Export List for collections in the currently visible scene')),
-        )
+    )
 
     selection_switch: EnumProperty(
         name = "Selection Switch",
@@ -222,13 +196,13 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
         items =  (
         ('1', 'Objects', 'Displays selected objects, and any associated export settings.'),
         ('2', 'Collections', 'Displays selected collections, and any associated export settings.')),
-        )
+    )
 
 def GetLocationPresets(scene, context):
 
     items = [
         ("0", "None",  "", 0),
-        ]
+    ]
 
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
@@ -323,7 +297,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         name = "Export Collection",
         description = "Enables or disables the ability to export this collection",
         default = False,
-        )
+    )
     
     origin_point: EnumProperty(
         name = "Origin Export",
@@ -331,7 +305,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         items =  (
         ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object"),
         ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point")),
-        )
+    )
 
     root_object: PointerProperty(
         type = bpy.types.Object,
@@ -351,32 +325,25 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
         ('Down 5', 'Five Layer Down', "Will export all children up to five layers down the hierarchy tree")
         ),
-        )
+    )
 
     location_preset: EnumProperty(
         name = "File Location",
         description = "Defines the Location that the collection will be exported to",
         items = GetLocationPresets,
-        )
+    )
 
     export_preset: EnumProperty(
         name = "Export Preset",
         description = "Defines the export settings used on the collection",
         items = GetExportDefaults,
-        )
+    )
     
     override: PointerProperty(
         type = bpy.types.Text,
         name = "Override",
         description = "Defines a python script that will be executed just before and after Capsule exports to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
     )
-    
-    # TODO: why is there two identical properties here?
-    # export_preset: EnumProperty(
-    #     name = "Select Export Default",
-    #     description = "Defines the export settings used on the collection",
-    #     items = GetExportDefaults,
-    #     )
     
     enable_edit: BoolProperty(
         name = "",
@@ -387,28 +354,41 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         name = "",
         description = "(Internal Only) Prevents refreshes of the Export List from removing items not marked for export",
         default = False
-        )
+    )
 
-def GetExportPresets(scene, context):
+class CAPSULE_Export_Status(PropertyGroup):
+    """
+    A property group used to externalize the current status of a Capsule Export Operator.  This is specifically
+    being used for the Override feature
+    """
 
-    items = []
-    preferences = context.preferences
-    addon_prefs = preferences.addons["Blinkey"].preferences
+    target_name: StringProperty(
+        name = "Export Target Name",
+        description = "The name of the Export Target that Capsule is currently performing operations on.  This will be the name of an Object or Collection",
+        default = "",
+    )
 
-    u = 1
+    target_type: EnumProperty(
+        name = "Export Target Type",
+        description = "Indicates whether the current Export Target is an Object or Collection",
+        items =  (
+        ('OBJECT', 'Object', "Capsule has performed all preparation actions and is about to export the current Export Target"),
+        ('COLLECTION', 'Collection', "Capsule has just exported the Export Target and is about to perform clean-up operations"),
+        ),
+    )
 
-    for i,x in enumerate(addon_prefs.presets):
-        items.append((str(i), x.name, x.name, i))
+    target_status: EnumProperty(
+        name = "Export Status",
+        description = "Describes what stage of the export process Capsule is at for the current target",
+        items =  (
+        ('NONE', 'None', "Capsule is currently inactive"),
+        ('BEFORE_EXPORT', 'Before Export', "Capsule has performed all preparation actions and is about to export the current Export Target"),
+        ('AFTER_EXPORT', 'After Export', "Capsule has just exported the Export Target and is about to perform clean-up operations"),
+        ),
+        default = 'NONE',
+    )
 
-    return items
 
-
-class CAPSULE_Action_Preferences(PropertyGroup):
-    export: BoolProperty(
-        name = "Export",
-        description = "Determines whether the action can be exported or not",
-        default = True
-        )
 
 
 # ////////////////////// - CLASS REGISTRATION - ////////////////////////
@@ -421,7 +401,6 @@ class CAPSULE_Action_Preferences(PropertyGroup):
 #     CAPSULE_Scene_Preferences, 
 #     CAPSULE_Object_Preferences, 
 #     CAPSULE_Collection_Preferences, 
-#     # CAPSULE_Action_Preferences
 # )
 
 # def register():

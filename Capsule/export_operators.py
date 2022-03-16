@@ -25,18 +25,33 @@ from .tk_utils import paths as path_utils
 from .tk_utils import record as record_utils
 
 from . import tag_ops
-from .export_utils import CheckAnimation, AddTriangulate, RemoveTriangulate
+from .export_utils import CheckAnimation
 
 
-class CAPSULE_OT_ExportAll(Operator):
-    """Exports all objects and collections in the scene that are marked for export."""
-    bl_idname = "scene.cap_export_all"
+class CAPSULE_OT_Export(Operator):
+    """Exports objects and collections in the scene."""
+
+    bl_idname = "scene.cap_export"
     bl_label = "Export All"
 
+    # This is important, pay attention :eyes:
+    set_mode: EnumProperty(
+        name = "Export Mode",
+        items = [
+            ('ALL', "All Active", "Exports everything in the scene"),
+            ('SELECTED', "Selected", "Exports only selected export targets"),
+            ('ACTIVE_LIST', "Active List", "Exports the active list selection")
+            ],
+        default = 'ALL',
+        description = "Execution mode", 
+        options = {'HIDDEN'},
+    )
+
     def execute(self, context):
-        scn = context.scene.CAPScn
+        
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
+        cap_scn = context.scene.CAPScn
         cap_file = None
 
 
@@ -80,13 +95,36 @@ class CAPSULE_OT_ExportAll(Operator):
         export_objects = []
         export_collections = []
 
-        for object in context.scene.objects:
-            if object.CAPObj.enable_export is True:
-                export_objects.append(object)
+        if self.set_mode == 'ALL':
+            for object in context.scene.objects:
+                if object.CAPObj.enable_export is True:
+                    export_objects.append(object)
+            
+            for collection in search_utils.GetSceneCollections(context.scene, False):
+                if collection.CAPCol.enable_export is True:
+                    export_collections.append(collection)
         
-        for collection in search_utils.GetSceneCollections(context.scene, False):
-            if collection.CAPCol.enable_export is True:
-                export_collections.append(collection)
+        elif self.set_mode == 'SELECTED':
+            for object in context.selected_objects:
+                if object.CAPObj.enable_export is True:
+                    export_objects.append(object)
+        
+            for collection in search_utils.GetSelectedCollections():
+                if collection.CAPCol.enable_export is True:
+                    export_collections.append(collection)
+        
+        elif self.set_mode == 'ACTIVE_LIST':
+            list_tab = int(str(cap_scn.list_switch))
+
+            if list_tab == 1:
+                index = cap_scn.object_list_index
+                export_objects.append(cap_scn.object_list[index].object)
+
+            elif list_tab == 2:
+                index = cap_scn.collection_list_index
+                export_collections.append(cap_scn.collection_list[index].collection)
+
+
         
         # print(export_objects)
         # print(export_collections)
@@ -127,106 +165,6 @@ class CAPSULE_OT_ExportAll(Operator):
         record_utils.RestoreSceneContext(context, global_record)
 
         return {'FINISHED'}\
-
-
-class CAPSULE_OT_ExportSelected(Operator):
-    """Exports all selected objects and collections in the scene that are marked for export."""
-    bl_idname = "scene.cap_export_selected"
-    bl_label = "Export Selected"
-
-    def execute(self, context):
-        scn = context.scene.CAPScn
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        cap_file = None
-
-
-        # /////////////////////////////////////////////////
-        # FETCH
-
-        # Fetch objects and collections for export before we set the scene
-        export_objects = []
-        export_collections = []
-
-        for object in context.selected_objects:
-            if object.CAPObj.enable_export is True:
-                export_objects.append(object)
-        
-        for collection in search_utils.GetSelectedCollections():
-            if collection.CAPCol.enable_export is True:
-                export_collections.append(collection)
-
-        # print("Objects to export = ", export_objects)
-        # print("Collections to export = ", export_collections)
-
-
-        # /////////////////////////////////////////////////
-        # SETUP
-    
-        # For the new pie menu, we need to see if any data exists before continuing
-        try:
-            cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
-        except KeyError:
-            self.report({'WARNING'}, "No Capsule Data for this blend file exists.  Please create it using the Toolshelf or Addon Preferences menu.")
-            return {'FINISHED'}
-
-        # Make a record of the scene before we do anything
-        global_record = record_utils.BuildSceneContext(context)
-
-        # We need to make a separate definition set for preserving and restoring scene data.
-        result = record_utils.CheckCapsuleErrors(context, export_objects, export_collections)
-        
-        if result is not None:
-            record_utils.RestoreSceneContext(context, global_record)
-            self.report({'WARNING'}, result)
-            return {'FINISHED'}
-        
-       
-
-        # Set export counts here
-        export_stats = {}
-
-        # get the current time for later
-        global_record['export_time'] = datetime.now()
-        
-
-        # /////////////////////////////////////////////////
-        # OBJECT EXPORT
-
-        object_export_result = ExportObjectList(context, cap_file, export_objects, global_record)
-        if 'warning' in object_export_result:
-            self.report({'WARNING'}, object_export_result['warning'])
-            record_utils.RestoreSceneContext(context, global_record)
-            return {'FINISHED'}
-
-        export_stats['obj_exported'] = object_export_result['export_count']
-        export_stats['obj_hidden'] = object_export_result['export_hidden']
-        
-
-        # /////////////////////////////////////////////////
-        # COLLECTION EXPORT
-        
-        collection_export_result = ExportCollectionList(context, cap_file, export_collections, global_record)
-        if 'warning' in collection_export_result:
-            self.report({'WARNING'}, collection_export_result['warning'])
-            record_utils.RestoreSceneContext(context, global_record)
-            return {'FINISHED'}
-
-        export_stats['col_exported'] = collection_export_result['export_count']
-        export_stats['col_hidden'] = collection_export_result['export_hidden']
-
-
-        print("Final Export Stats = ", export_stats)        
-
-        # /////////////////////////////////////////////////
-        # EXPORT SUMMARY  
-        export_info = GetExportSummary(export_stats)
-        self.report({export_info[0]}, export_info[1])
-        
-
-        record_utils.RestoreSceneContext(context, global_record)
-
-        return {'FINISHED'}
 
 
 # TODO: These definition names are terrible!
@@ -371,7 +309,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     the right details for the export.
     """
 
-    scn = context.scene.CAPScn
+    cap_scn = context.scene.CAPScn
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
@@ -456,14 +394,33 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
     Exports a selection of objects into a single file.
     """
 
+    # TODO: This should really be shared in some manner.
+    # cap_scn = context.scene.CAPScn
+    # preferences = context.preferences
+    # addon_prefs = preferences.addons[__package__].preferences
+    # cap_file = None
+    # try:
+    #     cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
+    # except KeyError:
+    #     return
+
+    # # ////////////////////////////////
+    # # OVERRIDE
+    # export_status = context.scene.CAPStatus
+    # export_status.target_name = export_name
+    # export_status.target_status = 'BEFORE_EXPORT'
+    # if cap_file.use_overrides is True:
+    #     pass
+
+
     #print(">>> Exporting Combined Pass <<<")
-    print(">>> Exporting Combined Pass <<<")
+    # print(">>> Exporting Combined Pass <<<")
 
     bpy.ops.object.select_all(action= 'DESELECT')
 
     for item in targets:
         #print("Exporting: ", item.name)
-        print("Exporting: ", item.name)
+        # print("Exporting: ", item.name)
         select_utils.SelectObject(item)
 
 
@@ -493,54 +450,6 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
     elif export_preset.format_type == 'USD':
         export_preset.data_usd.export(context, export_preset, object_file_path)
 
-
-
-    """
-    Exports a selection of objects, saving each object into it's own file.
-    """
-
-    #print(">>> Individual Pass <<<")
-    for item in targets:
-        #print("-"*70)
-        #print("-"*70)
-        individual_file_path = path + item.name
-        #print("Final File Path.", individual_file_path)
-
-        # For the time being, manually move the object back and forth to
-        # the world origin point.
-        tempLoc = loc_utils.FindWorldSpaceObjectLocation(context, item)
-
-        # FIXME: Doesn't distinguish between "Use Scene Origin".
-
-        # moves each target to the centre individually, even though these objects have
-        # already been moved before collectively.
-        object_transform.MoveObject(item, context, (0.0, 0.0, 0.0))
-
-        bpy.ops.object.select_all(action= 'DESELECT')
-        select_utils.FocusObject(item)
-
-
-        # based on the export location, send it to the right place
-        if export_preset.format_type == 'FBX':
-            export_preset.data_fbx.export(export_preset, individual_file_path)
-
-        elif export_preset.format_type == 'OBJ':
-            export_preset.data_obj.export(export_preset, individual_file_path)
-
-        elif export_preset.format_type == 'GLTF':
-            export_preset.data_gltf.export(context, export_preset, path, item.name)
-        
-        elif export_preset.format_type == 'Alembic':
-            export_preset.data_abc.export(context, export_preset, individual_file_path)
-
-        elif export_preset.format_type == 'Collada':
-            export_preset.data_dae.export(export_preset, individual_file_path)
-
-        elif export_preset.format_type == 'STL':
-            export_preset.data_stl.export(context, export_preset, individual_file_path)
-
-
-        object_transform.MoveObject(item, context, tempLoc)
 
 
 def GetRootLocationDefinition(context, export_name, origin_point, root_definition):
