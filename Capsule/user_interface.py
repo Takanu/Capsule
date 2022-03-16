@@ -281,7 +281,7 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.separator()
 
                 obj_settings.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
-                obj_settings.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED'
+                obj_settings.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_OBJECTS'
 
                 # TODO 2.0 : Add this back in with other object/collection switches.
                 #obj_settings.label(text= "Mesh Normals:")
@@ -407,7 +407,7 @@ class CAPSULE_PT_Selection(Panel):
                 group_layout.separator()
 
                 group_layout.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
-                group_layout.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED'
+                group_layout.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_COLLECTIONS'
 
             # If no collection was eventually found, bring up warning labels.
             else:

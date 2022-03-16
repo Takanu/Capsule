@@ -368,7 +368,7 @@ class CAPSULE_Export_Status(PropertyGroup):
         default = "",
     )
 
-    target_type: EnumProperty(
+    target_list: EnumProperty(
         name = "Export Target Type",
         description = "Indicates whether the current Export Target is an Object or Collection",
         items =  (

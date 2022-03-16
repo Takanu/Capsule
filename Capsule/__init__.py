@@ -141,7 +141,7 @@ class CAP_AddonPreferences(AddonPreferences):
     use_overrides: BoolProperty(
         name = "Enable Overrides",
         description = "Enables Overrides, a feature that lets you assign Python scripts to exports that are executed just before and after they are exported.  Check the Capsule GitHub Wiki for more information",
-        default = False,
+        default = True,
     )
 
 
@@ -465,7 +465,7 @@ def CheckSelectedObject(scene):
             proxy.obj_origin_point = obj.origin_point
             proxy.obj_location_preset = obj.location_preset
             proxy.obj_export_preset = obj.export_preset
-            proxy.col_override = obj.override
+            proxy.obj_override = obj.override
 
             proxy.disable_updates = False
     

@@ -6,15 +6,7 @@ from mathutils import Vector
 from math import pi, radians, degrees
 
 from bpy.types import Operator
-from bpy.props import (
-    IntProperty, 
-    BoolProperty,
-    FloatProperty, 
-    EnumProperty, 
-    PointerProperty, 
-    StringProperty, 
-    CollectionProperty,
-)
+from bpy.props import EnumProperty
 
 from .tk_utils import search as search_utils
 from .tk_utils import select as select_utils
@@ -39,7 +31,9 @@ class CAPSULE_OT_Export(Operator):
         name = "Export Mode",
         items = [
             ('ALL', "All Active", "Exports everything in the scene"),
-            ('SELECTED', "Selected", "Exports only selected export targets"),
+            ('SELECTED_ALL', "Selected", "Exports only selected objects and collections"),
+            ('SELECTED_OBJECTS', "Selected Objects", "Exports only selected object"),
+            ('SELECTED_COLLECTIONS', "Selected Collections", "Exports only selected collection"),
             ('ACTIVE_LIST', "Active List", "Exports the active list selection")
             ],
         default = 'ALL',
@@ -53,6 +47,62 @@ class CAPSULE_OT_Export(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         cap_scn = context.scene.CAPScn
         cap_file = None
+
+        # /////////////////////////////////////////////////
+        # FETCH
+
+        # Fetch objects and collections for export
+        # (fetching MUST be done first to preserve selection data)
+
+        export_objects = []
+        export_collections = []
+
+        if self.set_mode == 'ALL':
+            for object in context.scene.objects:
+                if object.CAPObj.enable_export is True:
+                    export_objects.append(object)
+            
+            for collection in search_utils.GetSceneCollections(context.scene, False):
+                if collection.CAPCol.enable_export is True:
+                    export_collections.append(collection)
+        
+        # this is for the pie menu!
+        elif self.set_mode == 'SELECTED_ALL':
+            for object in context.selected_objects:
+                if object.CAPObj.enable_export is True:
+                    export_objects.append(object)
+            
+            for collection in search_utils.GetSelectedCollections():
+                if collection.CAPCol.enable_export is True:
+                    export_collections.append(collection)
+        
+        # this is for the object tab of the 3D view menu
+        elif self.set_mode == 'SELECTED_OBJECTS':
+            for object in context.selected_objects:
+                if object.CAPObj.enable_export is True:
+                    export_objects.append(object)
+        
+        # this is for the collections tab of the 3D view menu
+        elif self.set_mode == 'SELECTED_COLLECTIONS':
+            for collection in search_utils.GetSelectedCollections():
+                if collection.CAPCol.enable_export is True:
+                    export_collections.append(collection)
+        
+        # this is for the list menu
+        elif self.set_mode == 'ACTIVE_LIST':
+            list_tab = int(str(cap_scn.list_switch))
+
+            if list_tab == 1:
+                index = cap_scn.object_list_index
+                export_objects.append(cap_scn.object_list[index].object)
+
+            elif list_tab == 2:
+                index = cap_scn.collection_list_index
+                export_collections.append(cap_scn.collection_list[index].collection)
+
+        
+        # print(export_objects)
+        # print(export_collections)
 
 
         # /////////////////////////////////////////////////
@@ -86,48 +136,6 @@ class CAPSULE_OT_Export(Operator):
         
         # get the current time for later
         global_record['export_time'] = datetime.now()
-
-
-        # /////////////////////////////////////////////////
-        # FETCH
-
-        # Fetch objects and collections for export
-        export_objects = []
-        export_collections = []
-
-        if self.set_mode == 'ALL':
-            for object in context.scene.objects:
-                if object.CAPObj.enable_export is True:
-                    export_objects.append(object)
-            
-            for collection in search_utils.GetSceneCollections(context.scene, False):
-                if collection.CAPCol.enable_export is True:
-                    export_collections.append(collection)
-        
-        elif self.set_mode == 'SELECTED':
-            for object in context.selected_objects:
-                if object.CAPObj.enable_export is True:
-                    export_objects.append(object)
-        
-            for collection in search_utils.GetSelectedCollections():
-                if collection.CAPCol.enable_export is True:
-                    export_collections.append(collection)
-        
-        elif self.set_mode == 'ACTIVE_LIST':
-            list_tab = int(str(cap_scn.list_switch))
-
-            if list_tab == 1:
-                index = cap_scn.object_list_index
-                export_objects.append(cap_scn.object_list[index].object)
-
-            elif list_tab == 2:
-                index = cap_scn.collection_list_index
-                export_collections.append(cap_scn.collection_list[index].collection)
-
-
-        
-        # print(export_objects)
-        # print(export_collections)
 
 
         # /////////////////////////////////////////////////
@@ -184,7 +192,7 @@ def ExportObjectList(context, cap_file, object_list, global_record):
         meta['export_time'] = global_record['export_time']
         meta['export_name'] = item.name
 
-        # Get the export default for the object
+        # Get the export preset for the object
         export_preset_index = int(item.CAPObj.export_preset) - 1
         export_preset = cap_file.export_presets[export_preset_index]
         meta['preset_name'] = export_preset.name
@@ -193,6 +201,7 @@ def ExportObjectList(context, cap_file, object_list, global_record):
         location_preset = cap_file.location_presets[location_preset_index]
 
         origin_point = item.CAPObj.origin_point
+        override = item.CAPObj.override
 
         # Filter by rendering
         object_hidden = False
@@ -212,7 +221,8 @@ def ExportObjectList(context, cap_file, object_list, global_record):
             continue
 
         # E X P O R T
-        export_result = ExportTarget(context, [item], item.name, export_preset, location_preset, origin_point, item, meta)
+        export_result = ExportTarget(context, [item], item.name, export_preset, 
+            location_preset, origin_point, item, override, meta)
 
         # Return early if a warning was triggered.
         if 'warning' in export_result:
@@ -253,6 +263,8 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
         if origin_point == 'Object':
             root_definition = bpy.context.scene.objects.get(collection.CAPCol.root_object.name)
             #print(' R O O T - ', root_definition)
+        
+        override = collection.CAPCol.override
 
         # Collect all objects that are applicable for this export
         child_export_option = collection.CAPCol.child_export_option
@@ -290,7 +302,8 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
         #print("PREPARING TO EXPORT COLLECTION ", collection.name)
 
         # E X P O R T
-        export_result = ExportTarget(context, targets, collection.name, export_preset, location_preset, origin_point, root_definition, meta)
+        export_result = ExportTarget(context, targets, collection.name, export_preset, 
+            location_preset, origin_point, root_definition, override, meta)
 
         # Return early if a warning was triggered.
         if 'warning' in export_result:
@@ -303,7 +316,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
     return result
 
 
-def ExportTarget(context, targets, export_name, export_preset, location_preset, origin_point, root_definition, meta):
+def ExportTarget(context, targets, export_name, export_preset, location_preset, origin_point, root_definition, override, meta):
     """
     The main function for exporting objects in Capsule, designed to work with an Operator in being provided
     the right details for the export.
@@ -360,8 +373,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # EXPORT PROCESS
 
     # A separate export function call for every corner case isnt actually necessary
-    PrepareExportCombined(context, targets, path, export_preset, export_name)
-
+    export_result = FinalizeExport(context, targets, path, export_preset, export_name, override)
 
     # /////////////////////////////////////////////////
     # DELETE/RESTORE 
@@ -376,6 +388,10 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     if export_preset.preserve_armature_constraints == True:
         record_utils.RestoreArmatureConstraints(context, armature_record)
 
+    # We perform error checks here so the scene can be reset.
+    if export_result is not None:
+        result['warning'] = export_result
+        return result
 
     # /////////////////////////////////////////////////
     # TRACKER
@@ -389,44 +405,49 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     return {}
 
 
-def PrepareExportCombined(context, targets, path, export_preset, export_name):
+def FinalizeExport(context, targets, path, export_preset, export_name, override):
     """
     Exports a selection of objects into a single file.
     """
 
     # TODO: This should really be shared in some manner.
-    # cap_scn = context.scene.CAPScn
-    # preferences = context.preferences
-    # addon_prefs = preferences.addons[__package__].preferences
-    # cap_file = None
-    # try:
-    #     cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
-    # except KeyError:
-    #     return
+    cap_scn = context.scene.CAPScn
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
 
-    # # ////////////////////////////////
-    # # OVERRIDE
-    # export_status = context.scene.CAPStatus
-    # export_status.target_name = export_name
-    # export_status.target_status = 'BEFORE_EXPORT'
-    # if cap_file.use_overrides is True:
-    #     pass
+    # ////////////////////////////////
+    # OVERRIDE INTRO
 
-
-    #print(">>> Exporting Combined Pass <<<")
-    # print(">>> Exporting Combined Pass <<<")
+    export_status = context.scene.CAPStatus
+    export_status.target_name = export_name
+    export_status.target_status = 'BEFORE_EXPORT'
+    export_status['target_input'] = targets
+    export_status['target_output'] = []
 
     bpy.ops.object.select_all(action= 'DESELECT')
 
-    for item in targets:
-        #print("Exporting: ", item.name)
-        # print("Exporting: ", item.name)
-        select_utils.SelectObject(item)
+    if addon_prefs.use_overrides is True and override is not None:
+        code = override.as_string()
+        exec(code)
+
+        if len(export_status['target_output']) == 0:
+            return "An override used provided no target objects to export."
+
+        # TODO: Find a robust way to test for type
+        for item in export_status['target_output']:
+            select_utils.SelectObject(item)
+
+    else:
+        for item in targets:
+            #print("Exporting: ", item.name)
+            select_utils.SelectObject(item)
 
 
     object_file_path = path + export_name
     # print("Final File Path.", object_file_path)
 
+    # ////////////////////////////////
+    # EXPORT ! ! ! 
 
     # based on the export location, send it to the right place
     if export_preset.format_type == 'FBX':
@@ -449,6 +470,24 @@ def PrepareExportCombined(context, targets, path, export_preset, export_name):
 
     elif export_preset.format_type == 'USD':
         export_preset.data_usd.export(context, export_preset, object_file_path)
+
+    # ////////////////////////////////
+    # OVERRIDE OUTRO
+
+    export_status = context.scene.CAPStatus
+    export_status.target_name = export_name
+    export_status.target_status = 'AFTER_EXPORT'
+
+    if addon_prefs.use_overrides is True and override is not None:
+        code = override.as_string()
+        exec(code)
+
+    # Reset the Export Status state
+    export_status = context.scene.CAPStatus
+    export_status.target_name = ""
+    export_status.target_status = 'NONE'
+    export_status['target_input'] = []
+    export_status['target_output'] = []
 
 
 
