@@ -32,10 +32,14 @@ export_status = context.scene.CAPStatus
 # This is the LAST thing Capsule has to do, everything else including filtering,
 # moving objects to the origin point of the scene and anything else has been done.
 if export_status.target_status == 'BEFORE_EXPORT':
+
+    # Use this to get the objects that Capsule wants to export
+    # objects = export_status['target_input']
     
     
-    # An override script must provide a list of objects to export 
-    # target_status['target_output'] = your_final_export_items
+    # Use this to provide Capsule with the objects you want to export
+    # THIS MUST CONTAIN SOMETHING
+    # export_status['target_output'] = your_final_export_items
     pass
     
     
