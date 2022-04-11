@@ -4,6 +4,7 @@
 
 import bpy
 
+import os.path
 from mathutils import Vector
 from . import search as search_utils
 from . import select as select_utils
@@ -598,7 +599,7 @@ def CheckCapsuleErrors(context, target_objects = None, target_collections = None
             return statement
         
         # TODO: Ensure this would properly validate a directory
-        if defaultFilePath[-1] != '\\':
+        if not os.path.isdir(defaultFilePath):
             statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' points to a file rather than a directory.  Please ensure it points to a folder."
             return statement
 
