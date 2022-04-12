@@ -54,6 +54,8 @@ class CAPSULE_OT_Export(Operator):
         # Fetch objects and collections for export
         # (fetching MUST be done first to preserve selection data)
 
+        print('>> EXPORT OPERATOR <<')
+
         export_objects = []
         export_collections = []
 
@@ -243,6 +245,9 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
     result = {}
     result['export_count'] = 0
     result['export_hidden'] = 0
+
+    print('>> EXPORT COLLECTION <<')
+
     
     for collection in collection_list:
         meta = {}
@@ -321,6 +326,8 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     The main function for exporting objects in Capsule, designed to work with an Operator in being provided
     the right details for the export.
     """
+
+    print('>> EXPORT TARGET <<')
 
     cap_scn = context.scene.CAPScn
     preferences = context.preferences
@@ -409,6 +416,8 @@ def FinalizeExport(context, targets, path, export_preset, export_name, override)
     """
     Exports a selection of objects into a single file.
     """
+
+    print('>> FINALIZE EXPORT <<')
 
     # TODO: This should really be shared in some manner.
     cap_scn = context.scene.CAPScn

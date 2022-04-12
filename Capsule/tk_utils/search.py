@@ -75,18 +75,19 @@ def GetActiveCollection():
     else:
         active_obj = context.active_object
         target_col = None
+        
+        if active_obj is not None:
+            if layer_col_selection in active_obj.users_collection:
+                target_col = layer_col_selection
+                
+            elif len(active_obj.users_collection):
+                target_col = active_obj.users_collection[0]
 
-        if layer_col_selection in active_obj.users_collection:
-            target_col = layer_col_selection
-            
-        elif len(active_obj.users_collection):
-            target_col = active_obj.users_collection[0]
+            if target_col:
+                if scene.collection != layer_col_selection:
+                    return target_col
 
-        if target_col:
-            if scene.collection != layer_col_selection:
-                return target_col
-
-        return None
+            return None
 
     return bpy.context.layer_collection.collection
 

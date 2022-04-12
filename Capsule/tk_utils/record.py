@@ -591,15 +591,16 @@ def CheckCapsuleErrors(context, target_objects = None, target_collections = None
         enumIndex = i
         enumIndex -= 1
 
-        defaultFilePath = cap_file.location_presets[enumIndex].path
-        #print("Checking File Paths...", defaultFilePath)
+        default_file_path = cap_file.location_presets[enumIndex].path
+        #print("Checking File Paths...", default_file_path)
 
-        if defaultFilePath == "":
+        if default_file_path == "":
             statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' has no file path.  Please set one before attempting to export."
             return statement
         
-        # TODO: Ensure this would properly validate a directory
-        if not os.path.isdir(defaultFilePath):
+        # TODO: os.path.isdir breaks on relative paths.
+        full_path = bpy.path.abspath(default_file_path)
+        if not os.path.isdir(full_path):
             statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' points to a file rather than a directory.  Please ensure it points to a folder."
             return statement
 
