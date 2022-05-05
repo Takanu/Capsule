@@ -1,5 +1,6 @@
 
 from gc import collect
+from re import search
 import bpy, bmesh, random, platform
 
 from mathutils import Vector
@@ -717,10 +718,10 @@ class CAPSULE_OT_Store_Presets(Operator):
 
         return {'FINISHED'}
 
-class CAPSULE_OT_TestPackScript(Operator):
-    """Executes a Pack Script for the active Object or Collection and places all collected export targets into a new collection called, "Capsule Pack Test"
-    """
-    bl_idname = "cap.test_pack_script"
+
+class CAPSULE_OT_TestPackScriptSelection(Operator):
+    """Executes a Pack Script for the active Object or Collection and places all collected export targets into a new collection called, "Capsule Pack Test".  NOTE - This can only be used on one Object or Collection at a time"""
+    bl_idname = "cap.test_pack_script_selection"
     bl_label = "Test Pack Script"
 
     # Defines the method that a target should be tested by.  UI elements should
@@ -731,15 +732,27 @@ class CAPSULE_OT_TestPackScript(Operator):
         items = [
             ('ACTIVE_OBJECT', "Selected", "Export the currently active object"),
             ('ACTIVE_COLLECTION', "Selected Collections", "Exports only selected collection"),
-            ('ACTIVE_LIST', "Active List", "Exports the active list selection"),
             ],
         default = 'ACTIVE_OBJECT',
         description = "Execution mode", 
         options = {'HIDDEN'},
     )
 
+    @classmethod
+    def poll(cls, context):
+        scn = context.scene.CAPScn
+        select_tab = int(str(scn.selection_switch))
 
-    # TODO:  Add a poll method to only enable the operator if a single collection or object is selected.
+        if select_tab == 1:
+            if len(context.selected_objects) > 1:
+                return False
+
+        else:
+            if len(search_utils.GetSelectedCollections()) > 1:
+                return False
+        
+        return True
+
 
 
     def execute(self, context):
@@ -754,7 +767,7 @@ class CAPSULE_OT_TestPackScript(Operator):
 
         # ////////////////////////////////////////////
         # IDENTIFY TEST CANDIDATE
-        
+
         # this is for the object tab of the 3D view menu
         if self.set_mode == 'ACTIVE_OBJECT':
             target_object = context.active_object
@@ -777,7 +790,7 @@ class CAPSULE_OT_TestPackScript(Operator):
         
         # ////////////////////////////////////////////
         # SETUP PACK SCRIPT ENVIRONMENT
-        # TODO : Need to make the Export Operator definitions somewhat usable for testing here.
+        # TODO : Ensure object + collection gathering code in export_operators can be used here.
 
 
         # ////////////////////////////////////////////
@@ -790,6 +803,39 @@ class CAPSULE_OT_TestPackScript(Operator):
 
 
 
+
+        return {'FINISHED'}
+
+
+class CAPSULE_OT_TestPackScriptListItem(Operator):
+    """Executes a Pack Script for the active Object or Collection and places all collected export targets into a new collection called, "Capsule Pack Test"."""
+    bl_idname = "cap.test_pack_script_listitem"
+    bl_label = "Test Pack Script"
+
+    # Defines the method that a target should be tested by.  UI elements should
+    # be using this depending on the context.
+
+    set_mode: EnumProperty(
+        name = "Export Mode",
+        items = [
+            ('ACTIVE_OBJECT', "Selected", "Export the currently active object"),
+            ('ACTIVE_COLLECTION', "Selected Collections", "Exports only selected collection"),
+            ],
+        default = 'ACTIVE_OBJECT',
+        description = "Execution mode", 
+        options = {'HIDDEN'},
+    )
+
+
+    def execute(self, context):
+        
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+        cap_scn = context.scene.CAPScn
+        cap_file = None
+
+        target_object = None
+        target_collection = None
 
         return {'FINISHED'}
 

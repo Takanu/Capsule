@@ -594,7 +594,8 @@ classes = (
     CAPSULE_OT_Add_Stored_Presets,
     CAPSULE_OT_Delete_Presets,
     CAPSULE_OT_Store_Presets,
-    CAPSULE_OT_TestPackScript,
+    CAPSULE_OT_TestPackScriptSelection,
+    CAPSULE_OT_TestPackScriptListItem,
 
     # user_inferface
     CAPSULE_UL_Name,

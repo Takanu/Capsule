@@ -284,7 +284,7 @@ class CAPSULE_PT_Selection(Panel):
 
                 if addon_prefs.use_pack_scripts:
                     export_options.separator()
-                    export_options.operator("cap.test_pack_script").set_mode = 'ACTIVE_OBJECT'
+                    export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_OBJECT'
 
                 # TODO 2.0 : Add this back in with other object/collection switches.
                 #obj_settings.label(text= "Mesh Normals:")
@@ -415,7 +415,7 @@ class CAPSULE_PT_Selection(Panel):
 
                 if addon_prefs.use_pack_scripts:
                     export_options.separator()
-                    export_options.operator("cap.test_pack_script").set_mode = 'ACTIVE_COLLECTION'
+                    export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_COLLECTION'
 
             # If no collection was eventually found, bring up warning labels.
             else:
@@ -496,7 +496,7 @@ class CAPSULE_PT_List(Panel):
         
         if addon_prefs.use_pack_scripts:
             export_options.separator()
-            export_options.operator("cap.test_pack_script").set_mode = 'ACTIVE_LIST'
+            export_options.operator("cap.test_pack_script_listitem")
         
         export_options.separator()
 

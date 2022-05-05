@@ -54,6 +54,7 @@ def BuildSceneContext(context):
 
     scene_records['active_object'] = context.active_object
     scene_records['active_layer_collection'] = context.view_layer.active_layer_collection
+    print(scene_records['active_layer_collection'])
 
     # Save the current cursor location
     cursor_loc = bpy.data.scenes[bpy.context.scene.name].cursor.location
@@ -63,21 +64,7 @@ def BuildSceneContext(context):
     scene_records['view_mode'] = bpy.context.mode
     if scene_records['view_mode'].find('EDIT') != -1:
         scene_records['view_mode'] = 'EDIT'
-        
     bpy.ops.object.mode_set(mode= 'OBJECT')
-
-
-    # //////////////////////////////////////
-    # CREATE NEW VIEW LAYER
-
-    # I dont actually need this, might be useful later
-    # scene_records['current_view_layer'] = bpy.context.view_layer.name
-
-    # TODO: Why is this performed before the outliner info is preserved?
-
-    bpy.ops.scene.view_layer_add()
-    bpy.context.view_layer.name = ">> Capsule <<"
-    scene_records['capsule_view_layer'] = ">> Capsule <<"
 
 
     # //////////////////////////////////////
@@ -196,6 +183,16 @@ def BuildSceneContext(context):
         collection_records.append(record)
 
         col.hide_select = False
+    
+    # //////////////////////////////////////
+    # CREATE NEW VIEW LAYER
+
+    scene_records['current_view_layer'] = bpy.context.view_layer
+
+    bpy.ops.scene.view_layer_add()
+    bpy.context.view_layer.name = ">> Capsule <<"
+    scene_records['capsule_view_layer'] = bpy.context.view_layer
+    print(bpy.context.view_layer)
 
 
 
@@ -276,23 +273,12 @@ def RestoreSceneContext(context, record):
             mode = object_ops.SwitchObjectMode(record['armature_mode'], item)
     
     # //////////////////////////////////////
-    # DELETE VIEW LAYER
+    # DELETE AND RESTORE VIEW LAYER
 
+    context.window.view_layer = scene_records['capsule_view_layer']
     bpy.ops.scene.view_layer_remove()
 
-
-    # //////////////////////////////////////
-    # RESTORE VIEW MODES
-
-    # Restore the 3D view mode
-    bpy.ops.object.mode_set(mode = scene_records['view_mode'])
-
-    # Restore the 3D cursor
-    bpy.data.scenes[bpy.context.scene.name].cursor.location = scene_records['cursor_location']
-
-    # Restore the panel type
-    # FIXME : This currently doesn't work with the Blender 2.8 area bug.
-    context.area.type = scene_records['active_area_type']
+    context.window.view_layer = scene_records['current_view_layer']
 
     # //////////////////////////////////////
     # RESTORE SCENE SELECTIONS
@@ -309,6 +295,20 @@ def RestoreSceneContext(context, record):
         bpy.ops.object.select_all(action= 'DESELECT')
 
     context.view_layer.active_layer_collection = scene_records['active_layer_collection']
+
+
+    # //////////////////////////////////////
+    # RESTORE VIEW MODES
+
+    # Restore the 3D view mode
+    bpy.ops.object.mode_set(mode = scene_records['view_mode'])
+
+    # Restore the 3D cursor
+    bpy.data.scenes[bpy.context.scene.name].cursor.location = scene_records['cursor_location']
+
+    # Restore the panel type
+    # FIXME : This currently doesn't work with the Blender 2.8 area bug.
+    context.area.type = scene_records['active_area_type']
     
 
     #print("Rawr")
