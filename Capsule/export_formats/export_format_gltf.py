@@ -321,6 +321,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			use_visible = False,
 			use_renderable = False,
 			use_active_collection = False,
+			use_active_scene = True,
 
 			# While this is active, Shape Keys cannot be exported.
 			export_apply = export_preset.apply_modifiers,

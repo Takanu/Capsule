@@ -451,9 +451,9 @@ def FinalizeExport(context, targets, path, export_preset, export_name, pack_scri
             #print("Exporting: ", item.name)
             select_utils.SelectObject(item)
 
-
     object_file_path = path + export_name
     # print("Final File Path.", object_file_path)
+    print(targets)
 
     # ////////////////////////////////
     # EXPORT ! ! ! 
