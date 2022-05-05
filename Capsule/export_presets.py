@@ -67,8 +67,7 @@ def CreatePresets():
         i += 1
 
     # Create the new presets
-    CreatePresetUE4Standard(cap_file)
-    CreatePresetUnityStandard(cap_file)
+    # CreatePresetDemo(cap_file)
 
     # Add the copied presets back
     i = 0
@@ -83,7 +82,7 @@ def CreatePresets():
 
 
 
-def CreatePresetUE4Standard(cap_file):
+def CreatePresetDemo(cap_file):
     """
     Generates a saved preset for exporting UE4-compatible assets.
     """
@@ -91,57 +90,13 @@ def CreatePresetUE4Standard(cap_file):
     # UE4 Standard Template
     # -------------------------------------------------------------------------
     export = cap_file.add()
-    export.name = "UE4 Standard"
-    export.description = "Creates an Export Preset for exporting FBX files for Unreal Engine 4, with optimised settings.  Enables the bundling of Collision objects in a format readable by UE4."
+    export.name = "Default Export Preset Demo"
+    export.description = "Creates a tooltip for the preset."
     export.x_global_user_deletable = False
-    export.export_animation = True
-    export.apply_modifiers = True
-    export.preserve_armature_constraints = False
     
-    export.format_type = 'FBX'
-    export.data_fbx.use_custom_props = True
-
-    export.data_fbx.axis_forward = "-Z"
-    export.data_fbx.axis_up = "Y"
-    export.data_fbx.global_scale = 1.0
-    export.data_fbx.apply_unit_scale = True
-    export.data_fbx.export_object_types = {'MESH', 'ARMATURE'}
-
-    export.data_fbx.bake_anim_use_all_bones = True
-    export.data_fbx.bake_anim_use_all_actions = True
-    export.data_fbx.bake_anim_force_startend_keying = True
-    export.data_fbx.optimise_keyframes = True
+    # add options here!
 
 
-def CreatePresetUnityStandard(cap_file):
-    """
-    Generates a saved preset for exporting assets compatible with Unity 5.
-    """
-    # -------------------------------------------------------------------------
-    # Unity Standard Template
-    # -------------------------------------------------------------------------
-    export = cap_file.add()
-    export.name = "Unity Standard"
-    export.description = "Creates an Export Preset for exporting FBX files for Unity, with optimised settings."
-    export.x_global_user_deletable = False
-    export.export_animation = True
-    export.apply_modifiers = True
-    export.preserve_armature_constraints = False
-
-    export.format_type = 'FBX'
-    export.data_fbx.use_custom_props = True
-
-    export.data_fbx.axis_forward = "Z"
-    export.data_fbx.axis_up = "Y"
-    export.data_fbx.global_scale = 1.0
-    export.data_fbx.apply_scale_options = 'FBX_SCALE_UNITS'
-    export.data_fbx.export_object_types = {'MESH', 'ARMATURE'}
-    export.data_fbx.use_space_transform = True
-
-    export.data_fbx.bake_anim_use_all_bones = True
-    export.data_fbx.bake_anim_use_all_actions = True
-    export.data_fbx.bake_anim_force_startend_keying = True
-    export.data_fbx.optimise_keyframes = True
 
 
 def CopyPreset(old_preset, new_preset):

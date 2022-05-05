@@ -658,18 +658,19 @@ class CAPSULE_OT_Delete_Presets(Operator):
     bl_idname = "cap.delete_global_preset"
     bl_label = "Store Preset"
 
-    @classmethod
-    def poll(cls, context):
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
+    # Removed Default Export Presets in 1.33, any preset can now be deleted.
+    # @classmethod
+    # def poll(cls, context):
+    #     preferences = context.preferences
+    #     addon_prefs = preferences.addons[__package__].preferences
 
-        if len(addon_prefs.saved_export_presets) > 0:
-            export = addon_prefs.saved_export_presets[addon_prefs.saved_export_presets_index]
+    #     if len(addon_prefs.saved_export_presets) > 0:
+    #         export = addon_prefs.saved_export_presets[addon_prefs.saved_export_presets_index]
             
-            if export.x_global_user_deletable is True:
-                return True
+    #         if export.x_global_user_deletable is True:
+    #             return True
 
-        return False
+    #     return False
 
     def execute(self, context):
 

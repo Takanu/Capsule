@@ -21,7 +21,7 @@
 bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
-    "version": (1, 3, 2),
+    "version": (1, 3, 3),
     "blender": (3, 1, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
@@ -635,7 +635,8 @@ def register():
 
 
     # Setup data and handlers
-    export_presets.CreatePresets()
+    # Removed for now, presets don't really fit with Capsule anymore.
+    # export_presets.CreatePresets()
     bpy.app.handlers.load_pre.append(CreateDefaultData)
     bpy.app.handlers.depsgraph_update_post.append(CheckSelectedObject)
 
