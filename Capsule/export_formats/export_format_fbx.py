@@ -241,6 +241,12 @@ class CAP_FormatData_FBX(PropertyGroup):
 		soft_max = 10
 	)
 
+	use_triangles: BoolProperty(
+		name = "Triangulate Faces",
+		description = "Converts all faces to triangles, uses the Quad Method and NGon Method 'Beauty' (see the Triangulate modifier for a visual demonstration of how it works)",
+		default = False,
+	)
+
 
 	def export(self, export_preset, filePath):
 		"""
@@ -253,19 +259,22 @@ class CAP_FormatData_FBX(PropertyGroup):
 			# core
 			check_existing = False,
 			filepath = filePath + ".fbx",
-			# TODO: What is this again?
+			
+			# TODO: DO I need this?
 			filter_glob = "*.fbx",
+
 			use_selection = True,
 			use_active_collection = False,
-			# TODO: This prevents Shape Key export, must warn the user.
+			use_visible = False,
+
 			use_mesh_modifiers = export_preset.apply_modifiers,
 			# use_mesh_modifiers_render - Capsule's filtering system renders this obsolete.
 
 			path_mode = 'ABSOLUTE',
-			embed_textures=self.embed_textures,
+			embed_textures = self.embed_textures,
 			batch_mode = 'OFF',
-			use_batch_own_dir= False,
-			use_metadata= False,
+			use_batch_own_dir = False,
+			use_metadata = False,
 
 			# scene
 			global_scale = self.global_scale,
@@ -297,6 +306,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			bake_anim_step = self.bake_anim_step,
 			bake_anim_simplify_factor = self.bake_anim_simplify_factor,
 			
+			use_triangles = self.use_triangles,
 		
 		)
 	
@@ -375,6 +385,8 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.prop(exportData, "convert_loose_edges")
 			export_options.prop(exportData, "use_tangent_space")
 			export_options.prop(exportData, "use_subsurf")
+			export_options.separator()
+			export_options.prop(exportData, "use_triangles")
 			export_options.separator()
 			export_options.separator()
 
