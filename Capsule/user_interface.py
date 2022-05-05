@@ -282,9 +282,9 @@ class CAPSULE_PT_Selection(Panel):
                 export_options.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
                 export_options.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_OBJECTS'
 
-                if addon_prefs.use_pack_scripts:
-                    export_options.separator()
-                    export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_OBJECT'
+                # if addon_prefs.use_pack_scripts:
+                #     export_options.separator()
+                #     export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_OBJECT'
 
                 # TODO 2.0 : Add this back in with other object/collection switches.
                 #obj_settings.label(text= "Mesh Normals:")
@@ -413,9 +413,9 @@ class CAPSULE_PT_Selection(Panel):
                 export_options.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
                 export_options.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_COLLECTIONS'
 
-                if addon_prefs.use_pack_scripts:
-                    export_options.separator()
-                    export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_COLLECTION'
+                # if addon_prefs.use_pack_scripts:
+                #     export_options.separator()
+                #     export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_COLLECTION'
 
             # If no collection was eventually found, bring up warning labels.
             else:
@@ -494,9 +494,9 @@ class CAPSULE_PT_List(Panel):
         export_options.operator("scene.cap_export", text = "Export All Active").set_mode = 'ALL'
         export_options.operator("scene.cap_export", text = "Export Selected In List").set_mode = 'ACTIVE_LIST'
         
-        if addon_prefs.use_pack_scripts:
-            export_options.separator()
-            export_options.operator("cap.test_pack_script_listitem")
+        # if addon_prefs.use_pack_scripts:
+        #     export_options.separator()
+        #     export_options.operator("cap.test_pack_script_listitem")
         
         export_options.separator()
 

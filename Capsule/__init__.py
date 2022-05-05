@@ -141,7 +141,7 @@ class CAP_AddonPreferences(AddonPreferences):
     use_pack_scripts: BoolProperty(
         name = "Enable Pack Scripts",
         description = "Enables Pack Scripts, a feature that lets you assign Python scripts to change the preparation of Objects and Collections just before export.  Check the Capsule GitHub Wiki for more information",
-        default = True,
+        default = False,
     )
 
 

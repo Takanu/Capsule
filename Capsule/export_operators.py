@@ -143,7 +143,7 @@ class CAPSULE_OT_Export(Operator):
         # /////////////////////////////////////////////////
         # OBJECT EXPORT
 
-        object_export_result = ExportObjectList(context, cap_file, export_objects, global_record)
+        object_export_result = GetObjectExportList(context, cap_file, export_objects, global_record)
         if 'warning' in object_export_result:
             self.report({'WARNING'}, object_export_result['warning'])
             record_utils.RestoreSceneContext(context, global_record)
@@ -156,7 +156,7 @@ class CAPSULE_OT_Export(Operator):
         # /////////////////////////////////////////////////
         # COLLECTION EXPORT
         
-        collection_export_result = ExportCollectionList(context, cap_file, export_collections, global_record)
+        collection_export_result = GetCollectionExportList(context, cap_file, export_collections, global_record)
         if 'warning' in collection_export_result:
             self.report({'WARNING'}, collection_export_result['warning'])
             record_utils.RestoreSceneContext(context, global_record)
@@ -179,7 +179,7 @@ class CAPSULE_OT_Export(Operator):
 
 # TODO: These definition names are terrible!
 
-def ExportObjectList(context, cap_file, object_list, global_record):
+def GetObjectExportList(context, cap_file, object_list, global_record):
     """
     Exports a list of given objects
     """
@@ -237,7 +237,7 @@ def ExportObjectList(context, cap_file, object_list, global_record):
     return result
 
 
-def ExportCollectionList(context, cap_file, collection_list, global_record):
+def GetCollectionExportList(context, cap_file, collection_list, global_record):
     """
     Exports a list of given collections
     """
