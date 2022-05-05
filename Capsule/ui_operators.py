@@ -580,40 +580,43 @@ class CAPSULE_OT_Create_ExportData(Operator):
         prev_active_object = context.active_object
         prev_selected_objects = context.selected_objects
 
-        if prev_mode != 'OBJECT':
-            bpy.ops.object.mode_set(override, mode='OBJECT', toggle=False)  
+        with context.temp_override(window = override['window'], area = override['area'], 
+            region = override['region']):
 
-        # Figure out if an object already exists, if yes do nothing
-        for object in bpy.data.objects:
-            #print(object)
-            if object.name == addon_prefs.default_datablock:
-                self.report({'WARNING'}, "Capsule data for the blend file has been found, a new one will not be created.")
-                return {'CANCELLED'}
+            if prev_mode != 'OBJECT':
+                bpy.ops.object.mode_set(mode='OBJECT', toggle=False)  
 
-        # Otherwise create the object using the addon preference data
-        bpy.ops.object.select_all(action= 'DESELECT')
-        bpy.ops.object.empty_add(type = 'PLAIN_AXES')
+            # Figure out if an object already exists, if yes do nothing
+            for object in bpy.data.objects:
+                #print(object)
+                if object.name == addon_prefs.default_datablock:
+                    self.report({'WARNING'}, "Capsule data for the blend file has been found, a new one will not be created.")
+                    return {'CANCELLED'}
 
-        defaultDatablock = bpy.context.view_layer.objects.active
-        defaultDatablock.name = addon_prefs.default_datablock
-        defaultDatablock.hide_viewport = True
-        defaultDatablock.hide_render = True
-        defaultDatablock.hide_select = True
-        defaultDatablock.CAPFile.is_storage_object = True
-        addon_prefs.data_missing = False
+            # Otherwise create the object using the addon preference data
+            bpy.ops.object.select_all(action= 'DESELECT')
+            bpy.ops.object.empty_add(type = 'PLAIN_AXES')
 
-        context.view_layer.objects.active = prev_active_object
-        for obj in prev_selected_objects:
-            obj.select_set(state=True)
+            defaultDatablock = bpy.context.view_layer.objects.active
+            defaultDatablock.name = addon_prefs.default_datablock
+            defaultDatablock.hide_viewport = True
+            defaultDatablock.hide_render = True
+            defaultDatablock.hide_select = True
+            defaultDatablock.CAPFile.is_storage_object = True
+            addon_prefs.data_missing = False
 
-        # # Restore the context
-        if prev_mode != 'OBJECT':
-            
-            # We need this because the context returns separate definitions.
-            if prev_mode.find('EDIT') != -1:
-                prev_mode = 'EDIT'
-            
-            bpy.ops.object.mode_set(override, mode=prev_mode, toggle=False)
+            context.view_layer.objects.active = prev_active_object
+            for obj in prev_selected_objects:
+                obj.select_set(state=True)
+
+            # # Restore the context
+            if prev_mode != 'OBJECT':
+
+                # We need this because the context returns separate definitions.
+                if prev_mode.find('EDIT') != -1:
+                    prev_mode = 'EDIT'
+                
+                bpy.ops.object.mode_set(mode=prev_mode, toggle=False)
 
         self.report({'INFO'}, "Capsule data created.")
         return {'FINISHED'}

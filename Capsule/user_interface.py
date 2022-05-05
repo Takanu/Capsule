@@ -274,7 +274,7 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.prop(proxy, "obj_export_preset")
                 obj_settings.separator()
 
-                if addon_prefs.use_overrides:
+                if addon_prefs.use_pack_scripts:
                     obj_settings.prop(proxy, "obj_pack_script")
                     obj_settings.separator()
 
@@ -400,7 +400,7 @@ class CAPSULE_PT_Selection(Panel):
                 group_layout.prop(proxy, "col_export_preset")
                 group_layout.separator()
 
-                if addon_prefs.use_overrides:
+                if addon_prefs.use_pack_scripts:
                     group_layout.prop(proxy, "col_pack_script")
                     group_layout.separator()
 
@@ -511,7 +511,7 @@ class CAPSULE_PT_List(Panel):
                 object_options_list.separator()
                 object_options_list.prop(obj, "export_preset")
 
-                if addon_prefs.use_overrides:
+                if addon_prefs.use_pack_scripts:
                     object_options_list.separator()
                     object_options_list.prop(obj, "pack_script")
         
@@ -546,7 +546,7 @@ class CAPSULE_PT_List(Panel):
                 group_options_list.separator()
                 group_options_list.prop(grp, "export_preset")
 
-                if addon_prefs.use_overrides:
+                if addon_prefs.use_pack_scripts:
                     group_options_list.separator()
                     group_options_list.prop(grp, "pack_script")
                     

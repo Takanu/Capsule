@@ -4,6 +4,7 @@ from math import *
 
 from ..tk_utils import search as search_utils
 from ..tk_utils import select as select_utils
+from ..tk_utils import object_ops
 
 # COLLECTION DATA PROXY PROPERTIES
 # /////////////////////////////////////////////////
@@ -227,18 +228,27 @@ def CAP_Update_FocusCollection(self, context):
 
     # As the context won't be correct when the icon is clicked
     # We have to find the actual 3D view and override the context of the operator
-    for area in bpy.context.screen.areas:
-        if area.type == 'VIEW_3D':
-            for region in area.regions:
-                if region.type == 'WINDOW':
-                    override = {'area': area, 
-                                'region': region, 
-                                'edit_object': bpy.context.edit_object, 
-                                'scene': bpy.context.scene, 
-                                'screen': bpy.context.screen, 
-                                'window': bpy.context.window}
 
-                    bpy.ops.view3d.view_selected(override)
+    # Old 3.1 code juussst in case I need it, deprecated in 3.2.
+    # for area in bpy.context.screen.areas:
+    #     if area.type == 'VIEW_3D':
+    #         for region in area.regions:
+    #             if region.type == 'WINDOW':
+    #                 override = {'area': area, 
+    #                             'region': region, 
+    #                             'edit_object': bpy.context.edit_object, 
+    #                             'scene': bpy.context.scene, 
+    #                             'screen': bpy.context.screen, 
+    #                             'window': bpy.context.window}
+    #                 
+    #                 bpy.ops.view3d.view_selected(override)
+
+    override = object_ops.Find3DViewContext()
+    
+    with context.temp_override(window = override['window'], area = override['area'], 
+            region = override['region']):
+
+            bpy.ops.view3d.view_selected()
 
     return None
 

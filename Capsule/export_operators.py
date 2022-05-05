@@ -435,7 +435,7 @@ def FinalizeExport(context, targets, path, export_preset, export_name, pack_scri
 
     bpy.ops.object.select_all(action= 'DESELECT')
 
-    if addon_prefs.use_overrides is True and pack_script is not None:
+    if addon_prefs.use_pack_scripts is True and pack_script is not None:
         code = pack_script.as_string()
         exec(code)
 
@@ -487,7 +487,7 @@ def FinalizeExport(context, targets, path, export_preset, export_name, pack_scri
     export_status.target_name = export_name
     export_status.target_status = 'AFTER_EXPORT'
 
-    if addon_prefs.use_overrides is True and pack_script is not None:
+    if addon_prefs.use_pack_scripts is True and pack_script is not None:
         code = pack_script.as_string()
         exec(code)
 

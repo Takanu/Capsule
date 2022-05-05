@@ -61,6 +61,9 @@ def BuildSceneContext(context):
 
     # Keep a record of the current object mode 
     scene_records['view_mode'] = bpy.context.mode
+    if scene_records['view_mode'].find('EDIT') != -1:
+        scene_records['view_mode'] = 'EDIT'
+        
     bpy.ops.object.mode_set(mode= 'OBJECT')
 
 
