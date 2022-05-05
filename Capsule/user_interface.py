@@ -278,10 +278,13 @@ class CAPSULE_PT_Selection(Panel):
                     obj_settings.prop(proxy, "obj_pack_script")
                     obj_settings.separator()
 
-                obj_settings.separator()
+                export_options = layout.column(align = True)
+                export_options.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
+                export_options.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_OBJECTS'
 
-                obj_settings.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
-                obj_settings.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_OBJECTS'
+                if addon_prefs.use_pack_scripts:
+                    export_options.separator()
+                    export_options.operator("cap.test_pack_script").set_mode = 'ACTIVE_OBJECT'
 
                 # TODO 2.0 : Add this back in with other object/collection switches.
                 #obj_settings.label(text= "Mesh Normals:")
@@ -406,8 +409,13 @@ class CAPSULE_PT_Selection(Panel):
 
                 group_layout.separator()
 
-                group_layout.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
-                group_layout.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_COLLECTIONS'
+                export_options = layout.column(align = True)
+                export_options.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
+                export_options.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_COLLECTIONS'
+
+                if addon_prefs.use_pack_scripts:
+                    export_options.separator()
+                    export_options.operator("cap.test_pack_script").set_mode = 'ACTIVE_COLLECTION'
 
             # If no collection was eventually found, bring up warning labels.
             else:
@@ -485,7 +493,13 @@ class CAPSULE_PT_List(Panel):
         
         export_options.operator("scene.cap_export", text = "Export All Active").set_mode = 'ALL'
         export_options.operator("scene.cap_export", text = "Export Selected In List").set_mode = 'ACTIVE_LIST'
+        
+        if addon_prefs.use_pack_scripts:
+            export_options.separator()
+            export_options.operator("cap.test_pack_script").set_mode = 'ACTIVE_LIST'
+        
         export_options.separator()
+
 
         # TODO REALLY IMPORTANT: List selections can no longer rely on the object being available.
 
