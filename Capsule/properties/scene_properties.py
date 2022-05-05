@@ -271,9 +271,9 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         items = GetExportDefaults,
     )
 
-    override: PointerProperty(
+    pack_script: PointerProperty(
         type = bpy.types.Text,
-        name = "Override",
+        name = "Pack Script",
         description = "Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
     )
 
@@ -339,9 +339,9 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         items = GetExportDefaults,
     )
     
-    override: PointerProperty(
+    pack_script: PointerProperty(
         type = bpy.types.Text,
-        name = "Override",
+        name = "Pack Script",
         description = "Defines a python script that will be executed just before and after Capsule exports to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
     )
     
@@ -359,7 +359,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
 class CAPSULE_Export_Status(PropertyGroup):
     """
     A property group used to externalize the current status of a Capsule Export Operator.  This is specifically
-    being used for the Override feature
+    being used for the Pack Script feature
     """
 
     target_name: StringProperty(

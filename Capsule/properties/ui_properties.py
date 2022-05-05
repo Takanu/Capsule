@@ -117,9 +117,9 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         update = CAP_Update_ProxyObjectExportPreset
         )
 
-    obj_override: PointerProperty(
+    obj_pack_script: PointerProperty(
         type = bpy.types.Text,
-        name = "Override",
+        name = "Pack Script",
         description = "Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
         update = CAP_Update_ProxyObjectOverride,
     )
@@ -179,9 +179,9 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         update = CAP_Update_ProxyCollectionExportPreset
     )
 
-    col_override: PointerProperty(
+    col_pack_script: PointerProperty(
         type = bpy.types.Text,
-        name = "Override",
+        name = "Pack Script",
         description = "Defines a python script that will be executed just before and after Capsule exports the collection to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
         update = CAP_Update_ProxyCollectionOverride,
     )

@@ -159,7 +159,7 @@ def CAP_Update_ProxyCollectionExportPreset(self, context):
 
 def CAP_Update_ProxyCollectionOverride(self, context):
     """
-    Updates the collection's Override property.
+    Updates the collection's Pack property.
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
@@ -174,11 +174,11 @@ def CAP_Update_ProxyCollectionOverride(self, context):
         return
 
     collected = search_utils.GetEditableCollections(context)
-    value = proxy.col_override
+    value = proxy.col_pack_script
 
     # Run through the objects
     for collection in collected:
-        collection.CAPCol.override = value
+        collection.CAPCol.pack_script = value
 
     return None
 

@@ -275,7 +275,7 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.separator()
 
                 if addon_prefs.use_overrides:
-                    obj_settings.prop(proxy, "obj_override")
+                    obj_settings.prop(proxy, "obj_pack_script")
                     obj_settings.separator()
 
                 obj_settings.separator()
@@ -401,7 +401,7 @@ class CAPSULE_PT_Selection(Panel):
                 group_layout.separator()
 
                 if addon_prefs.use_overrides:
-                    group_layout.prop(proxy, "col_override")
+                    group_layout.prop(proxy, "col_pack_script")
                     group_layout.separator()
 
                 group_layout.separator()
@@ -513,7 +513,7 @@ class CAPSULE_PT_List(Panel):
 
                 if addon_prefs.use_overrides:
                     object_options_list.separator()
-                    object_options_list.prop(obj, "override")
+                    object_options_list.prop(obj, "pack_script")
         
         # Group selection
         elif list_tab == 2:
@@ -548,7 +548,7 @@ class CAPSULE_PT_List(Panel):
 
                 if addon_prefs.use_overrides:
                     group_options_list.separator()
-                    group_options_list.prop(grp, "override")
+                    group_options_list.prop(grp, "pack_script")
                     
 
         layout.separator()

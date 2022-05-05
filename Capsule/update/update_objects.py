@@ -127,7 +127,7 @@ def CAP_Update_ProxyObjectExportPreset(self, context):
 
 def CAP_Update_ProxyObjectOverride(self, context):
     """
-    Updates the object's Override property.
+    Updates the object's Pack Script property.
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
@@ -140,11 +140,11 @@ def CAP_Update_ProxyObjectOverride(self, context):
     # Setup initial targets and the value state we need to change.
     collected = FindEditableObjects(context)
     print(collected)
-    value = proxy.obj_override
+    value = proxy.obj_pack_script
 
     # Run through the objects
     for item in collected:
-        item.CAPObj.override = value
+        item.CAPObj.pack_script = value
 
     return None
 

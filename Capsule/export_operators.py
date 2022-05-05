@@ -203,7 +203,7 @@ def ExportObjectList(context, cap_file, object_list, global_record):
         location_preset = cap_file.location_presets[location_preset_index]
 
         origin_point = item.CAPObj.origin_point
-        override = item.CAPObj.override
+        pack_script = item.CAPObj.pack_script
 
         # Filter by rendering
         object_hidden = False
@@ -224,7 +224,7 @@ def ExportObjectList(context, cap_file, object_list, global_record):
 
         # E X P O R T
         export_result = ExportTarget(context, [item], item.name, export_preset, 
-            location_preset, origin_point, item, override, meta)
+            location_preset, origin_point, item, pack_script, meta)
 
         # Return early if a warning was triggered.
         if 'warning' in export_result:
@@ -269,7 +269,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
             root_definition = bpy.context.scene.objects.get(collection.CAPCol.root_object.name)
             #print(' R O O T - ', root_definition)
         
-        override = collection.CAPCol.override
+        pack_script = collection.CAPCol.pack_script
 
         # Collect all objects that are applicable for this export
         child_export_option = collection.CAPCol.child_export_option
@@ -308,7 +308,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
 
         # E X P O R T
         export_result = ExportTarget(context, targets, collection.name, export_preset, 
-            location_preset, origin_point, root_definition, override, meta)
+            location_preset, origin_point, root_definition, pack_script, meta)
 
         # Return early if a warning was triggered.
         if 'warning' in export_result:
@@ -321,7 +321,7 @@ def ExportCollectionList(context, cap_file, collection_list, global_record):
     return result
 
 
-def ExportTarget(context, targets, export_name, export_preset, location_preset, origin_point, root_definition, override, meta):
+def ExportTarget(context, targets, export_name, export_preset, location_preset, origin_point, root_definition, pack_script, meta):
     """
     The main function for exporting objects in Capsule, designed to work with an Operator in being provided
     the right details for the export.
@@ -380,7 +380,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     # EXPORT PROCESS
 
     # A separate export function call for every corner case isnt actually necessary
-    export_result = FinalizeExport(context, targets, path, export_preset, export_name, override)
+    export_result = FinalizeExport(context, targets, path, export_preset, export_name, pack_script)
 
     # /////////////////////////////////////////////////
     # DELETE/RESTORE 
@@ -412,7 +412,7 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     return {}
 
 
-def FinalizeExport(context, targets, path, export_preset, export_name, override):
+def FinalizeExport(context, targets, path, export_preset, export_name, pack_script):
     """
     Exports a selection of objects into a single file.
     """
@@ -425,7 +425,7 @@ def FinalizeExport(context, targets, path, export_preset, export_name, override)
     addon_prefs = preferences.addons[__package__].preferences
 
     # ////////////////////////////////
-    # OVERRIDE INTRO
+    # PACK SCRIPT INTRO
 
     export_status = context.scene.CAPStatus
     export_status.target_name = export_name
@@ -435,12 +435,12 @@ def FinalizeExport(context, targets, path, export_preset, export_name, override)
 
     bpy.ops.object.select_all(action= 'DESELECT')
 
-    if addon_prefs.use_overrides is True and override is not None:
-        code = override.as_string()
+    if addon_prefs.use_overrides is True and pack_script is not None:
+        code = pack_script.as_string()
         exec(code)
 
         if len(export_status['target_output']) == 0:
-            return "An override used provided no target objects to export."
+            return "A Pack Script used provided no target objects to export."
 
         # TODO: Find a robust way to test for type
         for item in export_status['target_output']:
@@ -481,14 +481,14 @@ def FinalizeExport(context, targets, path, export_preset, export_name, override)
         export_preset.data_usd.export(context, export_preset, object_file_path)
 
     # ////////////////////////////////
-    # OVERRIDE OUTRO
+    # PACK SCRIPT OUTRO
 
     export_status = context.scene.CAPStatus
     export_status.target_name = export_name
     export_status.target_status = 'AFTER_EXPORT'
 
-    if addon_prefs.use_overrides is True and override is not None:
-        code = override.as_string()
+    if addon_prefs.use_overrides is True and pack_script is not None:
+        code = pack_script.as_string()
         exec(code)
 
     # Reset the Export Status state
