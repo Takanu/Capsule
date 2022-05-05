@@ -8,6 +8,7 @@ from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, Po
 
 from .tk_utils import search as search_utils
 from .tk_utils import select as select_utils
+from .tk_utils import object_ops
 from .export_formats import CAP_ExportFormat
 from . import export_presets
 
@@ -573,6 +574,15 @@ class CAPSULE_OT_Create_ExportData(Operator):
         preferences = bpy.context.preferences
         addon_prefs = preferences.addons[__package__].preferences
 
+        # Ensure we're in the right context before creating the datablock.
+        override = object_ops.Find3DViewContext()
+        prev_mode = context.mode
+        prev_active_object = context.active_object
+        prev_selected_objects = context.selected_objects
+
+        if prev_mode != 'OBJECT':
+            bpy.ops.object.mode_set(override, mode='OBJECT', toggle=False)  
+
         # Figure out if an object already exists, if yes do nothing
         for object in bpy.data.objects:
             #print(object)
@@ -591,6 +601,19 @@ class CAPSULE_OT_Create_ExportData(Operator):
         defaultDatablock.hide_select = True
         defaultDatablock.CAPFile.is_storage_object = True
         addon_prefs.data_missing = False
+
+        context.view_layer.objects.active = prev_active_object
+        for obj in prev_selected_objects:
+            obj.select_set(state=True)
+
+        # # Restore the context
+        if prev_mode != 'OBJECT':
+            
+            # We need this because the context returns separate definitions.
+            if prev_mode.find('EDIT') != -1:
+                prev_mode = 'EDIT'
+            
+            bpy.ops.object.mode_set(override, mode=prev_mode, toggle=False)
 
         self.report({'INFO'}, "Capsule data created.")
         return {'FINISHED'}

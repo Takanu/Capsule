@@ -2,6 +2,40 @@
 import bpy
 from .select import FocusObject
 
+def Find3DViewContext():
+    """
+    Builds and returns a context override for when you NEED TO MAKE SURE your operators
+    are executing in a 3D View.
+    """
+
+    def getArea(type):
+        for screen in bpy.context.workspace.screens:
+            for area in screen.areas:
+                if area.type == type:
+                    return area
+
+    for ns3d in getArea('VIEW_3D').spaces:
+        if ns3d.type == "VIEW_3D":
+            break
+
+    # https://blender.stackexchange.com/questions/15118/how-do-i-override-context-for-bpy-ops-mesh-loopcut
+    win      = bpy.context.window
+    scr      = win.screen
+    areas3d  = [getArea('VIEW_3D')]
+    region   = [region for region in areas3d[0].regions if region.type == 'WINDOW']
+
+    override = {'window':win,
+                'screen':scr,
+                'area'  :getArea('VIEW_3D'),
+                'region':region[0],
+                'scene' :bpy.context.scene,
+                'space' :getArea('VIEW_3D').spaces[0],
+                }
+    
+    return override
+
+
+
 def DuplicateObject(target):
     """
     Duplicates the given object.
