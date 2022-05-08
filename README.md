@@ -33,7 +33,7 @@ Check out the Github Wiki for quick instructions on getting started - https://gi
 
 **What version of Blender does the plugin work with?**
 
-The current version supports Blender 3.1
+The current version supports Blender 3.2, if you need support for older Blender versions then browse the Releases page and find the right one for your version - https://github.com/Takanu/Capsule/releases.
 
 
 **Are there things that Capsule can't currently export?**
@@ -48,7 +48,6 @@ Theres a few use cases where Capsule may have trouble exporting assets from your
 **What if i have a problem or bug with the add-on?**
 
 * You can post an issue on the GitHub page (https://github.com/Takanu/Capsule/issues), this is the best place to post an issue as I can categorize and keep track of them in one place.
-
 
 
 **Do you have any other cool add-ons?**
