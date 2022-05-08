@@ -282,15 +282,9 @@ class CAPSULE_PT_Selection(Panel):
                 export_options.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
                 export_options.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_OBJECTS'
 
-                # if addon_prefs.use_pack_scripts:
-                #     export_options.separator()
-                #     export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_OBJECT'
-
-                # TODO 2.0 : Add this back in with other object/collection switches.
-                #obj_settings.label(text= "Mesh Normals:")
-                #obj_settings.separator()
-                #obj_settings.prop(obj, "normals", text= "")
-                #obj_settings.separator()
+                if addon_prefs.use_pack_scripts:
+                    export_options.separator()
+                    export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_OBJECT'
 
             # If no object was eventually found, bring up warning labels.
             else:
@@ -413,9 +407,9 @@ class CAPSULE_PT_Selection(Panel):
                 export_options.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
                 export_options.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_COLLECTIONS'
 
-                # if addon_prefs.use_pack_scripts:
-                #     export_options.separator()
-                #     export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_COLLECTION'
+                if addon_prefs.use_pack_scripts:
+                    export_options.separator()
+                    export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_COLLECTION'
 
             # If no collection was eventually found, bring up warning labels.
             else:
@@ -425,23 +419,6 @@ class CAPSULE_PT_Selection(Panel):
 
             layout.separator()
 
-
-
-
-
-        #////////////////////////// ANIMATION UI /////////////////////////
-        #/////////////////////////////////////////////////////////////////
-        # Currently broken, un-comment at your own peril!
-
-        #col_location = layout.row(align= True)
-        #col_location.template_list("CAPSULE_UL_Action", "rawr", ui, "action_list", ui, "action_list_index", rows=3, maxrows=10)
-
-        #col_location.separator()
-
-        #row_location = col_location.column(align= True)
-        #row_location.operator("scene.cap_refactions", text= "", icon = "FILE_REFRESH")
-
-        #layout.separator()
 
 class CAPSULE_PT_List(Panel):
     bl_space_type = "PROPERTIES"

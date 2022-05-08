@@ -41,7 +41,6 @@ from .properties import *
 from .user_interface import *
 from .export_operators import *
 from .export_presets import *
-from .export_utils import *
 from .export_menu import *
 from .ui_operators import *
 
