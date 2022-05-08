@@ -4,7 +4,7 @@ import bpy, os, platform
 from datetime import datetime
 
 
-def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, meta):
+def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, export_task):
     """
     Extracts and calculates a final path with which to export the target to.
     """
@@ -32,7 +32,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
     #print("Current Location Path - ", location_path)
 
     # Now substitute any tags
-    location_path = FillTags(location_path, targets, collection, replace_invalid_chars, meta)
+    location_path = FillTags(location_path, targets, collection, replace_invalid_chars, export_task)
 
     # directory failsafe
     if platform.system() == 'Windows':
@@ -59,7 +59,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
 
 
 
-def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
+def FillTags(location_path, targets, collection, replace_invalid_chars, export_task):
     """
     Searches for and substitutes the tags in a path name.
     """
@@ -122,7 +122,7 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
     
     if location_path.find('^export_preset_name^'):
 
-        preset_name = meta['preset_name']
+        preset_name = export_task['export_preset'].name
 
         if replace_invalid_chars is True:
             blend_name = SubstituteNameCharacters(preset_name)
@@ -133,27 +133,27 @@ def FillTags(location_path, targets, collection, replace_invalid_chars, meta):
 
     if location_path.find('export_date_ymd'):
 
-        time = meta['export_time'].strftime('%Y-%m-%d')
+        time = export_task['export_start_time'].strftime('%Y-%m-%d')
         location_path = location_path.replace('^export_date_ymd^', time)
 
     if location_path.find('export_date_dmy'):
 
-        time = meta['export_time'].strftime('%d-%m-%Y')
+        time = export_task['export_start_time'].strftime('%d-%m-%Y')
         location_path = location_path.replace('^export_date_dmy^', time)
 
     if location_path.find('export_date_mdy'):
 
-        time = meta['export_time'].strftime('%m-%d-%Y')
+        time = export_task['export_start_time'].strftime('%m-%d-%Y')
         location_path = location_path.replace('^export_date_mdy^', time)
     
     if location_path.find('export_time_hm'):
 
-        time = meta['export_time'].strftime('%H.%M')
+        time = export_task['export_start_time'].strftime('%H.%M')
         location_path = location_path.replace('^export_time_hm^', time)
 
     if location_path.find('export_time_hms'):
 
-        time = meta['export_time'].strftime('%H.%M.%S')
+        time = export_task['export_start_time'].strftime('%H.%M.%S')
         location_path = location_path.replace('^export_time_hms^', time)
     
     return location_path    

@@ -461,7 +461,7 @@ def MoveAll(target, context, location):
 
     #print('Move finished.')
 
-def MoveAllFailsafe(context, target, destination, region):
+def MoveAllFailsafe(context, target, destination):
     """
     Moves every object in the scene safely
     BLENDER 2.8 - This also uses a region to ensure that it moves in a 3D View region that hasnt been deallocated.

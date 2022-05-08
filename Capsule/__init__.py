@@ -140,7 +140,7 @@ class CAP_AddonPreferences(AddonPreferences):
     use_pack_scripts: BoolProperty(
         name = "Enable Pack Scripts",
         description = "Enables Pack Scripts, a feature that lets you assign Python scripts to change the preparation of Objects and Collections just before export.  Check the Capsule GitHub Wiki for more information",
-        default = False,
+        default = True,
     )
 
 
@@ -541,7 +541,6 @@ classes = (
     # properties
     ObjectListItem, 
     CollectionListItem, 
-    ActionListItem, 
     CAPSULE_Scene_Preferences, 
     CAPSULE_Object_Preferences, 
     CAPSULE_Collection_Preferences, 
@@ -588,7 +587,6 @@ classes = (
     CAPSULE_OT_Reset_Defaults,
     CAPSULE_OT_UI_Group_Separate,
     CAPSULE_OT_UI_Group_Options,
-    CAPSULE_OT_Refresh_Actions,
     CAPSULE_OT_Create_ExportData,
     CAPSULE_OT_Add_Stored_Presets,
     CAPSULE_OT_Delete_Presets,

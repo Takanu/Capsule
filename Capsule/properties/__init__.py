@@ -2,7 +2,6 @@
 from .scene_properties import (
     ObjectListItem, 
     CollectionListItem, 
-    ActionListItem, 
     CAPSULE_Scene_Preferences, 
     CAPSULE_Object_Preferences, 
     CAPSULE_Collection_Preferences, 

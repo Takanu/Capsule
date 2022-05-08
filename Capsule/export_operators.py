@@ -17,7 +17,7 @@ from .tk_utils import paths as path_utils
 from .tk_utils import record as record_utils
 
 from . import tag_ops
-from .export_utils import CheckAnimation
+
 
 
 class CAPSULE_OT_Export(Operator):
@@ -139,31 +139,45 @@ class CAPSULE_OT_Export(Operator):
         # get the current time for later
         global_record['export_time'] = datetime.now()
 
-
         # /////////////////////////////////////////////////
         # OBJECT EXPORT
 
-        object_export_result = GetObjectExportList(context, cap_file, export_objects, global_record)
-        if 'warning' in object_export_result:
-            self.report({'WARNING'}, object_export_result['warning'])
+        object_export_result = BuildObjectExportTasks(context, cap_file, export_objects, global_record)
+        obj_export_tasks = object_export_result[0]
+        object_list_result = object_export_result[1]
+
+        if 'warning' in object_list_result:
+            self.report({'WARNING'}, object_list_result['warning'])
             record_utils.RestoreSceneContext(context, global_record)
             return {'FINISHED'}
+        
+        # once we've checked for errors, export our organized list.
+        for export_task in obj_export_tasks:
+            PrepareExportScene(context, export_task)
 
-        export_stats['obj_exported'] = object_export_result['export_count']
-        export_stats['obj_hidden'] = object_export_result['export_hidden']
+
+        export_stats['obj_exported'] = object_list_result['export_count']
+        export_stats['obj_hidden'] = object_list_result['export_hidden']
         
 
         # /////////////////////////////////////////////////
         # COLLECTION EXPORT
         
-        collection_export_result = GetCollectionExportList(context, cap_file, export_collections, global_record)
-        if 'warning' in collection_export_result:
-            self.report({'WARNING'}, collection_export_result['warning'])
+        collection_export_result = BuildCollectionExportTasks(context, cap_file, export_collections, global_record)
+        col_export_tasks = collection_export_result[0]
+        col_list_result = collection_export_result[1]
+
+        if 'warning' in col_list_result:
+            self.report({'WARNING'}, col_list_result['warning'])
             record_utils.RestoreSceneContext(context, global_record)
             return {'FINISHED'}
+        
+        # once we've checked for errors, export our organized list.
+        for export_task in col_export_tasks:
+            PrepareExportScene(context, export_task)
 
-        export_stats['col_exported'] = collection_export_result['export_count']
-        export_stats['col_hidden'] = collection_export_result['export_hidden']
+        export_stats['col_exported'] = col_list_result['export_count']
+        export_stats['col_hidden'] = col_list_result['export_hidden']
         
 
         # /////////////////////////////////////////////////
@@ -174,36 +188,34 @@ class CAPSULE_OT_Export(Operator):
 
         record_utils.RestoreSceneContext(context, global_record)
 
-        return {'FINISHED'}\
+        return {'FINISHED'}
 
 
-# TODO: These definition names are terrible!
 
-def GetObjectExportList(context, cap_file, object_list, global_record):
+def BuildObjectExportTasks(context, cap_file, object_list, global_record):
     """
-    Exports a list of given objects
+    Builds an initial list of export tasks given a list of objects, allowing export tasks
+    to contain additional data and be modified as needed.
+
+    This is separated to allow test functions to use the same sorting and preparation
+    systems as the main export function.
+
+    Returns a list of export tasks and some statistics.
     """
 
     result = {}
     result['export_count'] = 0
     result['export_hidden'] = 0
 
+    export_tasks = []
+
     for item in object_list:
-        meta = {}
-        meta['3d_region'] = global_record['scene']['3d_region_override']
-        meta['export_time'] = global_record['export_time']
-        meta['export_name'] = item.name
+        export_task = {}
+        export_task['export_start_time'] = datetime.now()
 
         # Get the export preset for the object
         export_preset_index = int(item.CAPObj.export_preset) - 1
         export_preset = cap_file.export_presets[export_preset_index]
-        meta['preset_name'] = export_preset.name
-
-        location_preset_index = int(item.CAPObj.location_preset) - 1
-        location_preset = cap_file.location_presets[location_preset_index]
-
-        origin_point = item.CAPObj.origin_point
-        pack_script = item.CAPObj.pack_script
 
         # Filter by rendering
         object_hidden = False
@@ -222,60 +234,56 @@ def GetObjectExportList(context, cap_file, object_list, global_record):
         if object_hidden == True:
             continue
 
-        # E X P O R T
-        export_result = ExportTarget(context, [item], item.name, export_preset, 
-            location_preset, origin_point, item, pack_script, meta)
 
-        # Return early if a warning was triggered.
-        if 'warning' in export_result:
-            result['warning'] = export_result['warning']
-            return result
+        # SUCCESSFUL INCLUSION
+        export_task['export_name'] = item.name
+        export_task['export_preset'] = export_preset
+        export_task['targets'] = [item]
+        location_preset_index = int(item.CAPObj.location_preset) - 1
+        export_task['location_preset'] = cap_file.location_presets[location_preset_index]
+
+        export_task['origin_object'] = None
+        if collection.CAPCol.origin_point == 'Object':
+            export_task['origin_object'] = item
+
+        export_task['pack_script'] = collection.CAPCol.pack_script
         
-        # Add to stats
+        # Add to stack and increment stats
+        export_tasks.append(export_task)
         result['export_count'] += 1
     
-    return result
+    return [export_tasks, result]
 
 
-def GetCollectionExportList(context, cap_file, collection_list, global_record):
+def BuildCollectionExportTasks(context, cap_file, collection_list, global_record):
     """
-    Exports a list of given collections
+    Builds an initial list of export tasks given a list of objects, allowing export tasks
+    to contain additional data and be modified as needed.
+
+    This is separated to allow test functions to use the same sorting and preparation
+    systems as the main export function.
+
+    Returns a list of export tasks and some statistics.
     """
 
     result = {}
     result['export_count'] = 0
     result['export_hidden'] = 0
 
-    print('>> EXPORT COLLECTION <<')
-
+    export_tasks = []
     
     for collection in collection_list:
-        meta = {}
-        meta['3d_region'] = global_record['scene']['3d_region_override']
-        meta['export_time'] = global_record['export_time']
-        meta['export_name'] = collection.name
+        export_task = {}
+        export_task['export_start_time'] = datetime.now()
 
         # Get the export default for the object
         export_preset_index = int(collection.CAPCol.export_preset) - 1
         export_preset = cap_file.export_presets[export_preset_index]
-        meta['preset_name'] = export_preset.name
-
-        location_preset_index = int(collection.CAPCol.location_preset) - 1
-        location_preset = cap_file.location_presets[location_preset_index]
-
-        origin_point = collection.CAPCol.origin_point
-        root_definition = None
-        if origin_point == 'Object':
-            root_definition = bpy.context.scene.objects.get(collection.CAPCol.root_object.name)
-            #print(' R O O T - ', root_definition)
-        
-        pack_script = collection.CAPCol.pack_script
 
         # Collect all objects that are applicable for this export
         child_export_option = collection.CAPCol.child_export_option
         targets = search_utils.GetCollectionObjectTree(context, collection, child_export_option)
 
-        # print("Current Export Targets = ", targets)
         
         # TODO : Find an efficient way to filter out objects that have rendering turned off by the collections they're in.
         # Filter by rendering
@@ -300,31 +308,37 @@ def GetCollectionExportList(context, cap_file, collection_list, global_record):
             targets = renderable
             # print("Filtered Export Targets = ", targets)
 
-            if len(targets) == 0:
-                result['export_hidden'] += 1
-                return result
+        # If our targets list is empty this collection shouldn't be included.
+        if len(targets) == 0:
+            result['export_hidden'] += 1
+            continue
 
-        #print("PREPARING TO EXPORT COLLECTION ", collection.name)
-
-        # E X P O R T
-        export_result = ExportTarget(context, targets, collection.name, export_preset, 
-            location_preset, origin_point, root_definition, pack_script, meta)
-
-        # Return early if a warning was triggered.
-        if 'warning' in export_result:
-            result['warning'] = export_result['warning']
-            return result
         
-        # Add to stats
+        # SUCCESSFUL INCLUSION
+        export_task['export_name'] = collection.name
+        export_task['export_preset'] = export_preset
+        export_task['targets'] = targets
+
+        location_preset_index = int(collection.CAPCol.location_preset) - 1
+        export_task['location_preset'] = cap_file.location_presets[location_preset_index]
+
+        export_task['origin_object'] = None
+        if collection.CAPCol.origin_point == 'Object':
+            export_task['origin_object'] = bpy.context.scene.objects.get(collection.CAPCol.root_object.name)
+
+        export_task['pack_script'] = collection.CAPCol.pack_script
+
+        # Add to stack and increment stats
+        export_tasks.append(export_task)
         result['export_count'] += 1
     
-    return result
+    return [export_tasks, result]
 
 
-def ExportTarget(context, targets, export_name, export_preset, location_preset, origin_point, root_definition, pack_script, meta):
+def PrepareExportScene(context, export_task):
     """
-    The main function for exporting objects in Capsule, designed to work with an Operator in being provided
-    the right details for the export.
+    Performs scene tasks to prepare an export task for export.  This mainly consists of moving
+    scene objects in clusters to ensure the export is located properly for export.
     """
 
     print('>> EXPORT TARGET <<')
@@ -333,8 +347,12 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
+    # Unpack a few key values from the task
+    export_preset = export_task["export_preset"]
+    location_preset = export_task["location_preset"]
+    targets = export_task["targets"]
+
     result = {}
-    # print("Exporting Targets - ", targets)
 
     # TODO 1.2 : Is this needed anymore?
     # If they asked us not preserve armature constraints, we can
@@ -346,16 +364,18 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
     # /////////////////////////////////////////////////
     # FILE NAME
-    path = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories, meta)
+    export_directory = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories, export_task)
 
     if addon_prefs.substitute_directories is True:
-        export_name = path_utils.SubstituteNameCharacters(export_name)
+        export_task['export_name'] = path_utils.SubstituteNameCharacters(export_task['export_name'])
 
     # If while calculating a file path a warning was found, return early.
-    if path.find("WARNING") == 0:
-        path = path.replace("WARNING: ", "")
-        result['warning'] = path
+    if export_directory.find("WARNING") == 0:
+        export_directory = export_directory.replace("WARNING: ", "")
+        result['warning'] = export_directory
         return result
+
+    export_task['export_directory'] = export_directory
 
     # print("Path created...", path)
 
@@ -365,29 +385,27 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
 
     # Get the root location if we can, otherwise return early.
     # FIXME 1.2 - not using the actual location currently, can't </3
-    root_location = GetRootLocationDefinition(context, export_name, origin_point, root_definition)
-    if 'warning' in root_location:
-        result['warning'] = root_location['warning']
-        return result
 
-    if origin_point == "Object":
-        #print('origin point is object, moving...')
-        #print('origin point is object, moving...')
-        object_transform.MoveAllFailsafe(context, root_definition, [0.0, 0.0, 0.0], meta['3d_region'])
+    origin_location = {}
+    if export_task["origin_object"] is not None:
+
+        origin_location = GetOriginObjectLocation(context, export_task['export_name'], export_task['origin_object'])
+        object_transform.MoveAllFailsafe(context, export_task["origin_object"], [0.0, 0.0, 0.0])
 
 
     # /////////////////////////////////////////////////
     # EXPORT PROCESS
 
     # A separate export function call for every corner case isnt actually necessary
-    export_result = FinalizeExport(context, targets, path, export_preset, export_name, pack_script)
+    export_result = FinalizeExport(context, export_task)
+
 
     # /////////////////////////////////////////////////
     # DELETE/RESTORE 
 
     # Reverse movement and rotation
-    if origin_point == "Object":
-        object_transform.MoveAllFailsafe(context, root_definition, root_location['location'], meta['3d_region'])
+    if export_task["origin_object"] is not None:
+        object_transform.MoveAllFailsafe(context, export_task["origin_object"], origin_location['location'])
 
     #print(">>> Pass Complete <<<")
 
@@ -400,19 +418,11 @@ def ExportTarget(context, targets, export_name, export_preset, location_preset, 
         result['warning'] = export_result
         return result
 
-    # /////////////////////////////////////////////////
-    # TRACKER
-
-    # Count up exported objects
-    # export_stats['obj_exported'] += 1
-    # export_stats['expected_export_quantity'] += 1
-    # # context.window_manager.progress_update(export_stats['expected_export_quantity'])
-    # #print(">>> Object Export Complete <<<")
 
     return {}
 
 
-def FinalizeExport(context, targets, path, export_preset, export_name, pack_script):
+def FinalizeExport(context, export_task):
     """
     Exports a selection of objects into a single file.
     """
@@ -424,13 +434,17 @@ def FinalizeExport(context, targets, path, export_preset, export_name, pack_scri
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
+    # Unpack key export task values
+    export_preset = export_task['export_preset']
+    pack_script = export_task['pack_script']
+
     # ////////////////////////////////
     # PACK SCRIPT INTRO
 
     export_status = context.scene.CAPStatus
-    export_status.target_name = export_name
+    export_status.target_name = export_task['export_name']
     export_status.target_status = 'BEFORE_EXPORT'
-    export_status['target_input'] = targets
+    export_status['target_input'] = export_task['targets']
     export_status['target_output'] = []
 
     bpy.ops.object.select_all(action= 'DESELECT')
@@ -447,13 +461,11 @@ def FinalizeExport(context, targets, path, export_preset, export_name, pack_scri
             select_utils.SelectObject(item)
 
     else:
-        for item in targets:
+        for item in export_task['targets']:
             #print("Exporting: ", item.name)
             select_utils.SelectObject(item)
 
-    object_file_path = path + export_name
-    # print("Final File Path.", object_file_path)
-    print(targets)
+    object_file_path = export_task['export_directory'] + export_task['export_name']
 
     # ////////////////////////////////
     # EXPORT ! ! ! 
@@ -466,7 +478,8 @@ def FinalizeExport(context, targets, path, export_preset, export_name, pack_scri
         export_preset.data_obj.export(export_preset, object_file_path)
 
     elif export_preset.format_type == 'GLTF':
-        export_preset.data_gltf.export(context, export_preset, path, export_name)
+        export_preset.data_gltf.export(context, export_preset, 
+            export_task['export_directory'], export_task['export_name'])
 
     elif export_preset.format_type == 'Alembic':
         export_preset.data_abc.export(context, export_preset, object_file_path)
@@ -484,7 +497,7 @@ def FinalizeExport(context, targets, path, export_preset, export_name, pack_scri
     # PACK SCRIPT OUTRO
 
     export_status = context.scene.CAPStatus
-    export_status.target_name = export_name
+    export_status.target_name = export_task['export_name']
     export_status.target_status = 'AFTER_EXPORT'
 
     if addon_prefs.use_pack_scripts is True and pack_script is not None:
@@ -500,39 +513,27 @@ def FinalizeExport(context, targets, path, export_preset, export_name, pack_scri
 
 
 
-def GetRootLocationDefinition(context, export_name, origin_point, root_definition):
+def GetOriginObjectLocation(context, export_name, origin_target):
     """
-    Filters through potential origin point definitions to return a world-space location and rotation.
+    Filters through potential origin point definitions to return a world-space location and rotation
+    for a given export.
     """
 
     result = {}
     result['location'] = [0.0, 0.0, 0.0]
     result['rotation'] = [0.0, 0.0, 0.0]
 
-    #print('AAAAAAAA')
+    # TODO - Does this need changing in any substantial way?
 
-    if origin_point == 'Scene':
-        #print('origin point is SCENE')
-        return result
-
-    elif origin_point == "Object":
-        #print('origin point is OBJECT')
-        # Not currently needed
-        # if len(targets) > 1:
-        #     result['warning'] = "The '" + export_name + "' collection has no root object assigned to it.  ASSIGN ONE."
-        #     return result
-        
-        # TODO 2.0 - Check the root_definition argument to ensure it's the type we expect.
-
-        temp_rol = loc_utils.FindWorldSpaceObjectLocation(context, root_definition)
-        result['location'] = [temp_rol[0], 
-                                temp_rol[1], 
-                                temp_rol[2]]
-        result['rotation'] = [root_definition.rotation_euler[0], 
-                                root_definition.rotation_euler[1], 
-                                root_definition.rotation_euler[2]]
-        
-        #print('found root location : ', result['location'])
+    temp_rol = loc_utils.FindWorldSpaceObjectLocation(context, origin_target)
+    result['location'] = [temp_rol[0], 
+                            temp_rol[1], 
+                            temp_rol[2]]
+    result['rotation'] = [origin_target.rotation_euler[0], 
+                            origin_target.rotation_euler[1], 
+                            origin_target.rotation_euler[2]]
+    
+    #print('found root location : ', result['location'])
     
     return result
 

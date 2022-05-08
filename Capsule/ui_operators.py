@@ -503,65 +503,6 @@ class CAPSULE_OT_UI_Group_Options(Operator):
 
         return {'FINISHED'}
 
-# TODO : Make relevant in 2.0
-class CAPSULE_OT_Refresh_Actions(Operator):
-    """Generate a list of collections to browse"""
-
-    bl_idname = "scene.cap_refactions"
-    bl_label = "Refresh"
-
-    def execute(self, context):
-        #print(self)
-
-        ui = context.scene.CAPUI
-        active = context.active_object
-        armature = None
-
-        ui.action_list.clear()
-
-        if active.animation_data is not None:
-            actions = active.animation_data.nla_tracks
-            activeAction = active.animation_data.action
-
-            if activeAction is not None:
-                entry = ui.action_list.add()
-                entry.name = activeAction.name
-                entry.prev_name = activeAction.name
-                entry.anim_type = '1'
-
-            for action in actions:
-                entry = ui.action_list.add()
-                entry.name = action.name
-                entry.prev_name = action.name
-                entry.anim_type = '2'
-
-
-        modType = {'ARMATURE'}
-
-        for modifier in active.modifiers:
-            if modifier.type in modType:
-                armature = modifier.object
-
-        if armature is not None:
-            if armature.animation_data is not None:
-                actions = armature.animation_data.nla_tracks
-                activeAction = armature.animation_data.action
-
-                if activeAction is not None:
-                    entry = ui.action_list.add()
-                    entry.name = activeAction.name
-                    entry.prev_name = activeAction.name
-                    entry.anim_type = '3'
-
-                for action in actions:
-                    entry = ui.action_list.add()
-                    entry.name = action.name
-                    entry.prev_name = action.name
-                    entry.anim_type = '4'
-
-
-        return {'FINISHED'}
-
 
 class CAPSULE_OT_Create_ExportData(Operator):
     """Create a new empty object for which Capsule data is stored, and where both Active Export Presets and other scene data is stored."""
@@ -861,7 +802,6 @@ class CAPSULE_OT_TestPackScriptListItem(Operator):
 #     CAPSULE_OT_Reset_Defaults,
 #     CAPSULE_OT_UI_Group_Separate,
 #     CAPSULE_OT_UI_Group_Options,
-#     CAPSULE_OT_Refresh_Actions,
 #     CAPSULE_OT_Tutorial_Tags,
 #     CAPSULE_OT_Create_ExportData,
 #     CAPSULE_OT_Add_Stored_Presets,

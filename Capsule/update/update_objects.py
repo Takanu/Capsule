@@ -150,56 +150,6 @@ def CAP_Update_ProxyObjectOverride(self, context):
     return None
 
 
-def CAP_Update_ActionItemName(self, context):
-    """
-    Updates an animation actions name when edited from a list.
-    """
-    active = context.active_object
-    #print(">>> Changing Action Name <<<")
-    #print(">>> Changing Action Name <<<")
-
-    if active.animation_data is not None:
-        animData = active.animation_data
-        #print("Checking Object Animation Names...")
-
-        if animData.action is not None:
-            if animData.action.name == self.prev_name:
-                animData.action.name = self.name
-                self.prev_name = self.name
-                return None
-
-        for nla in active.animation_data.nla_tracks:
-            #print("Checking NLA...", nla, nla.name)
-            if nla.name == self.prev_name:
-                nla.name = self.name
-                self.prev_name = self.name
-                return None
-
-    modType = {'ARMATURE'}
-
-    for modifier in active.modifiers:
-        if modifier.type in modType:
-            armature = modifier.object
-
-    if armature is not None:
-        if armature.animation_data is not None:
-            animData = armature.animation_data
-            #print("Checking Armature Animation Names...")
-
-            if animData.action is not None:
-                if animData.action.name == self.prev_name:
-                    animData.action.name = self.name
-                    self.prev_name = self.name
-                    return None
-
-            for nla in animData.nla_tracks:
-                if nla.name == self.prev_name:
-                    nla.name = self.name
-                    self.prev_name = self.name
-                    return None
-
-    #print("No name could be changed for action", self.prev_name, ".  Oh no!")
-
 
 
 # OBJECT LIST PROPERTIES

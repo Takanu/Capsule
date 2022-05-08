@@ -5,7 +5,6 @@ from bpy.types import PropertyGroup
 
 from ..update.update_objects import (
     CAP_Update_ObjectListExport, 
-    CAP_Update_ActionItemName, 
     CAP_Update_FocusObject,  
     CAP_Update_SelectObject, 
     CAP_Update_ObjectListRemove
@@ -134,30 +133,6 @@ class CollectionListItem(PropertyGroup):
         default = True,
     )
 
-class ActionListItem(PropertyGroup):
-    """
-    Defines an animation action as a list property, for use when displaying actions in the user interface.
-    """
-    name: StringProperty(
-        name = "",
-        description = "The name of the action",
-        update = CAP_Update_ActionItemName
-    )
-
-    prev_name: StringProperty(
-        name = "",
-        description = "Internal only, used for tracking name updates"
-    )
-
-    anim_type: EnumProperty(
-        name = "Animation Data Type",
-        description = "Switches the selection editing mode between individual, selected objects and collections that can be browsed and edited through a list",
-        items =  (
-        ('1', 'Action Object', ''),
-        ('2', 'NLA Object', ''),
-        ('3', 'Action Armature', ''),
-        ('4', 'NLA Armature', ''),),
-    )
 
 
 class CAPSULE_Scene_Preferences(PropertyGroup):
@@ -177,10 +152,6 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
     # The index of the selected collection list item
     collection_list_index: IntProperty()
 
-
-    ## Old Action list variables
-    action_list: CollectionProperty(type=ActionListItem)
-    action_list_index: IntProperty()
 
     list_switch: EnumProperty(
         name = "Object Type Switch",
@@ -397,7 +368,6 @@ class CAPSULE_Export_Status(PropertyGroup):
 # classes = (
 #     ObjectListItem, 
 #     CollectionListItem, 
-#     ActionListItem, 
 #     CAPSULE_Scene_Preferences, 
 #     CAPSULE_Object_Preferences, 
 #     CAPSULE_Collection_Preferences, 
