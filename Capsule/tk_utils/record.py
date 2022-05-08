@@ -353,7 +353,7 @@ def MuteArmatureConstraints(context):
     #print("-"*40)
     #print("-"*40)
 
-    # NOW WE CAN FUCKING MUTE THEM
+    # NOW WE CAN MUTE THEM
     for entry in record['armature_constraints']:
         item = context.scene.objects[entry['object_name']]
         for bone in item.pose.bones:

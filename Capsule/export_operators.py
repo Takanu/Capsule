@@ -139,49 +139,52 @@ class CAPSULE_OT_Export(Operator):
         # get the current time for later
         global_record['export_time'] = datetime.now()
 
+
         # /////////////////////////////////////////////////
-        # OBJECT EXPORT
+        # EXPORT TASK PROCESSING
 
-        object_export_result = BuildObjectExportTasks(context, cap_file, export_objects, global_record)
-        obj_export_tasks = object_export_result[0]
-        object_list_result = object_export_result[1]
+        try:
+            object_export_result = BuildObjectExportTasks(context, cap_file, export_objects, global_record)
+            collection_export_result = BuildCollectionExportTasks(context, cap_file, export_collections, global_record)
 
-        if 'warning' in object_list_result:
-            self.report({'WARNING'}, object_list_result['warning'])
+        except Exception as e:
+            message = getattr(e, 'message', repr(e))
+
+            self.report({'WARNING'}, message)
             record_utils.RestoreSceneContext(context, global_record)
             return {'FINISHED'}
+
+
+        export_tasks = object_export_result[0] + collection_export_result[0]
+        col_list_result = collection_export_result[1]
+        object_list_result = object_export_result[1]
         
-        # once we've checked for errors, export our organized list.
-        for export_task in obj_export_tasks:
-            PrepareExportScene(context, export_task)
-
-
         export_stats['obj_exported'] = object_list_result['export_count']
         export_stats['obj_hidden'] = object_list_result['export_hidden']
-        
-
-        # /////////////////////////////////////////////////
-        # COLLECTION EXPORT
-        
-        collection_export_result = BuildCollectionExportTasks(context, cap_file, export_collections, global_record)
-        col_export_tasks = collection_export_result[0]
-        col_list_result = collection_export_result[1]
-
-        if 'warning' in col_list_result:
-            self.report({'WARNING'}, col_list_result['warning'])
-            record_utils.RestoreSceneContext(context, global_record)
-            return {'FINISHED'}
-        
-        # once we've checked for errors, export our organized list.
-        for export_task in col_export_tasks:
-            PrepareExportScene(context, export_task)
-
         export_stats['col_exported'] = col_list_result['export_count']
         export_stats['col_hidden'] = col_list_result['export_hidden']
         
 
         # /////////////////////////////////////////////////
+        # EXPORT TASKS
+
+        for export_task in export_tasks:
+
+            try:
+                GetExportTaskDirectory(context, export_task)
+                PerformExportTask(context, export_task)
+
+            except Exception as e:
+                message = getattr(e, 'message', repr(e))
+
+                self.report({'WARNING'}, message)
+                record_utils.RestoreSceneContext(context, global_record)
+                return {'FINISHED'}
+
+
+        # /////////////////////////////////////////////////
         # EXPORT SUMMARY  
+
         export_info = GetExportSummary(export_stats)
         self.report({export_info[0]}, export_info[1])
 
@@ -246,7 +249,7 @@ def BuildObjectExportTasks(context, cap_file, object_list, global_record):
         if collection.CAPCol.origin_point == 'Object':
             export_task['origin_object'] = item
 
-        export_task['pack_script'] = collection.CAPCol.pack_script
+        export_task['pack_script'] = item.CAPObj.pack_script
         
         # Add to stack and increment stats
         export_tasks.append(export_task)
@@ -335,94 +338,24 @@ def BuildCollectionExportTasks(context, cap_file, collection_list, global_record
     return [export_tasks, result]
 
 
-def PrepareExportScene(context, export_task):
+def GetExportTaskDirectory(context, export_task):
     """
-    Performs scene tasks to prepare an export task for export.  This mainly consists of moving
-    scene objects in clusters to ensure the export is located properly for export.
+    Gets and sets the file path using information in the export task.
     """
-
-    print('>> EXPORT TARGET <<')
-
-    cap_scn = context.scene.CAPScn
     preferences = context.preferences
     addon_prefs = preferences.addons[__package__].preferences
 
-    # Unpack a few key values from the task
-    export_preset = export_task["export_preset"]
-    location_preset = export_task["location_preset"]
-    targets = export_task["targets"]
-
-    result = {}
-
-    # TODO 1.2 : Is this needed anymore?
-    # If they asked us not preserve armature constraints, we can
-    # do our job and ensure they don't screw things up beyond this code
-    # Prepares the object for movement, will only work if Preserve Armature Constraints is false.
-    if export_preset.preserve_armature_constraints == True:
-        armature_record = record_utils.MuteArmatureConstraints(context)
-
-
-    # /////////////////////////////////////////////////
-    # FILE NAME
-    export_directory = path_utils.CreateFilePath(location_preset, targets, None, addon_prefs.substitute_directories, export_task)
+    export_directory = path_utils.CreateFilePath(export_task["location_preset"], export_task["targets"], 
+        None, addon_prefs.substitute_directories, export_task)
 
     if addon_prefs.substitute_directories is True:
         export_task['export_name'] = path_utils.SubstituteNameCharacters(export_task['export_name'])
 
-    # If while calculating a file path a warning was found, return early.
-    if export_directory.find("WARNING") == 0:
-        export_directory = export_directory.replace("WARNING: ", "")
-        result['warning'] = export_directory
-        return result
-
     export_task['export_directory'] = export_directory
 
-    # print("Path created...", path)
 
 
-    # /////////////////////////////////////////////////
-    # OBJECT MOVEMENT
-
-    # Get the root location if we can, otherwise return early.
-    # FIXME 1.2 - not using the actual location currently, can't </3
-
-    origin_location = {}
-    if export_task["origin_object"] is not None:
-
-        origin_location = GetOriginObjectLocation(context, export_task['export_name'], export_task['origin_object'])
-        object_transform.MoveAllFailsafe(context, export_task["origin_object"], [0.0, 0.0, 0.0])
-
-
-    # /////////////////////////////////////////////////
-    # EXPORT PROCESS
-
-    # A separate export function call for every corner case isnt actually necessary
-    export_result = FinalizeExport(context, export_task)
-
-
-    # /////////////////////////////////////////////////
-    # DELETE/RESTORE 
-
-    # Reverse movement and rotation
-    if export_task["origin_object"] is not None:
-        object_transform.MoveAllFailsafe(context, export_task["origin_object"], origin_location['location'])
-
-    #print(">>> Pass Complete <<<")
-
-    # Cleans up any armature constraint modification (only works if Preserve Armature Constraints is off)
-    if export_preset.preserve_armature_constraints == True:
-        record_utils.RestoreArmatureConstraints(context, armature_record)
-
-    # We perform error checks here so the scene can be reset.
-    if export_result is not None:
-        result['warning'] = export_result
-        return result
-
-
-    return {}
-
-
-def FinalizeExport(context, export_task):
+def PerformExportTask(context, export_task):
     """
     Exports a selection of objects into a single file.
     """
@@ -438,6 +371,21 @@ def FinalizeExport(context, export_task):
     export_preset = export_task['export_preset']
     pack_script = export_task['pack_script']
 
+
+    # ////////////////////////////////
+    # SETUP SCENE
+
+    # TODO 1.2 : Is this needed anymore?
+    if export_preset.preserve_armature_constraints == True:
+        export_task['armature_record'] = record_utils.MuteArmatureConstraints(context)
+
+    origin_location = {}
+    if export_task["origin_object"] is not None:
+
+        export_task["origin_object_loc"] = GetOriginObjectLocation(context, export_task['export_name'], export_task['origin_object'])
+        object_transform.MoveAllFailsafe(context, export_task["origin_object"], [0.0, 0.0, 0.0])
+    
+
     # ////////////////////////////////
     # PACK SCRIPT INTRO
 
@@ -451,7 +399,20 @@ def FinalizeExport(context, export_task):
 
     if addon_prefs.use_pack_scripts is True and pack_script is not None:
         code = pack_script.as_string()
-        exec(code)
+        
+        # Perform code execution in a try block to catch issues and revert the export state early.
+        try:
+            exec(code)
+        except Exception as e:
+            message = getattr(e, 'message', repr(e))
+            
+            # Undo scene state changes.
+            EmergencySceneRestore(context, export_task)
+
+            # Raise the exception
+            raise Exception("Pack Script Error for", export_task['export_name'],
+                " ", message)
+
 
         if len(export_status['target_output']) == 0:
             return "A Pack Script used provided no target objects to export."
@@ -466,6 +427,7 @@ def FinalizeExport(context, export_task):
             select_utils.SelectObject(item)
 
     object_file_path = export_task['export_directory'] + export_task['export_name']
+
 
     # ////////////////////////////////
     # EXPORT ! ! ! 
@@ -493,6 +455,7 @@ def FinalizeExport(context, export_task):
     elif export_preset.format_type == 'USD':
         export_preset.data_usd.export(context, export_preset, object_file_path)
 
+
     # ////////////////////////////////
     # PACK SCRIPT OUTRO
 
@@ -500,7 +463,7 @@ def FinalizeExport(context, export_task):
     export_status.target_name = export_task['export_name']
     export_status.target_status = 'AFTER_EXPORT'
 
-    if addon_prefs.use_pack_scripts is True and pack_script is not None:
+    if addon_prefs.use_pack_scripts is True and export_task['pack_script'] is not None:
         code = pack_script.as_string()
         exec(code)
 
@@ -510,6 +473,54 @@ def FinalizeExport(context, export_task):
     export_status.target_status = 'NONE'
     export_status['target_input'] = []
     export_status['target_output'] = []
+
+
+    # /////////////////////////////////////////////////
+    # RESTORE SCENE
+
+    # Reverse movement and rotation
+    if export_task["origin_object"] is not None:
+        object_transform.MoveAllFailsafe(context, export_task["origin_object"], 
+            export_task["origin_object_loc"]['location'])
+
+    # Cleans up any armature constraint modification (only works if Preserve Armature Constraints is off)
+    if export_preset.preserve_armature_constraints == True:
+        record_utils.RestoreArmatureConstraints(context, export_task["armature_record"])
+
+
+
+def EmergencySceneRestore(context, export_task):
+    """
+    Restores the scene assuming the worst state conditions (such as a pack script failure), attempting
+    to avoid as many context issues as possible.
+    """
+
+    preferences = context.preferences
+    addon_prefs = preferences.addons[__package__].preferences
+
+    export_status = context.scene.CAPStatus
+    export_status.target_name = export_task['export_name']
+    export_status.target_status = 'AFTER_EXPORT'
+
+    # Reset the Export Status state
+    export_status = context.scene.CAPStatus
+    export_status.target_name = ""
+    export_status.target_status = 'NONE'
+    export_status['target_input'] = []
+    export_status['target_output'] = []
+
+
+    # /////////////////////////////////////////////////
+    # RESTORE SCENE
+
+    # Reverse movement and rotation
+    if export_task["origin_object"] is not None:
+        object_transform.MoveAllFailsafe(context, export_task["origin_object"], 
+            export_task["origin_object_loc"]['location'])
+
+    # Cleans up any armature constraint modification (only works if Preserve Armature Constraints is off)
+    if export_task['export_preset'].preserve_armature_constraints == True:
+        record_utils.RestoreArmatureConstraints(context, export_task['armature_record'])
 
 
 

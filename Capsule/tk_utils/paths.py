@@ -13,7 +13,7 @@ def CreateFilePath(location_preset, targets, collection, replace_invalid_chars, 
     location_path = location_preset.path
 
     if location_path == "":
-            return 'WARNING: This location preset has no path defined, please define it!'
+        raise Exception('WARNING: This location preset has no path defined, please define it!')
 
     elif location_path.find('//') != -1:
         location_path = bpy.path.abspath(location_path)
