@@ -145,11 +145,11 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = True
 	)
 
-	export_displacement: BoolProperty(
-		name = 'Export Displacement (Experimental)',
-		description = 'Export displacement textures. Uses an incomplete “KHR_materials_displacement” glTF extension, use at your own peril!',
-		default = False
-	)
+	# export_displacement: BoolProperty(
+	# 	name = 'Export Displacement (Experimental)',
+	# 	description = 'Export displacement textures. Uses an incomplete “KHR_materials_displacement” glTF extension, use at your own peril!',
+	# 	default = False
+	# )
 
 
 	# /////////////////////////////////
@@ -352,7 +352,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			use_mesh_edges = self.use_mesh_edges,
 			use_mesh_vertices = self.use_mesh_vertices,
 
-			export_displacement = self.export_displacement,
+			# TODO: Double-check if this has been removed before the release of 3.3.
+			# export_displacement = self.export_displacement,
 
 
 			# ANIMATION
@@ -461,7 +462,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			mesh_options.prop(exportData, "export_normals")
 			mesh_options.prop(exportData, "export_tangents")
 			mesh_options.prop(exportData, "export_colors")
-			mesh_options.prop(exportData, "export_displacement")
+			# mesh_options.prop(exportData, "export_displacement")
 			mesh_options.separator()
 			mesh_options.prop(exportData, "use_mesh_edges")
 			mesh_options.prop(exportData, "use_mesh_vertices")

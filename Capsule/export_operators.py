@@ -143,17 +143,8 @@ class CAPSULE_OT_Export(Operator):
         # /////////////////////////////////////////////////
         # EXPORT TASK PROCESSING
 
-        try:
-            object_export_result = BuildObjectExportTasks(context, cap_file, export_objects, global_record)
-            collection_export_result = BuildCollectionExportTasks(context, cap_file, export_collections, global_record)
-
-        except Exception as e:
-            message = getattr(e, 'message', repr(e))
-
-            self.report({'WARNING'}, message)
-            record_utils.RestoreSceneContext(context, global_record)
-            return {'FINISHED'}
-
+        object_export_result = BuildObjectExportTasks(context, cap_file, export_objects, global_record)
+        collection_export_result = BuildCollectionExportTasks(context, cap_file, export_collections, global_record)
 
         export_tasks = object_export_result[0] + collection_export_result[0]
         col_list_result = collection_export_result[1]
@@ -170,16 +161,8 @@ class CAPSULE_OT_Export(Operator):
 
         for export_task in export_tasks:
 
-            try:
-                GetExportTaskDirectory(context, export_task)
-                PerformExportTask(context, export_task)
-
-            except Exception as e:
-                message = getattr(e, 'message', repr(e))
-
-                self.report({'WARNING'}, message)
-                record_utils.RestoreSceneContext(context, global_record)
-                return {'FINISHED'}
+            GetExportTaskDirectory(context, export_task)
+            PerformExportTask(context, export_task)
 
 
         # /////////////////////////////////////////////////
