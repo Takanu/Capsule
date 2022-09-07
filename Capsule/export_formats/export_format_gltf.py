@@ -175,12 +175,11 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = True
 	)
 
-	export_def_bones: BoolProperty(
-		name = 'Export Deformation Bones Only',
-		description = 'When on, only the deformation bones will be exported (and needed bones in the hierarchy)',
-		default = False
+	export_anim_single_armature: BoolProperty(
+		name = 'Export All Armature Actions',
+		description = 'Export all actions, bound to a single armature. WARNING: Does not support exports including multiple armatures, assign armatures as separate exports before using this option',
+		default = False,
 	)
-	
 
 	optimize_animation_size: BoolProperty(
 		name = 'Optimize Animation Size',
@@ -237,6 +236,13 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		description = 'Allows >4 joint vertex influences. Models may appear incorrectly in many viewers',
 		default = False
 	)
+
+	export_def_bones: BoolProperty(
+		name = 'Export Deformation Bones Only',
+		description = 'When on, only the deformation bones will be exported (and needed bones in the hierarchy)',
+		default = False
+	)
+	
 
 	# TODO: Missing some new animation properties
 
@@ -362,7 +368,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_animations = export_preset.export_animation,
 			export_frame_range = self.export_frame_range,
 			export_nla_strips = self.export_nla_strips,
-			export_def_bones = self.export_def_bones,
+			export_anim_single_armature = self.export_anim_single_armature,
 			optimize_animation_size = self.optimize_animation_size,
 
 			export_force_sampling = self.export_force_sampling,
@@ -374,6 +380,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_skins = self.export_skins,
 			export_all_influences = self.export_all_influences,
+			export_def_bones = self.export_def_bones,
 
 
 			# DRACO
@@ -506,8 +513,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			animation_options.active = preset.export_animation
 
 			generic_sub = animation_options.column(align = True, heading = "Animation Options")
-			generic_sub.prop(exportData, "export_def_bones")
 			generic_sub.prop(exportData, "export_nla_strips")
+			generic_sub.prop(exportData, "export_anim_single_armature")
 			generic_sub.prop(exportData, "export_frame_range")
 			generic_sub.prop(exportData, "optimize_animation_size")
 			
@@ -547,6 +554,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			skinning_sub = skinning_options.column(align = True)
 			skinning_sub.active = exportData.export_skins
 			skinning_sub.prop(exportData, "export_all_influences")
+			skinning_sub.prop(exportData, "export_def_bones")
 
 			export_options.separator()
 		
