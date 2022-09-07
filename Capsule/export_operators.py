@@ -229,7 +229,7 @@ def BuildObjectExportTasks(context, cap_file, object_list, global_record):
         export_task['location_preset'] = cap_file.location_presets[location_preset_index]
 
         export_task['origin_object'] = None
-        if collection.CAPCol.origin_point == 'Object':
+        if item.CAPObj.origin_point == 'Object':
             export_task['origin_object'] = item
 
         export_task['pack_script'] = item.CAPObj.pack_script
