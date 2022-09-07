@@ -60,26 +60,26 @@ class CAP_FormatData_OBJ(PropertyGroup):
 		name = "Forward Axis",
 		description = "What the Forward Axis will be defined as when the model is exported.",
 		items = (
-			('X_FORWARD', 'X', ''),
-			('Y_FORWARD', 'Y', ''),
-			('Z_FORWARD', 'Z', ''),
-			('NEGATIVE_X_FORWARD', '-X', ''),
-			('NEGATIVE_Y_FORWARD', '-Y', ''),
-			('NEGATIVE_Z_FORWARD', '-Z (Default)', '')),
-		default = 'NEGATIVE_Z_FORWARD'
+			('X', 'X', ''),
+			('Y', 'Y', ''),
+			('Z', 'Z', ''),
+			('NEGATIVE_X', '-X', ''),
+			('NEGATIVE_Y', '-Y', ''),
+			('NEGATIVE_Z', '-Z (Default)', '')),
+		default = 'NEGATIVE_Z'
 	)
 
 	up_axis: EnumProperty(
 		name = "Up Axis",
 		description = "What the Up Axis will be defined as when the model is exported.",
 		items = (
-			('X_UP', 'X', ''),
-			('Y_UP', 'Y (Default)', ''),
-			('Z_UP', 'Z', ''),
-			('NEGATIVE_X_UP', '-X', ''),
-			('NEGATIVE_Y_UP', '-Y', ''),
-			('NEGATIVE_Z_UP', '-Z', '')),
-		default = 'Y_UP',
+			('X', 'X', ''),
+			('Y', 'Y (Default)', ''),
+			('Z', 'Z', ''),
+			('NEGATIVE_X', '-X', ''),
+			('NEGATIVE_Y', '-Y', ''),
+			('NEGATIVE_Z', '-Z', '')),
+		default = 'Y',
 	)
 	
 
