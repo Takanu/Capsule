@@ -21,7 +21,7 @@
 bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
-    "version": (1, 3, 5),
+    "version": (1, 3, 6),
     "blender": (3, 1, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",

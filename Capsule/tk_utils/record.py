@@ -603,8 +603,9 @@ def CheckCapsuleErrors(context, target_objects = None, target_collections = None
         
         # TODO: os.path.isdir breaks on relative paths.
         full_path = bpy.path.abspath(default_file_path)
+        print(full_path)
         if not os.path.isdir(full_path):
-            statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' points to a file rather than a directory.  Please ensure it points to a folder."
+            statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' either points to a file or is a Relative Path that is now incorrect.  Please re-assign the location path."
             return statement
 
 
