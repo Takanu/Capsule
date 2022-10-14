@@ -181,7 +181,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False,
 	)
 
-	optimize_animation_size: BoolProperty(
+	export_optimize_animation_size: BoolProperty(
 		name = 'Optimize Animation Size',
 		description = 'Reduces exported filesize by removing duplicate keyframes.  WARNING - Can cause problems with stepped animation',
 		default = True
@@ -369,7 +369,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_frame_range = self.export_frame_range,
 			export_nla_strips = self.export_nla_strips,
 			export_anim_single_armature = self.export_anim_single_armature,
-			optimize_animation_size = self.optimize_animation_size,
+			export_optimize_animation_size = self.export_optimize_animation_size,
 
 			export_force_sampling = self.export_force_sampling,
 			export_frame_step = self.export_frame_step,
@@ -516,7 +516,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			generic_sub.prop(exportData, "export_nla_strips")
 			generic_sub.prop(exportData, "export_anim_single_armature")
 			generic_sub.prop(exportData, "export_frame_range")
-			generic_sub.prop(exportData, "optimize_animation_size")
+			generic_sub.prop(exportData, "export_optimize_animation_size")
 			
 			
 			animation_options.separator()
