@@ -492,7 +492,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			if preset.apply_modifiers == True:
 				export_options_warning = export_options.box()
 				export_options_warning_l = export_options_warning.row(align= True)
-				export_options_warning_l.label(text= "While Apply Modifiers is active you will not be able to export Shape Keys")
+				export_options_warning_l.label(text= "While Apply Modifiers is active, objects with Modifiers will NOT export Shape Keys")
 				export_options.separator()
 				export_options.separator()
 			
