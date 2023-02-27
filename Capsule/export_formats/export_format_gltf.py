@@ -59,7 +59,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	)
 
 	# the property for 'export_keep_originals'
-	export_keep_original_tex: BoolProperty(
+	export_keep_originals: BoolProperty(
 		name = 'Keep Original Images',
 		description = "(Only available with the 'GLTF Separate' Export Format) Keep original textures files if possible. WARNING: if you use more than one texture, where pbr standard requires only one, only one texture will be used. This can lead to unexpected results",
 		default = False,
@@ -340,7 +340,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_image_format = self.export_image_format,
 			export_texture_dir = self.export_texture_dir,
-			export_keep_originals = self.export_keep_original_tex,
+			export_keep_originals = self.export_keep_originals,
 
 
 			# SCENE
@@ -437,7 +437,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			else:
 				export_tex_options.active = False
 			export_tex_options.prop(exportData, "export_texture_dir")
-			export_tex_options.prop(exportData, "export_keep_original_tex")
+			export_tex_options.prop(exportData, "export_keep_originals")
 
 			
 			export_options.separator()

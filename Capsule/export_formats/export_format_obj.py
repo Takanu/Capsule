@@ -46,8 +46,8 @@ class CAP_FormatData_OBJ(PropertyGroup):
 
 	# transform
 
-	scaling_factor: FloatProperty(
-		name = "Scaling Factor",
+	global_scale: FloatProperty(
+		name = "Global Scale",
 		description = "The scale of the exported objects",
 		default = 1.0,
 		min = 0.001,
@@ -156,7 +156,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			smooth_group_bitflags = self.smooth_group_bitflags,
 
 			# Scene
-			scaling_factor = self.scaling_factor,
+			global_scale = self.global_scale,
 			forward_axis = self.forward_axis,
 			up_axis = self.up_axis,
 
@@ -220,7 +220,7 @@ class CAP_FormatData_OBJ(PropertyGroup):
 			export_options.use_property_decorate = False
 			export_options.separator()
 
-			export_options.prop(exportData, "scaling_factor")
+			export_options.prop(exportData, "global_scale")
 			export_options.separator()
 			export_options.separator()
 
