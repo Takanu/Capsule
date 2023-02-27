@@ -1,5 +1,5 @@
 
-import bpy, bmesh, os, platform, sys
+import bpy, bmesh, os, platform, sys, time
 
 from datetime import datetime
 from mathutils import Vector
@@ -58,6 +58,20 @@ class CAPSULE_OT_Export(Operator):
 
         export_objects = []
         export_collections = []
+        
+        # Set baseline export statistics
+        export_stats = {}
+        export_stats['obj_exported'] = 0
+        export_stats['col_exported'] = 0
+        export_stats['obj_hidden'] = 0
+        export_stats['col_hidden'] = 0
+        # timers
+        export_stats['_last_time'] = time.time()
+        export_stats['scene_setup_time'] = 0.0
+        export_stats['export_process_time'] = 0.0
+        export_stats['export_task_process_time'] = 0.0
+        export_stats['export_task_api_time'] = 0.0
+        export_stats['scene_restore_time'] = 0.0
 
         if self.set_mode == 'ALL':
             for object in context.scene.objects:
@@ -106,7 +120,6 @@ class CAPSULE_OT_Export(Operator):
         # print(export_objects)
         # print(export_collections)
 
-
         # /////////////////////////////////////////////////
         # SETUP
     
@@ -127,34 +140,22 @@ class CAPSULE_OT_Export(Operator):
             record_utils.RestoreSceneContext(context, global_record)
             self.report({'WARNING'}, result)
             return {'FINISHED'}
-        
 
-        # Set export counts here
-        export_stats = {}
-        # export_stats['expected_export_quantity'] = 0
-        export_stats['obj_exported'] = 0
-        export_stats['col_exported'] = 0
-        total_exp_count = 0
-        
-        # get the current time for later
-        global_record['export_time'] = datetime.now()
+        export_stats['scene_setup_time'] = time.time() - export_stats['_last_time']
+        export_stats['_last_time'] = time.time()
 
 
         # /////////////////////////////////////////////////
         # EXPORT TASK PROCESSING
 
-        object_export_result = BuildObjectExportTasks(context, cap_file, export_objects, global_record)
-        collection_export_result = BuildCollectionExportTasks(context, cap_file, export_collections, global_record)
+        object_export_result = BuildObjectExportTasks(context, cap_file, export_objects, global_record, export_stats)
+        export_stats = object_export_result[1]
+        collection_export_result = BuildCollectionExportTasks(context, cap_file, export_collections, global_record, export_stats)
+        export_stats = collection_export_result[1]
 
         export_tasks = object_export_result[0] + collection_export_result[0]
-        col_list_result = collection_export_result[1]
-        object_list_result = object_export_result[1]
-        
-        export_stats['obj_exported'] = object_list_result['export_count']
-        export_stats['obj_hidden'] = object_list_result['export_hidden']
-        export_stats['col_exported'] = col_list_result['export_count']
-        export_stats['col_hidden'] = col_list_result['export_hidden']
-        
+        export_stats['export_process_time'] = time.time() - export_stats['_last_time']
+        export_stats['_last_time'] = time.time()
 
         # /////////////////////////////////////////////////
         # EXPORT TASKS
@@ -162,7 +163,10 @@ class CAPSULE_OT_Export(Operator):
         for export_task in export_tasks:
 
             GetExportTaskDirectory(context, export_task)
-            PerformExportTask(context, export_task)
+            PerformExportTask(context, export_task, export_stats)
+        
+        export_stats['export_task_process_time'] += time.time() - export_stats['_last_time']
+        export_stats['_last_time'] = time.time()
 
 
         # /////////////////////////////////////////////////
@@ -171,14 +175,16 @@ class CAPSULE_OT_Export(Operator):
         export_info = GetExportSummary(export_stats)
         self.report({export_info[0]}, export_info[1])
 
-
         record_utils.RestoreSceneContext(context, global_record)
+
+        export_stats['scene_restore_time'] += time.time() - export_stats['_last_time']
+        print(export_stats)
 
         return {'FINISHED'}
 
 
 
-def BuildObjectExportTasks(context, cap_file, object_list, global_record):
+def BuildObjectExportTasks(context, cap_file, object_list, global_record, export_stats):
     """
     Builds an initial list of export tasks given a list of objects, allowing export tasks
     to contain additional data and be modified as needed.
@@ -188,11 +194,6 @@ def BuildObjectExportTasks(context, cap_file, object_list, global_record):
 
     Returns a list of export tasks and some statistics.
     """
-
-    result = {}
-    result['export_count'] = 0
-    result['export_hidden'] = 0
-
     export_tasks = []
 
     for item in object_list:
@@ -207,13 +208,13 @@ def BuildObjectExportTasks(context, cap_file, object_list, global_record):
         object_hidden = False
         if export_preset.filter_by_rendering is True:
             if item.hide_render is True:
-                result['export_hidden'] += 1
+                export_stats['obj_hidden'] += 1
                 object_hidden = True
                 continue
             else:
                 for collection in item.users_collection:
                     if collection.hide_render is True:
-                        result['export_hidden'] += 1
+                        export_stats['obj_hidden'] += 1
                         object_hidden = True
                         break
         
@@ -236,12 +237,12 @@ def BuildObjectExportTasks(context, cap_file, object_list, global_record):
         
         # Add to stack and increment stats
         export_tasks.append(export_task)
-        result['export_count'] += 1
+        export_stats['obj_exported'] += 1
     
-    return [export_tasks, result]
+    return [export_tasks, export_stats]
 
 
-def BuildCollectionExportTasks(context, cap_file, collection_list, global_record):
+def BuildCollectionExportTasks(context, cap_file, collection_list, global_record, export_stats):
     """
     Builds an initial list of export tasks given a list of objects, allowing export tasks
     to contain additional data and be modified as needed.
@@ -251,10 +252,6 @@ def BuildCollectionExportTasks(context, cap_file, collection_list, global_record
 
     Returns a list of export tasks and some statistics.
     """
-
-    result = {}
-    result['export_count'] = 0
-    result['export_hidden'] = 0
 
     export_tasks = []
     
@@ -296,7 +293,7 @@ def BuildCollectionExportTasks(context, cap_file, collection_list, global_record
 
         # If our targets list is empty this collection shouldn't be included.
         if len(targets) == 0:
-            result['export_hidden'] += 1
+            export_stats['col_hidden'] += 1
             continue
 
         
@@ -316,9 +313,9 @@ def BuildCollectionExportTasks(context, cap_file, collection_list, global_record
 
         # Add to stack and increment stats
         export_tasks.append(export_task)
-        result['export_count'] += 1
+        export_stats['col_exported'] += 1
     
-    return [export_tasks, result]
+    return [export_tasks, export_stats]
 
 
 def GetExportTaskDirectory(context, export_task):
@@ -338,7 +335,7 @@ def GetExportTaskDirectory(context, export_task):
 
 
 
-def PerformExportTask(context, export_task):
+def PerformExportTask(context, export_task, export_stats):
     """
     Exports a selection of objects into a single file.
     """
@@ -415,6 +412,9 @@ def PerformExportTask(context, export_task):
     # ////////////////////////////////
     # EXPORT ! ! ! 
 
+    export_stats['export_task_process_time'] += time.time() - export_stats['_last_time']
+    export_stats['_last_time'] = time.time()
+
     # based on the export location, send it to the right place
     if export_preset.format_type == 'FBX':
         export_preset.data_fbx.export(export_preset, object_file_path)
@@ -437,6 +437,9 @@ def PerformExportTask(context, export_task):
 
     elif export_preset.format_type == 'USD':
         export_preset.data_usd.export(context, export_preset, object_file_path)
+    
+    export_stats['export_task_api_time'] += time.time() - export_stats['_last_time']
+    export_stats['_last_time'] = time.time()
 
 
     # ////////////////////////////////
