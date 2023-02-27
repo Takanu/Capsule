@@ -70,8 +70,11 @@ class CAPSULE_OT_Export(Operator):
         export_stats['scene_setup_time'] = 0.0
         export_stats['export_process_time'] = 0.0
         export_stats['export_task_process_time'] = 0.0
+        export_stats['export_pack_script_time'] = 0.0
         export_stats['export_task_api_time'] = 0.0
         export_stats['scene_restore_time'] = 0.0
+
+        print(">> FETCHING TARGETS <<")
 
         if self.set_mode == 'ALL':
             for object in context.scene.objects:
@@ -130,6 +133,8 @@ class CAPSULE_OT_Export(Operator):
             self.report({'WARNING'}, "No Capsule Data for this blend file exists.  Please create it using the Toolshelf or Addon Preferences menu.")
             return {'FINISHED'}
 
+        print(">> BUILDING SCENE CONTEXT <<")
+
         # Make a record of the scene before we do anything
         global_record = record_utils.BuildSceneContext(context)
 
@@ -164,10 +169,6 @@ class CAPSULE_OT_Export(Operator):
 
             GetExportTaskDirectory(context, export_task)
             PerformExportTask(context, export_task, export_stats)
-        
-        export_stats['export_task_process_time'] += time.time() - export_stats['_last_time']
-        export_stats['_last_time'] = time.time()
-
 
         # /////////////////////////////////////////////////
         # EXPORT SUMMARY  
@@ -355,6 +356,8 @@ def PerformExportTask(context, export_task, export_stats):
     # ////////////////////////////////
     # SETUP SCENE
 
+    print("EXPORT TASK - Setup")
+
     # TODO 1.2 : Is this needed anymore?
     if export_preset.preserve_armature_constraints == True:
         export_task['armature_record'] = record_utils.MuteArmatureConstraints(context)
@@ -368,6 +371,11 @@ def PerformExportTask(context, export_task, export_stats):
 
     # ////////////////////////////////
     # PACK SCRIPT INTRO
+
+    print("EXPORT TASK - Pack Script")
+
+    export_stats['export_task_process_time'] += time.time() - export_stats['_last_time']
+    export_stats['_last_time'] = time.time()
 
     export_status = context.scene.CAPStatus
     export_status.target_name = export_task['export_name']
@@ -412,7 +420,9 @@ def PerformExportTask(context, export_task, export_stats):
     # ////////////////////////////////
     # EXPORT ! ! ! 
 
-    export_stats['export_task_process_time'] += time.time() - export_stats['_last_time']
+    print("EXPORT TASK - Export API")
+
+    export_stats['export_pack_script_time'] += time.time() - export_stats['_last_time']
     export_stats['_last_time'] = time.time()
 
     # based on the export location, send it to the right place
@@ -445,6 +455,8 @@ def PerformExportTask(context, export_task, export_stats):
     # ////////////////////////////////
     # PACK SCRIPT OUTRO
 
+    print("EXPORT TASK - Pack Script Out")
+
     export_status = context.scene.CAPStatus
     export_status.target_name = export_task['export_name']
     export_status.target_status = 'AFTER_EXPORT'
@@ -460,9 +472,14 @@ def PerformExportTask(context, export_task, export_stats):
     export_status['target_input'] = []
     export_status['target_output'] = []
 
+    export_stats['export_pack_script_time'] += time.time() - export_stats['_last_time']
+    export_stats['_last_time'] = time.time()
+
 
     # /////////////////////////////////////////////////
     # RESTORE SCENE
+
+    print("EXPORT TASK - Restore Scene")
 
     # Reverse movement and rotation
     if export_task["origin_object"] is not None:
@@ -472,6 +489,9 @@ def PerformExportTask(context, export_task, export_stats):
     # Cleans up any armature constraint modification (only works if Preserve Armature Constraints is off)
     if export_preset.preserve_armature_constraints == True:
         record_utils.RestoreArmatureConstraints(context, export_task["armature_record"])
+    
+    export_stats['export_task_process_time'] += time.time() - export_stats['_last_time']
+    export_stats['_last_time'] = time.time()
 
 
 
