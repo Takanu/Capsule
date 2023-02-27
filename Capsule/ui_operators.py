@@ -522,8 +522,14 @@ class CAPSULE_OT_Create_ExportData(Operator):
         prev_active_object = context.active_object
         prev_selected_objects = context.selected_objects
 
-        with context.temp_override(window = override['window'], area = override['area'], 
-            region = override['region']):
+        with context.temp_override(
+            screen = override['screen'],
+            window = context.window_manager.windows[0], 
+            area = override['area'], 
+            region = override['region']
+            ):
+
+            print("honk")
 
             if prev_mode != 'OBJECT':
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)  
@@ -536,8 +542,8 @@ class CAPSULE_OT_Create_ExportData(Operator):
                     return {'CANCELLED'}
 
             # Otherwise create the object using the addon preference data
-            bpy.ops.object.select_all(action= 'DESELECT')
-            bpy.ops.object.empty_add(type = 'PLAIN_AXES')
+            bpy.ops.object.select_all(action ='DESELECT')
+            bpy.ops.object.empty_add(type = 'CIRCLE') # apparently using plain axes causes a crash.
 
             defaultDatablock = bpy.context.view_layer.objects.active
             defaultDatablock.name = addon_prefs.default_datablock
