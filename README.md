@@ -33,7 +33,7 @@ Check out the Github Wiki for quick instructions on getting started - https://gi
 
 **What version of Blender does the plugin work with?**
 
-The current version supports Blender 3.2, if you need support for older Blender versions then browse the Releases page and find the right one for your version - https://github.com/Takanu/Capsule/releases.
+The current version supports Blender 3.4, if you need support for older Blender versions then browse the Releases page and find the right one for your version - https://github.com/Takanu/Capsule/releases.
 
 
 **Are there things that Capsule can't currently export?**
