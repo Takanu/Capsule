@@ -25,38 +25,6 @@ class CAP_FormatData_Collada(PropertyGroup):
 	# 	default = 0,
 	# )
 
-	# export_object_transformation_type : IntProperty(
-	# 	name = "Object Transform",
-	# 	description = "Object Transformation type for translation, scale and rotation",
-	# 	default= 1,
-	# )
-
-	# export_animation_transformation_type : IntProperty(
-	# 	name = "Animation Transform",
-	# 	description = "Animation Transformation type for translation, scale and rotation",
-	# 	default= 1,
-	# )
-
-
-	# # TODO : These must always match?  idk why
-	# export_object_transformation_type_selection : EnumProperty(
-	# 	name = "Object Transform",
-	# 	items = (
-	# 		('matrix', "Matrix", "Use <matrix> representation for exported transformations"),
-	# 		('decomposed', "Decomposed", "Use <rotate>, <translate> and <scale> representation for exported transformations"),
-	# 		),
-	# 	description = "Object Transformation type for translation, scale and rotation",
-	# )
-
-	# # TODO : These must always match?  idk why
-	# export_animation_transformation_type_selection : EnumProperty(
-	# 	name = "Animation Transform",
-	# 	items = (
-	# 		('matrix', "Matrix", "Use <matrix> representation for exported transformations"),
-	# 		('decomposed', "Decomposed", "Use <rotate>, <translate> and <scale> representation for exported transformations"),
-	# 		),
-	# 	description = "Defines the type of animation key exported",
-	# )
 
 	# ////////////////////////////////
 	# FILE
@@ -128,7 +96,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 	export_transform_type : EnumProperty(
 		name = "Export Transform",
 		items = (
-			('0', "Matrix", "Use <matrix> representation for exported transformations"),
+			('0', "Matrix (Default)", "Use <matrix> representation for exported transformations"),
 			('1', "Decomposed", "Use <rotate>, <translate> and <scale> representation for exported transformations"),
 			),
 		description = "Defines the type of transformation data exported for both objects and animations.",
@@ -158,9 +126,9 @@ class CAP_FormatData_Collada(PropertyGroup):
 	)
 
 	export_mesh_type_selection : EnumProperty(
-		name = "Modifier Export Type",
+		name = "Modifier Evaluation Mode",
 		items = (
-			('view', "View", "The modifier's Viewport settings will be exported"),
+			('view', "View (Default)", "The modifier's Viewport settings will be exported"),
 			('render', "Render", "The modifier's Render settings will be exported"),
 			),
 		description = "(Requires Apply Modifiers to be enabled) Defines what modifier settings are used for the export",
@@ -385,13 +353,14 @@ class CAP_FormatData_Collada(PropertyGroup):
 			if preset.apply_modifiers == False:
 				export_options_warning = export_options.box()
 				export_options_warning_l = export_options_warning.row(align = True)
-				export_options_warning_l.label(text = "Modifier Export Type requires Apply Modifiers to be enabled")
+				export_options_warning_l.label(text = "Modifier Evaluation Mode requires Apply Modifiers to be enabled")
 				export_options.separator()
 				export_options.separator()
 
-			export_options.prop(exportData, "triangulate")
-			export_options.prop(exportData, "active_uv_only")
 			export_options.prop(exportData, "use_texture_copies")
+			export_options.prop(exportData, "active_uv_only")
+			export_options.prop(exportData, "triangulate")
+			
 			export_options.separator()
 			export_options.separator()
 
@@ -422,8 +391,8 @@ class CAP_FormatData_Collada(PropertyGroup):
 			animation_options.active = preset.export_animation
 			
 			animation_options.prop(exportData, "include_all_actions")
-			animation_options.prop(exportData, "include_shapekeys")
 			animation_options.prop(exportData, "keep_flat_curves")
+			animation_options.prop(exportData, "include_shapekeys")
 			animation_options.separator()
 			animation_options.separator()
 
@@ -448,6 +417,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 			
 			samples_optional.active = samples_active
 			samples_optional.prop(exportData, "sampling_rate")
+			samples_optional.separator()
 			samples_optional.prop(exportData, "keep_keyframes")
 			samples_optional.separator()
 
