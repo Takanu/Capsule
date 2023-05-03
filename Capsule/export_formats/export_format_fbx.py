@@ -123,17 +123,34 @@ class CAP_FormatData_FBX(PropertyGroup):
 			),
 	)
 
+	colors_type: EnumProperty(
+		name = "Color Attribute Export",
+		description = "Defines how Color Attributes / Vertex Colors are exported",
+		items = (
+			('NONE', 'None', 'Do not export color attributes'),
+			('SRGB', 'sRGB', 'Export colors in sRGB color space'),
+			('LINEAR', 'Linear', 'Export colors in linear color space'),
+			),
+		default = 'SRGB',
+	)
+
+	prioritize_active_color: BoolProperty(
+		name = "Prioritize Active Color",
+		description = "Make sure active color will be exported first. Could be important since some other software can discard other color attributes besides the first one",
+		default = False,
+	)
+
 	# the property for 'use_tspace'
 	use_tangent_space: BoolProperty(
-		name = "Use Tangent Space",
-		description = "Exports the binormal and tangent mesh vectors.  WARNING - This option will only work on objects with no n-gons (faces with more than 4 vertices)",
+		name = "Add Tangent Space Normals",
+		description = "Exports the binormal and tangent mesh vectors.  WARNING - This option will only work on objects with tris and quads for geometry",
 		default = False
 	)
 
 	# the property for 'use_mesh_edges'
 	convert_loose_edges: BoolProperty(
-		name = "Convert Loose Edges",
-		description = "Converts any loose edges in a mesh into a two-vertex polygon",
+		name = "Export Loose Edges",
+		description = "Exports any loose edges in a mesh into a two-vertex polygon",
 		default = False
 	)
 
@@ -285,11 +302,17 @@ class CAP_FormatData_FBX(PropertyGroup):
 			use_space_transform = self.use_space_transform,
 			bake_space_transform = self.bake_space_transform,
 			object_types = self.export_object_types,
+
+			# MESH
 			mesh_smooth_type = self.export_normal_type,
 			use_mesh_edges = self.convert_loose_edges,
 			use_subsurf = self.use_subsurf,
 			use_tspace = self.use_tangent_space,
 			use_custom_props = self.use_custom_props,
+			colors_type = self.colors_type,
+			prioritize_active_color = self.prioritize_active_color,
+			
+			
 			
 			# Animation
 			add_leaf_bones = self.add_leaf_bones,
@@ -365,9 +388,11 @@ class CAP_FormatData_FBX(PropertyGroup):
 			transform_options.separator()
 			transform_options.separator()
 
+			export_options.prop(exportData, "apply_scale_options")
+			export_options.separator()
+			export_options.separator()
 			export_options.prop(exportData, "axis_up")
 			export_options.prop(exportData, "axis_forward")
-			export_options.prop(exportData, "apply_scale_options")
 			export_options.separator()
 			export_options.separator()
 
@@ -382,6 +407,13 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
 
+			if exportData.use_tangent_space == True:
+				export_options_warning = export_options.box()
+				export_options_warning_l = export_options_warning.row(align= True)
+				export_options_warning_l.label(text= "Use Tangent Space Normals only works on meshes with tris/quads")
+				export_options.separator()
+				export_options.separator()
+
 			export_options.prop(exportData, "convert_loose_edges")
 			export_options.prop(exportData, "use_tangent_space")
 			export_options.prop(exportData, "use_subsurf")
@@ -391,6 +423,12 @@ class CAP_FormatData_FBX(PropertyGroup):
 			export_options.separator()
 
 			export_options.prop(exportData, "export_normal_type")
+			export_options.separator()
+			export_options.separator()
+
+			export_options.prop(exportData, "colors_type")
+			export_options.separator()
+			export_options.prop(exportData, "prioritize_active_color")
 			export_options.separator()
 		
 		elif cap_file.fbx_menu_options == 'Animation':
