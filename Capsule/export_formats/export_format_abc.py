@@ -245,7 +245,6 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			filepath = filePath + ".abc",
 			check_existing = False,
 			as_background_job = False,
-
 			selected = True,
 			visible_objects_only = False,
 
@@ -255,7 +254,6 @@ class CAP_FormatData_Alembic(PropertyGroup):
 
 			flatten = self.flatten_hierarchy,
 			use_instancing = self.use_instancing,
-			curves_as_mesh = self.export_curves_as_mesh,
 			export_custom_properties = self.export_custom_properties,
 
 			evaluation_mode = self.evaluation_mode,
@@ -271,12 +269,14 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			vcolors = self.export_colors,
 			orcos = self.export_generated_coordinates,
 			face_sets = self.export_face_sets,
-			triangulate = self.triangulate,
-			quad_method = self.quad_method,
-			ngon_method = self.ngon_method,
+			curves_as_mesh = self.export_curves_as_mesh,
 
 			subdiv_schema = self.use_subdiv_schema,
 			apply_subdiv = self.apply_subdiv,
+
+			triangulate = self.triangulate,
+			quad_method = self.quad_method,
+			ngon_method = self.ngon_method,
 
 			# ANIMATION
 			start = self.start_frame,
@@ -328,8 +328,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 
 			extra_options = export_options.column(align = True, heading = "Extras")
 			extra_options.prop(exportData, "flatten_hierarchy")
-			extra_options.prop(exportData, "use_instancing")
-			extra_options.prop(exportData, "export_curves_as_mesh")		
+			extra_options.prop(exportData, "use_instancing")		
 			extra_options.prop(exportData, "export_custom_properties")
 			extra_options.separator()
 			extra_options.separator()
@@ -357,14 +356,18 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			mesh_options.prop(exportData, "export_colors")
 			mesh_options.prop(exportData, "export_face_sets")
 			mesh_options.prop(exportData, 'export_generated_coordinates')
+			mesh_options.prop(exportData, "export_curves_as_mesh")
+			mesh_options.separator()
+			mesh_options.separator()
+
 			mesh_options.prop(exportData, "export_uvs")
 			mesh_options.prop(exportData, "pack_uvs")
 			mesh_options.separator()
 			mesh_options.separator()
 
 			subdiv_options = export_options.column(align = True, heading = "Subdivision Data")
-			subdiv_options.prop(exportData, "use_subdiv_schema")
 			subdiv_options.prop(exportData, "apply_subdiv")
+			subdiv_options.prop(exportData, "use_subdiv_schema")
 			subdiv_options.separator()
 			subdiv_options.separator()
 
