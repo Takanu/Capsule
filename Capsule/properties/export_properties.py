@@ -97,7 +97,7 @@ class CAPSULE_ExportPreset(PropertyGroup):
             ('GLTF', "GLTF (.gltf, .glb)", "Export assets in the GLTF file format.  An efficient 3D format designed for web apps and games.  As it modifies and stores mesh data in a way that it can be optimally rendered in real time it is NOT suitable for archival purposes"),
             ('OBJ', "OBJ (.obj)", "Export assets in the OBJ file format.  An ancient file format with limited options suitable for simple static objects"),
             ('STL', "STL (.stl)", "Export assets as STL files.  An older file format used specifically for CAD and 3D printing applications"),
-            ('USD', "USD (.usda)", "Export assets as USD files.  A modern and highly detailed file format, Blender's implementation is new however and offers limited capabilities"),
+            ('USD', "USD (.usda, .usdz)", "Export assets as USD files.  A modern and highly detailed file format, Blender's implementation is new however and offers limited capabilities"),
             ),
         description = "Defines what file type objects with this preset will export to and the export options available for this preset",
     )

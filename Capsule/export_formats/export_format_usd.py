@@ -21,6 +21,21 @@ class CAP_FormatData_USD(PropertyGroup):
     # ////////////////////////////////
     # FILE
 
+    usd_type: EnumProperty(
+        name = "USD Type",
+        description = "Defines the type of USD file to be exported",
+        items =  (
+			('.usdc', ".usdc", "Exports using USDC, an uncompressed file format that will export material textures as a separate folder"),
+			('.usdz', ".usdz", "Exports using USDZ, a compressed file format that will bundle any material textures inside the file"),
+			),
+    )
+
+    relative_paths: BoolProperty(
+        name = "Use Relative Paths for Assets",
+        description = "Make file paths for assets (like volumes and textures) relative to the USD file.  If false, the file paths will be absolute",
+        default = True,
+    )
+
     use_instancing: BoolProperty(
         name = "Use Instancing (Experimental)",
         description = "When checked, instanced objects are exported as references in USD. When unchecked, instanced objects are exported as real objects",
@@ -48,7 +63,7 @@ class CAP_FormatData_USD(PropertyGroup):
 
 
     # ////////////////////////////////
-    # MESH
+    # OBJECT
 
     export_uvmaps: BoolProperty(
         name = "Export UVs",
@@ -82,11 +97,7 @@ class CAP_FormatData_USD(PropertyGroup):
         default = True,
     )
 
-    relative_texture_paths: BoolProperty(
-        name = "Use Relative Texture Paths",
-        description = "Make texture asset paths relative to the USD file",
-        default = True,
-    )
+    
 
     
 
@@ -94,11 +105,13 @@ class CAP_FormatData_USD(PropertyGroup):
         """
         Calls the USD export operator module to export the currently selected objects.
         """
+        print(self.usd_type)
 
         bpy.ops.wm.usd_export(
+            
 
             # CAPSULE
-            filepath = filePath + ".usdc",
+            filepath = filePath + self.usd_type,
             check_existing = False,
             selected_objects_only  = True,
             visible_objects_only = False,
@@ -110,6 +123,7 @@ class CAP_FormatData_USD(PropertyGroup):
             
 
             # SCENE
+            relative_paths = self.relative_paths,
             export_hair = self.export_hair,
 
 
@@ -121,7 +135,7 @@ class CAP_FormatData_USD(PropertyGroup):
             generate_preview_surface = self.generate_preview_surface,
             export_textures = self.export_textures,
             overwrite_textures = True,  # Capsule assumes this behaviour everywhere, assume it here too.
-            relative_texture_paths = self.relative_texture_paths,
+            
             
 
         )
@@ -144,6 +158,12 @@ class CAP_FormatData_USD(PropertyGroup):
         export_options.use_property_split = True
         export_options.use_property_decorate = False  # removes animation options
 
+        type_options = export_options.column(align = True)
+        type_options.prop(exportData, "usd_type")
+        type_options.separator()
+        type_options.separator()
+
+
         # options.label(text= "Export Filters")
         data_options = export_options.column(align = True, heading = "Scene Data")
         data_options.prop(exportData, "export_hair")
@@ -158,8 +178,11 @@ class CAP_FormatData_USD(PropertyGroup):
         material_sub = export_options.column(align = True)
         material_sub.active = exportData.export_materials
         material_sub.prop(exportData, "generate_preview_surface")
-        material_sub.prop(exportData, "export_textures")
-        material_sub.prop(exportData, "relative_texture_paths")
+
+        texture_sub = material_sub.column(align = True)
+        texture_sub.active = exportData.generate_preview_surface
+        texture_sub.prop(exportData, "export_textures")
+        
         material_sub.separator()
         material_sub.separator()
 
@@ -169,6 +192,7 @@ class CAP_FormatData_USD(PropertyGroup):
         eval_options.separator()
 
         file_options = export_options.column(align = True)
+        file_options.prop(exportData, "relative_paths")
         file_options.prop(exportData, "use_instancing")
         file_options.separator()
 
