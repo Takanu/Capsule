@@ -21,8 +21,8 @@
 bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
-    "version": (1, 3, 7),
-    "blender": (3, 4, 0),
+    "version": (1, 3, 9),
+    "blender": (3, 5, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
     "description": "An export manager that makes the process of repeat and bulk exports simple.",
