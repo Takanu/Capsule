@@ -401,7 +401,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 			export_options.separator()
 
-		elif cap_file.fbx_menu_options == 'Mesh':
+		elif cap_file.fbx_menu_options == 'Object':
 			export_options = export_options_area.column(align= True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options

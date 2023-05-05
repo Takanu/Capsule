@@ -343,7 +343,7 @@ class CAP_FormatData_Collada(PropertyGroup):
 
 			
 
-		elif cap_file.collada_menu_options == 'Mesh':
+		elif cap_file.collada_menu_options == 'Object':
 			export_options = export_options_area.column(align = True)
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
