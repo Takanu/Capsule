@@ -263,7 +263,7 @@ class CAPSULE_OT_Delete_Export(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
 
-        preset_index = cap_file.location_presets_listindex
+        preset_index = cap_file.export_presets_listindex
 
         # Ensure that any objects with a matching preset are set to None.
         # The index needs increasing by one as it doesnt include 'None'
