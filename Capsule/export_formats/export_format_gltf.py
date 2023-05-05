@@ -41,29 +41,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			),
 		default = 'GLB',
 	)
-
-	export_image_format: EnumProperty(
-		name = 'Export Image Format',
-		description = 'Decides how images associated with the 3D object are exported',
-		items = (
-			('AUTO', 'Automatic (Default)', 'Ensures that PNG and JPEG image files will retain their file formats.  If any other image file format is used it will be converted to PNG'),
-			('JPEG', 'JPEG', 'Encodes and saves all images as JPEG files unless the image has alpha, which are instead saved as a PNG.  Can result in a loss of quality'),
-			('NONE', 'None', "Don't export images")
-			),
-	)
-
-	export_texture_dir: StringProperty(
-		name = 'Export Image Directory',
-		description = "(Only available with the 'GLTF Separate' Export Format) The location to place the textures in, relative to the exported GLTF file",
-		default = "",
-	)
-
-	# the property for 'export_keep_originals'
-	export_keep_originals: BoolProperty(
-		name = 'Keep Original Images',
-		description = "(Only available with the 'GLTF Separate' Export Format) Keep original textures files if possible. WARNING: if you use more than one texture, where pbr standard requires only one, only one texture will be used. This can lead to unexpected results",
-		default = False,
-	)
 	
 
 	# the property for 'export_extras'
@@ -90,7 +67,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	)
 
 	export_lights: BoolProperty(
-		name = 'Export Lights',
+		name = 'Export Punctual Lights',
 		description = '',
 		default = False,
 	)
@@ -117,16 +94,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = True
 	)
 
-	export_materials: EnumProperty(
-		name = 'Export Materials',
-		description = 'Decides how materials are exported',
-		items = (
-			('EXPORT', 'Export (Default)', 'Export all materials used by exported objects'),
-			('PLACEHOLDER', 'Placeholder', 'DO NOT export materials, but write multiple primitive groups per mesh to retain material slot information'),
-			('NONE', 'None', "Do not export materials and combine mesh primitive groups.  This will result in the loss of all material slot information")
-			),
-	)
-
+	
 	use_mesh_edges: BoolProperty(
 		name = 'Include Loose Edges',
 		description = 'Export loose edges as lines, using the material from the first material slot',
@@ -140,9 +108,50 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	)
 
 	export_colors: BoolProperty(
-		name = 'Export Colors',
+		name = 'Export Vertex Colors',
 		description = 'Export vertex colors with meshes',
 		default = True
+	)
+
+	export_materials: EnumProperty(
+		name = 'Export Materials',
+		description = 'Decides how materials are exported',
+		items = (
+			('EXPORT', 'Export (Default)', 'Export all materials used by exported objects'),
+			('PLACEHOLDER', 'Placeholder', 'DO NOT export materials, but write multiple primitive groups per mesh to retain material slot information'),
+			('NONE', 'None', "Do not export materials and combine mesh primitive groups.  This will result in the loss of all material slot information")
+			),
+	)
+
+	export_image_format: EnumProperty(
+		name = 'Export Image Format',
+		description = 'Decides how images associated with the 3D object are exported',
+		items = (
+			('AUTO', 'Automatic (Default)', 'Ensures that PNG and JPEG image files will retain their file formats.  If any other image file format is used it will be converted to PNG'),
+			('JPEG', 'JPEG', 'Encodes and saves all images as JPEG files unless the image has alpha, which are instead saved as a PNG.  Can result in a loss of quality'),
+			('NONE', 'None', "Don't export images")
+			),
+	)
+
+	export_texture_dir: StringProperty(
+		name = 'Export Image Directory',
+		description = "(Only available with the 'GLTF Separate' Export Format) The location to place the textures in, relative to the exported GLTF file",
+		default = "",
+	)
+
+	export_jpeg_quality: IntProperty(
+		name = "JPEG Quality",
+		description = "Sets the quality of the exported JPEG (when used for texture exports)",
+		default = 75,
+		min = 0,
+		max = 100,
+	)
+
+	# the property for 'export_keep_originals'
+	export_keep_originals: BoolProperty(
+		name = 'Keep Original Images',
+		description = "(Only available with the 'GLTF Separate' Export Format) Keep original textures files if possible. WARNING: if you use more than one texture, where pbr standard requires only one, only one texture will be used. This can lead to unexpected results",
+		default = False,
 	)
 
 	# export_displacement: BoolProperty(
@@ -156,7 +165,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	# ANIMATION
 
 	export_current_frame: BoolProperty(
-		name = 'Export Current Frame',
+		name = 'Use Current Frame',
 		description = 'Exports the scene in the current given animation frame',
 		default = False
 	)
@@ -173,6 +182,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		name = 'Group by NLA Track',
 		description = 'When on, multiple actions become part of the same glTF animation if they’re pushed onto NLA tracks with the same name. When off, all the currently assigned actions become one glTF animation',
 		default = True
+	)
+
+	export_nla_strips_merged_animation_name: StringProperty(
+		name = "Grouped Animation Name",
+		description = "Name of the glTF animation to be exported",
+		default = "",
 	)
 
 	export_anim_single_armature: BoolProperty(
@@ -328,6 +343,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			use_renderable = False,
 			use_active_collection = False,
 			use_active_scene = True,
+			gltf_export_id = "Capsule", # used to identify that the exporter is being called in code.
 
 			# While this is active, Shape Keys cannot be exported.
 			export_apply = export_preset.apply_modifiers,
@@ -337,10 +353,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_format = self.export_format,
 			export_copyright = self.export_copyright,
 			export_extras = self.export_custom_properties,
-
-			export_image_format = self.export_image_format,
-			export_texture_dir = self.export_texture_dir,
-			export_keep_originals = self.export_keep_originals,
 
 
 			# SCENE
@@ -353,21 +365,28 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_texcoords = self.export_texcoords,
 			export_normals = self.export_normals,
 			export_tangents = self.export_tangents,
-			export_materials = self.export_materials,
 			export_colors = self.export_colors,
 			use_mesh_edges = self.use_mesh_edges,
 			use_mesh_vertices = self.use_mesh_vertices,
+
+			export_materials = self.export_materials,
+			export_image_format = self.export_image_format,
+			export_jpeg_quality = self.export_jpeg_quality,
+			export_texture_dir = self.export_texture_dir,
+			export_keep_originals = self.export_keep_originals,
 
 			# TODO: Double-check if this has been removed before the release of 3.3.
 			# export_displacement = self.export_displacement,
 
 
 			# ANIMATION
-			export_current_frame = self.export_current_frame,
+			
+			export_nla_strips = self.export_nla_strips,
+			export_nla_strips_merged_animation_name = self.export_nla_strips_merged_animation_name,
 
 			export_animations = export_preset.export_animation,
+			export_current_frame = self.export_current_frame,
 			export_frame_range = self.export_frame_range,
-			export_nla_strips = self.export_nla_strips,
 			export_anim_single_armature = self.export_anim_single_armature,
 			export_optimize_animation_size = self.export_optimize_animation_size,
 
@@ -425,21 +444,9 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			
 			export_options.prop(exportData, "export_format")
 			export_options.prop(exportData, "export_copyright")
+			export_options.separator()
 			export_options.prop(exportData, "export_custom_properties")
 			export_options.separator()
-			export_options.separator()
-
-			export_options.prop(exportData, "export_image_format")
-
-			export_tex_options = export_options.column()
-			if exportData.export_format == 'GLTF_SEPARATE':
-				export_tex_options.active = True
-			else:
-				export_tex_options.active = False
-			export_tex_options.prop(exportData, "export_texture_dir")
-			export_tex_options.prop(exportData, "export_keep_originals")
-
-			
 			export_options.separator()
 
 
@@ -478,7 +485,32 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			mesh_options.separator()
 
 			export_options.prop(exportData, "export_materials")
+			export_options.separator()
+			export_options.separator()
 
+			mat_options = export_options.column()
+			mat_options.active = True
+			if exportData.export_materials == 'NONE':
+				mat_options.active = False
+
+			mat_options.prop(exportData, "export_image_format")
+			mat_options.separator()
+
+			jpeg_options = mat_options.column()
+			jpeg_options.active = True
+			if exportData.export_image_format != 'JPEG':
+				jpeg_options.active = False
+			jpeg_options.prop(exportData, "export_jpeg_quality")
+			jpeg_options.separator()
+
+			export_tex_options = mat_options.column()
+			if exportData.export_format == 'GLTF_SEPARATE':
+				export_tex_options.active = True
+			else:
+				export_tex_options.active = False
+			export_tex_options.prop(exportData, "export_texture_dir")
+			export_options.separator()
+			export_tex_options.prop(exportData, "export_keep_originals")
 			export_options.separator()
 
 
@@ -503,17 +535,26 @@ class CAP_FormatData_GLTF(PropertyGroup):
 				export_options_warning_l.label(text= "Export Animation is currently disabled in the General Export Options")
 				export_options.separator()
 				export_options.separator()
-			
-			export_options.prop(exportData, "export_current_frame")
-			export_options.separator()
-			export_options.separator()
 
 
 			animation_options = export_options.column(align = True)
 			animation_options.active = preset.export_animation
 
+			group_sub = animation_options.column(align = True, heading = "NLA Strip Options")
+			group_sub.prop(exportData, "export_nla_strips")
+			group_sub.separator()
+
+			merged_sub = group_sub.column(align = True)
+			merged_sub.active = True
+			if exportData.export_nla_strips == True:
+				merged_sub.active = False
+
+			merged_sub.prop(exportData, "export_nla_strips_merged_animation_name")
+			group_sub.separator()
+			group_sub.separator()
+			
 			generic_sub = animation_options.column(align = True, heading = "Animation Options")
-			generic_sub.prop(exportData, "export_nla_strips")
+			generic_sub.prop(exportData, "export_current_frame")
 			generic_sub.prop(exportData, "export_anim_single_armature")
 			generic_sub.prop(exportData, "export_frame_range")
 			generic_sub.prop(exportData, "export_optimize_animation_size")
