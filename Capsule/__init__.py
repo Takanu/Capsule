@@ -21,7 +21,7 @@
 bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
-    "version": (1, 3, 9),
+    "version": (1, 4, 0),
     "blender": (3, 5, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
@@ -589,7 +589,7 @@ classes = (
     CAPSULE_OT_Shift_Path_Down,
     CAPSULE_OT_Clear_List,
     CAPSULE_OT_Refresh_List,
-    CAPSULE_OT_Reset_Scene,
+    CAPSULE_OT_Reset_Properties,
     CAPSULE_OT_Reset_Defaults,
     CAPSULE_OT_UI_Group_Separate,
     CAPSULE_OT_UI_Group_Options,

@@ -388,8 +388,8 @@ class CAPSULE_OT_Refresh_List(Operator):
         return {'FINISHED'}
 
 
-class CAPSULE_OT_Reset_Scene(Operator):
-    """Resets all assigned export properties to every Object and Collection in the scene"""
+class CAPSULE_OT_Reset_Properties(Operator):
+    """Resets all assigned export properties to every Object and Collection in every scene, and clears Export Lists"""
 
     bl_idname = "scene.cap_resetsceneprops"
     bl_label = "Reset Scene"
@@ -403,31 +403,33 @@ class CAPSULE_OT_Reset_Scene(Operator):
         active = None
         selected = []
 
-        for sel in context.selected_objects:
-            if sel.name != context.active_object.name:
-                selected.append(sel)
-
-        active = context.active_object
-
-        for collection in search_utils.GetSceneCollections(context.scene, False):
+        for collection in bpy.data.collections:
             col = collection.CAPCol
             col.enable_export = False
-            col.root_object = None
+            col.origin_point = 'Object'
             col.location_preset = '0'
             col.export_preset = '0'
+            col.pack_script = None
 
-        for object in context.scene.objects:
+        for object in bpy.data.objects:
             obj = object.CAPObj
             obj.enable_export = False
-            obj.origin_export = "Object"
+            obj.origin_export = "Scene"
+            obj.root_object = None
             obj.location_preset = '0'
             obj.export_preset = '0'
+            col.pack_script = None
+        
+        scn = context.scene.CAPScn
+        list_tab = str(scn.list_switch)
 
-        # Re-select the objects previously selected
-        select_utils.FocusObject(active)
+        scn.list_switch = '1'
+        bpy.ops.scene.cap_clearlist()
 
-        for sel in selected:
-            SelectObject(sel)
+        scn.list_switch = '2'
+        bpy.ops.scene.cap_clearlist()
+
+        scn.list_switch = list_tab
 
         return {'FINISHED'}
 
@@ -860,7 +862,7 @@ class CAPSULE_OT_TestPackScriptListItem(Operator):
 #     CAPSULE_OT_Shift_Path_Down,
 #     CAPSULE_OT_Clear_List,
 #     CAPSULE_OT_Refresh_List,
-#     CAPSULE_OT_Reset_Scene,
+#     CAPSULE_OT_Reset_Properties,
 #     CAPSULE_OT_Reset_Defaults,
 #     CAPSULE_OT_UI_Group_Separate,
 #     CAPSULE_OT_UI_Group_Options,

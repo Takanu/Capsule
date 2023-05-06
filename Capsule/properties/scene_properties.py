@@ -276,6 +276,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         items =  (
         ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object"),
         ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point")),
+        default = 'Scene',
     )
 
     root_object: PointerProperty(
