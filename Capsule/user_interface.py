@@ -279,12 +279,15 @@ class CAPSULE_PT_Selection(Panel):
                     obj_settings.separator()
 
                 export_options = layout.column(align = True)
-                export_options.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
-                export_options.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_OBJECTS'
+                export_options.operator("scene.cap_export", text = "Export All", icon = "EXPORT").set_mode = 'ALL'
+                export_options.operator("scene.cap_export", text = "Export Selected", icon = "EXPORT").set_mode = 'SELECTED_OBJECTS'
 
                 if addon_prefs.use_pack_scripts:
                     export_options.separator()
-                    export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_OBJECT'
+                    export_options.operator("cap.test_pack_script_selection", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_OBJECT'
+                
+                export_options.separator()
+                export_options.operator("scene.cap_show_preferences", icon = "PREFERENCES")
 
             # If no object was eventually found, bring up warning labels.
             else:
@@ -404,12 +407,15 @@ class CAPSULE_PT_Selection(Panel):
                 group_layout.separator()
 
                 export_options = layout.column(align = True)
-                export_options.operator("scene.cap_export", text = "Export All").set_mode = 'ALL'
-                export_options.operator("scene.cap_export", text = "Export Selected").set_mode = 'SELECTED_COLLECTIONS'
+                export_options.operator("scene.cap_export", text = "Export All", icon = "EXPORT").set_mode = 'ALL'
+                export_options.operator("scene.cap_export", text = "Export Selected", icon = "EXPORT").set_mode = 'SELECTED_COLLECTIONS'
 
                 if addon_prefs.use_pack_scripts:
                     export_options.separator()
-                    export_options.operator("cap.test_pack_script_selection").set_mode = 'ACTIVE_COLLECTION'
+                    export_options.operator("cap.test_pack_script_selection", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_COLLECTION'
+                
+                export_options.separator()
+                export_options.operator("scene.cap_show_preferences", icon = "PREFERENCES")
 
             # If no collection was eventually found, bring up warning labels.
             else:
@@ -468,8 +474,10 @@ class CAPSULE_PT_List(Panel):
 
         export_options = layout.column(align = True)
         
-        export_options.operator("scene.cap_export", text = "Export All Active").set_mode = 'ALL'
-        export_options.operator("scene.cap_export", text = "Export Selected In List").set_mode = 'ACTIVE_LIST'
+        export_options.operator("scene.cap_export", text = "Export All Active", icon = "EXPORT").set_mode = 'ALL'
+        export_options.operator("scene.cap_export", text = "Export Selected In List", icon = "EXPORT").set_mode = 'ACTIVE_LIST'
+        export_options.separator()
+        export_options.operator("scene.cap_show_preferences", icon = "PREFERENCES")
         
         # if addon_prefs.use_pack_scripts:
         #     export_options.separator()

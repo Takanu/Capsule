@@ -194,7 +194,7 @@ class CAP_AddonPreferences(AddonPreferences):
             savedpresets_items = savedpresets_box.row(align= True)
             savedpresets_list = savedpresets_items.column(align= True)
             savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
-            savedpresets_list.operator("cap.create_current_preset", text= "Add to Active Export Presets", icon = "FORWARD")
+            savedpresets_list.operator("cap.create_current_preset", text= "Add to Active Export Presets", icon = "EXPORT")
 
             savedpresets_listedit = savedpresets_items.column(align= True)
             savedpresets_listedit.operator("cap.delete_global_preset", text= "", icon = "REMOVE")
@@ -220,7 +220,7 @@ class CAP_AddonPreferences(AddonPreferences):
             row_defaults = file_presets_box.row(align= True)
             col_defaultslist = row_defaults.column(align= True)
             col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", cap_file, "export_presets", cap_file, "export_presets_listindex", rows=3, maxrows=6)
-            col_defaultslist.operator("cap.add_global_preset", text= "Add to Saved Presets", icon = "FORWARD")
+            col_defaultslist.operator("cap.add_global_preset", text= "Add to Saved Presets", icon = "IMPORT")
 
             col_defaultslist_options = row_defaults.column(align= True)
             col_defaultslist_options.operator("scene.cap_addexport", text= "", icon = "ADD")
@@ -393,7 +393,7 @@ class CAP_AddonPreferences(AddonPreferences):
             extras_content.separator()
 
             erase_options = extras_content.column(align= True)
-            erase_options.operator("scene.cap_resetsceneprops", text= "Reset Capsule Scene Data")
+            erase_options.operator("scene.cap_resetsceneprops", text = "Reset Capsule Scene Data", icon = "TRASH")
             erase_options.separator()
             # TODO: Work this out for later!
             # erase_options_split = erase_options.split(factor= 0.4, align= False)
@@ -591,6 +591,7 @@ classes = (
     CAPSULE_OT_Add_Stored_Presets,
     CAPSULE_OT_Delete_Presets,
     CAPSULE_OT_Store_Presets,
+    CAPSULE_OT_Show_Preferences,
     CAPSULE_OT_TestPackScriptSelection,
     CAPSULE_OT_TestPackScriptListItem,
 

@@ -666,6 +666,26 @@ class CAPSULE_OT_Store_Presets(Operator):
 
         return {'FINISHED'}
 
+class CAPSULE_OT_Show_Preferences(Operator):
+    """Opens a window to the Capsule Addon Preferences menu"""
+    bl_idname = "scene.cap_show_preferences"
+    bl_label = "Show Addon Preferences"
+
+    def execute(self, context):
+
+        # Get the current export data
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
+
+        bpy.ops.screen.userpref_show()
+        context.preferences.active_section = 'ADDONS'
+        bpy.data.window_managers["WinMan"].addon_search = "Capsule"
+
+
+        return {'FINISHED'}
+
+
 
 class CAPSULE_OT_TestPackScriptSelection(Operator):
     """Executes a Pack Script for the active Object or Collection and places all collected export targets into a new collection called, "Capsule Pack Test".  NOTE - This can only be used on one Object or Collection at a time"""
