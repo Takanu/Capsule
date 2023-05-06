@@ -32,12 +32,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		)
 
 	export_format: EnumProperty(
-		name = 'Export File Format',
-		description = 'Decides how the assets associated with the model being exported are included with the ',
+		name = 'GLTF Type',
+		description = 'Defines the type of GLTF file to export.  Each one have differences in how the file is written and how assets are exported or bundled',
 		items = (
-			('GLB', 'GLTF Binary (.glb)', 'Exports a single file, with all data packed in binary form. The most efficient and portable type of GLTF file, but more difficult to edit later'),
-			('GLTF_SEPARATE', 'GLTF Separate (.gltf + .bin + textures)', "Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later but slower and takes up more space"),
-			('GLTF_EMBEDDED', 'GLTF Embedded (.gltf)', '(Recommended) Exports a single file, with all data packed in JSON. Less efficient than binary, but easier to edit later and all non-model assets are bundled in the same file'),
+			('GLB', 'Binary (.glb) (Default)', 'Exports a single file, with all object data and assets packed in binary form. The most efficient and portable type of GLTF file, but more difficult to edit later'),
+			('GLTF_SEPARATE', 'Separate Assets (.gltf + .bin + textures)', "Exports multiple files, with separate JSON, binary and texture data. Easiest to edit later but slower and takes up more space"),
+			('GLTF_EMBEDDED', 'Embedded Assets (.gltf)', 'Exports a single file, with all data packed into JSON data. Less efficient than binary, but easier to edit later and all non-model assets are bundled in the same file'),
 			),
 		default = 'GLB',
 	)
@@ -180,12 +180,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	
 	export_nla_strips: BoolProperty(
 		name = 'Export Animations by NLA Track',
-		description = """When enabled, multiple GLTF animations will be exported depending on the animation actions that are pushed onto NLA tracks sharing the same name.  When disabled, all currently assigned actions will become one GLTF animation""",
+		description = """When enabled, multiple GLTF animations will be exported.  GLTF animations will be created based on animation actions pushed onto NLA tracks that share the same name.  When disabled, all currently assigned actions will be merged to become one GLTF animation""",
 		default = True
 	)
 
 	export_nla_strips_merged_animation_name: StringProperty(
-		name = "Grouped Animation Name",
+		name = "Merged Animation Name",
 		description = "When 'Export Animations by NLA Track' is disabled, this defines the name that the combined GLTF animation will receive",
 		default = "Merged Animation",
 	)
@@ -459,8 +459,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_options.prop(exportData, "export_y_up")
 			export_options.separator()
-			export_options.separator()
-
 			export_options.prop(exportData, "export_cameras")
 			export_options.prop(exportData, "export_lights")
 			export_options.separator()
