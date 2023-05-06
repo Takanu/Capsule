@@ -389,7 +389,7 @@ class CAPSULE_OT_Refresh_List(Operator):
 
 
 class CAPSULE_OT_Reset_Scene(Operator):
-    """Reset all object and collection variables in the scene.  Use at your own peril!"""
+    """Resets all assigned export properties to every Object and Collection in the scene"""
 
     bl_idname = "scene.cap_resetsceneprops"
     bl_label = "Reset Scene"
@@ -685,6 +685,42 @@ class CAPSULE_OT_Show_Preferences(Operator):
 
         return {'FINISHED'}
 
+class CAPSULE_OT_Tutorial_StoredPresets(Operator):
+    """Opens a message describing how Stored Export Presets work"""
+    bl_idname = "scene.cap_tut_storedpresets"
+    bl_label = ""
+
+    def execute(self, context):
+
+        def tutorial_layout(self, context):
+            self.layout.label(text = "Stored Export Presets are export settings you want to use reuse .blend files.")
+            self.layout.label(text = "WARNING - Make sure to use the 'Save Preferences' function in the Blender Preferences menu")
+            self.layout.label(text = " in order to save them.")
+
+        # Get the current export data
+        bpy.context.window_manager.popup_menu(tutorial_layout, title="Stored Export Presets", icon='HELP')
+
+
+        return {'FINISHED'}
+
+class CAPSULE_OT_Tutorial_ActivePresets(Operator):
+    """Opens a message describing how Active Export Presets work"""
+    bl_idname = "scene.cap_tut_activepresets"
+    bl_label = ""
+
+    def execute(self, context):
+
+        def tutorial_layout(self, context):
+            self.layout.label(text = "Active Export Presets are export settings that can be assigned to")
+            self.layout.label(text = "different Objects and Collections in the current Blend file.")
+            self.layout.label(text = "They are saved with your .blend file in a special hidden object.")
+            self.layout.label(text = "(The object is called '>Capsule Blend File Data<', don't delete it!).")
+
+        # Get the current export data
+        bpy.context.window_manager.popup_menu(tutorial_layout, title="Active Export Presets", icon='HELP')
+
+
+        return {'FINISHED'}
 
 
 class CAPSULE_OT_TestPackScriptSelection(Operator):

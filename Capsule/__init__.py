@@ -181,20 +181,25 @@ class CAP_AddonPreferences(AddonPreferences):
         if addon_prefs.saved_export_presets_dropdown is False:
             savedpresets_box = layout.box()
             savedpresets_title = savedpresets_box.row(align= True)
-            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text= "", icon= 'TRIA_RIGHT', emboss= False)
-            savedpresets_title.label(text= "Saved Presets")
+            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text= "", icon = 'TRIA_RIGHT', emboss= False)
+            savedpresets_title.label(text= "Stored Export Presets")
+            savedpresets_title.operator("scene.cap_tut_storedpresets", text = "", icon = "HELP")
 
         else:
             savedpresets_box = layout.box()
 
             savedpresets_title = savedpresets_box.row(align= True)
-            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
-            savedpresets_title.label(text= "Saved Presets")
+            savedpresets_title.prop(addon_prefs, "saved_export_presets_dropdown", text= "", icon = 'TRIA_DOWN', emboss= False)
+            savedpresets_title.label(text= "Stored Export Presets")
+            savedpresets_title.operator("scene.cap_tut_storedpresets", text = "", icon = "HELP")
 
             savedpresets_items = savedpresets_box.row(align= True)
             savedpresets_list = savedpresets_items.column(align= True)
-            savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", addon_prefs, "saved_export_presets_index", rows=3, maxrows=6)
-            savedpresets_list.operator("cap.create_current_preset", text= "Add to Active Export Presets", icon = "EXPORT")
+            savedpresets_list.template_list("CAPSULE_UL_Saved_Default", "default", addon_prefs, "saved_export_presets", 
+                addon_prefs, "saved_export_presets_index", rows = 3, maxrows = 6)
+            
+            savedpresets_list.separator()
+            savedpresets_list.operator("cap.create_current_preset", text= "Add Selected to Active Export Presets", icon = "EXPORT")
 
             savedpresets_listedit = savedpresets_items.column(align= True)
             savedpresets_listedit.operator("cap.delete_global_preset", text= "", icon = "REMOVE")
@@ -210,17 +215,21 @@ class CAP_AddonPreferences(AddonPreferences):
             col_saved_title = file_presets_box.row(align= True)
             col_saved_title.prop(addon_prefs, "file_export_presets_dropdown", text= "", icon= 'TRIA_RIGHT', emboss= False)
             col_saved_title.label(text= "Active Export Presets")
+            col_saved_title.operator("scene.cap_tut_activepresets", text = "", icon = "HELP")
 
         else:
             file_presets_box = layout.box()
             col_saved_title = file_presets_box.row(align= True)
             col_saved_title.prop(addon_prefs, "file_export_presets_dropdown", text= "", icon= 'TRIA_DOWN', emboss= False)
             col_saved_title.label(text= "Active Export Presets")
+            col_saved_title.operator("scene.cap_tut_activepresets", text = "", icon = "HELP")
 
             row_defaults = file_presets_box.row(align= True)
             col_defaultslist = row_defaults.column(align= True)
             col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", cap_file, "export_presets", cap_file, "export_presets_listindex", rows=3, maxrows=6)
-            col_defaultslist.operator("cap.add_global_preset", text= "Add to Saved Presets", icon = "IMPORT")
+            col_defaultslist.separator()
+            col_defaultslist.operator("cap.add_global_preset", text= "Add Selected to Saved Presets", icon = "IMPORT")
+            col_defaultslist.separator()
 
             col_defaultslist_options = row_defaults.column(align= True)
             col_defaultslist_options.operator("scene.cap_addexport", text= "", icon = "ADD")
@@ -298,10 +307,10 @@ class CAP_AddonPreferences(AddonPreferences):
                     currentExp.data_dae.draw_addon_preferences(format_type_box, currentExp.data_dae, cap_file, currentExp)
                 
                 elif currentExp.format_type == 'STL':
-                    currentExp.data_stl.draw_addon_preferences(format_type_box, currentExp.data_stl, cap_file)
+                    currentExp.data_stl.draw_addon_preferences(format_type_box, currentExp.data_stl, cap_file, currentExp)
                 
                 elif currentExp.format_type == 'USD':
-                    currentExp.data_usd.draw_addon_preferences(format_type_box, currentExp.data_usd, cap_file)
+                    currentExp.data_usd.draw_addon_preferences(format_type_box, currentExp.data_usd, cap_file, currentExp)
 
             else:
                 preset_unselected = file_presets_box.column(align= True)
@@ -385,9 +394,6 @@ class CAP_AddonPreferences(AddonPreferences):
             extras_content.separator()
 
             extras_content.prop(addon_prefs, "substitute_directories")
-            extras_content.separator()
-            extras_content.separator()
-            
             extras_content.prop(addon_prefs, "use_pack_scripts")
             extras_content.separator()
             extras_content.separator()
@@ -592,6 +598,8 @@ classes = (
     CAPSULE_OT_Delete_Presets,
     CAPSULE_OT_Store_Presets,
     CAPSULE_OT_Show_Preferences,
+    CAPSULE_OT_Tutorial_StoredPresets,
+    CAPSULE_OT_Tutorial_ActivePresets,
     CAPSULE_OT_TestPackScriptSelection,
     CAPSULE_OT_TestPackScriptListItem,
 
