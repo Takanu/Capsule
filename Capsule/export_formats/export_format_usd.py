@@ -26,7 +26,7 @@ class CAP_FormatData_USD(PropertyGroup):
         description = "Defines the type of USD file to be exported",
         items =  (
 			('.usdc', ".usdc", "Exports using USDC, an uncompressed file format that will export material textures as a separate folder"),
-			('.usdz', ".usdz", "Exports using USDZ, a compressed file format that will bundle any material textures inside the file"),
+			('.usdz', ".usdz", "Exports using USDZ, an uncompressed archive format that bundles USD and resource assets together"),
 			),
     )
 

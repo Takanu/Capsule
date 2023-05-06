@@ -179,15 +179,15 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	
 	export_nla_strips: BoolProperty(
-		name = 'Group by NLA Track',
-		description = 'When on, multiple actions become part of the same glTF animation if they’re pushed onto NLA tracks with the same name. When off, all the currently assigned actions become one glTF animation',
+		name = 'Export Animations by NLA Track',
+		description = """When enabled, multiple GLTF animations will be exported depending on the animation actions that are pushed onto NLA tracks sharing the same name.  When disabled, all currently assigned actions will become one GLTF animation""",
 		default = True
 	)
 
 	export_nla_strips_merged_animation_name: StringProperty(
 		name = "Grouped Animation Name",
-		description = "Name of the glTF animation to be exported",
-		default = "",
+		description = "When 'Export Animations by NLA Track' is disabled, this defines the name that the combined GLTF animation will receive",
+		default = "Merged Animation",
 	)
 
 	export_anim_single_armature: BoolProperty(
@@ -604,6 +604,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.use_property_split = True
 			export_options.use_property_decorate = False  # removes animation options
 			export_options.separator()
+
+			# Draco Warning
+			if exportData.export_draco_mesh_compression_enable == True:
+				export_options_warning = export_options.box()
+				export_options_warning_l = export_options_warning.row(align= True)
+				export_options_warning_l.label(text= "Draco is an extension and may not be supported by your target application")
+				export_options.separator()
+				export_options.separator()
 
 			export_options.prop(exportData, "export_draco_mesh_compression_enable")
 			export_options.separator()
