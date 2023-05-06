@@ -140,7 +140,7 @@ class CAP_FormatData_USD(PropertyGroup):
 
         )
     
-    def draw_addon_preferences(self, layout, exportData, cap_file):
+    def draw_addon_preferences(self, layout, exportData, cap_file, preset):
         """
         Draws the panel that represents all the options that the export format has.
         """

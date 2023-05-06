@@ -95,7 +95,7 @@ class CAP_FormatData_STL(PropertyGroup):
         )
 
     
-    def draw_addon_preferences(self, layout, exportData, cap_file):
+    def draw_addon_preferences(self, layout, exportData, cap_file, preset):
         """
         Draws the panel that represents all the options that the export format has.
         """
@@ -112,6 +112,13 @@ class CAP_FormatData_STL(PropertyGroup):
         export_options = export_area.column(align= True)
         export_options.use_property_split = True
         export_options.use_property_decorate = False  # removes animation options
+
+        if preset.export_animation == True:
+            export_options_warning = export_options.box()
+            export_options_warning_l = export_options_warning.row(align= True)
+            export_options_warning_l.label(text= "STL doesn't support animations, 'Export Animation' will be ignored.")
+            export_options.separator()
+            export_options.separator()
 
         export_options.separator()
         export_options.prop(exportData, "save_as_ascii")

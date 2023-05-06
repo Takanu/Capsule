@@ -443,6 +443,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.separator()
 			
 			export_options.prop(exportData, "export_format")
+			export_options.separator()
 			export_options.prop(exportData, "export_copyright")
 			export_options.separator()
 			export_options.prop(exportData, "export_custom_properties")

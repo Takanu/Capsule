@@ -481,6 +481,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 
 			export_options.prop(exportData, "primary_bone_axis")
 			export_options.prop(exportData, "secondary_bone_axis")
+			export_options.separator()
 			export_options.prop(exportData, "armature_nodetype")
 			export_options.separator()
 
