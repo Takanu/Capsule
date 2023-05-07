@@ -207,6 +207,7 @@ def BuildObjectExportTasks(context, cap_file, object_list, global_record, export
 
         # Filter by rendering
         object_hidden = False
+        
         if export_preset.filter_by_rendering is True:
             if item.hide_render is True:
                 export_stats['obj_hidden'] += 1
@@ -265,8 +266,8 @@ def BuildCollectionExportTasks(context, cap_file, collection_list, global_record
         export_preset = cap_file.export_presets[export_preset_index]
 
         # Collect all objects that are applicable for this export
-        child_export_option = collection.CAPCol.child_export_option
-        targets = search_utils.GetCollectionObjectTree(context, collection, child_export_option)
+        collection_children = collection.CAPCol.collection_children
+        targets = search_utils.GetCollectionObjectTree(context, collection, collection_children)
 
         
         # TODO : Find an efficient way to filter out objects that have rendering turned off by the collections they're in.

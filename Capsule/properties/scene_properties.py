@@ -230,6 +230,20 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point")),
     )
 
+    object_children: EnumProperty(
+        name = "Child Objects",
+        description = "Lets you set how children of an object are included in the export",
+        items =  (
+        ('All', 'All', "Will export all children of this object"),
+        ('None', 'None', "No object children will be exported"),
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree")
+        ),
+    )
+
     location_preset: EnumProperty(
         name = "File Location",
         description = "Defines the file path that the object will be exported to",
@@ -284,18 +298,32 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         name = "Origin Object",
         description = "Defines what object will be used as the exported collection's origin point",
     )
-    
-    child_export_option: EnumProperty(
-        name = "Hierarchy",
-        description = "Lets you set how children of a collection are included in the export",
+
+    object_children: EnumProperty(
+        name = "Child Objects",
+        description = "Lets you set how children of an exportable object are included in the export.  This includes any objects found from the children of collections inside this collection",
         items =  (
-        ('All', 'All Children', "Will export the children of this collection as well as every object associated to a child of this collection"),
-        ('Immediate', 'Immediate Children Only', "Will only export objects that are a child of this collection"),
+        ('All', 'All', "Will export all children of an exportable object"),
+        ('None', 'None', "No object children will be exported"),
         ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
         ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
         ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
         ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
-        ('Down 5', 'Five Layer Down', "Will export all children up to five layers down the hierarchy tree")
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree")
+        ),
+    )
+    
+    collection_children: EnumProperty(
+        name = "Child Collections",
+        description = "Lets you set how children of a collection are included in the export",
+        items =  (
+        ('All', 'All', "Will export the children of this collection as well as every object associated to a child of this collection"),
+        ('None', 'None', "No collections inside this collection will be exported"),
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree")
         ),
     )
 

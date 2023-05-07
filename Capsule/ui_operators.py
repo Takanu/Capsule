@@ -695,9 +695,10 @@ class CAPSULE_OT_Tutorial_StoredPresets(Operator):
     def execute(self, context):
 
         def tutorial_layout(self, context):
-            self.layout.label(text = "Stored Export Presets are export settings you want to use reuse .blend files.")
-            self.layout.label(text = "WARNING - Make sure to use the 'Save Preferences' function in the Blender Preferences menu")
-            self.layout.label(text = " in order to save them.")
+            self.layout.label(text = "Stored Export Presets are export settings you want to use to store")
+            self.layout.label(text = "and use in different .blend files.")
+            self.layout.label(text = "If Auto-Save Preferences is enabled the presets you store will be")
+            self.layout.label(text = "saved when you close the Blender Preferences window.")
 
         # Get the current export data
         bpy.context.window_manager.popup_menu(tutorial_layout, title="Stored Export Presets", icon='HELP')

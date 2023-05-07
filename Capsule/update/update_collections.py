@@ -11,9 +11,9 @@ from ..tk_utils import object_ops
 # /////////////////////////////////////////////////
 
 
-def CAP_Update_ProxyCollectionExport(self, context):
+def CAP_Update_ProxyCol_EnableExport(self, context):
     """
-    Used for selection editing to update all properties in the current selection.
+    Updates the "Enable Export" property for all selected collections
     """
 
     preferences = context.preferences
@@ -39,9 +39,9 @@ def CAP_Update_ProxyCollectionExport(self, context):
 
     return None
 
-def CAP_Update_ProxyCollectionOriginPoint(self, context):
+def CAP_Update_ProxyCol_OriginPoint(self, context):
     """
-    Updates the "Collection Origin" property for all selected groups.
+    Updates the Origin Point property for all selected collections
     """
 
     preferences = context.preferences
@@ -62,9 +62,9 @@ def CAP_Update_ProxyCollectionOriginPoint(self, context):
     return None
 
 
-def CAP_Update_ProxyCollectionRootObject(self, context):
+def CAP_Update_ProxyCol_RootObject(self, context):
     """
-    Updates the "Collection Origin" property for all selected groups.
+    Updates the "Root Object" property for all selected collections
     """
 
     preferences = context.preferences
@@ -84,10 +84,9 @@ def CAP_Update_ProxyCollectionRootObject(self, context):
 
     return None
 
-
-def CAP_Update_ProxyCollectionChildExportOption(self, context):
+def CAP_Update_ProxyCol_CollectionObjects(self, context):
     """
-    Updates the "Child Export Options" property for all selected groups.
+    Updates the "Child Objects" property for all selected collections
     """
 
     preferences = context.preferences
@@ -99,19 +98,20 @@ def CAP_Update_ProxyCollectionChildExportOption(self, context):
         return
 
     collected = search_utils.GetEditableCollections(context)
-    value = proxy.col_child_export_option
+    value = proxy.col_object_children
 
     # Run through the objects
     for collection in collected:
-        collection.CAPCol.child_export_option = value
+        collection.CAPCol.object_children = value
 
     return None
 
 
-def CAP_Update_ProxyCollectionLocationPreset(self, context):
+def CAP_Update_ProxyCol_CollectionChildren(self, context):
     """
-    Updates the object's Location Default property.
+    Updates the "Child Collections" property for all selected collections
     """
+
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
     proxy = context.scene.CAPProxy
@@ -120,6 +120,24 @@ def CAP_Update_ProxyCollectionLocationPreset(self, context):
     if proxy.disable_updates == True:
         return
 
+    collected = search_utils.GetEditableCollections(context)
+    value = proxy.col_collection_children
+
+    # Run through the objects
+    for collection in collected:
+        collection.CAPCol.collection_children = value
+
+    return None
+
+
+def CAP_Update_ProxyCol_LocationPreset(self, context):
+    """
+    Updates the "Location Preset" property for all selected collections
+    """
+    preferences = context.preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+    
     # If updates are disabled, return early.
     if proxy.disable_updates == True:
         return
@@ -133,18 +151,14 @@ def CAP_Update_ProxyCollectionLocationPreset(self, context):
 
     return None
 
-def CAP_Update_ProxyCollectionExportPreset(self, context):
+def CAP_Update_ProxyCol_ExportPreset(self, context):
     """
-    Updates the collection's Export Default property.
+    Updates the "Export Preset" property for all selected collections
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
     proxy = context.scene.CAPProxy
     
-    # If updates are disabled, return early.
-    if proxy.disable_updates == True:
-        return
-
     # If updates are disabled, return early.
     if proxy.disable_updates == True:
         return
@@ -160,16 +174,12 @@ def CAP_Update_ProxyCollectionExportPreset(self, context):
 
 def CAP_Update_ProxyCollectionOverride(self, context):
     """
-    Updates the collection's Pack property.
+    Updates the "Pack Script" property for all selected collections
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
     proxy = context.scene.CAPProxy
     
-    # If updates are disabled, return early.
-    if proxy.disable_updates == True:
-        return
-
     # If updates are disabled, return early.
     if proxy.disable_updates == True:
         return

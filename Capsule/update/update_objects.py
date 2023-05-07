@@ -31,9 +31,9 @@ def FindEditableObjects(context):
 
     return collected
 
-def CAP_Update_ProxyObjectExport(self, context):
+def CAP_Update_ProxyObj_EnableExport(self, context):
     """
-    Updates the selected objects "Enable Export" status across UI elements.
+    Updates the "Enable Export" property for all selected objects
     Note - This should only be used from the Enable Export UI tick, otherwise manually handle "Enable Export" status 
     assignment using "UpdateObjectList"
     """
@@ -59,9 +59,9 @@ def CAP_Update_ProxyObjectExport(self, context):
     return None
 
 
-def CAP_Update_ProxyObjectOriginPoint(self, context):
+def CAP_Update_ProxyObj_OriginPoint(self, context):
     """
-    Updates the "Use Scene Origin" property for all selected objects.
+    Updates the "Origin Export" property for all selected objects.
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
@@ -81,9 +81,32 @@ def CAP_Update_ProxyObjectOriginPoint(self, context):
 
     return None
 
-def  CAP_Update_ProxyObjectLocationPreset(self, context):
+def CAP_Update_ProxyObj_ObjectChildren(self, context):
     """
-    Updates the object's Location Default property.
+    Updates the "Child Objects" property for all selected objects
+    """
+    preferences = context.preferences
+    addon_prefs = preferences.addons['Capsule'].preferences
+    proxy = context.scene.CAPProxy
+    
+    # If updates are disabled, return early.
+    if proxy.disable_updates == True:
+        return
+
+    # Setup initial targets and the value state we need to change.
+    collected = FindEditableObjects(context)
+    value = proxy.obj_object_children
+
+    # Run through the objects
+    for item in collected:
+        item.CAPObj.object_children = value
+
+    return None
+
+
+def  CAP_Update_ProxyObj_LocationPreset(self, context):
+    """
+    Updates the "Location Preset" property for all selected objects
     """
 
     preferences = context.preferences
@@ -104,9 +127,9 @@ def  CAP_Update_ProxyObjectLocationPreset(self, context):
 
     return None
 
-def CAP_Update_ProxyObjectExportPreset(self, context):
+def CAP_Update_ProxyObj_ExportPreset(self, context):
     """
-    Updates the object's Export Preset property.
+    Updates the "Export Preset" property for all selected objects
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences
@@ -126,9 +149,9 @@ def CAP_Update_ProxyObjectExportPreset(self, context):
 
     return None
 
-def CAP_Update_ProxyObjectOverride(self, context):
+def CAP_Update_ProxyObj_PackScript(self, context):
     """
-    Updates the object's Pack Script property.
+    Updates the "Pack Script" property for all selected objects
     """
     preferences = context.preferences
     addon_prefs = preferences.addons['Capsule'].preferences

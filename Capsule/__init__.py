@@ -468,6 +468,7 @@ def CheckSelectedObject(scene):
 
             proxy.obj_enable_export = obj.enable_export
             proxy.obj_origin_point = obj.origin_point
+            proxy.obj_object_children = obj.object_children
             proxy.obj_location_preset = obj.location_preset
             proxy.obj_export_preset = obj.export_preset
             proxy.obj_pack_script = obj.pack_script
@@ -492,7 +493,8 @@ def CheckSelectedObject(scene):
             proxy.col_enable_export = col.enable_export
             proxy.col_origin_point = col.origin_point
             proxy.col_root_object = col.root_object
-            proxy.col_child_export_option = col.child_export_option
+            proxy.col_object_children = col.object_children
+            proxy.col_collection_children = col.collection_children
             proxy.col_location_preset = col.location_preset
             proxy.col_export_preset = col.export_preset
             proxy.col_pack_script = col.pack_script

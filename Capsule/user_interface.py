@@ -269,6 +269,8 @@ class CAPSULE_PT_Selection(Panel):
                 obj_settings.separator()
                 obj_settings.prop(proxy, "obj_origin_point")
                 obj_settings.separator()
+                obj_settings.prop(proxy, "obj_object_children")
+                obj_settings.separator()
                 obj_settings.prop(proxy, "obj_location_preset")
                 obj_settings.separator()
                 obj_settings.prop(proxy, "obj_export_preset")
@@ -393,7 +395,9 @@ class CAPSULE_PT_Selection(Panel):
                 
                 root_object_ui.separator()
 
-                group_layout.prop(proxy, "col_child_export_option")
+                group_layout.prop(proxy, "col_object_children")
+                group_layout.separator()
+                group_layout.prop(proxy, "col_collection_children")
                 group_layout.separator()
                 group_layout.prop(proxy, "col_location_preset") 
                 group_layout.separator()
@@ -506,6 +510,8 @@ class CAPSULE_PT_List(Panel):
 
                 object_options_list.prop(obj, "origin_point")
                 object_options_list.separator()
+                object_options_list.prop(obj, "object_children")
+                object_options_list.separator()
                 object_options_list.prop(obj, "location_preset")
                 object_options_list.separator()
                 object_options_list.prop(obj, "export_preset")
@@ -539,7 +545,9 @@ class CAPSULE_PT_List(Panel):
                 
                 root_object_ui.separator()
 
-                group_options_list.prop(grp, "child_export_option")
+                group_options_list.prop(grp, "object_children")
+                group_options_list.separator()
+                group_options_list.prop(grp, "collection_children")
                 group_options_list.separator()
                 group_options_list.prop(grp, "location_preset")
                 group_options_list.separator()

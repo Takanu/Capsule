@@ -138,8 +138,59 @@ def GetSelectedCollections():
     #print(collections_found)
     return collections_found
 
+def GetObjectParentTree(context, target_obj, object_children):
+    """
+    Returns a list of objects that can be exported by the given object, based on it's child settings.
+    """
+    # Now setup the recursive tree search.
+    def ExportTreeSearch(current_layer, max_layer, current_obj):
 
-def GetCollectionObjectTree(context, collection, child_export_option):
+        object_list = []
+        
+        # If we've over-extended, return
+        if current_layer > max_layer and max_layer != -1:
+            return []
+            
+        # If not, add the current objects
+        object_list += current_obj.children
+
+        # Now search further
+        for new_obj in current_obj.children:
+            new_objects = ExportTreeSearch(current_layer + 1, max_layer, new_obj)
+            object_list += new_objects
+        
+        return object_list
+
+    object_list = []
+
+    if object_children == "All":
+        object_list += target_obj.all_objects
+        return object_list
+
+    elif object_children == "None":
+        object_list += target_obj.objects
+        return object_list
+
+    # If we get here, we need to search and cancel by layers.  First get the layer max.
+    max_layers = 0
+    if object_children == "Down 1":
+        max_layers = 1
+    elif object_children == "Down 2":
+        max_layers = 2
+    elif object_children == "Down 3":
+        max_layers = 3
+    elif object_children == "Down 4":
+        max_layers = 4
+    elif object_children == "Down 5":
+        max_layers = 5
+
+
+    object_list = ExportTreeSearch(0, max_layers, target_obj)
+    return object_list
+
+
+
+def GetCollectionObjectTree(context, collection, collection_children):
     """
     Returns a list of objects that can be exported by the given collection, based on it's child settings.
     """
@@ -169,25 +220,25 @@ def GetCollectionObjectTree(context, collection, child_export_option):
 
     object_list = []
 
-    if child_export_option == "All":
+    if collection_children == "All":
         object_list += collection.all_objects
         return object_list
     
-    elif child_export_option == "Immediate":
+    elif collection_children == "None":
         object_list += collection.objects
         return object_list
 
     # If we get here, we need to search and cancel by layers.  First get the layer max.
     max_layers = 0
-    if child_export_option == "Down 1":
+    if collection_children == "Down 1":
         max_layers = 1
-    if child_export_option == "Down 2":
+    if collection_children == "Down 2":
         max_layers = 2
-    if child_export_option == "Down 3":
+    if collection_children == "Down 3":
         max_layers = 3
-    if child_export_option == "Down 4":
+    if collection_children == "Down 4":
         max_layers = 4
-    if child_export_option == "Down 5":
+    if collection_children == "Down 5":
         max_layers = 5
 
     
