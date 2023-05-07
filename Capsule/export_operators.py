@@ -204,30 +204,40 @@ def BuildObjectExportTasks(context, cap_file, object_list, global_record, export
         # Get the export preset for the object
         export_preset_index = int(item.CAPObj.export_preset) - 1
         export_preset = cap_file.export_presets[export_preset_index]
+        targets = search_utils.GetObjectParentTree(context, item, item.CAPObj.object_children)
+        targets += [item]
 
         # Filter by rendering
-        object_hidden = False
-        
         if export_preset.filter_by_rendering is True:
-            if item.hide_render is True:
-                export_stats['obj_hidden'] += 1
-                object_hidden = True
-                continue
-            else:
-                for collection in item.users_collection:
-                    if collection.hide_render is True:
-                        export_stats['obj_hidden'] += 1
-                        object_hidden = True
-                        break
+            renderable = []
+
+            for target in targets:
+                object_hidden = False
+
+                if target.hide_render is True:
+                    object_hidden = True
+
+                else:
+                    for render_search_col in target.users_collection:
+                        if render_search_col.hide_render is True:
+                            object_hidden = True
+                            break
+                
+                if object_hidden == False:
+                    renderable.append(target)
+            
+            targets = renderable
         
-        if object_hidden == True:
+        # If our targets list is empty this collection shouldn't be included.
+        if len(targets) == 0:
+            export_stats['obj_hidden'] += 1
             continue
 
 
         # SUCCESSFUL INCLUSION
         export_task['export_name'] = item.name
         export_task['export_preset'] = export_preset
-        export_task['targets'] = [item]
+        export_task['targets'] = targets
         location_preset_index = int(item.CAPObj.location_preset) - 1
         export_task['location_preset'] = cap_file.location_presets[location_preset_index]
 
@@ -291,7 +301,6 @@ def BuildCollectionExportTasks(context, cap_file, collection_list, global_record
                     renderable.append(target)
             
             targets = renderable
-            # print("Filtered Export Targets = ", targets)
 
         # If our targets list is empty this collection shouldn't be included.
         if len(targets) == 0:

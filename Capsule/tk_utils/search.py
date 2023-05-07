@@ -148,7 +148,7 @@ def GetObjectParentTree(context, target_obj, object_children):
         object_list = []
         
         # If we've over-extended, return
-        if current_layer > max_layer and max_layer != -1:
+        if current_layer >= max_layer and max_layer != -1:
             return []
             
         # If not, add the current objects
@@ -164,11 +164,10 @@ def GetObjectParentTree(context, target_obj, object_children):
     object_list = []
 
     if object_children == "All":
-        object_list += target_obj.all_objects
+        object_list += target_obj.children_recursive
         return object_list
 
     elif object_children == "None":
-        object_list += target_obj.objects
         return object_list
 
     # If we get here, we need to search and cancel by layers.  First get the layer max.
@@ -204,7 +203,7 @@ def GetCollectionObjectTree(context, collection, collection_children):
         object_list = []
         
         # If we've over-extended, return
-        if current_layer > max_layer and max_layer != -1:
+        if current_layer >= max_layer and max_layer != -1:
             return []
             
         # If not, add the current objects

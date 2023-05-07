@@ -395,8 +395,8 @@ class CAPSULE_PT_Selection(Panel):
                 
                 root_object_ui.separator()
 
-                group_layout.prop(proxy, "col_object_children")
-                group_layout.separator()
+                # group_layout.prop(proxy, "col_object_children")
+                # group_layout.separator()
                 group_layout.prop(proxy, "col_collection_children")
                 group_layout.separator()
                 group_layout.prop(proxy, "col_location_preset") 
@@ -545,8 +545,8 @@ class CAPSULE_PT_List(Panel):
                 
                 root_object_ui.separator()
 
-                group_options_list.prop(grp, "object_children")
-                group_options_list.separator()
+                # group_options_list.prop(grp, "object_children")
+                # group_options_list.separator()
                 group_options_list.prop(grp, "collection_children")
                 group_options_list.separator()
                 group_options_list.prop(grp, "location_preset")
