@@ -3,14 +3,12 @@ import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import PropertyGroup
 
-from ..update.update_objects import (
+from ..update.update_list import (
     CAP_Update_ObjectListExport, 
     CAP_Update_FocusObject,  
     CAP_Update_SelectObject, 
-    CAP_Update_ObjectListRemove
-)
+    CAP_Update_ObjectListRemove,
 
-from ..update.update_collections import (
     CAP_Update_CollectionListExport, 
     CAP_Update_FocusCollection, 
     CAP_Update_SelectCollection, 

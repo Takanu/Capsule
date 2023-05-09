@@ -1,9 +1,8 @@
 import bpy
 from bpy.props import IntProperty, BoolProperty, FloatProperty, EnumProperty, PointerProperty, StringProperty, CollectionProperty
 from bpy.types import Menu, Operator
+    
 
-from .update.update_objects import CAP_Update_ProxyObj_EnableExport, UpdateObjectList
-from .update.update_collections import CAP_Update_ProxyCol_EnableExport, UpdateCollectionList
 from .tk_utils import search as search_utils
 
 from . import tk_utils
