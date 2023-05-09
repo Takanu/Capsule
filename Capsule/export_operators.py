@@ -16,8 +16,6 @@ from .tk_utils import object_transform
 from .tk_utils import paths as path_utils
 from .tk_utils import record as record_utils
 
-from . import tag_ops
-
 
 
 class CAPSULE_OT_Export(Operator):

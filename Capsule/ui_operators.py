@@ -433,39 +433,6 @@ class CAPSULE_OT_Reset_Properties(Operator):
 
         return {'FINISHED'}
 
-class CAPSULE_OT_Reset_Defaults(Operator):
-    """Reset all location and export defaults in the file"""
-
-    bl_idname = "scene.cap_resetprefs"
-    bl_label = "Reset Scene"
-
-    def execute(self, context):
-        #print(self)
-
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-
-        if addon_prefs == None:
-            #print("ADDON COULD NOT START, CONTACT DEVELOPER FOR ASSISTANCE")
-            return
-
-        # Figure out if an object already exists, if yes, DELETE IT
-        for object in bpy.data.objects:
-            if object.name == addon_prefs.default_datablock:
-                DeleteObject(object)
-
-        # Otherwise create the object using the addon preference data
-        bpy.ops.object.select_all(action= 'DESELECT')
-        bpy.ops.object.empty_add(type = 'PLAIN_AXES')
-
-        defaultDatablock = bpy.context.view_layer.objects.active
-        defaultDatablock.name = addon_prefs.default_datablock
-        defaultDatablock.hide_viewport = True
-        defaultDatablock.hide_render = True
-        defaultDatablock.hide_select = True
-
-
-        return {'FINISHED'}
 
 class CAPSULE_OT_UI_Group_Separate(Operator):
     """Toggle the drop-down menu for separate collection export options"""
@@ -726,7 +693,7 @@ class CAPSULE_OT_Tutorial_ActivePresets(Operator):
         return {'FINISHED'}
 
 
-class CAPSULE_OT_TestPackScriptSelection(Operator):
+class CAPSULE_OT_TestPackScript(Operator):
     """Executes a Pack Script for the active Object or Collection and places all collected export targets into a new collection called, "Capsule Pack Test".  NOTE - This can only be used on one Object or Collection at a time"""
     bl_idname = "cap.test_pack_script_selection"
     bl_label = "Test Pack Script"
@@ -794,11 +761,14 @@ class CAPSULE_OT_TestPackScriptSelection(Operator):
             elif list_tab == 2:
                 index = cap_scn.collection_list_index
                 target_collection = cap_scn.collection_list[index].collection
-        
+
+
         # ////////////////////////////////////////////
         # SETUP PACK SCRIPT ENVIRONMENT
         # TODO : Ensure object + collection gathering code in export_operators can be used here.
-
+        bpy.ops.scene.new(type = 'NEW')
+        test_scene = context.scene
+        test_scene.name = ">Capsule Test Scene<"
 
         # ////////////////////////////////////////////
         # EXECUTE + ADD TO COLLECTION
@@ -812,74 +782,4 @@ class CAPSULE_OT_TestPackScriptSelection(Operator):
 
 
         return {'FINISHED'}
-
-
-class CAPSULE_OT_TestPackScriptListItem(Operator):
-    """Executes a Pack Script for the active Object or Collection and places all collected export targets into a new collection called, "Capsule Pack Test"."""
-    bl_idname = "cap.test_pack_script_listitem"
-    bl_label = "Test Pack Script"
-
-    # Defines the method that a target should be tested by.  UI elements should
-    # be using this depending on the context.
-
-    set_mode: EnumProperty(
-        name = "Export Mode",
-        items = [
-            ('ACTIVE_OBJECT', "Selected", "Export the currently active object"),
-            ('ACTIVE_COLLECTION', "Selected Collections", "Exports only selected collection"),
-            ],
-        default = 'ACTIVE_OBJECT',
-        description = "Execution mode", 
-        options = {'HIDDEN'},
-    )
-
-
-    def execute(self, context):
-        
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        cap_scn = context.scene.CAPScn
-        cap_file = None
-
-        target_object = None
-        target_collection = None
-
-        return {'FINISHED'}
-
-
-# ////////////////////// - CLASS REGISTRATION - ////////////////////////
-# decided to do it all in __init__ instead, skipping for now.
-
-# classes = (
-#     CAPSULE_OT_Add_Path,
-#     CAPSULE_OT_Delete_Path,
-#     CAPSULE_OT_Add_Export,
-#     CAPSULE_OT_Delete_Export,
-#     CAPSULE_OT_Add_Tag,
-#     CAPSULE_OT_Delete_Tag,
-#     CAPSULE_OT_Add_Pass,
-#     CAPSULE_OT_Delete_Pass,
-#     CAPSULE_OT_Shift_Path_Up,
-#     CAPSULE_OT_Shift_Path_Down,
-#     CAPSULE_OT_Clear_List,
-#     CAPSULE_OT_Refresh_List,
-#     CAPSULE_OT_Reset_Properties,
-#     CAPSULE_OT_Reset_Defaults,
-#     CAPSULE_OT_UI_Group_Separate,
-#     CAPSULE_OT_UI_Group_Options,
-#     CAPSULE_OT_Tutorial_Tags,
-#     CAPSULE_OT_Create_ExportData,
-#     CAPSULE_OT_Add_Stored_Presets,
-#     CAPSULE_OT_Delete_Presets,
-#     CAPSULE_OT_Store_Presets,
-# )
-
-# def register():
-#     for cls in classes:
-#         bpy.utils.register_class(cls)
-
-# def unregister():
-#     for cls in reversed(classes):
-#         bpy.utils.unregister_class(cls)
-
 

@@ -199,7 +199,7 @@ class CAP_AddonPreferences(AddonPreferences):
                 addon_prefs, "saved_export_presets_index", rows = 3, maxrows = 6)
             
             savedpresets_list.separator()
-            savedpresets_list.operator("cap.create_current_preset", text= "Add Selected to Active Export Presets", icon = "EXPORT")
+            savedpresets_list.operator("cap.create_current_preset", text= "Activate Selected", icon = "EXPORT")
 
             savedpresets_listedit = savedpresets_items.column(align= True)
             savedpresets_listedit.operator("cap.delete_global_preset", text= "", icon = "REMOVE")
@@ -228,7 +228,7 @@ class CAP_AddonPreferences(AddonPreferences):
             col_defaultslist = row_defaults.column(align= True)
             col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", cap_file, "export_presets", cap_file, "export_presets_listindex", rows=3, maxrows=6)
             col_defaultslist.separator()
-            col_defaultslist.operator("cap.add_global_preset", text= "Add Selected to Saved Presets", icon = "IMPORT")
+            col_defaultslist.operator("cap.add_global_preset", text= "Store Selected", icon = "IMPORT")
             col_defaultslist.separator()
 
             col_defaultslist_options = row_defaults.column(align= True)
@@ -592,7 +592,6 @@ classes = (
     CAPSULE_OT_Clear_List,
     CAPSULE_OT_Refresh_List,
     CAPSULE_OT_Reset_Properties,
-    CAPSULE_OT_Reset_Defaults,
     CAPSULE_OT_UI_Group_Separate,
     CAPSULE_OT_UI_Group_Options,
     CAPSULE_OT_Create_ExportData,
@@ -602,8 +601,7 @@ classes = (
     CAPSULE_OT_Show_Preferences,
     CAPSULE_OT_Tutorial_StoredPresets,
     CAPSULE_OT_Tutorial_ActivePresets,
-    CAPSULE_OT_TestPackScriptSelection,
-    CAPSULE_OT_TestPackScriptListItem,
+    CAPSULE_OT_TestPackScript,
 
     # user_inferface
     CAPSULE_UL_Name,
