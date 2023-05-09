@@ -111,11 +111,11 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         items =  (
         ('All', 'All', "Will export all children of this object"),
         ('None', 'None', "No object children will be exported"),
-        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
-        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
-        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
-        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
-        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree")
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the object hierarchy"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the object hierarchy"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the object hierarchy"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the object hierarchy"),
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the object hierarchy")
         ),
         update = CAP_Update_ProxyObj_ObjectChildren,
     )
@@ -137,7 +137,7 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
     obj_pack_script: PointerProperty(
         type = bpy.types.Text,
         name = "Pack Script",
-        description = "Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        description = "(Optional) Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
         update = CAP_Update_ProxyObj_PackScript,
     )
     
@@ -173,11 +173,11 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         items =  (
         ('All', 'All', "Will export all children of an exportable object"),
         ('None', 'None', "No object children will be exported"),
-        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
-        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
-        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
-        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
-        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree")
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the object hierarchy"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the object hierarchy"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the object hierarchy"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the object hierarchy"),
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the object hierarchy")
         ),
         update = CAP_Update_ProxyCol_CollectionObjects,
     )
@@ -188,11 +188,11 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
         items =  (
         ('All', 'All', "Will export the children of this collection as well as every object associated to a child of this collection."),
         ('None', 'None', "Will only export objects that are a child of this collection."),
-        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree."),
-        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree."),
-        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree."),
-        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree."),
-        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree.")
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the collection hierarchy"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the collection hierarchy"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the collection hierarchy"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the collection hierarchy"),
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the collection hierarchy")
         ),
         update = CAP_Update_ProxyCol_CollectionChildren,
     )
@@ -214,6 +214,6 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
     col_pack_script: PointerProperty(
         type = bpy.types.Text,
         name = "Pack Script",
-        description = "Defines a python script that will be executed just before and after Capsule exports the collection to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        description = "(Optional) Defines a python script that will be executed just before and after Capsule exports the collection to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
         update = CAP_Update_ProxyCollectionOverride,
     )

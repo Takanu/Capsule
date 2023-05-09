@@ -234,11 +234,11 @@ class CAPSULE_Object_Preferences(PropertyGroup):
         items =  (
         ('All', 'All', "Will export all children of this object"),
         ('None', 'None', "No object children will be exported"),
-        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
-        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
-        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
-        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
-        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree")
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the object hierarchy tree"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the object hierarchy tree"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the object hierarchy tree"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the object hierarchy tree"),
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the object hierarchy tree")
         ),
     )
 
@@ -257,7 +257,7 @@ class CAPSULE_Object_Preferences(PropertyGroup):
     pack_script: PointerProperty(
         type = bpy.types.Text,
         name = "Pack Script",
-        description = "Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        description = "(Optional) Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
     )
 
     enable_edit: BoolProperty(
@@ -297,17 +297,19 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         description = "Defines what object will be used as the exported collection's origin point",
     )
 
+    # TODO: This hasn't been added yet as collections return every object in them including every child by default.
+    # This means id have to reconstruct the hierarchy manually and it doesn't currently seem worth it.
     object_children: EnumProperty(
         name = "Child Objects",
         description = "Lets you set how children of an exportable object are included in the export.  This includes any objects found from the children of collections inside this collection",
         items =  (
         ('All', 'All', "Will export all children of an exportable object"),
         ('None', 'None', "No object children will be exported"),
-        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
-        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
-        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
-        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
-        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree")
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the object hierarchy"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the object hierarchy"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the object hierarchy"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the object hierarchy"),
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the object hierarchy")
         ),
     )
     
@@ -317,11 +319,11 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
         items =  (
         ('All', 'All', "Will export the children of this collection as well as every object associated to a child of this collection"),
         ('None', 'None', "No collections inside this collection will be exported"),
-        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the hierarchy tree"),
-        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the hierarchy tree"),
-        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the hierarchy tree"),
-        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the hierarchy tree"),
-        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the hierarchy tree")
+        ('Down 1', 'One Layer Down', "Will export all children up to one layer down the collection hierarchy"),
+        ('Down 2', 'Two Layers Down', "Will export all children up to two layers down the collection hierarchy"),
+        ('Down 3', 'Three Layers Down', "Will export all children up to three layers down the collection hierarchy"),
+        ('Down 4', 'Four Layers Down', "Will export all children up to four layers down the collection hierarchy"),
+        ('Down 5', 'Five Layers Down', "Will export all children up to five layers down the collection hierarchy")
         ),
     )
 
@@ -340,7 +342,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
     pack_script: PointerProperty(
         type = bpy.types.Text,
         name = "Pack Script",
-        description = "Defines a python script that will be executed just before and after Capsule exports to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        description = "(Optional) Defines a python script that will be executed just before and after Capsule exports to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
     )
     
     enable_edit: BoolProperty(
