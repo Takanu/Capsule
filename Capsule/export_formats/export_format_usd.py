@@ -182,9 +182,9 @@ class CAP_FormatData_USD(PropertyGroup):
         texture_sub = material_sub.column(align = True)
         texture_sub.active = exportData.generate_preview_surface
         texture_sub.prop(exportData, "export_textures")
+        texture_sub.separator()
+        texture_sub.separator()
         
-        material_sub.separator()
-        material_sub.separator()
 
         eval_options = export_options.column(align = True)
         eval_options.prop(exportData, "evaluation_mode", text= "Use Settings For")

@@ -664,6 +664,7 @@ class CAPSULE_OT_Tutorial_StoredPresets(Operator):
         def tutorial_layout(self, context):
             self.layout.label(text = "Stored Export Presets are export settings you want to use to store")
             self.layout.label(text = "and use in different .blend files.")
+            self.layout.label(text = "")
             self.layout.label(text = "If Auto-Save Preferences is enabled the presets you store will be")
             self.layout.label(text = "saved when you close the Blender Preferences window.")
 
@@ -683,7 +684,9 @@ class CAPSULE_OT_Tutorial_ActivePresets(Operator):
         def tutorial_layout(self, context):
             self.layout.label(text = "Active Export Presets are export settings that can be assigned to")
             self.layout.label(text = "different Objects and Collections in the current Blend file.")
+            self.layout.label(text = "")
             self.layout.label(text = "They are saved with your .blend file in a special hidden object.")
+            self.layout.label(text = "")
             self.layout.label(text = "(The object is called '>Capsule Blend File Data<', don't delete it!).")
 
         # Get the current export data
