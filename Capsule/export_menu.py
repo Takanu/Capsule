@@ -11,7 +11,7 @@ class CAPSULE_OT_PieWarning(Operator):
     bl_idname = "capsule.pie_warning"
     bl_label = ""
 
-    label = StringProperty(default = "")
+    label: StringProperty(default = "")
 
     def execute(self, context):
         self.report({'WARNING'}, self.label)
@@ -21,7 +21,8 @@ class CAPSULE_OT_ToggleExport(Operator):
     bl_idname = "capsule.toggle_export"
     bl_label = "Toggle Export"
 
-    args = StringProperty(default = "")
+    export_type: StringProperty()
+    enabled: BoolProperty()
 
     def execute(self, context):
 
@@ -29,21 +30,12 @@ class CAPSULE_OT_ToggleExport(Operator):
         scn = context.scene.CAPScn
         proxy = context.scene.CAPProxy
         sel = context.selected_objects
-        args = self.args.split(".")
 
-        if args[0] == "OBJECT":
+        if self.export_type == "OBJECT":
+            proxy.obj_enable_export = self.enabled
 
-            for item in sel:
-                if args[1] == "True":
-                    proxy.obj_enable_export = True
-                else:
-                    proxy.obj_enable_export = False
         else:
-            isEnabled = False
-            if args[1] == "True":
-                isEnabled = True
-
-            proxy.col_enable_export = isEnabled
+            proxy.col_enable_export = self.enabled
 
 
         return {'FINISHED'}
@@ -52,7 +44,7 @@ class CAPSULE_OT_LocationSelectObject(Operator):
     bl_idname = "capsule.location_select_object"
     bl_label = "Toggle Export"
 
-    loc = IntProperty(default=-1)
+    loc: IntProperty(default=-1)
 
     def execute(self, context):
         if self.loc != -1:
@@ -64,7 +56,7 @@ class CAPSULE_OT_LocationSelectCollection(Operator):
     bl_idname = "capsule.location_select_collection"
     bl_label = "Toggle Export"
 
-    loc = IntProperty(default=-1)
+    loc: IntProperty(default=-1)
 
     def execute(self, context):
         if self.loc != -1:
@@ -122,7 +114,7 @@ class CAPSULE_OT_ExportSelectObject(Operator):
     bl_idname = "capsule.export_select_object"
     bl_label = "Toggle Export"
 
-    loc = IntProperty(default=-1)
+    loc: IntProperty(default=-1)
 
     def execute(self, context):
         if self.loc != -1:
@@ -137,7 +129,7 @@ class CAPSULE_OT_ExportSelectCollection(Operator):
     bl_idname = "capsule.export_select_collection"
     bl_label = "Toggle Export"
 
-    loc = IntProperty(default=-1)
+    loc: IntProperty(default=-1)
 
     def execute(self, context):
         if self.loc != -1:
@@ -202,14 +194,18 @@ class CAPSULE_OT_PieObjectMenu(Menu):
             has_sel = True
 
         return has_sel
-
+    
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
         # 4 - LEFT
-        pie.operator("capsule.toggle_export", text= "Enable Export", icon = "ADD").args = "OBJECT.True"
+        enable_export = pie.operator("capsule.toggle_export", text= "Enable Export", icon = "ADD")
+        enable_export.export_type = "OBJECT"
+        enable_export.enabled = True
         # 6 - RIGHT
-        pie.operator("capsule.toggle_export", text= "Disable Export", icon = "X").args = "OBJECT.False"
+        disable_export = pie.operator("capsule.toggle_export", text= "Disable Export", icon = "X")
+        disable_export.export_type = "OBJECT"
+        disable_export.enabled = False
         # 2 - BOTTOM
         pie.operator("wm.call_menu_pie", text= "Set Location", icon = "FILE_FOLDER").name = "pie.location_object"
         # 8 - TOP
@@ -238,9 +234,13 @@ class CAPSULE_OT_PieCollectionMenu(Menu):
         layout = self.layout
         pie = layout.menu_pie()
         # 4 - LEFT
-        pie.operator("capsule.toggle_export", text= "Enable Export", icon = "ADD").args = "GROUP.True"
+        enable_export = pie.operator("capsule.toggle_export", text= "Enable Export", icon = "ADD")
+        enable_export.export_type = "COLLECTION"
+        enable_export.enabled = True
         # 6 - RIGHT
-        pie.operator("capsule.toggle_export", text= "Disable Export", icon = "X").args = "GROUP.False"
+        disable_export = pie.operator("capsule.toggle_export", text= "Disable Export", icon = "X")
+        disable_export.export_type = "COLLECTION"
+        disable_export.enabled = False
         # 2 - BOTTOM
         pie.operator("wm.call_menu_pie", text= "Set Location", icon = "FILE_FOLDER").name = "pie.location_collection"
         # 8 - TOP
