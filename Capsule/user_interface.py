@@ -22,8 +22,6 @@ class CAPSULE_UL_Object(UIList):
         addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
 
-        #layout.alignment = 'LEFT'
-
         # ////////////////
         # DELETED OBJECT LIST ITEM
         no_object = (item.object == None)
@@ -58,11 +56,27 @@ class CAPSULE_UL_Object(UIList):
 
         layout.prop(item, "remove", text= "", icon = "X", emboss= False)
         
+    
+    def filter_items(self, context, data, property):
+        attributes = getattr(data, property)
+        flags = []
+        indices = [i for i in range(len(attributes))]
+        objects = [item.object for item in attributes]
+        helper_funcs = bpy.types.UI_UL_list
 
+        # Filtering by name
+        if self.filter_name:
+            flags = helper_funcs.filter_items_by_name(
+                self.filter_name, self.bitflag_filter_item, objects, "name", 
+                reverse = self.use_filter_sort_reverse)
+        if not flags:
+            flags = [self.bitflag_filter_item] * len(attributes)
 
-    def draw_filter(self, context, layout):
-        # Nothing much to say here, it's usual UI code...
-        row = layout.row()
+        # Sorting by alphanumerics
+        if self.use_filter_sort_alpha:
+            indices = helper_funcs.sort_items_by_name(objects, "name")
+
+        return flags, indices
 
 
 class CAPSULE_UL_Collection(UIList):
@@ -104,9 +118,26 @@ class CAPSULE_UL_Collection(UIList):
 
         layout.prop(item, "remove", text= "", icon = "X", emboss= False)
 
-    def draw_filter(self, context, layout):
-        # Nothing much to say here, it's usual UI code...
-        row = layout.row()
+    def filter_items(self, context, data, property):
+        attributes = getattr(data, property)
+        flags = []
+        indices = [i for i in range(len(attributes))]
+        collections = [item.collection for item in attributes]
+        helper_funcs = bpy.types.UI_UL_list
+
+        # Filtering by name
+        if self.filter_name:
+            flags = helper_funcs.filter_items_by_name(
+                self.filter_name, self.bitflag_filter_item, collections, "name", 
+                reverse = self.use_filter_sort_reverse)
+        if not flags:
+            flags = [self.bitflag_filter_item] * len(attributes)
+
+        # Sorting by alphanumerics
+        if self.use_filter_sort_alpha:
+            indices = helper_funcs.sort_items_by_name(collections, "name")
+
+        return flags, indices
 
 
 class CAPSULE_UL_Path_Default(UIList):
