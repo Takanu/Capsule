@@ -138,6 +138,31 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
     A random assortment of scene-specific properties with some "weird" toggle stuff.
     """
 
+    is_pack_script_scene: BoolProperty(
+        name = "Is Pack Script Test Scene",
+        description = "(Internal) A boolean used to define whether a scene is being used to display a Pack Script test",
+        default = False,
+    )
+    
+    is_pack_script_successful: BoolProperty(
+        name = "Pack Script Test Status",
+        description = "(Internal) Used to define whether or not a Pack Script test completed without errors",
+        default = False,
+    )
+
+    scene_before_test: PointerProperty(
+        type = bpy.types.Scene,
+        name = "Scene Before Test",
+        description = "Stores the scene used for the Pack Script test so it can be seamlessly returned to it when the test is done"
+
+    )
+
+    test_pack_script: PointerProperty(
+        type = bpy.types.Text,
+        name = "Pack Script",
+        description = "Defines the Pack Script to be tested on the Pack Script Target collection",
+    )
+
     # A collection that stores the list of objects that Capsule is currently displaying in the UI list.
     object_list: CollectionProperty(type=ObjectListItem)
 

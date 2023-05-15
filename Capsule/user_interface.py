@@ -205,9 +205,7 @@ class CAPSULE_PT_Selection(Panel):
         preferences = context.preferences
         addon_prefs = preferences.addons[__package__].preferences
         scn = context.scene.CAPScn
-        proxy = context.scene.CAPProxy
-        selectTab = int(str(scn.selection_switch))
-
+        
         layout = self.layout
         
         # UI Prompt for when the .blend Capsule data can no longer be found.
@@ -217,6 +215,19 @@ class CAPSULE_PT_Selection(Panel):
             Draw_CreateCapsuleData(layout)
             return
 
+        if scn.is_pack_script_scene == True:
+            self.draw_pack_script(context, layout)
+        else:
+            self.draw_selection(context, layout)
+
+
+    def draw_selection(self, context, layout):
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+        scn = context.scene.CAPScn
+
+        proxy = context.scene.CAPProxy
+        selectTab = int(str(scn.selection_switch))
         col_selection_title_tab = layout.row(align= True)
         col_selection_title_tab.prop(scn, "selection_switch", expand= True)
 
@@ -315,9 +326,9 @@ class CAPSULE_PT_Selection(Panel):
                 export_options.operator("scene.cap_export", text = "Export All", icon = "EXPORT").set_mode = 'ALL'
                 export_options.operator("scene.cap_export", text = "Export Selected", icon = "EXPORT").set_mode = 'SELECTED_OBJECTS'
 
-                if addon_prefs.use_pack_scripts:
-                    export_options.separator()
-                    export_options.operator("cap.test_pack_script_selection", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_OBJECT'
+                # if addon_prefs.use_pack_scripts:
+                #     export_options.separator()
+                #     export_options.operator("cap.packscript_create_test", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_OBJECT'
                 
                 export_options.separator()
                 export_options.operator("scene.cap_show_preferences", icon = "PREFERENCES")
@@ -439,15 +450,13 @@ class CAPSULE_PT_Selection(Panel):
                     group_layout.prop(proxy, "col_pack_script")
                     group_layout.separator()
 
-                group_layout.separator()
-
                 export_options = layout.column(align = True)
                 export_options.operator("scene.cap_export", text = "Export All", icon = "EXPORT").set_mode = 'ALL'
                 export_options.operator("scene.cap_export", text = "Export Selected", icon = "EXPORT").set_mode = 'SELECTED_COLLECTIONS'
 
-                if addon_prefs.use_pack_scripts:
-                    export_options.separator()
-                    export_options.operator("cap.test_pack_script_selection", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_COLLECTION'
+                # if addon_prefs.use_pack_scripts:
+                #     export_options.separator()
+                #     export_options.operator("cap.packscript_create_test", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_COLLECTION'
                 
                 export_options.separator()
                 export_options.operator("scene.cap_show_preferences", icon = "PREFERENCES")
@@ -459,6 +468,40 @@ class CAPSULE_PT_Selection(Panel):
                 collection_info.label(text= "No collections selected.")
 
             layout.separator()
+        
+    def draw_pack_script(self, context, layout):
+        preferences = context.preferences
+        addon_prefs = preferences.addons[__package__].preferences
+        scn = context.scene.CAPScn
+
+        proxy = context.scene.CAPProxy
+        selectTab = int(str(scn.selection_switch))
+
+        pack_ui = layout.column(align = True)
+        pack_ui.use_property_split = True
+        pack_ui.use_property_decorate = False
+        pack_ui.separator()
+
+        pack_status = pack_ui.box()
+        if scn.is_pack_script_successful is True:
+            pack_status.label(text = "Pack Script executed successfully!")
+            pack_status.label(text = "Check the results in the Result Collection.")
+            pack_ui.separator()
+            pack_ui.separator()
+
+        else:
+            pack_status.label(text = "Pack Script FAILED.")
+            pack_status.label(text = "Retry the test to see the error message again.")
+            pack_ui.separator()
+            pack_ui.separator()
+
+        pack_ui.prop(scn, "test_pack_script")
+        pack_ui.separator()
+        pack_ui.separator()
+        pack_ui.operator("cap.packscript_retry_test", icon = "FILE_REFRESH")
+        pack_ui.operator("cap.packscript_destroy_test", icon = "TRASH")
+        
+        
 
 
 class CAPSULE_PT_List(Panel):

@@ -60,6 +60,7 @@ def DuplicateObject(target):
     # To preserve the scale, it has to be applied.  Sorreh!
     bpy.ops.object.transform_apply(location= False, rotation= False, scale= True)
 
+
 def DuplicateObjects(targets):
     """
     Duplicates the given objects.
@@ -85,6 +86,45 @@ def DuplicateObjects(targets):
 
     # To preserve the scale, it has to be applied.  Sorreh!
     bpy.ops.object.transform_apply(location= False, rotation= False, scale= True)
+
+
+
+# Thanks!  https://blender.stackexchange.com/questions/252364/how-to-duplicate-object-with-independent-modifiers-using-python
+def DuplicateWithDatablocks(context,
+                     object_: bpy.types.Object, 
+                     duplicate_name: str) -> bpy.types.Object:
+    """
+    Duplicates the given object including all datablocks.
+    """
+
+    duplicate = object_.copy()
+    duplicate.data = object_.data.copy()
+    duplicate.name = duplicate_name
+    context.scene.collection.objects.link(duplicate)
+    
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = duplicate
+    duplicate.select_set(True)
+
+    bpy.ops.object.make_single_user(object=True, 
+                                    obdata=True, 
+                                    material=True, 
+                                    animation=True, 
+                                    obdata_animation=True)
+    
+    for particle_system in duplicate.particle_systems:
+        particle_system.settings = particle_system.settings.copy()
+
+    for modifier in duplicate.modifiers:
+        bpy.ops.object.modifier_set_active(modifier=modifier.name)
+        
+        if modifier.type == "NODES":
+            bpy.ops.node.copy_geometry_node_group_assign()
+        elif hasattr(modifier, "texture"):
+            modifier.texture = modifier.texture.copy()
+            
+    return duplicate
+
 
 def DeleteObject(target):
     """

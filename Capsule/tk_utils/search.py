@@ -243,3 +243,102 @@ def GetCollectionObjectTree(context, collection, collection_children):
     
     object_list = ExportTreeSearch(0, max_layers, collection)
     return object_list
+
+
+def GetObjectReferenceTree(target):
+    """
+    Searches recursively for all objects used by another object until all have been found.
+    """
+
+    def recursive_search(objects):
+        for obj in objects:
+            new_objects = [
+                o for o in bpy.data.objects
+                if obj.user_of_id(o) and
+                (o not in objects)
+            ]
+
+            objects += recursive_search(new_objects)
+        return objects
+
+    return recursive_search([target])
+
+
+def FindObjectDependencies(context, targets):
+    """
+    Returns a list of every unique non-object datablock the target objects use.
+    """
+
+    # Object data includes the main datablock that defines
+    # an object (mesh, light, curve, etc)
+    object_data = []
+
+    materials = []
+    actions = []
+    particles = []
+    
+
+    # /////////////////////////
+    # GET UNIQUE OBJECT DATA
+    object_data = set(o.data for o in targets)
+    print(object_data)
+
+
+    # /////////////////////////
+    # GET MATERIALS
+    # The first one is a nested list comprehension, the second flattens nested arrays
+    # and gets the unique values using set()
+    materials = [[slot.material for slot in o.material_slots] 
+                 for o in targets]
+    
+
+    # GET MODIFIER DEPENDENCIES
+    for target in targets:
+        for mod in target.modifiers:
+                        # This needs to intercept both inputs and outputs
+            if mod.type == "NODES":
+
+                if mod.node_group is None:
+                    continue
+                
+                # We first need the NodeSocket types for the input nodes.
+                # the NodeGroup won't give us the set values, just the data layout.
+                input_node = next((node for node in mod.node_group.nodes if node.type == 'GROUP_INPUT'), None)
+                input_props = [prop for prop in input_node.outputs 
+                               if prop.type is not 'GEOMETRY']
+                input_prop_ids = [prop_id for prop_id in mod.keys()
+                        if (prop_id.startswith("Input_") and prop_id[-1].isdigit())]
+                
+                print([prop.type for prop in input_props])
+                
+                i = 0
+                node_mats = []
+                print(input_props)
+                print(input_prop_ids)
+                while i < len(input_props) - 1:
+                    if input_props[i].type == 'MATERIAL':
+                        node_mats.append(mod[input_prop_ids[i]])
+                    i += 1
+
+                materials += node_mats
+                print(node_mats)
+
+            else:
+                materials += [p for p in mod.bl_rna.properties 
+                              if p.type is 'MATERIAL' and not p.is_hidden and not p.is_readonly]
+                
+        # This was a nice bit of code but I can't use it </3
+        # materials += [[p for p in modifier.bl_rna.properties 
+        #                 if p.type is 'MATERIAL' and not p.is_hidden and not p.is_readonly]
+        #                 for modifier in target.modifiers if modifier.type is not 'NODES']
+                        
+
+    # Collapse and create unique lists
+    materials = set(i for j in materials for i in j)
+    print(materials)
+
+    # FIND MATERIALS IN MODIFIERS
+    
+
+
+

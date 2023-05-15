@@ -3,6 +3,7 @@ import bpy, bmesh, time
 from math import *
 
 from .update_list import UpdateCollectionList
+from ..tk_utils import search as search_utils
 
 # COLLECTION DATA PROXY PROPERTIES
 # /////////////////////////////////////////////////

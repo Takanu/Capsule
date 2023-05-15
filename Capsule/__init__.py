@@ -43,6 +43,7 @@ from .export_operators import *
 from .export_presets import *
 from .export_menu import *
 from .ui_operators import *
+from .packscript_operators import *
 
 import rna_keymap_ui
 
@@ -601,7 +602,11 @@ classes = (
     CAPSULE_OT_Show_Preferences,
     CAPSULE_OT_Tutorial_StoredPresets,
     CAPSULE_OT_Tutorial_ActivePresets,
-    CAPSULE_OT_TestPackScript,
+
+    # packscript_operators
+    CAPSULE_OT_PackScript_CreateTest,
+    CAPSULE_OT_PackScript_DestroyTest,
+    CAPSULE_OT_PackScript_RetryTest,
 
     # user_inferface
     CAPSULE_UL_Name,
