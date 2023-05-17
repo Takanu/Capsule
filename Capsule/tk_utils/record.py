@@ -28,15 +28,8 @@ def BuildSceneContext(context):
     # //////////////////////////////////////
     # RECORD AND CHANGE REGIONS
     # If the current context isn't the 3D View, we need to change that before anything else.
+    scene_records['context'] = context.copy()
     scene_records['active_area_type'] = bpy.context.area.type
-
-    # Areas define a unique editor in the subdivided Blender interface
-    # Area Types define what that Area's editor is set to (3D View, Image Editor, etc)
-    # Regions define UI areas that make up an editor.
-    
-    # The view type needs changing and we need it's 3d window area for later
-    context.area.type = 'VIEW_3D'
-    scene_records['3d_region_override'] = context.area.regions[0]
     
 
     # //////////////////////////////////////
@@ -80,11 +73,10 @@ def BuildSceneContext(context):
         # Record object visibility
         # FIXME : hide_viewport is a global property, and isn't the same as Outliner/3D View hides.  Need to get and set that data when fixed.
         # https://devtalk.blender.org/t/view-layer-api-access-wishlist-collection-expand-set/5517
+
         record['hide_viewport'] = item.hide_viewport
         record['hide_select'] = item.hide_select
         record['is_selected'] = item.select_get()
-
-        #print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
 
         item.hide_select = False
 
@@ -93,8 +85,10 @@ def BuildSceneContext(context):
         transform_locks = []
         for i, x in enumerate(item.lock_location):
             transform_locks.append(item.lock_location[i])
+
         for i, x in enumerate(item.lock_rotation):
             transform_locks.append(item.lock_rotation[i])
+
         for i, x in enumerate(item.lock_scale):
             transform_locks.append(item.lock_scale[i])
         
@@ -106,8 +100,7 @@ def BuildSceneContext(context):
         item.lock_scale = (False, False, False)
 
 
-            # If any armatures are in any non-object modes, we need to change this
-        #print("Searching for armatures...")
+        # If any armatures are in any non-object modes, we need to change this
         if item.type == 'ARMATURE':
             mode = object_ops.SwitchObjectMode('OBJECT', item)
             
@@ -125,9 +118,6 @@ def BuildSceneContext(context):
 
             # Placeholder for later, once all constraints are isolated and muted.
             constraint_location = Vector((0.0, 0.0, 0.0))
-
-            #print("true_location", true_location)
-            #print("true_location", true_location)
             record['true_location'] = true_location
             record['constraint_location'] = constraint_location
 
@@ -160,12 +150,7 @@ def BuildSceneContext(context):
             item = record['item']
             record['constraint_location'] = loc_utils.FindWorldSpaceObjectLocation(context, item)
             
-            #print("NEW CONSTRAINT LOCATION", item.name, record['constraint_location'])
-
-            #print("Moving Object...", item.name, record['true_location'])
-            object_transform.MoveObjectFailsafe(item, context, record['true_location'], scene_records['3d_region_override'])
-            #print("New Object Location = ", item.location)
-            #print("New Object Location = ", item.location)
+            object_transform.MoveObjectFailsafe(item, context, record['true_location'])
     
 
     # //////////////////////////////////////
@@ -187,7 +172,7 @@ def BuildSceneContext(context):
     # //////////////////////////////////////
     # CREATE NEW VIEW LAYER
 
-    scene_records['current_view_layer'] = bpy.context.view_layer
+    scene_records['previous_view_layer'] = bpy.context.view_layer
 
     bpy.ops.scene.view_layer_add()
     bpy.context.view_layer.name = ">> Capsule <<"
@@ -195,10 +180,13 @@ def BuildSceneContext(context):
     print(bpy.context.view_layer)
 
 
-
     # Now we can unhide and deselect everything
-    bpy.ops.object.hide_view_clear()
-    bpy.ops.object.select_all(action= 'DESELECT')
+    override = object_ops.Find3DViewContext()
+    with context.temp_override(window = override['window'], area = override['area'], 
+            region = override['region']):
+        
+        bpy.ops.object.hide_view_clear()
+        bpy.ops.object.select_all(action= 'DESELECT')
 
     records = {}
     records['scene'] = scene_records
@@ -218,7 +206,6 @@ def RestoreSceneContext(context, record):
     object_records = record['object']
     collection_records = record['collection']
 
-
     # //////////////////////////////////////
     # RESTORE COLLECTION RECORDS
 
@@ -237,10 +224,7 @@ def RestoreSceneContext(context, record):
         
         # Restore constraint object positions
         if 'constraint_list' in record:
-            #print(record)
-            #print(record)
-            object_transform.MoveObjectFailsafe(item, context, record['constraint_location'], scene_records['3d_region_override'])
-            #print("New Object Location = ", item.name, item.location)
+            object_transform.MoveObjectFailsafe(item, context, record['constraint_location'])
 
             # Restore Constraint Defaults
             for constraint_record in record['constraint_list']:
@@ -249,7 +233,6 @@ def RestoreSceneContext(context, record):
                 item.constraints[index].influence = constraint_record['influence']
         
         # Restore visibility defaults
-        # print('Hide records = ', record['hide_viewport'], ' ', record['hide_select'])
         item.hide_viewport = record['hide_viewport']
         item.hide_select = record['hide_select']
         item.select_set(record['is_selected'])
@@ -277,8 +260,7 @@ def RestoreSceneContext(context, record):
 
     context.window.view_layer = scene_records['capsule_view_layer']
     bpy.ops.scene.view_layer_remove()
-
-    context.window.view_layer = scene_records['current_view_layer']
+    context.window.view_layer = scene_records['previous_view_layer']
 
     # //////////////////////////////////////
     # RESTORE SCENE SELECTIONS
@@ -289,7 +271,6 @@ def RestoreSceneContext(context, record):
     if scene_records['active_object'] is not None:
         bpy.context.view_layer.objects.active = scene_records['active_object']
         bpy.ops.object.select_pattern(pattern = scene_records['active_object'].name)
-        # select_utils.FocusObject(scene_records['active_object'])
 
     if scene_records['active_object'] is None and len(scene_records['selected_objects']) == 0:
         bpy.ops.object.select_all(action= 'DESELECT')
@@ -308,10 +289,8 @@ def RestoreSceneContext(context, record):
 
     # Restore the panel type
     # FIXME : This currently doesn't work with the Blender 2.8 area bug.
-    context.area.type = scene_records['active_area_type']
+    # bpy.context.area.type = scene_records['active_area_type']
     
-
-    #print("Rawr")
 
 
 # FIXME : Check if needed and/or is working.
@@ -329,6 +308,7 @@ def MuteArmatureConstraints(context):
     # We need to do similar constraint evaluation for armatures
     # Find translate constraints. mute them and move the affected bones
     # to make the plugin movement successful.
+
     record = {}
     record['armature_constraints'] = []
     record['armature_objects'] = []
@@ -339,10 +319,10 @@ def MuteArmatureConstraints(context):
                 i = 0
                 for constraint in bone.constraints:
                     if item not in record['armature_objects']:
-                        trueLocation = loc_utils.FindWorldSpaceBoneLocation(item, context, bone)
-                        constraintLocation = Vector((bone.location[0], bone.location[1], bone.location[2]))
+                        true_location = loc_utils.FindWorldSpaceBoneLocation(item, context, bone)
+                        constraint_location = Vector((bone.location[0], bone.location[1], bone.location[2]))
 
-                        entry = {'object_name': item.name, 'bone_name': bone.name, 'true_location': trueLocation, 'constraint_location': constraintLocation}
+                        entry = {'object_name': item.name, 'bone_name': bone.name, 'true_location': true_location, 'constraint_location': constraint_location}
                         record['armature_objects'].append(entry)
 
                     entry = {'object_name': item.name, 'bone_name': bone.name, 'index': i, 'enabled': constraint.mute, 'influence': constraint.influence}
@@ -350,8 +330,6 @@ def MuteArmatureConstraints(context):
 
                     i += 1
 
-    #print("-"*40)
-    #print("-"*40)
 
     # NOW WE CAN MUTE THEM
     for entry in record['armature_constraints']:
@@ -364,19 +342,12 @@ def MuteArmatureConstraints(context):
                 constraint.mute = True
                 constraint.influence = 0.0
 
-    #print("-"*40)
-    #print("-"*40)
-
     # Reset the constraint location now we have a 'true' location
     for entry in record['armature_objects']:
         item = context.scene.objects[entry['object_name']]
         for bone in item.pose.bones:
             if bone.name == entry['bone_name']:
                 entry['constraint_location'] = loc_utils.FindWorldSpaceBoneLocation(item, context, bone)
-                #print("NEW CONSTRAINT LOCATION", item.name, bone.name, entry['constraint_location'])
-
-    #print("-"*40)
-    #print("-"*40)
 
     # Now all problematic constraints have been turned off, we can safely move
     # objects to their initial positions
@@ -384,12 +355,7 @@ def MuteArmatureConstraints(context):
         item = context.scene.objects[entry['object_name']]
         for bone in item.pose.bones:
             if bone.name == entry['bone_name']:
-                #print("Moving Bone...", item.name, bone.name, entry['true_location'])
                 object_transform.MoveBone(item, bone, context, entry['true_location'])
-                #print("New Bone Location = ", bone.location)
-
-    #print("-"*40)
-    #print("-"*40)
 
     return record
 
@@ -407,9 +373,7 @@ def RestoreArmatureConstraints(context, record):
         item = context.scene.objects[entry['object_name']]
         for bone in item.pose.bones:
             if bone.name == entry['bone_name']:
-                #print("Moving Bone...", item.name, bone.name)
                 object_transform.MoveBone(item, bone, context, entry['constraint_location'])
-                #print("New Bone Location = ", bone.location)
 
     # Restore Constraint Defaults
     for entry in record['armature_constraints']:
@@ -517,7 +481,6 @@ def CheckCapsuleErrors(context, target_objects = None, target_collections = None
     # COLLECTIONS
 
     # TODO: The Collection should be selected, not the objects!
-
     error_collections = {}
     error_collections['no_export'] = []
     error_collections['no_location'] = []
@@ -595,7 +558,6 @@ def CheckCapsuleErrors(context, target_objects = None, target_collections = None
         enumIndex -= 1
 
         default_file_path = cap_file.location_presets[enumIndex].path
-        #print("Checking File Paths...", default_file_path)
 
         if default_file_path == "":
             statement = "The File Location '" + cap_file.location_presets[enumIndex].name + "' has no file path.  Please set one before attempting to export."
@@ -613,8 +575,9 @@ def CheckCapsuleErrors(context, target_objects = None, target_collections = None
     
     # # Check all collected sub-directory names for invalid characters if we can't replace them.
     if addon_prefs.substitute_directories is False:
+
         for name in sub_directory_check:
-            #print("Checking Directory...", name)
+
             result = path_utils.CheckSystemChar(context, name[1])
             returnStatement = ""
 

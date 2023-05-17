@@ -171,6 +171,7 @@ class CAPSULE_OT_Export(Operator):
         # /////////////////////////////////////////////////
         # EXPORT SUMMARY  
 
+        print(">> RESTORING SCENE <<")
         export_info = GetExportSummary(export_stats)
         self.report({export_info[0]}, export_info[1])
 
@@ -384,7 +385,7 @@ def PerformExportTask(context, export_task, export_stats):
 
     export_stats['export_task_process_time'] += time.time() - export_stats['_last_time']
     export_stats['_last_time'] = time.time()
-
+    
     export_status = context.scene.CAPStatus
     export_status.target_name = export_task['export_name']
     export_status.target_status = 'BEFORE_EXPORT'

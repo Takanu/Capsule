@@ -69,7 +69,7 @@ def MoveObject(target, context, location):
     context.scene.tool_settings.use_keyframe_insert_auto = auto_key
     target.lock_location = lock_transform
 
-def MoveObjectFailsafe(target, context, location, region):
+def MoveObjectFailsafe(target, context, location):
     """
     Safely moves the given object to the given location.  Will ensure nothing is animated or screwed up in the process.
     WORKAROUND FOR BLENDER 2.8 CRASH FUNTIMES.
@@ -413,16 +413,7 @@ def MoveAll(target, context, location):
     bpy.ops.view3d.snap_cursor_to_selected()
     root_location = (0.0, 0.0, 0.0)
 
-    #print('Getting cursor...')
-
     root_location = context.scene.cursor.location
-
-    #print('Did it break?  aaaaaaaa')
-
-    # for area in context.screen.areas:
-    #     if area.type == 'VIEW_3D':
-    #         #print(area.spaces[0].cursor.location)
-    #         root_location = area.spaces[0].cursor.location
 
     # Calculate the movement difference
     locationDiff = []
@@ -435,8 +426,6 @@ def MoveAll(target, context, location):
 
     previous_mode = bpy.context.active_object.mode
 
-    #print('ok now moving for realsies - ', locationDiff)
-
     # 2.79 translate
     bpy.ops.transform.translate(
         value = locationDiff,
@@ -447,8 +436,6 @@ def MoveAll(target, context, location):
         snap = False,
         release_confirm = False,
     )
-    
-    #print('All objects moved, resetting cursor...')
 
     bpy.ops.object.mode_set(mode=previous_mode)
 
@@ -461,6 +448,7 @@ def MoveAll(target, context, location):
 
     #print('Move finished.')
 
+
 def MoveAllFailsafe(context, target, destination):
     """
     Moves every object in the scene safely
@@ -469,45 +457,33 @@ def MoveAllFailsafe(context, target, destination):
     # This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
-    #print('MOVEMENT TEST')
+    target_location = [0.0, 0.0, 0.0]
+    target_location[0] = destination[0]
+    target_location[1] = destination[1]
+    target_location[2] = destination[2]
+
+    # Prevent auto keyframing and location lock from being active
+    auto_key = context.scene.tool_settings.use_keyframe_insert_auto
+    lock_transform = target.lock_location
+
+    context.scene.tool_settings.use_keyframe_insert_auto = False
+    target.lock_location = (False, False, False)
+
+    # Save the current cursor location
+    cursor_loc = bpy.data.scenes[context.scene.name].cursor.location
+    previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
 
     override = Find3DViewContext()
-
-    with context.temp_override(window = override['window'], area = override['area'], 
-            region = override['region']):
-
-        target_location = [0.0, 0.0, 0.0]
-        target_location[0] = destination[0]
-        target_location[1] = destination[1]
-        target_location[2] = destination[2]
-
-        # Prevent auto keyframing and location lock from being active
-        auto_key = context.scene.tool_settings.use_keyframe_insert_auto
-        lock_transform = target.lock_location
-
-        context.scene.tool_settings.use_keyframe_insert_auto = False
-        target.lock_location = (False, False, False)
-
-        # Save the current cursor location
-        cursor_loc = bpy.data.scenes[context.scene.name].cursor.location
-        previous_cursor_loc = [cursor_loc[0], cursor_loc[1], cursor_loc[2]]
+    with context.temp_override(area = override['area']):
 
         # Calculate the translation vector using the 3D cursor
-        bpy.ops.object.select_all(action= 'DESELECT')
+        bpy.ops.object.select_all(action = 'DESELECT') # CRASH CRASH CRASH CRASH CRASH CRASH
         FocusObject(target)
-        bpy.ops.view3d.snap_cursor_to_selected()
+    
+        bpy.ops.view3d.snap_cursor_to_selected() # CRASH CRASH CRASH CRASH CRASH CRASH
+
         root_location = (0.0, 0.0, 0.0)
-
-        #print('Getting cursor...')
-
         root_location = context.scene.cursor.location
-
-        #print('Did it break?  aaaaaaaa')
-
-        # for area in context.screen.areas:
-        #     if area.type == 'VIEW_3D':
-        #         #print(area.spaces[0].cursor.location)
-        #         root_location = area.spaces[0].cursor.location
 
         # Calculate the movement difference
         locationDiff = []
@@ -516,13 +492,14 @@ def MoveAllFailsafe(context, target, destination):
         locationDiff.append(target_location[2] - root_location[2])
 
         bpy.ops.object.select_all(action= 'SELECT')
+
         ActivateObject(target)
 
         previous_mode = bpy.context.active_object.mode
 
-        #print('ok now moving for realsies - ', locationDiff)
+        # This form of translation is required in order to avoid any issues related to parent/child
+        # and constraints when moving objects individually.
 
-        # NEW Translate
         bpy.ops.transform.translate(
             value = locationDiff,
             constraint_axis = (False, False, False),
@@ -533,18 +510,16 @@ def MoveAllFailsafe(context, target, destination):
             release_confirm = False,
         )
         
-        #print('All objects moved, resetting cursor...')
-
         bpy.ops.object.mode_set(mode=previous_mode)
 
-        # Position the cursor back to it's original location
-        bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
+    # Position the cursor back to it's original location
+    bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc
 
-        # Restore the previous setting
-        context.scene.tool_settings.use_keyframe_insert_auto = auto_key
-        target.lock_location = lock_transform
+    # Restore the previous setting
+    context.scene.tool_settings.use_keyframe_insert_auto = auto_key
+    target.lock_location = lock_transform
 
-        #print('Move finished.')
+    print('Move finished.')
 
 def RotateAll(target, context, rotation, constraintAxis):
     """
