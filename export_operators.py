@@ -375,6 +375,9 @@ def PerformExportTask(context, export_task, export_stats):
     if export_task["origin_object"] is not None:
 
         export_task["origin_object_loc"] = GetOriginObjectLocation(context, export_task['export_name'], export_task['origin_object'])
+        
+        # TODO - If the targets have no modifiers, constraints or parent relationships that can cause problems,
+        # only move the target objects to improve performance.
         object_transform.MoveAllFailsafe(context, export_task["origin_object"], [0.0, 0.0, 0.0])
     
 
@@ -492,6 +495,9 @@ def PerformExportTask(context, export_task, export_stats):
 
     # Reverse movement and rotation
     if export_task["origin_object"] is not None:
+
+        # TODO - If the targets have no modifiers, constraints or parent relationships that can cause problems,
+        # only move the target objects to improve performance.
         object_transform.MoveAllFailsafe(context, export_task["origin_object"], 
             export_task["origin_object_loc"]['location'])
 
@@ -530,6 +536,10 @@ def EmergencySceneRestore(context, export_task):
 
     # Reverse movement and rotation
     if export_task["origin_object"] is not None:
+        
+        # TODO - If the targets have no modifiers, constraints or parent relationships that can cause problems,
+        # only move the target objects to improve performance.
+
         object_transform.MoveAllFailsafe(context, export_task["origin_object"], 
             export_task["origin_object_loc"]['location'])
 
