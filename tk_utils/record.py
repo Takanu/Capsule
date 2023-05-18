@@ -28,7 +28,6 @@ def BuildSceneContext(context):
     # //////////////////////////////////////
     # RECORD AND CHANGE REGIONS
     # If the current context isn't the 3D View, we need to change that before anything else.
-    scene_records['context'] = context.copy()
     scene_records['active_area_type'] = bpy.context.area.type
     
 

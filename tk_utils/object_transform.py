@@ -9,6 +9,12 @@ def MoveAllFailsafe(context, move_target, destination):
     Moves every object in the scene safely.
     BLENDER 2.8 - This also uses a region to ensure that it moves in a 3D View region that hasnt been deallocated.
     """
+    # ///////////////////////////////
+    # WARNING - WARNING - WARNING - WARNING - WARNING - WARNING 
+    # The context override is known to crash only when testing.
+    # Under normal circumstances this function is completely safe.
+    # ///////////////////////////////
+
     # This doesnt need the cursor, and will ensure nothing is animated
 	# in the process
 
@@ -32,19 +38,19 @@ def MoveAllFailsafe(context, move_target, destination):
     with context.temp_override(area = override['area']):
 
         # Calculate the translation vector using the 3D cursor
-        bpy.ops.object.select_all(action = 'DESELECT') # CRASH CRASH CRASH CRASH CRASH CRASH
+        bpy.ops.object.select_all(action = 'DESELECT')
         FocusObject(move_target)
     
-        bpy.ops.view3d.snap_cursor_to_selected() # CRASH CRASH CRASH CRASH CRASH CRASH
+        bpy.ops.view3d.snap_cursor_to_selected()
 
         root_location = (0.0, 0.0, 0.0)
         root_location = context.scene.cursor.location
 
         # Calculate the movement difference
-        location_diff = []
-        location_diff.append(location[0] - root_location[0])
-        location_diff.append(location[1] - root_location[1])
-        location_diff.append(location[2] - root_location[2])
+        location_diff = Vector((0.0, 0.0, 0.0))
+        location_diff.x = (location[0] - root_location[0])
+        location_diff.y = (location[1] - root_location[1])
+        location_diff.z = (location[2] - root_location[2])
 
         bpy.ops.object.select_all(action= 'SELECT')
 
@@ -65,7 +71,7 @@ def MoveAllFailsafe(context, move_target, destination):
             release_confirm = False,
         )
         
-        bpy.ops.object.mode_set(mode=previous_mode)
+        bpy.ops.object.mode_set(mode = previous_mode)
 
     # Position the cursor back to it's original location
     bpy.data.scenes[bpy.context.scene.name].cursor.location = previous_cursor_loc

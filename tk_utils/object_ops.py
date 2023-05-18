@@ -14,10 +14,6 @@ def Find3DViewContext():
                 if area.type == type:
                     return area
 
-    for ns3d in getArea('VIEW_3D').spaces:
-        if ns3d.type == "VIEW_3D":
-            break
-
     # https://blender.stackexchange.com/questions/15118/how-do-i-override-context-for-bpy-ops-mesh-loopcut
     win      = bpy.context.window
     scr      = win.screen
