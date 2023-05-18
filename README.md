@@ -1,4 +1,6 @@
 
+![](img_readme/capsule_banner.png)
+
 Capsule is a plugin for Blender that makes the process of exporting quick and seamless, leveraging Blender's inbuilt export formats to let you export hundreds of assets into multiple formats with a single click.
 
 
