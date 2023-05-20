@@ -16,7 +16,7 @@ from . import export_presets
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
 
 class CAPSULE_OT_Add_Path(Operator):
-    """Create a new location."""
+    """Create a new file location"""
 
     bl_idname = "scene.cap_addpath"
     bl_label = "Add"
@@ -46,8 +46,8 @@ class CAPSULE_OT_Add_Path(Operator):
 
 class CAPSULE_OT_Delete_Path(Operator):
     """
-    Delete the selected location from the list.  This will also set the Location Preset of all
-    objects and collections that used this selected location to 'None'
+    Delete the selected file location from the list.  This will also set the file location of all
+    objects and collections that used this to 'None'
     """
 
     bl_idname = "scene.cap_deletepath"
@@ -89,11 +89,11 @@ class CAPSULE_OT_Delete_Path(Operator):
 
         return {'FINISHED'}
 
-class CAPSULE_OT_Add_Location_Path_Tag(Operator):
-    """Adds a new path tag to the currently selected path."""
+class CAPSULE_OT_Add_File_Location_Tag(Operator):
+    """Adds a new file location tag to the currently selected location.  These are used to auto-name file structures with information about the export like file name, time, etc"""
 
-    bl_idname = "scene.cap_add_location_path_tag"
-    bl_label = "Add Path Tag"
+    bl_idname = "scene.cap_add_file_location_tag"
+    bl_label = "Add File Location Tag"
 
     path_tags: EnumProperty(
         name = "Add Path Tag",
@@ -144,63 +144,9 @@ class CAPSULE_OT_Add_Location_Path_Tag(Operator):
 
         return {'FINISHED'}
 
-class CAPSULE_OT_Add_ExportPreset_Path_Tag(Operator):
-    """Adds a new path tag to the current Export Preset."""
-
-    bl_idname = "scene.cap_add_exportpreset_path_tag"
-    bl_label = "Add Path Tag"
-
-    path_tags: EnumProperty(
-        name = "Add Path Tag",
-        description = "",
-        items =  (
-        ('export_name', 'Export Name', 'Adds a folder with the name of the Object or Collection being exported.'),
-        # ('object_type', 'Object Type', 'Adds a folder with the object type.'),
-        # ('collection', 'Collection Name', 'Adds a folder with the collection name.'),
-        ('blend_file_name', 'Blend File Name', 'Adds a folder with the blend file name.'),
-        ('location_preset_name', 'Location Preset Name', 'Adds a folder with the Location Preset name used on export.'),
-        # ('export_preset_name', 'Export Preset Name', 'Adds a folder with the Export Preset name used on export.'),
-        ('export_date_ymd', 'Export Date (Year-Month-Day)', 'Adds a folder with the date of the export.'),
-        ('export_date_dmy', 'Export Date (Day-Month-Year)', 'Adds a folder with the date of the export.'),
-        ('export_date_mdy', 'Export Date (Month-Year-Day)', 'Adds a folder with the date of the export.'),
-        ('export_time_hm', 'Export Time (Hour-Minute)', 'Adds a folder with the time of the export.'),
-        ('export_time_hms', 'Export Time (Hour-Minute-Second)', 'Adds a folder with the time of the export.'),
-        ),
-    )
-
-    def execute(self, context):
-        #print(self)
-
-        preferences = context.preferences
-        addon_prefs = preferences.addons[__package__].preferences
-        cap_file = bpy.data.objects[addon_prefs.default_datablock].CAPFile
-        selected_export_preset = cap_file.export_presets[cap_file.export_presets_listindex]
-
-        # get the selected path
-        new_path = selected_export_preset.sub_directory
-        end_path = ""
-
-        # directory failsafe
-        if platform.system() == 'Windows':
-            if new_path.endswith("\\") == False and new_path.endswith("//") == False:
-                new_path += "\\"
-            end_path = "\\"
-        else:
-            if new_path.endswith("/") == False:
-                new_path += "/"
-            end_path = "\\"
-
-        # insert the selected option into the currently selected path
-        new_path += "^"
-        new_path += self.path_tags
-        new_path += "^" + end_path
-        
-        selected_export_preset.sub_directory = new_path
-
-        return {'FINISHED'}
 
 class CAPSULE_OT_Add_Export(Operator):
-    """Create a new file preset."""
+    """Creates a new Export Preset"""
 
     bl_idname = "scene.cap_addexport"
     bl_label = "Add"
@@ -236,8 +182,8 @@ class CAPSULE_OT_Add_Export(Operator):
 
 class CAPSULE_OT_Delete_Export(Operator):
     """
-    Delete the selected export preset from the list.  This will also set the Location Preset of all
-    objects and collections that used this selected location to 'None'
+    Delete the selected export preset from the list.  This will also set the Export Preset of all
+    objects and collections that used this to 'None'
     """
 
     bl_idname = "scene.cap_deleteexport"
@@ -292,43 +238,8 @@ class CAPSULE_OT_Delete_Export(Operator):
         return {'FINISHED'}
 
 
-class CAPSULE_OT_Shift_Path_Up(Operator):
-    """Move the current entry in the list up by one"""
-
-    bl_idname = "scene.cap_shiftup"
-    bl_label = "Add"
-
-    def execute(self, context):
-        #print(self)
-
-        scn = context.scene.CAPScn
-        obj = context.active_object.CAPObj
-
-        scn.path_defaults.move(scn.path_list_index, scn.path_list_index - 1)
-        scn.path_list_index -= 1
-
-        return {'FINISHED'}
-
-class CAPSULE_OT_Shift_Path_Down(Operator):
-    """Move the current entry in the list down by one"""
-
-    bl_idname = "scene.cap_shiftdown"
-    bl_label = "Remove"
-
-    def execute(self, context):
-        #print(self)
-
-        scn = context.scene.CAPScn
-        obj = context.active_object.CAPObj
-
-        scn.path_defaults.move(scn.path_list_index, scn.path_list_index + 1)
-        scn.path_list_index += 1
-
-        return {'FINISHED'}
-
-
 class CAPSULE_OT_Clear_List(Operator):
-    """Delete all objects from the export list, and un-mark them for export"""
+    """Delete all objects or collection from the export list, unmarking them for export"""
 
     bl_idname = "scene.cap_clearlist"
     bl_label = "Delete All"
@@ -356,7 +267,7 @@ class CAPSULE_OT_Clear_List(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Refresh_List(Operator):
-    """Rebuild the list based on available objects or collections in the scene."""
+    """Refreshes the list of objects or collections marked for export in the scene.  In most cases Capsule can keep track of changes in the scene automatically"""
 
     bl_idname = "scene.cap_refreshlist"
     bl_label = "Refresh"
@@ -389,7 +300,7 @@ class CAPSULE_OT_Refresh_List(Operator):
 
 
 class CAPSULE_OT_Reset_Properties(Operator):
-    """Resets all assigned export properties to every Object and Collection in every scene, and clears Export Lists"""
+    """Resets all assigned export properties to every Object and Collection in every scene, and clears both Export Lists"""
 
     bl_idname = "scene.cap_resetsceneprops"
     bl_label = "Reset Scene"
@@ -434,47 +345,8 @@ class CAPSULE_OT_Reset_Properties(Operator):
         return {'FINISHED'}
 
 
-class CAPSULE_OT_UI_Group_Separate(Operator):
-    """Toggle the drop-down menu for separate collection export options"""
-
-    bl_idname = "scene.cap_grpseparate"
-    bl_label = ""
-
-    def execute(self, context):
-        #print(self)
-
-        scn = context.scene.CAPScn
-        ui = context.scene.CAPUI
-
-        if ui.group_separate_dropdown is True:
-            ui.group_separate_dropdown = False
-        else:
-            ui.group_separate_dropdown = True
-
-        return {'FINISHED'}
-
-class CAPSULE_OT_UI_Group_Options(Operator):
-    """Toggle the drop-down menu for separate collection export options"""
-
-    bl_idname = "scene.cap_grpoptions"
-    bl_label = ""
-
-    def execute(self, context):
-        #print(self)
-
-        scn = context.scene.CAPScn
-        ui = context.scene.CAPUI
-
-        if ui.group_options_dropdown is True:
-            ui.group_options_dropdown = False
-        else:
-            ui.group_options_dropdown = True
-
-        return {'FINISHED'}
-
-
 class CAPSULE_OT_Create_ExportData(Operator):
-    """Create a new empty object for which Capsule data is stored, and where both Active Export Presets and other scene data is stored."""
+    """Create a new empty object for which Capsule data is stored and where both Active Export Presets and other scene data is stored"""
 
     bl_idname = "cap.exportdata_create"
     bl_label = "Create Capsule Data"
@@ -514,12 +386,12 @@ class CAPSULE_OT_Create_ExportData(Operator):
             bpy.ops.object.select_all(action ='DESELECT')
             bpy.ops.object.empty_add(type = 'CIRCLE') # apparently using plain axes causes a crash.
 
-            defaultDatablock = bpy.context.view_layer.objects.active
-            defaultDatablock.name = addon_prefs.default_datablock
-            defaultDatablock.hide_viewport = True
-            defaultDatablock.hide_render = True
-            defaultDatablock.hide_select = True
-            defaultDatablock.CAPFile.is_storage_object = True
+            default_datablock = bpy.context.view_layer.objects.active
+            default_datablock.name = addon_prefs.default_datablock
+            default_datablock.hide_viewport = True
+            default_datablock.hide_render = True
+            default_datablock.hide_select = True
+            default_datablock.CAPFile.is_storage_object = True
             addon_prefs.data_missing = False
 
             context.view_layer.objects.active = prev_active_object
@@ -540,9 +412,9 @@ class CAPSULE_OT_Create_ExportData(Operator):
 
 
 class CAPSULE_OT_Add_Stored_Presets(Operator):
-    """Add the currently selected saved preset into the Active Export Presets list, enabling it's use for exports in this .blend file."""
+    """Add the currently selected Stored Export Preset into the Active Export Presets list, enabling it's use for exports in this .blend file"""
     bl_idname = "cap.create_current_preset"
-    bl_label = "Default Presets"
+    bl_label = "Activate Selected"
 
     @classmethod
     def poll(cls, context):
@@ -570,23 +442,9 @@ class CAPSULE_OT_Add_Stored_Presets(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Delete_Presets(Operator):
-    """Delete the currently selected saved preset."""
-    bl_idname = "cap.delete_global_preset"
+    """Deletes the currently selected Export Preset"""
+    bl_idname = "cap.delete_stored_export_preset"
     bl_label = "Store Preset"
-
-    # Removed Default Export Presets in 1.33, any preset can now be deleted.
-    # @classmethod
-    # def poll(cls, context):
-    #     preferences = context.preferences
-    #     addon_prefs = preferences.addons[__package__].preferences
-
-    #     if len(addon_prefs.saved_export_presets) > 0:
-    #         export = addon_prefs.saved_export_presets[addon_prefs.saved_export_presets_index]
-            
-    #         if export.x_global_user_deletable is True:
-    #             return True
-
-    #     return False
 
     def execute(self, context):
 
@@ -605,8 +463,8 @@ class CAPSULE_OT_Delete_Presets(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Store_Presets(Operator):
-    """Store the currently selected export preset as a saved preset, to enable it's use in across .blend files."""
-    bl_idname = "cap.add_global_preset"
+    """Saves the currently selected export preset to your Stored Export Presets list, to enable it's use in across .blend files"""
+    bl_idname = "cap.store_active_export_preset"
     bl_label = "Store Preset"
 
     @classmethod
@@ -636,7 +494,7 @@ class CAPSULE_OT_Store_Presets(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Show_Preferences(Operator):
-    """Opens a window to the Capsule Addon Preferences menu"""
+    """Opens a window to the Capsule Addon Preferences Menu"""
     bl_idname = "scene.cap_show_preferences"
     bl_label = "Show Addon Preferences"
 
@@ -665,8 +523,9 @@ class CAPSULE_OT_Tutorial_StoredPresets(Operator):
             self.layout.label(text = "Stored Export Presets are export settings you want to use to store")
             self.layout.label(text = "and use in different .blend files.")
             self.layout.label(text = "")
-            self.layout.label(text = "If Auto-Save Preferences is enabled the presets you store will be")
-            self.layout.label(text = "saved when you close the Blender Preferences window.")
+            self.layout.label(text = "If Auto-Save Preferences is enabled, the presets you store will be")
+            self.layout.label(text = "saved when you close the Blender Preferences window.  Otherwise you")
+            self.layout.label(text = "will need to use the 'Save Preferences' button in the bottom-left.")
 
         # Get the current export data
         bpy.context.window_manager.popup_menu(tutorial_layout, title="Stored Export Presets", icon='HELP')

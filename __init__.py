@@ -203,7 +203,7 @@ class CAP_AddonPreferences(AddonPreferences):
             savedpresets_list.operator("cap.create_current_preset", text= "Activate Selected", icon = "EXPORT")
 
             savedpresets_listedit = savedpresets_items.column(align= True)
-            savedpresets_listedit.operator("cap.delete_global_preset", text= "", icon = "REMOVE")
+            savedpresets_listedit.operator("cap.delete_stored_export_preset", text= "", icon = "REMOVE")
 
             
 
@@ -229,7 +229,7 @@ class CAP_AddonPreferences(AddonPreferences):
             col_defaultslist = row_defaults.column(align= True)
             col_defaultslist.template_list("CAPSULE_UL_Export_Default", "default", cap_file, "export_presets", cap_file, "export_presets_listindex", rows=3, maxrows=6)
             col_defaultslist.separator()
-            col_defaultslist.operator("cap.add_global_preset", text= "Store Selected", icon = "IMPORT")
+            col_defaultslist.operator("cap.store_active_export_preset", text= "Store Selected", icon = "IMPORT")
             col_defaultslist.separator()
 
             col_defaultslist_options = row_defaults.column(align= True)
@@ -584,17 +584,13 @@ classes = (
     # ui_operators
     CAPSULE_OT_Add_Path,
     CAPSULE_OT_Delete_Path,
-    CAPSULE_OT_Add_Location_Path_Tag,
-    CAPSULE_OT_Add_ExportPreset_Path_Tag,
+    CAPSULE_OT_Add_File_Location_Tag,
     CAPSULE_OT_Add_Export,
     CAPSULE_OT_Delete_Export,
-    CAPSULE_OT_Shift_Path_Up,
-    CAPSULE_OT_Shift_Path_Down,
+
     CAPSULE_OT_Clear_List,
     CAPSULE_OT_Refresh_List,
     CAPSULE_OT_Reset_Properties,
-    CAPSULE_OT_UI_Group_Separate,
-    CAPSULE_OT_UI_Group_Options,
     CAPSULE_OT_Create_ExportData,
     CAPSULE_OT_Add_Stored_Presets,
     CAPSULE_OT_Delete_Presets,

@@ -679,8 +679,6 @@ class CAPSULE_PT_Location(Panel):
         row_location = col_location.column(align= True)
         row_location.operator("scene.cap_addpath", text= "", icon = "ADD")
         row_location.operator("scene.cap_deletepath", text= "", icon = "REMOVE")
-        #row_location.operator("scene.cap_shiftup", text= "", icon = "TRIA_UP")
-        #row_location.operator("scene.cap_shiftdown", text= "", icon = "TRIA_DOWN")
 
         location_options = layout.column(align= False)
         location_options.use_property_split = True
@@ -693,7 +691,7 @@ class CAPSULE_PT_Location(Panel):
 
         if cap_file.location_presets_listindex > -1 and cap_file.location_presets_listindex < count:
             location_options.prop(cap_file.location_presets[cap_file.location_presets_listindex], "path")
-            location_options.operator_menu_enum("scene.cap_add_location_path_tag", "path_tags")
+            location_options.operator_menu_enum("scene.cap_add_file_location_tag", "path_tags")
 
 
 
