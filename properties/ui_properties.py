@@ -91,23 +91,23 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
 
     obj_enable_export: BoolProperty(
         name = "Enable Export",
-        description = "Enables or disables the ability to export this object.",
+        description = "Enable or disable exports of this Object using Capsule",
         default = False,
         update = CAP_Update_ProxyObj_EnableExport
     )
 
     obj_origin_point: EnumProperty(
         name = "Origin Export",
-        description = "Determines what the origin point of the exported file is set to.",
+        description = "Determine the location of the origin point upon export",
         items =  (
-        ('Object', 'Object', "Sets the exported origin point to the object's origin point."),
-        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
+        ('Object', 'Object', "Set the exported origin point to the object's origin point"),
+        ('Scene', 'Scene', "Keep the exported origin point to the scene's origin point")),
         update = CAP_Update_ProxyObj_OriginPoint
     )
 
     obj_object_children: EnumProperty(
         name = "Child Objects",
-        description = "Lets you set how children of an object are included in the export",
+        description = "Set how children of an object are included in the export",
         items =  (
         ('All', 'All', "Will export all children of this object"),
         ('None', 'None', "No object children will be exported"),
@@ -121,15 +121,15 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
     )
 
     obj_location_preset: EnumProperty(
-        name = "File Location",
-        description = "Defines the file path that the object will be exported to.",
+        name = "Export Location",
+        description = "Select the file path that the object will be exported to",
         items = GetLocationPresets,
         update = CAP_Update_ProxyObj_LocationPreset
     )
 
     obj_export_preset: EnumProperty(
         name = "Export Preset",
-        description = "Defines the export settings used on the object.",
+        description = "Select the Export Preset used to export this object",
         items = GetExportDefaults,
         update = CAP_Update_ProxyObj_ExportPreset
     )
@@ -137,7 +137,7 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
     obj_pack_script: PointerProperty(
         type = bpy.types.Text,
         name = "Pack Script",
-        description = "(Optional) Defines a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        description = "(Optional) Define a python script that will be executed just before and after Capsule exports the object to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
         update = CAP_Update_ProxyObj_PackScript,
     )
     
@@ -146,30 +146,31 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
     
     col_enable_export: BoolProperty(
         name = "Export Collection",
-        description = "Enables or disables the ability to export this collection.",
+        description = "Enable or disable exports of this Collection using Capsule",
         default = False,
         update = CAP_Update_ProxyCol_EnableExport
     )
     
     col_origin_point: EnumProperty(
         name = "Origin Export",
-        description = "Determines what the origin point of the exported file is set to.",
+        description = "Determine the location of the origin point upon export",
         items =  (
-        ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object."),
-        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point.")),
+        ('Object', 'Object', "Set the exported origin point to the origin point of a chosen object"),
+        ('Scene', 'Scene', "Keep the exported origin point to the scene's origin point")),
         update = CAP_Update_ProxyCol_OriginPoint,
     )
         
     col_root_object: PointerProperty(
         type = bpy.types.Object,
         name = "Origin Object",
-        description = "Defines the origin point of the exported collection object.",
+        description = "Define the origin point of the exported collection object",
         update = CAP_Update_ProxyCol_RootObject,
     )
 
+    # NOTE: Currently not used due to extra complexities in searching for children within collections.
     col_object_children: EnumProperty(
         name = "Child Objects",
-        description = "Lets you set how children of an exportable object are included in the export.  This includes any objects found from the children of collections inside this collection",
+        description = "Set how children of an exportable object are included in the export.  This includes any objects found from the children of collections inside this collection",
         items =  (
         ('All', 'All', "Will export all children of an exportable object"),
         ('None', 'None', "No object children will be exported"),
@@ -184,7 +185,7 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
 
     col_collection_children: EnumProperty(
         name = "Child Collections",
-        description = "Lets you set how children of a collection are included in the export.",
+        description = "Set how children of a collection are included in the export",
         items =  (
         ('All', 'All', "Will export the children of this collection as well as every object associated to a child of this collection."),
         ('None', 'None', "Will only export objects that are a child of this collection."),
@@ -198,15 +199,15 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
     )
 
     col_location_preset: EnumProperty(
-        name = "File Location",
-        description = "Defines the Location that the collection will be exported to.",
+        name = "Export Location",
+        description = "Select the file path that the collection will be exported to",
         items = GetLocationPresets,
         update = CAP_Update_ProxyCol_LocationPreset,
     )
 
     col_export_preset: EnumProperty(
         name = "Export Preset",
-        description = "Defines the export settings used on the collection.",
+        description = "Select the Export Preset used to export this collection",
         items = GetExportDefaults,
         update = CAP_Update_ProxyCol_ExportPreset
     )
@@ -214,6 +215,6 @@ class CAPSULE_Proxy_Properties(PropertyGroup):
     col_pack_script: PointerProperty(
         type = bpy.types.Text,
         name = "Pack Script",
-        description = "(Optional) Defines a python script that will be executed just before and after Capsule exports the collection to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        description = "(Optional) Define a python script that will be executed just before and after Capsule exports the collection to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
         update = CAP_Update_ProxyCollectionOverride,
     )

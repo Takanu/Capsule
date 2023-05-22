@@ -639,7 +639,7 @@ class CAPSULE_PT_Location(Panel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "scene"
-    bl_label = "File Locations"
+    bl_label = "Export Locations"
     bl_parent_id = "CAPSULE_PT_Header"
 
     # @classmethod

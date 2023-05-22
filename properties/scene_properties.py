@@ -19,7 +19,7 @@ from ..tk_utils.search import GetSelectedCollections
 
 class ObjectListItem(PropertyGroup):
     """
-    Defines an object as a list property, for use when displaying objects in the user interface.
+    Define an object as a list property, for use when displaying objects in the user interface
     """
 
     #URGENT: This needs an update property!
@@ -39,21 +39,21 @@ class ObjectListItem(PropertyGroup):
     # Secondary functions
     sel: BoolProperty(
         name = "Select",
-        description = "Selects the object in the scene",
+        description = "Select the object in the scene",
         default = True,
         update = CAP_Update_SelectObject
     )
 
     focus: BoolProperty(
         name = "Focus",
-        description = "Focuses the camera to the object",
+        description = "Focus the camera to the object",
         default = True,
         update = CAP_Update_FocusObject
     )
 
     remove: BoolProperty(
         name = "",
-        description = "Removes the object from the list, and un-marks it for export",
+        description = "Remove the object from the list and un-mark it for export",
         default = True,
         update = CAP_Update_ObjectListRemove
     )
@@ -90,28 +90,28 @@ class CollectionListItem(PropertyGroup):
 
     enable_export: BoolProperty(
         name = "",
-        description = "Enables or disables the ability to export this collection",
+        description = "Enable or disable exports of this Collection using Capsule",
         default = False,
         update = CAP_Update_CollectionListExport
     )
     
     sel: BoolProperty(
         name = "Select",
-        description = "Selects the collection in the scene",
+        description = "Select the collection in the outliner",
         default = True,
         update = CAP_Update_SelectCollection
     )
 
     focus: BoolProperty(
         name = "Focus Export",
-        description = "Focuses the camera to the entire collection (if there's an object in the collection that is selectable)",
+        description = "Focus the camera to the entire collection (if there's an object in the collection that is selectable)",
         default = True,
         update = CAP_Update_FocusCollection
     )
 
     remove: BoolProperty(
         name = "",
-        description = "Removes the collection from the list, and un-marks it for export",
+        description = "Remove the collection from the list and un-mark it for export",
         default = True,
         update = CAP_Update_CollectionListRemove
     )
@@ -153,14 +153,14 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
     scene_before_test: PointerProperty(
         type = bpy.types.Scene,
         name = "Scene Before Test",
-        description = "Stores the scene used for the Pack Script test so it can be seamlessly returned to it when the test is done"
+        description = "Store the scene used for the Pack Script test so it can be seamlessly returned to it when the test is done"
 
     )
 
     test_pack_script: PointerProperty(
         type = bpy.types.Text,
         name = "Pack Script",
-        description = "Defines the Pack Script to be tested on the Pack Script Target collection",
+        description = "Define the Pack Script to be tested on the Pack Script Target collection",
     )
 
     # A collection that stores the list of objects that Capsule is currently displaying in the UI list.
@@ -178,18 +178,18 @@ class CAPSULE_Scene_Preferences(PropertyGroup):
 
     list_switch: EnumProperty(
         name = "Object Type Switch",
-        description = "Switches the list display mode between objects and collections",
+        description = "Switch the list display mode between objects and collections",
         items =  (
-        ('1', 'Objects', 'Displays the Export List for objects in the currently visible scene.'),
+        ('1', 'Objects', 'Displays the Export List for objects in the currently visible scene'),
         ('2', 'Collections', 'Displays the Export List for collections in the currently visible scene')),
     )
 
     selection_switch: EnumProperty(
         name = "Selection Switch",
-        description = "Switches the selection editing mode between objects and collections",
+        description = "Switch the selection editing mode between objects and collections",
         items =  (
-        ('1', 'Objects', 'Displays selected objects, and any associated export settings.'),
-        ('2', 'Collections', 'Displays selected collections, and any associated export settings.')),
+        ('1', 'Objects', 'Display selected objects, and any associated export settings'),
+        ('2', 'Collections', 'Display selected collections, and any associated export settings')),
     )
 
 def GetLocationPresets(scene, context):
@@ -241,21 +241,21 @@ class CAPSULE_Object_Preferences(PropertyGroup):
 
     enable_export: BoolProperty(
         name = "Enable Export",
-        description = "Enables or disables the ability to export this object",
+        description = "Enable or disable exports of this Object using Capsule",
         default = False,
     )
 
     origin_point: EnumProperty(
         name = "Origin Export",
-        description = "Determines what the origin point of the exported file is set to",
+        description = "Determine the location of the origin point upon export",
         items =  (
-        ('Object', 'Object', "Sets the exported origin point to the object's origin point"),
-        ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point")),
+        ('Object', 'Object', "Set the exported origin point to the object's origin point"),
+        ('Scene', 'Scene', "Keep the exported origin point to the scene's origin point")),
     )
 
     object_children: EnumProperty(
         name = "Child Objects",
-        description = "Lets you set how children of an object are included in the export",
+        description = "Set how children of an object are included in the export",
         items =  (
         ('All', 'All', "Will export all children of this object"),
         ('None', 'None', "No object children will be exported"),
@@ -268,14 +268,14 @@ class CAPSULE_Object_Preferences(PropertyGroup):
     )
 
     location_preset: EnumProperty(
-        name = "File Location",
-        description = "Defines the file path that the object will be exported to",
+        name = "Export Location",
+        description = "Set the file path that the object will be exported to",
         items = GetLocationPresets,
     )
 
     export_preset: EnumProperty(
         name = "Export Preset",
-        description = "Defines the export settings used on the object",
+        description = "Set the Export Preset used to export the object",
         items = GetExportDefaults,
     )
 
@@ -303,13 +303,13 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
     """
     enable_export: BoolProperty(
         name = "Export Collection",
-        description = "Enables or disables the ability to export this collection",
+        description = "Enable or disable exports of this Collection using Capsule",
         default = False,
     )
     
     origin_point: EnumProperty(
         name = "Origin Export",
-        description = "Determines what the origin point of the exported file is set to",
+        description = "Determine the location of the origin point upon export",
         items =  (
         ('Object', 'Object', "Sets the exported origin point to the origin point of a chosen object"),
         ('Scene', 'Scene', "Keeps the exported origin point to the scene's origin point")),
@@ -319,14 +319,14 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
     root_object: PointerProperty(
         type = bpy.types.Object,
         name = "Origin Object",
-        description = "Defines what object will be used as the exported collection's origin point",
+        description = "Define what object will be used as the exported collection's origin point",
     )
 
     # TODO: This hasn't been added yet as collections return every object in them including every child by default.
     # This means id have to reconstruct the hierarchy manually and it doesn't currently seem worth it.
     object_children: EnumProperty(
         name = "Child Objects",
-        description = "Lets you set how children of an exportable object are included in the export.  This includes any objects found from the children of collections inside this collection",
+        description = "Set how children of an exportable object are included in the export.  This includes any objects found from the children of collections inside this collection",
         items =  (
         ('All', 'All', "Will export all children of an exportable object"),
         ('None', 'None', "No object children will be exported"),
@@ -340,7 +340,7 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
     
     collection_children: EnumProperty(
         name = "Child Collections",
-        description = "Lets you set how children of a collection are included in the export",
+        description = "Set how children of a collection are included in the export",
         items =  (
         ('All', 'All', "Will export the children of this collection as well as every object associated to a child of this collection"),
         ('None', 'None', "No collections inside this collection will be exported"),
@@ -353,26 +353,26 @@ class CAPSULE_Collection_Preferences(PropertyGroup):
     )
 
     location_preset: EnumProperty(
-        name = "File Location",
-        description = "Defines the Location that the collection will be exported to",
+        name = "Export Location",
+        description = "Select the file path that the collection will be exported to",
         items = GetLocationPresets,
     )
 
     export_preset: EnumProperty(
         name = "Export Preset",
-        description = "Defines the export settings used on the collection",
+        description = "Select the Export Preset used to export the collection",
         items = GetExportDefaults,
     )
     
     pack_script: PointerProperty(
         type = bpy.types.Text,
         name = "Pack Script",
-        description = "(Optional) Defines a python script that will be executed just before and after Capsule exports to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
+        description = "(Optional) Define a python script that will be executed just before and after Capsule exports to a file, after it has prepared everything in the scene.  Check the Capsule GitHub Wiki for more information on how to use this feature",
     )
     
     enable_edit: BoolProperty(
         name = "",
-        description = "Enables editing of the collection's properties",
+        description = "Enable editing of the collection's properties",
     )
 
     in_export_list: BoolProperty(

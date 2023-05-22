@@ -16,7 +16,7 @@ from . import export_presets
 #///////////////// - LOCATION DEFAULTS - ///////////////////////////////////////////
 
 class CAPSULE_OT_Add_Path(Operator):
-    """Create a new file location"""
+    """Create a new Export Location"""
 
     bl_idname = "scene.cap_addpath"
     bl_label = "Add"
@@ -45,10 +45,7 @@ class CAPSULE_OT_Add_Path(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Delete_Path(Operator):
-    """
-    Delete the selected file location from the list.  This will also set the file location of all
-    objects and collections that used this to 'None'
-    """
+    "Delete the selected export location from the list.  This will also set the export location of all objects and collections that used this to 'None'"
 
     bl_idname = "scene.cap_deletepath"
     bl_label = "Remove"
@@ -90,10 +87,10 @@ class CAPSULE_OT_Delete_Path(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Add_File_Location_Tag(Operator):
-    """Adds a new file location tag to the currently selected location.  These are used to auto-name file structures with information about the export like file name, time, etc"""
+    """Add a new export location tag to the currently selected location.  These are used to auto-name file structures with information about the export like file name, time, etc"""
 
     bl_idname = "scene.cap_add_file_location_tag"
-    bl_label = "Add File Location Tag"
+    bl_label = "Add Export Location Tag"
 
     path_tags: EnumProperty(
         name = "Add Path Tag",
@@ -146,7 +143,7 @@ class CAPSULE_OT_Add_File_Location_Tag(Operator):
 
 
 class CAPSULE_OT_Add_Export(Operator):
-    """Creates a new Export Preset"""
+    """Create a new Export Preset"""
 
     bl_idname = "scene.cap_addexport"
     bl_label = "Add"
@@ -267,7 +264,7 @@ class CAPSULE_OT_Clear_List(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Refresh_List(Operator):
-    """Refreshes the list of objects or collections marked for export in the scene.  In most cases Capsule can keep track of changes in the scene automatically"""
+    """Refresh the list of objects or collections marked for export in the scene.  In most cases Capsule can keep track of changes in the scene automatically"""
 
     bl_idname = "scene.cap_refreshlist"
     bl_label = "Refresh"
@@ -300,7 +297,7 @@ class CAPSULE_OT_Refresh_List(Operator):
 
 
 class CAPSULE_OT_Reset_Properties(Operator):
-    """Resets all assigned export properties to every Object and Collection in every scene, and clears both Export Lists"""
+    """Reset all assigned export properties to every Object and Collection in every scene, and clear both Export Lists"""
 
     bl_idname = "scene.cap_resetsceneprops"
     bl_label = "Reset Scene"
@@ -442,7 +439,7 @@ class CAPSULE_OT_Add_Stored_Presets(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Delete_Presets(Operator):
-    """Deletes the currently selected Export Preset"""
+    """Delete the currently selected Export Preset"""
     bl_idname = "cap.delete_stored_export_preset"
     bl_label = "Store Preset"
 
@@ -463,7 +460,7 @@ class CAPSULE_OT_Delete_Presets(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Store_Presets(Operator):
-    """Saves the currently selected export preset to your Stored Export Presets list, to enable it's use in across .blend files"""
+    """Save the currently selected export preset to your Stored Export Presets list, to enable it's use in across .blend files"""
     bl_idname = "cap.store_active_export_preset"
     bl_label = "Store Preset"
 
@@ -494,7 +491,7 @@ class CAPSULE_OT_Store_Presets(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Show_Preferences(Operator):
-    """Opens a window to the Capsule Addon Preferences Menu"""
+    """Open a window to the Capsule Addon Preferences Menu"""
     bl_idname = "scene.cap_show_preferences"
     bl_label = "Show Addon Preferences"
 
@@ -513,7 +510,7 @@ class CAPSULE_OT_Show_Preferences(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Tutorial_StoredPresets(Operator):
-    """Opens a message describing how Stored Export Presets work"""
+    """Open a message describing how Stored Export Presets work"""
     bl_idname = "scene.cap_tut_storedpresets"
     bl_label = ""
 
@@ -534,7 +531,7 @@ class CAPSULE_OT_Tutorial_StoredPresets(Operator):
         return {'FINISHED'}
 
 class CAPSULE_OT_Tutorial_ActivePresets(Operator):
-    """Opens a message describing how Active Export Presets work"""
+    """Open a message describing how Active Export Presets work"""
     bl_idname = "scene.cap_tut_activepresets"
     bl_label = ""
 

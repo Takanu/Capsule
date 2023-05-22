@@ -19,7 +19,7 @@ from .tk_utils import record as record_utils
 
 
 class CAPSULE_OT_Export(Operator):
-    """Exports objects and collections in the scene."""
+    """Export objects and collections in the current scene"""
 
     bl_idname = "scene.cap_export"
     bl_label = "Export All"
