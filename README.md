@@ -20,6 +20,7 @@ Capsule makes the process of exporting quick and seamless, letting you export hu
 ## Installation
 
 - Download the latest release from the releases page.
+- MAKE SURE the downloaded ZIP file is renamed to "Capsule.zip"
 - Under Preferences > Addons > Install, select Capsule.zip.
 
 
