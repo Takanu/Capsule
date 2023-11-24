@@ -32,20 +32,19 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
 
     @classmethod
     def poll(cls, context):
-        return False
         
-        # scn = context.scene.CAPScn
-        # select_tab = int(str(scn.selection_switch))
+        scn = context.scene.CAPScn
+        select_tab = int(str(scn.selection_switch))
 
-        # if select_tab == 1:
-        #     if len(context.selected_objects) > 1:
-        #         return False
+        if select_tab == 1:
+            if len(context.selected_objects) > 1:
+                return False
 
-        # else:
-        #     if len(search_utils.GetSelectedCollections()) > 1:
-        #         return False
+        else:
+            if len(search_utils.GetSelectedCollections()) > 1:
+                return False
         
-        # return True
+        return True
 
 
     def execute(self, context):
@@ -56,7 +55,7 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
 
         target_object = None
         target_collection = None
-        
+
 
         # ////////////////////////////////////////////
         # CLEAN PACK SCRIPT ENVIRONMENT
@@ -64,40 +63,44 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
 
 
         # ////////////////////////////////////////////
-        # IDENTIFY TEST CANDIDATE
+        # IDENTIFY TEST CANDIDATES
+        targets = []
 
         # this is for the object tab of the 3D view menu
         if self.set_mode == 'ACTIVE_OBJECT':
             target_object = context.active_object
+            targets = [target_object]
+
+            if target_object.CAPObj.pack_script is None:
+                self.report({'WARNING'}, 'The target object or collection has no Pack Script, assign one!')
+                return {'FINISHED'}
+            
         
         # this is for the collections tab of the 3D view menu
         elif self.set_mode == 'ACTIVE_COLLECTION':
-            target_collection = search_utils.GetActiveCollection()
-
-
-        # for mods in target_object.modifiers:
-        #     for properties in dir(mods):
-        #         if "__" not in properties:
-        #             props=eval("type(mods."+str(properties)+")")
-        #             print(props)
-
-        # object_ops.DuplicateWithDatablocks(context, target_object, target_object.name + " CAP")
-        object_tree = search_utils.GetObjectReferenceTree(target_object)
+            self.report({'WARNING'}, "Pack Script testing currently doesn't work with Collections, sorry m8.")
+            return {'FINISHED'}
         
+            target_collection = search_utils.GetActiveCollection()
+            targets = target_collection.all_objects
+
+            if target_collection.CAPCol.pack_script is None:
+                self.report({'WARNING'}, 'The target object or collection has no Pack Script, assign one!')
+                return {'FINISHED'}
+
+        
+        # ////////////////////////////////////////////
+        # SEARCH DEPENDENCIES
+
+        object_tree = search_utils.GetObjectReferenceTree(targets)
+
+        search_utils.FindObjectDependencies(context, object_tree)
+        
+        # Another rudimentary test script?  idk what this is.
         # print(object_tree)
         # print([m for m in bpy.data.materials 
         #        if target_object.user_of_id(m)])
-
-        search_utils.FindObjectDependencies(context, object_tree)
-
-        return {'FINISHED'}
         
-
-
-        if target_object.CAPObj.pack_script is None:
-            self.report({'WARNING'}, 'The target object has no Pack Script, assign one!')
-            return {'FINISHED'}
-
         duplicate = object_ops.DuplicateWithDatablocks(context, target_object, target_object.name + " CAP")
 
 
@@ -109,26 +112,48 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
 
         bpy.ops.scene.new(type = 'NEW')
         test_scene = context.scene
-        test_scene.name = ">Capsule Test Scene<"
+        test_scene.name = "> Capsule Test Scene <"
         test_scene.CAPScn.scene_before_test = current_scene
         test_scene.CAPScn.is_pack_script_scene = True
         test_scene.CAPScn.test_pack_script = target_object.CAPObj.pack_script
 
+        for col in duplicate.users_collection:
+            current_scene.collection.objects.unlink(duplicate)
         test_scene.collection.objects.link(duplicate)
-        current_scene.collection.objects.unlink(duplicate)
 
-        col_pack_target = bpy.data.collections.new("> Pack Script Target <")
-        col_pack_result = bpy.data.collections.new("> Pack Script Result <")
-        test_scene.collection.children.link(col_pack_target)
-        test_scene.collection.children.link(col_pack_result)
+        input_collection = bpy.data.collections.new("> Pack Script Input <")
+        output_collection = bpy.data.collections.new("> Pack Script Output <")
+        linked_collection = bpy.data.collections.new("> Linked Objects <")
 
-        col_pack_target.objects.link(duplicate)
+        test_scene.collection.children.link(input_collection)
+        test_scene.collection.children.link(output_collection)
+        test_scene.collection.children.link(linked_collection)
+
+        input_collection.objects.link(duplicate)
         test_scene.collection.objects.unlink(duplicate)
 
 
         # ////////////////////////////////////////////
         # EXECUTE PACK SCRIPT
-        
+        export_status = context.scene.CAPStatus
+        export_status.target_name = target_object.name
+        export_status.target_status = 'BEFORE_EXPORT'
+        export_status['target_input'] = [duplicate]
+        export_status['target_output'] = []
+
+        bpy.ops.object.select_all(action= 'DESELECT')
+
+        code = target_object.CAPObj.pack_script.as_string()
+            
+        # Perform code execution in a try block to catch issues and revert the export state early.
+        exec(code)
+
+        # TODO: Find a robust way to test for type
+        for item in export_status['target_output']:
+            select_utils.SelectObject(item)
+
+        for obj in export_status['target_output']:
+            output_collection.objects.link(obj)
 
 
 
@@ -155,6 +180,7 @@ class CAPSULE_OT_PackScript_DestroyTest(Operator):
         purge_collections = search_utils.GetSceneCollections(context.scene)
 
         # batch_remove is experimental and won't stop you from potentially destroying things.  Be careful!
+        # ISSUE - Purging doesn't clear datablocks like Materials
         bpy.data.batch_remove(purge_objects)
         bpy.data.batch_remove(purge_collections)
         bpy.ops.scene.delete()
@@ -164,7 +190,7 @@ class CAPSULE_OT_PackScript_DestroyTest(Operator):
     
 
 class CAPSULE_OT_PackScript_RetryTest(Operator):
-    """Runs the currently defined Pack Script on the Pack Script Target collection and outputs the results in the Pack Script Result collection"""
+    """Runs the currently defined Pack Script on the Pack Script Target collection and outputs the results to the Pack Script Output collection"""
     bl_idname = "cap.packscript_retry_test"
     bl_label = "Retry Test"
 

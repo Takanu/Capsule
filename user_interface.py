@@ -326,9 +326,9 @@ class CAPSULE_PT_Selection(Panel):
                 export_options.operator("scene.cap_export", text = "Export All", icon = "EXPORT").set_mode = 'ALL'
                 export_options.operator("scene.cap_export", text = "Export Selected", icon = "EXPORT").set_mode = 'SELECTED_OBJECTS'
 
-                # if addon_prefs.use_pack_scripts:
-                #     export_options.separator()
-                #     export_options.operator("cap.packscript_create_test", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_OBJECT'
+                if addon_prefs.use_pack_scripts:
+                    export_options.separator()
+                    export_options.operator("cap.packscript_create_test", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_OBJECT'
                 
                 export_options.separator()
                 export_options.operator("scene.cap_show_preferences", icon = "PREFERENCES")
@@ -454,9 +454,9 @@ class CAPSULE_PT_Selection(Panel):
                 export_options.operator("scene.cap_export", text = "Export All", icon = "EXPORT").set_mode = 'ALL'
                 export_options.operator("scene.cap_export", text = "Export Selected", icon = "EXPORT").set_mode = 'SELECTED_COLLECTIONS'
 
-                # if addon_prefs.use_pack_scripts:
-                #     export_options.separator()
-                #     export_options.operator("cap.packscript_create_test", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_COLLECTION'
+                if addon_prefs.use_pack_scripts:
+                    export_options.separator()
+                    export_options.operator("cap.packscript_create_test", icon = "RIGHTARROW_THIN").set_mode = 'ACTIVE_COLLECTION'
                 
                 export_options.separator()
                 export_options.operator("scene.cap_show_preferences", icon = "PREFERENCES")
@@ -542,9 +542,13 @@ class CAPSULE_PT_List(Panel):
         col_location = layout.column(align= True)
 
         if list_tab == 1:
-            col_location.template_list("CAPSULE_UL_Object", "rawr", scn, "object_list", scn, "object_list_index", rows=3, maxrows=10)
+            col_location.template_list("CAPSULE_UL_Object", "rawr", 
+                                       scn, "object_list", 
+                                       scn, "object_list_index", rows=3, maxrows=10)
         elif list_tab == 2:
-            col_location.template_list("CAPSULE_UL_Collection", "rawr", scn, "collection_list", scn, "collection_list_index", rows=3, maxrows=10)
+            col_location.template_list("CAPSULE_UL_Collection", "rawr", 
+                                       scn, "collection_list", 
+                                       scn, "collection_list_index", rows=3, maxrows=10)
 
         col_location_options = layout.row(align= True)
         col_location_options.operator("scene.cap_clearlist", icon = "X")
@@ -557,9 +561,9 @@ class CAPSULE_PT_List(Panel):
         export_options.separator()
         export_options.operator("scene.cap_show_preferences", icon = "PREFERENCES")
         
-        # if addon_prefs.use_pack_scripts:
-        #     export_options.separator()
-        #     export_options.operator("cap.test_pack_script_listitem")
+        if addon_prefs.use_pack_scripts:
+            export_options.separator()
+            export_options.operator("cap.test_pack_script_listitem")
         
         export_options.separator()
 
