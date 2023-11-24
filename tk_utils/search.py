@@ -290,6 +290,8 @@ def FindObjectDependencies(context, targets):
     # and gets the unique values using set()
     materials = [[slot.material for slot in o.material_slots] 
                  for o in targets]
+    materials = [i for j in materials for i in j]
+    print(materials)
     
 
     # GET MODIFIER DEPENDENCIES
@@ -306,23 +308,28 @@ def FindObjectDependencies(context, targets):
                 input_node = next((node for node in mod.node_group.nodes if node.type == 'GROUP_INPUT'), None)
                 input_props = [prop for prop in input_node.outputs 
                                if prop.type is not 'GEOMETRY']
+                input_props.pop(len(input_props) - 1)
+                input_props.pop(0)
+
+                # Inputs IDs are labelled from 'Input_1' onwards
                 input_prop_ids = [prop_id for prop_id in mod.keys()
                         if (prop_id.startswith("Input_") and prop_id[-1].isdigit())]
-                
+
                 print([prop.type for prop in input_props])
                 
                 i = 0
                 node_mats = []
-                print(input_props)
-                print(input_prop_ids)
-                while i < len(input_props) - 1:
+                # print("INPUT PROPS")
+                # print(input_props)
+                # print("INPUT PROP IDS")
+                # print(input_prop_ids)
+                for i, prop in enumerate(input_props):
                     if input_props[i].type == 'MATERIAL':
-                        node_mats.append(mod[input_prop_ids[i]])
+                        if mod[input_prop_ids[i]] not in materials:
+                            materials.append(mod[input_prop_ids[i]])
                     i += 1
 
-                materials += node_mats
-                print(node_mats)
-
+            # This AFAIK finds materials in any standard modifier
             else:
                 materials += [p for p in mod.bl_rna.properties 
                               if p.type is 'MATERIAL' and not p.is_hidden and not p.is_readonly]
@@ -334,11 +341,11 @@ def FindObjectDependencies(context, targets):
                         
 
     # Collapse and create unique lists
-    materials = set(i for j in materials for i in j)
     print(materials)
-
-    # FIND MATERIALS IN MODIFIERS
     
+    result = {}
+    result['mesh'] = object_data
+    result['materials'] = materials
 
 
 
