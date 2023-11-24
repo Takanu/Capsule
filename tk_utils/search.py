@@ -245,7 +245,7 @@ def GetCollectionObjectTree(context, collection, collection_children):
     return object_list
 
 
-def GetObjectReferenceTree(target):
+def GetObjectReferenceTree(targets):
     """
     Searches recursively for all objects used by another object until all have been found.
     """
@@ -261,7 +261,7 @@ def GetObjectReferenceTree(target):
             objects += recursive_search(new_objects)
         return objects
 
-    return recursive_search([target])
+    return recursive_search(targets)
 
 
 def FindObjectDependencies(context, targets):
@@ -333,11 +333,6 @@ def FindObjectDependencies(context, targets):
             else:
                 materials += [p for p in mod.bl_rna.properties 
                               if p.type is 'MATERIAL' and not p.is_hidden and not p.is_readonly]
-                
-        # This was a nice bit of code but I can't use it </3
-        # materials += [[p for p in modifier.bl_rna.properties 
-        #                 if p.type is 'MATERIAL' and not p.is_hidden and not p.is_readonly]
-        #                 for modifier in target.modifiers if modifier.type is not 'NODES']
                         
 
     # Collapse and create unique lists
