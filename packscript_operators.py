@@ -154,6 +154,7 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
 
         for obj in export_status['target_output']:
             output_collection.objects.link(obj)
+            input_collection.objects.unlink(obj)
 
 
 
@@ -195,7 +196,40 @@ class CAPSULE_OT_PackScript_RetryTest(Operator):
     bl_label = "Retry Test"
 
     def execute(self, context):
+        input_collection = bpy.data.collections['> Pack Script Input <']
+        output_collection = bpy.data.collections['> Pack Script Output <']
+        linked_collection = bpy.data.collections['> Linked Objects <']
+
+        target_object = input_collection.all_objects[0]
+        bpy.data.batch_remove(output_collection.all_objects)
+
+        # ISSUE - This only works with single objects right now
+
+        # ////////////////////////////////////////////
+        # EXECUTE PACK SCRIPT
+        export_status = context.scene.CAPStatus
+        export_status.target_name = target_object.name
+        export_status.target_status = 'BEFORE_EXPORT'
+        export_status['target_input'] = [target_object]
+        export_status['target_output'] = []
+
+        bpy.ops.object.select_all(action= 'DESELECT')
+
+        code = target_object.CAPObj.pack_script.as_string()
+            
+        # Perform code execution in a try block to catch issues and revert the export state early.
+        exec(code)
+
+        # TODO: Find a robust way to test for type
+        for item in export_status['target_output']:
+            select_utils.SelectObject(item)
+
+        for obj in export_status['target_output']:
+            output_collection.objects.link(obj)
+            input_collection.objects.unlink(obj)
+        
         return {'FINISHED'}
+        
 
 
 class CAPSULE_OT_PackScript_Warning(Operator):
