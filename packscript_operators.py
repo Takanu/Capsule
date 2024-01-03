@@ -53,8 +53,10 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
         addon_prefs = preferences.addons[__package__].preferences
         cap_scn = context.scene.CAPScn
 
-        target_object = None
-        target_collection = None
+        # target_object = None
+        # target_collection = None
+        target_packscript = None
+        target_name = ""
 
 
         # ////////////////////////////////////////////
@@ -73,13 +75,16 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
 
             if target_object.CAPObj.pack_script is None:
                 self.report({'WARNING'}, 'The target object or collection has no Pack Script, assign one!')
-                return {'FINISHED'}
+                return {'FINISHED'}#
+            
+            target_packscript = target_object.CAPObj.pack_script
+            target_name = target_object.name
             
         
         # this is for the collections tab of the 3D view menu
         elif self.set_mode == 'ACTIVE_COLLECTION':
-            self.report({'WARNING'}, "Pack Script testing currently doesn't work with Collections, sorry m8.")
-            return {'FINISHED'}
+            # self.report({'WARNING'}, "Pack Script testing currently doesn't work with Collections, sorry m8.")
+            # return {'FINISHED'}
         
             target_collection = search_utils.GetActiveCollection()
             targets = target_collection.all_objects
@@ -87,21 +92,30 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
             if target_collection.CAPCol.pack_script is None:
                 self.report({'WARNING'}, 'The target object or collection has no Pack Script, assign one!')
                 return {'FINISHED'}
+            
+            target_packscript = target_collection.CAPCol.pack_script
+            target_name = target_collection.name
 
         
         # ////////////////////////////////////////////
         # SEARCH DEPENDENCIES
 
-        object_tree = search_utils.GetObjectReferenceTree(targets)
+        # object_tree = search_utils.GetObjectReferenceTree(targets)
 
-        search_utils.FindObjectDependencies(context, object_tree)
+        # search_utils.FindObjectDependencies(context, object_tree)
         
         # Another rudimentary test script?  idk what this is.
         # print(object_tree)
         # print([m for m in bpy.data.materials 
         #        if target_object.user_of_id(m)])
+
+        duplicates = []
         
-        duplicate = object_ops.DuplicateWithDatablocks(context, target_object, target_object.name + " CAP")
+        if self.set_mode == 'ACTIVE_OBJECT':
+            duplicates = object_ops.DuplicateObjectWithDatablocks(context, target_object, target_object.name + " CAP")
+
+        elif self.set_mode == 'ACTIVE_COLLECTION':
+            duplicates = object_ops.DuplicateSelectionWithDatablocks(context, targets, " CAP")
 
 
         # ////////////////////////////////////////////
@@ -115,11 +129,7 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
         test_scene.name = "> Capsule Test Scene <"
         test_scene.CAPScn.scene_before_test = current_scene
         test_scene.CAPScn.is_pack_script_scene = True
-        test_scene.CAPScn.test_pack_script = target_object.CAPObj.pack_script
-
-        for col in duplicate.users_collection:
-            current_scene.collection.objects.unlink(duplicate)
-        test_scene.collection.objects.link(duplicate)
+        test_scene.CAPScn.test_pack_script = target_packscript
 
         input_collection = bpy.data.collections.new("> Pack Script Input <")
         output_collection = bpy.data.collections.new("> Pack Script Output <")
@@ -129,21 +139,25 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
         test_scene.collection.children.link(output_collection)
         test_scene.collection.children.link(linked_collection)
 
-        input_collection.objects.link(duplicate)
-        test_scene.collection.objects.unlink(duplicate)
+        for dup in duplicates:
+                for col in dup.users_collection:
+                    col.objects.unlink(dup)
+
+                # current_scene.collection.objects.unlink(dup)
+                input_collection.objects.link(dup)
 
 
         # ////////////////////////////////////////////
         # EXECUTE PACK SCRIPT
         export_status = context.scene.CAPStatus
-        export_status.target_name = target_object.name
+        export_status.target_name = target_name
         export_status.target_status = 'BEFORE_EXPORT'
-        export_status['target_input'] = [duplicate]
+        export_status['target_input'] = duplicates
         export_status['target_output'] = []
 
         bpy.ops.object.select_all(action= 'DESELECT')
 
-        code = target_object.CAPObj.pack_script.as_string()
+        code = target_packscript.as_string()
             
         # Perform code execution in a try block to catch issues and revert the export state early.
         exec(code)

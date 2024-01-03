@@ -22,7 +22,7 @@ bl_info = {
     "name": "Capsule",
     "author": "Takanu Kyriako",
     "version": (1, 4, 0),
-    "blender": (3, 5, 0),
+    "blender": (4, 0, 0),
     "location": "3D View > Object Mode > Tools > Capsule",
     "wiki_url": "https://github.com/Takanu/Capsule",
     "description": "An export manager that makes the process of repeat and bulk exports simple.",
@@ -141,7 +141,7 @@ class CAP_AddonPreferences(AddonPreferences):
     use_pack_scripts: BoolProperty(
         name = "Enable Pack Scripts",
         description = "Enables Pack Scripts, a feature that lets you assign Python scripts to change the preparation of Objects and Collections just before export.  Check the Capsule GitHub Wiki for more information",
-        default = False,
+        default = True,
     )
 
 

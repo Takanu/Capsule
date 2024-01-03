@@ -1,6 +1,6 @@
 
 import bpy
-from .select import FocusObject
+from .select import FocusObject, SelectObject
 
 def Find3DViewContext():
     """
@@ -86,7 +86,7 @@ def DuplicateObjects(targets):
 
 
 # Thanks!  https://blender.stackexchange.com/questions/252364/how-to-duplicate-object-with-independent-modifiers-using-python
-def DuplicateWithDatablocks(context,
+def DuplicateObjectWithDatablocks(context,
                      object_: bpy.types.Object, 
                      duplicate_name: str) -> bpy.types.Object:
     """
@@ -98,15 +98,16 @@ def DuplicateWithDatablocks(context,
     duplicate.name = duplicate_name
     context.scene.collection.objects.link(duplicate)
     
-    bpy.ops.object.select_all(action="DESELECT")
+    bpy.ops.object.select_all(action = "DESELECT")
     bpy.context.view_layer.objects.active = duplicate
     duplicate.select_set(True)
 
-    bpy.ops.object.make_single_user(object=True, 
-                                    obdata=True, 
-                                    material=True, 
-                                    animation=True, 
-                                    obdata_animation=True)
+    bpy.ops.object.make_single_user(type = 'SELECTED_OBJECTS',
+                                    object = True, 
+                                    obdata = True, 
+                                    material = True, 
+                                    animation = True, 
+                                    obdata_animation = True)
     
     for particle_system in duplicate.particle_systems:
         particle_system.settings = particle_system.settings.copy()
@@ -114,12 +115,62 @@ def DuplicateWithDatablocks(context,
     for modifier in duplicate.modifiers:
         bpy.ops.object.modifier_set_active(modifier=modifier.name)
         
-        if modifier.type == "NODES":
-            bpy.ops.node.copy_geometry_node_group_assign()
-        elif hasattr(modifier, "texture"):
+        # REMOVED AS OF BLENDER 4.0
+        # I don't remember why this was needed :S
+        # if modifier.type == "NODES":
+        #     bpy.ops.node.copy_geometry_node_group_assign()
+        if hasattr(modifier, "texture"):
             modifier.texture = modifier.texture.copy()
             
     return duplicate
+
+def DuplicateSelectionWithDatablocks(context,
+                     objects_: [bpy.types.Object], 
+                     duplicate_suffix: str) -> bpy.types.Object:
+    """
+    Duplicates the given object including all datablocks.
+    """
+
+    bpy.ops.object.select_all(action= 'DESELECT')
+
+    for ob in objects_:
+        SelectObject(ob)
+
+    bpy.ops.object.duplicate(linked = False)
+
+    bpy.ops.object.make_single_user(type = 'SELECTED_OBJECTS',
+                                    object = True, 
+                                    obdata = True, 
+                                    material = True, 
+                                    animation = True, 
+                                    obdata_animation = True)
+    
+    duplicates = context.selected_objects
+
+    for dup in duplicates:
+        dup.name = dup.name[:-4] + duplicate_suffix
+        
+        # I dont yet know how this will work for 
+
+        # duplicate = object_.copy()
+        # duplicate.data = object_.data.copy()
+        # duplicate.name = duplicate_name
+        # context.scene.collection.objects.link(duplicate)
+        
+        # bpy.ops.object.select_all(action = "DESELECT")
+        # bpy.context.view_layer.objects.active = duplicate
+        # duplicate.select_set(True)
+
+        for particle_system in dup.particle_systems:
+            particle_system.settings = particle_system.settings.copy()
+
+        for modifier in dup.modifiers:
+            bpy.ops.object.modifier_set_active(modifier=modifier.name)
+        
+            if hasattr(modifier, "texture"):
+                modifier.texture = modifier.texture.copy()
+            
+    return duplicates
 
 
 def DeleteObject(target):

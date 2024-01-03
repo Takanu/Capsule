@@ -56,7 +56,6 @@ class CAPSULE_ExportPreset(PropertyGroup):
         description = "Will use the Hide Render option on objects (viewable in the Outliner) to filter whether or not an object can be exported.  If the object is hidden from the render, it will not export regardless of any other settings in this plugin"
     )
     
-    # FIXME 1.2 : Move as exporter-specific data?
     export_animation: BoolProperty(
         name = "Export Animation",
         description = "If ticked, animation data will be exported depending on the File Format.  STL does not support animation data",

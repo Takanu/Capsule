@@ -32,16 +32,6 @@ class CAPSULE_OT_Add_Path(Operator):
         newPath.name = "Location " + str(len(cap_file.location_presets))
         newPath.path = ""
 
-        # Position the index to the current location of the
-        #count = 0
-        #for i, item in enumerate(scn.path_defaults, 1):
-            #count += 1
-
-        #oldIndex = scn.path_list_index
-
-        #scn.path_defaults.move(count - 1, scn.path_list_index)
-        #scn.path_list_index = oldIndex
-
         return {'FINISHED'}
 
 class CAPSULE_OT_Delete_Path(Operator):
@@ -372,6 +362,8 @@ class CAPSULE_OT_Create_ExportData(Operator):
             if prev_mode != 'OBJECT':
                 bpy.ops.object.mode_set(mode='OBJECT', toggle=False)  
 
+            # TODO: Why can't I just use data.objects?
+            
             # Figure out if an object already exists, if yes do nothing
             for object in bpy.data.objects:
                 #print(object)
