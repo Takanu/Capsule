@@ -68,6 +68,8 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
         # IDENTIFY TEST CANDIDATES
         targets = []
 
+        # TODO : This SHOULD verify that an object is a valid export target.
+
         # this is for the object tab of the 3D view menu
         if self.set_mode == 'ACTIVE_OBJECT':
             target_object = context.active_object
@@ -112,7 +114,7 @@ class CAPSULE_OT_PackScript_CreateTest(Operator):
         duplicates = []
         
         if self.set_mode == 'ACTIVE_OBJECT':
-            duplicates = object_ops.DuplicateObjectWithDatablocks(context, target_object, target_object.name + " CAP")
+            duplicates = [object_ops.DuplicateObjectWithDatablocks(context, target_object, target_object.name + " CAP")]
 
         elif self.set_mode == 'ACTIVE_COLLECTION':
             duplicates = object_ops.DuplicateSelectionWithDatablocks(context, targets, " CAP")
