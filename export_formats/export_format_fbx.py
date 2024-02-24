@@ -287,7 +287,7 @@ class CAP_FormatData_FBX(PropertyGroup):
 			use_mesh_modifiers = export_preset.apply_modifiers,
 			# use_mesh_modifiers_render - Capsule's filtering system renders this obsolete.
 
-			path_mode = 'ABSOLUTE',
+			path_mode = 'COPY',
 			embed_textures = self.embed_textures,
 			batch_mode = 'OFF',
 			use_batch_own_dir = False,
