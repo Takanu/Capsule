@@ -18,6 +18,20 @@ class CAP_FormatData_STL(PropertyGroup):
 
     instance_id: IntProperty(default=-1)
 
+    # the property for 'use_ascii'
+    save_as_ascii: BoolProperty(
+        name = "Save as ASCII",
+        description = "Save the file in an ASCII file format.",
+        default = False,
+    )
+
+    use_batch: BoolProperty(
+        name = "Batch Individually",
+        description = "Exports each object to a separate file.",
+        default = False,
+    )
+
+
     global_scale: FloatProperty(
         name = "Global Scale",
         description = "Scale multiplayer for the objects to be exported.",
@@ -32,13 +46,6 @@ class CAP_FormatData_STL(PropertyGroup):
     use_scene_unit: BoolProperty(
         name = "Use Scene Units",
         description = "Applies the current scene's unit (as defined by unit scale) to exported data.",
-        default = False,
-    )
-
-    # the property for 'ascii'
-    save_as_ascii: BoolProperty(
-        name = "Save as ASCII",
-        description = "Save the file in an ASCII file format.",
         default = False,
     )
 
@@ -77,21 +84,23 @@ class CAP_FormatData_STL(PropertyGroup):
         Calls the Alembic export operator module to export the currently selected objects.
         """
 
-        bpy.ops.export_mesh.stl(
+        bpy.ops.wm.stl_export(
 
             # core
             filepath = filePath + ".stl",
             check_existing = False,
-            use_selection = True,
+            export_selected_objects  = True,
+            
 
-            use_mesh_modifiers = export_preset.apply_modifiers,
+            apply_modifiers = export_preset.apply_modifiers,
 
             # all
+            ascii_format  = self.save_as_ascii,
+            use_batch = self.use_batch,
             global_scale = self.global_scale,
             use_scene_unit = self.use_scene_unit,
-            ascii = self.save_as_ascii,
-            axis_forward = self.forward_axis,
-            axis_up = self.up_axis
+            forward_axis = self.forward_axis,
+            up_axis = self.up_axis
         )
 
     
@@ -122,8 +131,9 @@ class CAP_FormatData_STL(PropertyGroup):
 
         export_options.separator()
         export_options.prop(exportData, "save_as_ascii")
-        export_options.prop(exportData, "use_scene_unit")
+        export_options.prop(exportData, "use_batch")
         export_options.separator()
+        export_options.prop(exportData, "use_scene_unit")
         export_options.separator()
 
         export_options.prop(exportData, "global_scale")
