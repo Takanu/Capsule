@@ -61,17 +61,35 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	)
 
 	export_cameras: BoolProperty(
-		name = 'Export Cameras',
-		description = '',
+		name = 'Cameras',
+		description = 'Export cameras',
 		default = False
 	)
 
 	export_lights: BoolProperty(
-		name = 'Export Punctual Lights',
-		description = '',
+		name = 'Punctual Lights',
+		description = 'Export directional, point, and spot lights',
 		default = False,
 	)
 
+	# TODO: This doesn't work in Blender 4.1, consider adding this in 4.2 depending on the feature-set
+
+	# export_hierarchy_full_collections: BoolProperty(
+	# 	name = 'Include Collections (Collections Only)',
+	# 	description = 'Exports the full scene hierarchy, including any intermediate collections.  WARNING - This will only work with Collection Export as it requires an Active Collection'
+	# )
+ 
+	export_hierarchy_flatten_objs: BoolProperty(
+		name = 'Flatten Object Hierarchies',
+		description = 'Will flatten any parent/child relationships between objects on export, apart from skinned meshes.  Useful when working with non-decomposable transformation matrices',
+		default = False,
+	)
+
+	export_gn_mesh: BoolProperty(
+		name = 'Geometry Node Instances (Experimental)',
+		description = 'Export Geometry Node instance meshes',
+		default = False,
+	)
 
 	# /////////////////////////////////
 	# MESH DATA
@@ -91,9 +109,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	export_tangents: BoolProperty(
 		name = 'Export Tangents',
 		description = 'Export vertex tangents with meshes',
-		default = True
+		default = False
 	)
 
+	export_attributes: BoolProperty(
+		name = 'Export Marked Attributes',
+		description = 'Exports attributes (including Color Attributes?).  Their name MUST start with an underscore to be exported',
+		default = False
+	)
 	
 	use_mesh_edges: BoolProperty(
 		name = 'Include Loose Edges',
@@ -107,11 +130,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False
 	)
 
-	export_colors: BoolProperty(
-		name = 'Export Vertex Colors',
-		description = 'Export vertex colors with meshes',
-		default = True
+	export_shared_accessors: BoolProperty(
+		name = 'Use Shared Accessors',
+		description = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+		default = False
 	)
+
+
+
 
 	export_materials: EnumProperty(
 		name = 'Export Materials',
@@ -125,12 +151,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	export_image_format: EnumProperty(
 		name = 'Export Image Format',
-		description = 'Decides how images associated with the 3D object are exported',
+		description = "Decides how images associated with the 3D object are exported.",
 		items = (
-			('AUTO', 'Automatic (Default)', 'Ensures that PNG and JPEG image files will retain their file formats.  If any other image file format is used it will be converted to PNG'),
-			('JPEG', 'JPEG', 'Encodes and saves all images as JPEG files unless the image has alpha, which are instead saved as a PNG.  Can result in a loss of quality'),
-			('NONE', 'None', "Don't export images")
+			('AUTO', 'Automatic (Default)', 'Ensures that PNG, JPEG and WebP image files will retain their file formats when exported.  If any other image file format is used it will be converted to PNG'),
+			('JPEG', 'JPEG', 'Encodes and saves target images as JPEG files unless the image has alpha, which are instead saved as a PNG.  Can result in a loss of quality'),
+			('WEBP', 'WebP', "Encodes and saves target images as WebP files (no fallback is used, all images will be WebP.  WARNING: Most target apps will not accept WebP files"),
+			('NONE', 'None', "Don't export images"),
 			),
+		default = 'AUTO',
 	)
 
 	export_texture_dir: StringProperty(
@@ -139,10 +167,11 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = "",
 	)
 
-	export_jpeg_quality: IntProperty(
-		name = "JPEG Quality",
-		description = "Sets the quality of the exported JPEG (when used for texture exports)",
+	export_image_quality: IntProperty(
+		name = "Compression",
+		description = "Sets the compression quality of exported JPEG and WebP files (when used for texture exports)",
 		default = 75,
+		subtype = 'PERCENTAGE',
 		min = 0,
 		max = 100,
 	)
@@ -154,15 +183,40 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False,
 	)
 
-	# export_displacement: BoolProperty(
-	# 	name = 'Export Displacement (Experimental)',
-	# 	description = 'Export displacement textures. Uses an incomplete “KHR_materials_displacement” glTF extension, use at your own peril!',
-	# 	default = False
-	# )
+	export_image_webp_fallback: BoolProperty(
+		name = 'Create PNG Fallback for WebP',
+		description = "For all WebP images, a PNG image will be created and included as a fallback.  WARNING: Even with a fallback, target apps can still fail to import a GLTF file with WebP images",
+		default = True,
+	)
 
 
 	# /////////////////////////////////
 	# ANIMATION
+ 
+	export_animation_mode: EnumProperty(
+		name = 'Animation Mode',
+		description = 'Decides how animations are exported',
+		items = (
+			('ACTIONS', 'All Actions', 'Export all actions (active actions and on NLA tracks) as separate animations'),
+			('ACTIVE_ACTIONS', 'Merged Active Actions', 'Merge all currently assigned actions into one GLTF animation'),
+			('NLA_TRACKS', 'NLA Tracks', "Export individual NLA Tracks as separate animations"),
+			('SCENE', 'Scene Data', "Export the 'baked' scene animation data as a single GLTF animation"),
+			),
+	)
+
+	export_bake_animation: BoolProperty(
+		name = 'Force Export Object Actions',
+		description = '*groaning noises*',
+		default = False,
+	)
+
+	export_nla_strips_merged_animation_name: StringProperty(
+		name = "Merged Animation Name",
+		description = "When 'Export Animations by NLA Track' is disabled, this defines the name that the combined GLTF animation will receive",
+		default = "Merged Animation",
+	)
+
+
 
 	export_current_frame: BoolProperty(
 		name = 'Use Current Frame',
@@ -177,18 +231,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = True
 	)
 
-	
-	export_nla_strips: BoolProperty(
-		name = 'Export Animations by NLA Track',
-		description = """When enabled, multiple GLTF animations will be exported.  GLTF animations will be created based on animation actions pushed onto NLA tracks that share the same name.  When disabled, all currently assigned actions will be merged to become one GLTF animation""",
-		default = True
-	)
-
-	export_nla_strips_merged_animation_name: StringProperty(
-		name = "Merged Animation Name",
-		description = "When 'Export Animations by NLA Track' is disabled, this defines the name that the combined GLTF animation will receive",
-		default = "Merged Animation",
-	)
 
 	export_anim_single_armature: BoolProperty(
 		name = 'Export All Armature Actions',
@@ -227,15 +269,27 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	)
 
 	export_morph_normal: BoolProperty(
-		name = 'Export Shape Key Normals',
+		name = 'Include Shape Key Normals',
 		description = 'Export vertex normals with shape keys',
 		default = True
 	)
 
 	export_morph_tangent: BoolProperty(
-		name = 'Export Shape Key Tangents',
+		name = 'Include Shape Key Tangents',
 		description = 'Export vertex tangents with shape keys',
 		default = True
+	)
+
+	export_try_sparse_sk: BoolProperty(
+		name = 'Use Sparse Accessors',
+		description = 'HEY GLTF DEVS IMPROVE YER FUCKIN DESCRIPTIONS FOR HUMANS',
+		default = False
+	)
+
+	export_try_omit_sparse_sk: BoolProperty(
+		name = 'Omit Empty Sparce Accessors',
+		description = 'HEY GLTF DEVS IMPROVE YER FUCKIN DESCRIPTIONS FOR HUMANS',
+		default = False
 	)
 
 	# ////////
@@ -337,18 +391,19 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			# CAPSULE
 			filepath=final_filename,
 			check_existing = False,
+			
 			use_selection  = True,
-
 			use_visible = False,
 			use_renderable = False,
 			use_active_collection = False,
 			use_active_scene = True,
-			gltf_export_id = "Capsule", # used to identify that the exporter is being called in code.
+
+			# used to identify that the exporter is being called in code.
+			gltf_export_id = "Capsule 1.42", 
 
 			# While this is active, Shape Keys cannot be exported.
 			export_apply = export_preset.apply_modifiers,
 			
-
 			# FILE
 			export_format = self.export_format,
 			export_copyright = self.export_copyright,
@@ -359,32 +414,36 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_yup = self.export_y_up,
 			export_cameras = self.export_cameras,
 			export_lights = self.export_lights,
+			export_gn_mesh = self.export_gn_mesh,
+			# export_hierarchy_full_collections = self.export_hierarchy_full_collections,
+   			export_hierarchy_flatten_objs = self.export_hierarchy_flatten_objs,
 			
 
 			# MESH
 			export_texcoords = self.export_texcoords,
 			export_normals = self.export_normals,
 			export_tangents = self.export_tangents,
-			export_colors = self.export_colors,
+			export_attributes = self.export_attributes,
 			use_mesh_edges = self.use_mesh_edges,
 			use_mesh_vertices = self.use_mesh_vertices,
+			export_shared_accessors = self.export_shared_accessors,
 
 			export_materials = self.export_materials,
 			export_image_format = self.export_image_format,
-			export_jpeg_quality = self.export_jpeg_quality,
+			export_jpeg_quality = self.export_image_quality,
+			export_image_quality = self.export_image_quality,
 			export_texture_dir = self.export_texture_dir,
 			export_keep_originals = self.export_keep_originals,
-
-			# TODO: Double-check if this has been removed before the release of 3.3.
-			# export_displacement = self.export_displacement,
+			export_image_webp_fallback = self.export_image_webp_fallback,
 
 
-			# ANIMATION
-			
-			export_nla_strips = self.export_nla_strips,
+			# ANIMATION`
+   			export_animations = export_preset.export_animation,
+			export_animation_mode = self.export_animation_mode,
+			export_bake_animation = self.export_bake_animation,
+			# export_nla_strips = self.export_nla_strips,
 			export_nla_strips_merged_animation_name = self.export_nla_strips_merged_animation_name,
 
-			export_animations = export_preset.export_animation,
 			export_current_frame = self.export_current_frame,
 			export_frame_range = self.export_frame_range,
 			export_anim_single_armature = self.export_anim_single_armature,
@@ -396,6 +455,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_morph = self.export_morph,
 			export_morph_normal = self.export_morph_normal,
 			export_morph_tangent = self.export_morph_tangent,
+			export_try_sparse_sk = self.export_try_sparse_sk,
+			export_try_omit_sparse_sk = self.export_try_omit_sparse_sk,
 
 			export_skins = self.export_skins,
 			export_all_influences = self.export_all_influences,
@@ -462,6 +523,9 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.prop(exportData, "export_cameras")
 			export_options.prop(exportData, "export_lights")
 			export_options.separator()
+			export_options.prop(exportData, "export_hierarchy_flatten_objs")
+			# export_options.prop(exportData, "export_hierarchy_full_collections")
+			export_options.separator()
 
 
 		elif cap_file.gltf_menu_options == 'Object':
@@ -474,11 +538,13 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			mesh_options.prop(exportData, "export_texcoords")
 			mesh_options.prop(exportData, "export_normals")
 			mesh_options.prop(exportData, "export_tangents")
-			mesh_options.prop(exportData, "export_colors")
+			mesh_options.prop(exportData, "export_attributes")
 			# mesh_options.prop(exportData, "export_displacement")
 			mesh_options.separator()
 			mesh_options.prop(exportData, "use_mesh_edges")
 			mesh_options.prop(exportData, "use_mesh_vertices")
+			mesh_options.separator()
+			mesh_options.prop(exportData, "export_shared_accessors")
 
 			mesh_options.separator()
 			mesh_options.separator()
@@ -494,13 +560,18 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			mat_options.prop(exportData, "export_image_format")
 			mat_options.separator()
+			
+			compression_options = mat_options.column()
+			if exportData.export_image_format == 'AUTO' or exportData.export_image_format == 'NONE':
+				compression_options.active = False
+			compression_options.prop(exportData, "export_image_quality")
+			compression_options.separator()
 
-			jpeg_options = mat_options.column()
-			jpeg_options.active = True
-			if exportData.export_image_format != 'JPEG':
-				jpeg_options.active = False
-			jpeg_options.prop(exportData, "export_jpeg_quality")
-			jpeg_options.separator()
+			compression_options = mat_options.column()
+			if exportData.export_image_format == 'NONE' or exportData.export_image_format == 'JPEG':
+				compression_options.active = False
+			compression_options.prop(exportData, "export_image_webp_fallback")
+			compression_options.separator()
 
 			export_tex_options = mat_options.column()
 			if exportData.export_format == 'GLTF_SEPARATE':
@@ -539,18 +610,27 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			animation_options = export_options.column(align = True)
 			animation_options.active = preset.export_animation
 
-			group_sub = animation_options.column(align = True, heading = "NLA Strip Options")
-			group_sub.prop(exportData, "export_nla_strips")
-			group_sub.separator()
+			type_sub = animation_options.column(align = True)
+			type_sub.prop(exportData, "export_animation_mode")
+			type_sub.separator()
 
-			merged_sub = group_sub.column(align = True)
-			merged_sub.active = True
-			if exportData.export_nla_strips == True:
-				merged_sub.active = False
+			action_sub = type_sub.column(align = True)
+			anim_mode = exportData.export_animation_mode
+			action_sub.active = False
+			if anim_mode == 'ACTIONS' or anim_mode == 'ACTIVE_ACTIONS':
+				action_sub.active = True
+			action_sub.prop(exportData, "export_bake_animation")
+			action_sub.separator()
 
+			merged_sub = type_sub.column(align = True)
+			merged_sub.active = False
+			if anim_mode == 'ACTIVE_ACTIONS':
+				merged_sub.active = True
 			merged_sub.prop(exportData, "export_nla_strips_merged_animation_name")
-			group_sub.separator()
-			group_sub.separator()
+
+			animation_options.separator()
+			animation_options.separator()
+			animation_options.separator()
 			
 			generic_sub = animation_options.column(align = True, heading = "Animation Options")
 			generic_sub.prop(exportData, "export_current_frame")
@@ -577,6 +657,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			shapekey_options = animation_options.column(align = True, heading = "Shape Key Options")
 			shapekey_options.active = False
+
 			if preset.apply_modifiers == False:
 				shapekey_options.active = True
 
@@ -586,6 +667,16 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			
 			shapekey_sub.prop(exportData, "export_morph_normal")
 			shapekey_sub.prop(exportData, "export_morph_tangent")
+			shapekey_sub.separator()
+
+			shapekey_accessors = shapekey_sub.column(align = True)
+			shapekey_accessors.prop(exportData, 'export_try_sparse_sk')
+
+			shapekey_accessors_sub = shapekey_accessors.column(align = True)
+			if exportData.export_try_sparse_sk == False:
+				shapekey_accessors_sub.active = False
+			shapekey_accessors_sub.prop(exportData, 'export_try_omit_sparse_sk')
+
 			shapekey_options.separator()
 			shapekey_options.separator()
 
