@@ -260,7 +260,35 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		max = 120,
 	)
 
-	# ////////
+
+	# /////////////////////////////////
+	# RIGGING
+	
+	export_rest_position_armature: BoolProperty(
+		name = "Use Armature Rest Position",
+		description = "If enabled, armatures will be exported in the pose of their rest position",
+		default = True,
+	)
+
+	export_def_bones: BoolProperty(
+		name = 'Export Deformation Bones Only',
+		description = 'When on, only the deformation bones will be exported (and needed bones in the hierarchy)',
+		default = False
+	)
+
+	export_armature_object_remove: BoolProperty(
+		name = "Remove Armature Objects",
+		description = " Remove Armature objects from export if possible. If an Armature has multiple root bones, it will not be removed",
+		default = False,
+	)
+
+	export_hierarchy_flatten_bones: BoolProperty(
+		name = "Flatten Bone Hierarchy",
+		description = "Useful in case of a 'non decomposable transformation matrix'",
+		default = False,
+	)
+
+
 
 	export_morph: BoolProperty(
 		name = 'Export Shape Keys',
@@ -306,12 +334,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False
 	)
 
-	export_def_bones: BoolProperty(
-		name = 'Export Deformation Bones Only',
-		description = 'When on, only the deformation bones will be exported (and needed bones in the hierarchy)',
-		default = False
+	export_influence_nb: IntProperty(
+		name = "Bone Influence Count",
+		description = "How many joint verex influences will be exported. Models may appear incorrectly in many viewers with value different to 4 or 8",
+		default = 4,
+		min = 1,
 	)
-	
 
 	# TODO: Missing some new animation properties
 
@@ -452,6 +480,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_force_sampling = self.export_force_sampling,
 			export_frame_step = self.export_frame_step,
 
+			# RIGGING
+			export_rest_position_armature = self.export_rest_position_armature,
+			export_def_bones = self.export_def_bones,
+			export_armature_object_remove = self.export_armature_object_remove,
+			export_hierarchy_flatten_bones = self.export_hierarchy_flatten_bones,
+
 			export_morph = self.export_morph,
 			export_morph_normal = self.export_morph_normal,
 			export_morph_tangent = self.export_morph_tangent,
@@ -460,8 +494,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_skins = self.export_skins,
 			export_all_influences = self.export_all_influences,
-			export_def_bones = self.export_def_bones,
-
+			export_influence_nb = self.export_influence_nb,
 
 			# DRACO
 			export_draco_mesh_compression_enable = self.export_draco_mesh_compression_enable,
@@ -497,12 +530,13 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		# area for revealed export options
 		export_options_area = export_tab_area.column(align = True)
 
+		export_options = export_options_area.column(align = True)
+		export_options.use_property_split = True
+		export_options.use_property_decorate = False
+		export_options.separator()
+
 		if cap_file.gltf_menu_options == 'File':
-			export_options = export_options_area.column(align = True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
-			
+
 			export_options.prop(exportData, "export_format")
 			export_options.separator()
 			export_options.prop(exportData, "export_copyright")
@@ -529,10 +563,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 
 		elif cap_file.gltf_menu_options == 'Object':
-			export_options = export_options_area.column(align = True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
 
 			mesh_options = export_options.column(align = True, heading = "Mesh Data")
 			mesh_options.prop(exportData, "export_texcoords")
@@ -585,10 +615,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 
 		elif cap_file.gltf_menu_options == 'Animation':
-			export_options = export_options_area.column(align = True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
 			
 			# Shapekey warning
 			if preset.apply_modifiers == True:
@@ -654,8 +680,20 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			animation_options.separator()
 			animation_options.separator()
+		
+		elif cap_file.gltf_menu_options == 'Rigging':
 
-			shapekey_options = animation_options.column(align = True, heading = "Shape Key Options")
+			rigging_options = export_options.column(align = True)
+
+			armature_options = rigging_options.column(align = True, heading = "Armature Options")
+			armature_options.prop(exportData, "export_rest_position_armature")
+			armature_options.prop(exportData, "export_def_bones")
+			armature_options.prop(exportData, "export_armature_object_remove")
+			armature_options.prop(exportData, "export_hierarchy_flatten_bones")
+			armature_options.separator()
+			armature_options.separator()
+
+			shapekey_options = rigging_options.column(align = True, heading = "Shape Key Options")
 			shapekey_options.active = False
 
 			if preset.apply_modifiers == False:
@@ -680,20 +718,22 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			shapekey_options.separator()
 			shapekey_options.separator()
 
-			skinning_options = animation_options.column(align = True, heading = "Skinning Options")
+			skinning_options = rigging_options.column(align = True, heading = "Skinning Options")
 			skinning_options.prop(exportData, "export_skins")
 			skinning_sub = skinning_options.column(align = True)
 			skinning_sub.active = exportData.export_skins
 			skinning_sub.prop(exportData, "export_all_influences")
-			skinning_sub.prop(exportData, "export_def_bones")
+			skinning_sub.separator()
 
-			export_options.separator()
+			influence_sub = skinning_options.column(align = True)
+			if exportData.export_all_influences == True:
+				influence_sub.active = False
+			influence_sub.prop(exportData, "export_influence_nb")
+
+			rigging_options.separator()
+			rigging_options.separator()
 		
 		elif cap_file.gltf_menu_options == 'Draco':
-			export_options = export_options_area.column(align = True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
 
 			# Draco Warning
 			if exportData.export_draco_mesh_compression_enable == True:

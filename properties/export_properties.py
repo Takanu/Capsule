@@ -209,7 +209,8 @@ class CAPSULE_FileData(PropertyGroup):
         ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
         ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
         ('Object', 'Object', 'A tab containing options for how most object data is exported'),
-        ('Animation', 'Animation', 'A tab containing options for animation-related data is exported'),
+        ('Animation', 'Animation', 'A tab containing options for handling animation data'),
+        ('Rigging', 'Rigging', 'A tab containing options for rigging data, such as armatures, blend shapes and skinning'),
         ('Draco', 'Draco','A tab containing Draco compression options'),
         ),
     )
