@@ -225,17 +225,14 @@ class CAPSULE_FileData(PropertyGroup):
         ),
     )
 
-    # placeholder for when USD matures as a file format
-    # usd_menu_options: EnumProperty(
-    #     name = "Export Options",
-    #     description = "",
-    #     items = (
-    #     ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
-    #     ('Scene', 'Scene', 'A tab containing options for scene units, transform data and object type export filters'),
-    #     ('Mesh', 'Mesh', 'A tab containing options for how object geometry and mesh data is exported'),
-    #     ('Animation', 'Animation', 'A tab containing options for animation-related data is exported'),
-    #     ),
-    # )
+    usd_menu_options: EnumProperty(
+        name = "Export Options",
+        description = "",
+        items = (
+        ('File', 'File', 'A tab containing file format-specific data sets like custom properties'),
+        ('Data', 'Data', 'A tab containing options for how object data is exported'),
+        ),
+    )
 
     
 

@@ -42,7 +42,7 @@ class CAP_FormatData_USD(PropertyGroup):
         default = False,
     )
 
-    evaluation_mode : EnumProperty(
+    evaluation_mode: EnumProperty(
 		name = "Evaluation Mode",
 		items =  (
 			('RENDER', "Render (Default)", "Use Render settings for object visibility, modifier settings, etc."),
@@ -50,6 +50,13 @@ class CAP_FormatData_USD(PropertyGroup):
 			),
 		description = "Determines what visibility layer affects the visibility of exported objects, modifier settings and other areas where settings differ between Viewport and Render mode.  (Be careful if you're using Filter by Rendering in General Export Options, as objects that are hidden from the Render will not export",
     )
+
+    root_prim_path: StringProperty(
+        name = "Add Root Primitive At Path",
+        description = "If set, a USD transform primitive will be added at the given USD hierarchy and it will act as a parent for all exported data",
+        default = "/root",
+    )
+
 
 
     # ////////////////////////////////
@@ -60,6 +67,7 @@ class CAP_FormatData_USD(PropertyGroup):
         description = "When enabled, hair will be exported as USD curves",
         default = False,
     )
+
 
 
     # ////////////////////////////////
@@ -77,7 +85,10 @@ class CAP_FormatData_USD(PropertyGroup):
         default = True,
     )
 
-    # ////////
+
+
+    # ////////////////////////////////
+    # MATERIALS
 
     export_materials: BoolProperty(
         name = "Export Materials",
@@ -96,8 +107,40 @@ class CAP_FormatData_USD(PropertyGroup):
         description = "If exporting materials, export textures referenced by material nodes to a ‘textures’ directory in the same directory as the USD file",
         default = True,
     )
-
     
+
+    # ////////////////////////////////
+    # RIGGING
+
+    export_armatures: BoolProperty(
+        name = "Export Armatures",
+        description = "Export armatures and meshes with armature modifiers as USD skeletons and skinned meshes",
+        default = True,
+    )
+
+    only_deform_bones: BoolProperty(
+        name = "Only Include Deform Bones",
+        description = "Only export deformation bones and their parents",
+        default = False,
+    )
+    
+    export_shapekeys: BoolProperty(
+        name = "Export Shape Keys",
+        description = "Export shape keys as USD blend shapes",
+        default = True,
+    )
+
+
+    export_subdivision: EnumProperty(
+        name = "Subdivision Schema",
+        description = 'Choose how subdivision modifiers will be mapped to the USD subdivision scheme during export',
+		items = (
+			('IGNORE', 'Ignore', 'Export base meshes without subdivision'),
+			('TESSELLATE', 'Tessellate', 'Export subdivided meshes'),
+			('BEST_MATCH', 'Best Match', "Will use Catmull-Clark as the subdivision scheme where possible, if not possible the simple subdivision type will be used instead"),
+			),
+        default = 'BEST_MATCH',
+    )
 
     
 
@@ -120,7 +163,7 @@ class CAP_FormatData_USD(PropertyGroup):
             # FILE
             use_instancing = self.use_instancing,
             evaluation_mode = self.evaluation_mode,
-            
+            root_prim_path = self.root_prim_path,
 
             # SCENE
             relative_paths = self.relative_paths,
@@ -135,7 +178,15 @@ class CAP_FormatData_USD(PropertyGroup):
             generate_preview_surface = self.generate_preview_surface,
             export_textures = self.export_textures,
             overwrite_textures = True,  # Capsule assumes this behaviour everywhere, assume it here too.
+
+
+            # RIGGING
+            export_armatures = self.export_armatures,
+            only_deform_bones = self.only_deform_bones,
+            export_shapekeys = self.export_shapekeys,
             
+            # SUBDIVISION
+            export_subdivision = self.export_subdivision,
             
 
         )
@@ -153,48 +204,85 @@ class CAP_FormatData_USD(PropertyGroup):
         # left padding
         export_area.separator()
 
+        # internal column for tabs and contents
+        export_tab_area = export_area.column(align = True)
+        export_tab_row = export_tab_area.row(align = True)
+        export_tab_row.prop(cap_file, "usd_menu_options", expand = True)
+        export_tab_area.separator()
+        export_tab_area.separator()
+
         # area for revealed export options
-        export_options = export_area.column(align= True)
-        export_options.use_property_split = True
-        export_options.use_property_decorate = False  # removes animation options
+        export_options_area = export_tab_area.column(align = True)      
 
-        type_options = export_options.column(align = True)
-        type_options.prop(exportData, "usd_type")
-        type_options.separator()
-        type_options.separator()
+        if cap_file.usd_menu_options == 'File':
 
+            # area for revealed export options
+            export_options = export_options_area.column(align= True)
+            export_options.use_property_split = True
+            export_options.use_property_decorate = False
+            export_options.separator()
 
-        # options.label(text= "Export Filters")
-        data_options = export_options.column(align = True, heading = "Scene Data")
-        data_options.prop(exportData, "export_hair")
-        data_options.prop(exportData, "export_uvmaps")
-        data_options.prop(exportData, "export_normals")
-        data_options.separator()
-        data_options.separator()
+            type_options = export_options.column(align = True)
+            type_options.prop(exportData, "usd_type")
+            type_options.separator()
+            type_options.separator()
 
-        material_options = export_options.column(align = True, heading = "Materials")
-        material_options.prop(exportData, "export_materials")
+            file_options = export_options.column(align = True, heading = "File Options")
+            file_options.prop(exportData, "relative_paths")
+            file_options.prop(exportData, "use_instancing")
+            file_options.separator()
+            file_options.separator()
 
-        material_sub = export_options.column(align = True)
-        material_sub.active = exportData.export_materials
-        material_sub.prop(exportData, "generate_preview_surface")
+            eval_options = export_options.column(align = True)
+            eval_options.prop(exportData, "evaluation_mode", text= "Use Settings For")
+            eval_options.separator()
+            eval_options.separator()
 
-        texture_sub = material_sub.column(align = True)
-        texture_sub.active = exportData.generate_preview_surface
-        texture_sub.prop(exportData, "export_textures")
-        texture_sub.separator()
-        texture_sub.separator()
+            root_options = export_options.column(align = True)
+            root_options.prop(exportData, "root_prim_path")
+            root_options.separator()
+            root_options.separator()
+
+        elif cap_file.usd_menu_options == 'Data':
+
+            # area for revealed export options
+            export_options = export_options_area.column(align= True)
+            export_options.use_property_split = True
+            export_options.use_property_decorate = False
+            export_options.separator()
+
+            data_options = export_options.column(align = True, heading = "Object Data")
+            data_options.prop(exportData, "export_hair")
+            data_options.prop(exportData, "export_uvmaps")
+            data_options.prop(exportData, "export_normals")
+            data_options.separator()
+            data_options.separator()
+
+            material_options = export_options.column(align = True, heading = "Materials")
+            material_options.prop(exportData, "export_materials")
+
+            material_sub = export_options.column(align = True)
+            material_sub.active = exportData.export_materials
+            material_sub.prop(exportData, "generate_preview_surface")
+
+            texture_sub = material_sub.column(align = True)
+            texture_sub.active = exportData.generate_preview_surface
+            texture_sub.prop(exportData, "export_textures")
+            texture_sub.separator()
+            texture_sub.separator()
+
+            deform_options = export_options.column(align = True, heading = "Rigging")
+            deform_options.prop(exportData, "export_shapekeys")
+            deform_options.prop(exportData, "export_armatures")
+            deform_options.prop(exportData, "only_deform_bones")
+            deform_options.separator()
+            deform_options.separator()
+
+            subdiv_options = export_options.column(align = True)
+            subdiv_options.prop(exportData, "export_subdivision")
+            subdiv_options.separator()
+
         
-
-        eval_options = export_options.column(align = True)
-        eval_options.prop(exportData, "evaluation_mode", text= "Use Settings For")
-        eval_options.separator()
-        eval_options.separator()
-
-        file_options = export_options.column(align = True)
-        file_options.prop(exportData, "relative_paths")
-        file_options.prop(exportData, "use_instancing")
-        file_options.separator()
 
         # left padding
         export_area.separator()
