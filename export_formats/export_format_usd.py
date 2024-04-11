@@ -53,7 +53,7 @@ class CAP_FormatData_USD(PropertyGroup):
 
     root_prim_path: StringProperty(
         name = "Add Root Primitive At Path",
-        description = "If set, a USD transform primitive will be added at the given USD hierarchy and it will act as a parent for all exported data",
+        description = "Adds a USD transform primitive into USD hierarchy at the specified path, where all exported data will be parented to it.  Unless you have specific needs it is recommended to use the default, this is a conventional practice with USD exporters",
         default = "/root",
     )
 
