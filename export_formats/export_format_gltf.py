@@ -687,14 +687,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 		elif cap_file.gltf_menu_options == 'Animation':
 			
-			# Shapekey warning
-			if preset.apply_modifiers == True:
-				export_options_warning = export_options.box()
-				export_options_warning_l = export_options_warning.row(align= True)
-				export_options_warning_l.label(text= "While Apply Modifiers is active, objects with Modifiers will NOT export Shape Keys")
-				export_options.separator()
-				export_options.separator()
-			
 			# Disabled Animations Warning
 			if preset.export_animation == False:
 				export_options_warning = export_options.box()
@@ -767,6 +759,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		
 		elif cap_file.gltf_menu_options == 'Rigging':
 
+			# Shapekey warning
+			if preset.apply_modifiers == True:
+				export_options_warning = export_options.box()
+				export_options_warning_l = export_options_warning.row(align= True)
+				export_options_warning_l.label(text= "While Apply Modifiers is active, objects with Modifiers will NOT export Shape Keys")
+				export_options.separator()
+				export_options.separator()
+
 			rigging_options = export_options.column(align = True)
 
 			armature_options = rigging_options.column(align = True, heading = "Armature Options")
@@ -778,10 +778,11 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			armature_options.separator()
 
 			shapekey_options = rigging_options.column(align = True, heading = "Shape Key Options")
-			shapekey_options.active = False
 
-			if preset.apply_modifiers == False:
-				shapekey_options.active = True
+			# Shouldn't be disabled if a given export task doesn't have any object modifiers
+			# shapekey_options.active = False
+			# if preset.apply_modifiers == False:
+			# 	shapekey_options.active = True
 
 			shapekey_options.prop(exportData, "export_morph")
 			shapekey_sub = shapekey_options.column(align = True)
