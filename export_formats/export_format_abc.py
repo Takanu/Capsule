@@ -112,7 +112,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 
 	# the property for 'vcolors'
 	export_colors: BoolProperty(
-		name = "Export Vertex Colors",
+		name = "Export Color Attributes",
 		description = "Include vertex colors with the export",
 		default = False
 	)
@@ -333,7 +333,7 @@ class CAP_FormatData_Alembic(PropertyGroup):
 			extra_options.separator()
 			extra_options.separator()
 
-			export_options.prop(exportData, "evaluation_mode")
+			export_options.prop(exportData, "evaluation_mode", text = "Use Settings For")
 			export_options.separator()
 
 
