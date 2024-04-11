@@ -60,6 +60,16 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = True
 	)
 
+	export_import_convert_lighting_mode: EnumProperty(
+		name = "Lighting Mode",
+		description = "This options provides backwards compatibility for non-standard render engines. Applies to lights",
+		items = (
+			('SPEC', 'Standard (Default)', 'Physically-based glTF lighting units (cd, lx, nt)'),
+			('COMPAT', 'Unitless', 'Non-physical, unitless lighting. Useful when exposure controls are not available'),
+			),
+		default = 'SPEC',
+	)
+
 	export_cameras: BoolProperty(
 		name = 'Cameras',
 		description = 'Export cameras',
@@ -132,7 +142,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	export_shared_accessors: BoolProperty(
 		name = 'Use Shared Accessors',
-		description = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+		description = "This is a hyper-specific GLTF feature I dont understand and isn't adequately explained by the exporter.  This tooltip will be updated when I know more!",
 		default = False
 	)
 
@@ -197,11 +207,17 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		name = 'Animation Mode',
 		description = 'Decides how animations are exported',
 		items = (
-			('ACTIONS', 'All Actions', 'Export all actions (active actions and on NLA tracks) as separate animations'),
+			('ACTIONS', 'All Actions (Default)', 'Export all actions (active actions and on NLA tracks) as separate animations'),
 			('ACTIVE_ACTIONS', 'Merged Active Actions', 'Merge all currently assigned actions into one GLTF animation'),
 			('NLA_TRACKS', 'NLA Tracks', "Export individual NLA Tracks as separate animations"),
 			('SCENE', 'Scene Data', "Export the 'baked' scene animation data as a single GLTF animation"),
 			),
+	)
+
+	export_nla_strips_merged_animation_name: StringProperty(
+		name = "Merged Animation Name",
+		description = "When 'Export Animations by NLA Track' is disabled, this defines the name that the combined GLTF animation will receive",
+		default = "Merged Animation",
 	)
 
 	export_bake_animation: BoolProperty(
@@ -210,11 +226,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False,
 	)
 
-	export_nla_strips_merged_animation_name: StringProperty(
-		name = "Merged Animation Name",
-		description = "When 'Export Animations by NLA Track' is disabled, this defines the name that the combined GLTF animation will receive",
-		default = "Merged Animation",
-	)
+	
 
 
 
@@ -224,25 +236,66 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False
 	)
 
-
-	export_frame_range: BoolProperty(
-		name = 'Limit to Playback Range',
-		description = 'Limits the range of animation exported to the selected playback range',
-		default = True
-	)
-
-
 	export_anim_single_armature: BoolProperty(
 		name = 'Export All Armature Actions',
 		description = 'Export all actions, bound to a single armature. WARNING: Does not support exports including multiple armatures, assign armatures as separate exports before using this option',
 		default = False,
 	)
 
+	export_frame_range: BoolProperty(
+		name = 'Limit to Playback Range',
+		description = 'Limits the range of animation exported to the selected playback range',
+		default = True,
+	)
+
+	export_reset_pose_bones: BoolProperty(
+		name = "Always Reset Pose Bones",
+		description = "Always reset Pose Bones between each action exported. This is needed when some Bones are not keyed on specific animations",
+		default = True,
+	)
+
+	export_morph_reset_sk_data: BoolProperty(
+		name = "Always Reset Shape Keys",
+		description = "Always reset Shape Keys between each action exported. This is needed when some Shape Key channels are not keyed on specific animations",
+		default = True,
+	)
+
+	export_anim_slide_to_zero: BoolProperty(
+		name = "Set Animation Start to 0",
+		description = "Ensures all exportable animations will start at 0.0 seconds.  Important for looping animations",
+		default = False,
+	)
+
+	export_negative_frame: EnumProperty(
+		name = "Negative Frame Handling",
+		description = "Decide what to do for any exportable animation frames that start before 0",
+		items = (
+			('SLIDE', 'Slide (Default)', 'Slide the animation to start at frame 0'),
+			('CROP', 'Crop', 'Remove any animation frames that start before 0'),
+			),
+		default = 'SLIDE',
+	)
+
+
 	export_optimize_animation_size: BoolProperty(
 		name = 'Optimize Animation Size',
 		description = 'Reduces exported filesize by removing duplicate keyframes.  WARNING - Can cause problems with stepped animation',
 		default = True
 	)
+	
+	# TODO: Find a better explanation for this
+	export_optimize_animation_keep_anim_armature: BoolProperty(
+		name = 'Force Keep Channels for Bones',
+		description = 'If all keyframes are identical in a rig, force keeping the minimal animation',
+		default = True
+	)
+
+	export_optimize_animation_keep_anim_object : BoolProperty(
+		name = 'Force Keep Channels for Objects',
+		description = 'If all keyframes are identical for object transformations, force keeping the minimal animation',
+		default = False
+	)
+
 
 	# ////////
 	
@@ -259,6 +312,13 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		min = 1,
 		max = 120,
 	)
+
+	
+
+
+
+	
+	
 
 
 	# /////////////////////////////////
@@ -310,13 +370,13 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	export_try_sparse_sk: BoolProperty(
 		name = 'Use Sparse Accessors',
-		description = 'HEY GLTF DEVS IMPROVE YER FUCKIN DESCRIPTIONS FOR HUMANS',
+		description = "This is a hyper-specific GLTF feature I dont understand and isn't adequately explained by the exporter.  This tooltip will be updated when I know more!",
 		default = False
 	)
 
 	export_try_omit_sparse_sk: BoolProperty(
 		name = 'Omit Empty Sparce Accessors',
-		description = 'HEY GLTF DEVS IMPROVE YER FUCKIN DESCRIPTIONS FOR HUMANS',
+		description = "This is a hyper-specific GLTF feature I dont understand and isn't adequately explained by the exporter.  This tooltip will be updated when I know more!",
 		default = False
 	)
 
@@ -440,6 +500,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			# SCENE
 			export_yup = self.export_y_up,
+			export_import_convert_lighting_mode = self.export_import_convert_lighting_mode,
 			export_cameras = self.export_cameras,
 			export_lights = self.export_lights,
 			export_gn_mesh = self.export_gn_mesh,
@@ -474,11 +535,17 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 			export_current_frame = self.export_current_frame,
 			export_frame_range = self.export_frame_range,
+			export_anim_slide_to_zero = self.export_anim_slide_to_zero,
+			export_negative_frame = self.export_negative_frame,
+			
 			export_anim_single_armature = self.export_anim_single_armature,
 			export_optimize_animation_size = self.export_optimize_animation_size,
 
 			export_force_sampling = self.export_force_sampling,
 			export_frame_step = self.export_frame_step,
+
+			export_reset_pose_bones = self.export_reset_pose_bones,
+			export_morph_reset_sk_data = self.export_morph_reset_sk_data,
 
 			# RIGGING
 			export_rest_position_armature = self.export_rest_position_armature,
@@ -559,6 +626,10 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.separator()
 			export_options.prop(exportData, "export_hierarchy_flatten_objs")
 			# export_options.prop(exportData, "export_hierarchy_full_collections")
+			export_options.separator()	
+			export_options.separator()	
+			export_options.prop(exportData, "export_import_convert_lighting_mode")
+			export_options.separator()
 			export_options.separator()
 
 
@@ -640,21 +711,21 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			type_sub.prop(exportData, "export_animation_mode")
 			type_sub.separator()
 
-			action_sub = type_sub.column(align = True)
 			anim_mode = exportData.export_animation_mode
-			action_sub.active = False
-			if anim_mode == 'ACTIONS' or anim_mode == 'ACTIVE_ACTIONS':
-				action_sub.active = True
-			action_sub.prop(exportData, "export_bake_animation")
-			action_sub.separator()
 
 			merged_sub = type_sub.column(align = True)
 			merged_sub.active = False
 			if anim_mode == 'ACTIVE_ACTIONS':
 				merged_sub.active = True
 			merged_sub.prop(exportData, "export_nla_strips_merged_animation_name")
+			merged_sub.separator()
 
-			animation_options.separator()
+			action_sub = type_sub.column(align = True)
+			action_sub.active = False
+			if anim_mode == 'ACTIONS' or anim_mode == 'ACTIVE_ACTIONS':
+				action_sub.active = True
+			action_sub.prop(exportData, "export_bake_animation")
+
 			animation_options.separator()
 			animation_options.separator()
 			
@@ -662,24 +733,37 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			generic_sub.prop(exportData, "export_current_frame")
 			generic_sub.prop(exportData, "export_anim_single_armature")
 			generic_sub.prop(exportData, "export_frame_range")
-			generic_sub.prop(exportData, "export_optimize_animation_size")
-			
-			
+			generic_sub.separator()
+
+			generic_sub.prop(exportData, "export_reset_pose_bones")
+			generic_sub.prop(exportData, "export_morph_reset_sk_data")
+			generic_sub.separator()
+			generic_sub.prop(exportData, "export_anim_slide_to_zero")
+			generic_sub.separator()
+			generic_sub.separator()
+			generic_sub.prop(exportData, "export_negative_frame")
 			animation_options.separator()
 			animation_options.separator()
 
-			sample_row = animation_options.row(align = True, heading = "Force Sampling")
+			optimization_options = animation_options.column(align = True, heading = "Optimization")
+			optimization_options.prop(exportData, "export_optimize_animation_size")
+			optimization_options.prop(exportData, "export_optimize_animation_keep_anim_armature")
+			optimization_options.prop(exportData, "export_optimize_animation_keep_anim_object")
+			optimization_options.separator()
+			optimization_options.separator()
+
+			sample_row = animation_options.column(align = True, heading = "Force Sampling")
+			sample_row.prop(exportData, "export_force_sampling", text = "Enable")
 			sample_row.separator()
-			sample_sub = sample_row.row(align = True)
-			sample_sub.prop(exportData, "export_force_sampling", text = "")
 
-			samplerate_sub = sample_sub.row(align = True)
-			samplerate_sub.active = exportData.export_force_sampling
-			samplerate_sub.prop(exportData, "export_frame_step", text = "")
-			sample_row.separator()
-
+			sample_sub = sample_row.column(align = True)
+			sample_sub.active = exportData.export_force_sampling 
+			sample_sub.prop(exportData, "export_frame_step")
+			
 			animation_options.separator()
 			animation_options.separator()
+
+			
 		
 		elif cap_file.gltf_menu_options == 'Rigging':
 
@@ -756,6 +840,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			draco_options.prop(exportData, "export_draco_color_quantization", text = "Color Quantization")
 			draco_options.prop(exportData, "export_draco_generic_quantization", text = "Other Quantization")
 
+			export_options.separator()
 			export_options.separator()
 		
 		# right padding
