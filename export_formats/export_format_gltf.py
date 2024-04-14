@@ -82,6 +82,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False,
 	)
 
+	# https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md
+
+	export_gpu_instances: BoolProperty(
+		name = "GLTF GPU Instances",
+		description = "Enables the GLTF extension 'EXT_mesh_gpu_instancing'.  Use this on an empty and it's children will be used as the transform points for the GPU Instance feature.  See GLTF documentation for more information - https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_mesh_gpu_instancing/README.md"
+	)
+
+
 	# TODO: This doesn't work in Blender 4.1, consider adding this in 4.2 depending on the feature-set
 
 	# export_hierarchy_full_collections: BoolProperty(
@@ -101,6 +109,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False,
 	)
 
+	
 	# /////////////////////////////////
 	# MESH DATA
 
@@ -506,6 +515,8 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_import_convert_lighting_mode = self.export_import_convert_lighting_mode,
 			export_cameras = self.export_cameras,
 			export_lights = self.export_lights,
+			export_gpu_instances = self.export_gpu_instances,
+
 			export_gn_mesh = self.export_gn_mesh,
 			# export_hierarchy_full_collections = self.export_hierarchy_full_collections,
    			export_hierarchy_flatten_objs = self.export_hierarchy_flatten_objs,
@@ -622,7 +633,9 @@ class CAP_FormatData_GLTF(PropertyGroup):
 			export_options.separator()
 			export_options.prop(exportData, "export_cameras")
 			export_options.prop(exportData, "export_lights")
+			export_options.prop(exportData, "export_gpu_instances")
 			export_options.separator()
+			export_options.prop(exportData, "export_gn_mesh")
 			export_options.prop(exportData, "export_hierarchy_flatten_objs")
 			# export_options.prop(exportData, "export_hierarchy_full_collections")
 			export_options.separator()	
