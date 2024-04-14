@@ -140,9 +140,12 @@ class CAP_FormatData_GLTF(PropertyGroup):
 		default = False
 	)
 
+	# https://github.com/KhronosGroup/glTF-Tutorials/blob/main/gltfTutorial/gltfTutorial_005_BuffersBufferViewsAccessors.md
+	
+
 	export_shared_accessors: BoolProperty(
 		name = 'Use Shared Accessors',
-		description = "This is a hyper-specific GLTF feature I dont understand and isn't adequately explained by the exporter.  This tooltip will be updated when I know more!",
+		description = "If enabled, primitive shapes will share the same data in a GLTF file in order to save space",
 		default = False
 	)
 
@@ -285,14 +288,14 @@ class CAP_FormatData_GLTF(PropertyGroup):
 	
 	# TODO: Find a better explanation for this
 	export_optimize_animation_keep_anim_armature: BoolProperty(
-		name = 'Force Keep Channels for Bones',
-		description = 'If all keyframes are identical in a rig, force keeping the minimal animation',
+		name = 'Always Keep Channels for Bones',
+		description = 'Ensures that channels for bones are exported even without keyframes or movement',
 		default = True
 	)
 
 	export_optimize_animation_keep_anim_object : BoolProperty(
-		name = 'Force Keep Channels for Objects',
-		description = 'If all keyframes are identical for object transformations, force keeping the minimal animation',
+		name = 'Always Keep Channels for Objects',
+		description = 'Ensures that channels for objects are exported even without keyframes or movement',
 		default = False
 	)
 
@@ -370,13 +373,13 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	export_try_sparse_sk: BoolProperty(
 		name = 'Use Sparse Accessors',
-		description = "This is a hyper-specific GLTF feature I dont understand and isn't adequately explained by the exporter.  This tooltip will be updated when I know more!",
+		description = "If enabled, the exported file will reuse Shape Key data between multiple Shape Keys in order to reduce the file size.  This feature is highly model-dependant and may have little effect",
 		default = False
 	)
 
 	export_try_omit_sparse_sk: BoolProperty(
 		name = 'Omit Empty Sparce Accessors',
-		description = "This is a hyper-specific GLTF feature I dont understand and isn't adequately explained by the exporter.  This tooltip will be updated when I know more!",
+		description = "Sparse Accessors are a GLTF feature that attempts to reuse Shape Key data in order to reduce the file size.  If enabled, any Sparse Accessors with an empty set of data will be stripped from the file to further reduce the file size",
 		default = False
 	)
 
@@ -396,7 +399,7 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 	export_influence_nb: IntProperty(
 		name = "Bone Influence Count",
-		description = "How many joint verex influences will be exported. Models may appear incorrectly in many viewers with value different to 4 or 8",
+		description = "How many joint vertex influences will be exported. Models may appear incorrectly in many viewers with value different to 4 or 8",
 		default = 4,
 		min = 1,
 	)
@@ -614,10 +617,6 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 
 		if cap_file.gltf_menu_options == 'Scene':
-			export_options = export_options_area.column(align = True)
-			export_options.use_property_split = True
-			export_options.use_property_decorate = False  # removes animation options
-			export_options.separator()
 
 			export_options.prop(exportData, "export_y_up")
 			export_options.separator()
@@ -635,12 +634,21 @@ class CAP_FormatData_GLTF(PropertyGroup):
 
 		elif cap_file.gltf_menu_options == 'Object':
 
+			# Disabled Animations Warning
+			if preset.export_animation == False:
+				export_options_warning = export_options.box()
+				export_options_warning_l = export_options_warning.column(align= True)
+				export_options_warning_l.label(text= "In Blender 4.1 Color Attributes will only be exported if used in the active material.")
+				export_options_warning_l.label(text= "The GLTF devs are fixing this for 4.2.")
+				export_options.separator()
+				export_options.separator()
+
 			mesh_options = export_options.column(align = True, heading = "Mesh Data")
 			mesh_options.prop(exportData, "export_texcoords")
 			mesh_options.prop(exportData, "export_normals")
 			mesh_options.prop(exportData, "export_tangents")
 			mesh_options.prop(exportData, "export_attributes")
-			# mesh_options.prop(exportData, "export_displacement")
+
 			mesh_options.separator()
 			mesh_options.prop(exportData, "use_mesh_edges")
 			mesh_options.prop(exportData, "use_mesh_vertices")
